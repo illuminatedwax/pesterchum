@@ -1,0 +1,6 @@
+{
+    "chums": ["gamblingGenocider",
+              "grimAuxiliatrix",
+              "gardenGnostic"
+              ]
+}
