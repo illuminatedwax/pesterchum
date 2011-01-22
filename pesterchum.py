@@ -9,6 +9,19 @@ from PyQt4 import QtGui, QtCore
 
 logging.basicConfig(level=logging.INFO)
 
+class PesterIRC(QtCore.QObject):
+    def __init__(self, window):
+        QtCore.QObject.__init__(self)
+        self.window = window
+    def IRCConnect(self):
+        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick="superGhost")
+        self.cli.command_handler.window = self.window
+        self.conn = self.cli.connect()
+        
+    @QtCore.pyqtSlot()
+    def updateIRC(self):
+        self.conn.next()
+
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
         # display msg, do other stuff
@@ -35,8 +48,6 @@ class exitButton(QtGui.QPushButton):
     def __init__(self, icon, parent=None):
         QtGui.QPushButton.__init__(self, icon, "", parent)
         self.setFlat(True)
-    def clicked(self):
-        print "X"
 
 class chumArea(QtGui.QListWidget):
     def __init__(self, chums, parent=None):
@@ -73,29 +84,23 @@ background-color: #fdb302;
                      self, QtCore.SLOT('close()'))
         self.chumList = chumArea(self.config.chums(), self)
 
-        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick="superGhost")
-        self.cli.command_handler.window = self
-
-        self.conn = self.cli.connect()
-        self.irctimer = QtCore.QTimer(self)
-        self.connect(self.irctimer, QtCore.SIGNAL('timeout()'),
-                     self, QtCore.SLOT('updateIRC()'))
-        self.irctimer.start()
         self.moving = None
+        self.moveupdate = 0
     def mouseMoveEvent(self, event):
         if self.moving:
             move = event.globalPos() - self.moving
-            self.move(self.pos() + move)
-            self.moving = event.globalPos()
+            self.move(move)
+            self.moveupdate += 1
+            if self.moveupdate > 5:
+                self.moveupdate = 0
+                self.update()
     def mousePressEvent(self, event):
         if event.button() == 1:
-            self.moving = event.globalPos()
+            self.moving = event.globalPos() - self.pos()
     def mouseReleaseEvent(self, event):
         if event.button() == 1:
+            self.update()
             self.moving = None
-    @QtCore.pyqtSlot()
-    def updateIRC(self):
-        self.conn.next()
     def newMessage(self):
         pass
 
@@ -111,7 +116,12 @@ def main():
     trayicon.setContextMenu(traymenu)
     trayicon.show()
 
+    #irc = PesterIRC(widget)
+    #irc.IRCConnect()
+    #irctimer = QtCore.QTimer(widget)
+    #widget.connect(irctimer, QtCore.SIGNAL('timeout()'),
+    #               irc, QtCore.SLOT('updateIRC()'))
+    #irctimer.start()
     sys.exit(app.exec_())
-
 
 main()
