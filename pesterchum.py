@@ -20,9 +20,13 @@ class Mood(object):
         return self.mood
     def name(self):
         return self.moods[self.mood]
+    def icon(self, theme):
+        f = theme["main/chums/moods"][self.name()]["icon"]
+        return QtGui.QIcon(f)
 
 class PesterProfile(object):
-    def __init__(self, handle, color=None, mood=None):
+    def __init__(self, handle, color=QtGui.QColor("black"), 
+                 mood=Mood("offline")):
         self.handle = handle
         self.color = color
         self.mood = mood
@@ -31,8 +35,12 @@ class PesterProfile(object):
         caps = [l for l in handle if l.isupper()]
         if not caps:
             caps = [""]
-        return (handle[0]+caps[0]).upper()
-        
+        return (handle[0]+caps[0]).upper() 
+    def colorhtml(self):
+        return self.color.name()
+    def colorcmd(self):
+        (r, g, b, a) = self.color.getRgb()
+        return "%d,%d,%d" % (r,g,b)
 
 class pesterTheme(dict):
     def __init__(self, name):
@@ -76,14 +84,18 @@ class exitButton(QtGui.QPushButton):
 class chumListing(QtGui.QListWidgetItem):
     def __init__(self, chum, theme):
         QtGui.QListWidgetItem.__init__(self, chum.handle)
-        self.theme = theme["main/chums/moods"]
+        self.theme = theme
         self.chum = chum
         self.handle = chum.handle
         self.setMood(Mood("offline"))
     def setMood(self, mood):
+        self.chum.mood = mood
+        self.updateMood()
+    def updateMood(self):
+        mood = self.chum.mood
         self.mood = mood
-        self.setIcon(QtGui.QIcon(self.theme[self.mood.name()]["icon"]))
-        self.setTextColor(QtGui.QColor(self.theme[self.mood.name()]["color"]))
+        self.setIcon(self.mood.icon(self.theme))
+        self.setTextColor(QtGui.QColor(self.theme["main/chums/moods"][self.mood.name()]["color"]))
     def __lt__(self, cl):
         h1 = self.handle.lower()
         h2 = cl.handle.lower()
@@ -134,13 +146,12 @@ class PesterText(QtGui.QTextEdit):
         self.setStyleSheet(theme["convo/textarea/style"])
         self.setReadOnly(True)
     def addMessage(self, text, chum):
-        if chum is None:
-            chum = self.parent().mainwindow.profile
-        color = chum.color
+        color = chum.colorhtml()
         initials = chum.initials()
         msg = str(text)
         msg = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        self.append("<span color='%s'>%s: %s</span>" % (color, initials, msg))
+        self.append("<span style='color:%s'>%s: %s</span>" % \
+                        (color, initials, msg))
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
@@ -148,22 +159,23 @@ class PesterInput(QtGui.QLineEdit):
         self.setStyleSheet(theme["convo/input/style"])
 
 class PesterConvo(QtGui.QFrame):
-    def __init__(self, chumlisting, initiated, mainwindow, parent=None):
+    def __init__(self, chum, initiated, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
 
-        self.chumlisting = chumlisting
+        self.chum = chum
         self.theme = mainwindow.theme
         self.mainwindow = mainwindow
         convo = self.theme["convo"]
         self.resize(*convo["size"])
         self.setStyleSheet(convo["style"])
-        self.setWindowIcon(chumlisting.icon())
-        self.setWindowTitle(chumlisting.handle)
+        self.setWindowIcon(chum.mood.icon(self.theme))
+        self.setWindowTitle(chum.handle)
 
-        self.chumLabel = QtGui.QLabel(chumlisting.handle, self)
+        self.chumLabel = QtGui.QLabel(chum.handle, self)
         self.chumLabel.setStyleSheet(self.theme["convo/chumlabel/style"])
         self.textArea = PesterText(self.theme, self)
         self.textInput = PesterInput(self.theme, self)
+        self.textInput.setFocus()
 
         self.connect(self.textInput, QtCore.SIGNAL('returnPressed()'),
                      self, QtCore.SLOT('sentMessage()'))
@@ -176,10 +188,13 @@ class PesterConvo(QtGui.QFrame):
         self.setLayout(self.layout)
 
     def updateMood(self, mood):
-        icon = theme["chums/moods"][mood.name()]
-        self.setWindowIcon(icon)
+        self.setWindowIcon(mood.icon(self.theme))
         # print mood update?
-    def addMessage(self, text, chum=None):
+    def addMessage(self, text, me=True):
+        if me:
+            chum = self.mainwindow.profile
+        else:
+            chum = self.chum
         self.textArea.addMessage(text, chum)
 
     @QtCore.pyqtSlot()
@@ -187,10 +202,10 @@ class PesterConvo(QtGui.QFrame):
         text = self.textInput.text()
         # deal with quirks here
         self.textInput.setText("")
-        self.addMessage(text, None)
-        self.messageSent.emit(text, self.chumlisting)
+        self.addMessage(text, True)
+        self.messageSent.emit(text, self.chum)
 
-    messageSent = QtCore.pyqtSignal(QtCore.QString, chumListing)
+    messageSent = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
 
 
 class PesterWindow(MovingWindow):
@@ -215,7 +230,7 @@ class PesterWindow(MovingWindow):
         chums = [PesterProfile(c) for c in set(self.config.chums())]
         self.chumList = chumArea(chums, self.theme, self)
         self.connect(self.chumList, QtCore.SIGNAL('itemDoubleClicked(QListWidgetItem *)'),
-                     self, QtCore.SLOT('newConversation(QListWidgetItem *)'))
+                     self, QtCore.SLOT('newConversationWindow(QListWidgetItem *)'))
 
         self.profile = PesterProfile("superGhost", QtGui.QColor("red"), Mood(0))
         self.convos = {}
@@ -224,23 +239,35 @@ class PesterWindow(MovingWindow):
             c.close()
         event.accept()
     def newMessage(self, handle, msg):
+        if not self.convos.has_key(handle):
+            chum = PesterProfile(handle)
+            self.newConversation(chum, False)
+        convo = self.convos[handle]
+        convo.addMessage(msg, False)
+        # play sound here
+
+    def changeColor(self, handle, color):
         pass
 
     def updateMood(self, handle, mood):
         self.chumList.updateMood(handle, mood)
         if self.convos.has_key(handle):
             self.convos[handle].updateMood(mood)
-
-    @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversation(self, chum, initiated=True):
         convoWindow = PesterConvo(chum, initiated, self)
         self.connect(convoWindow, QtCore.SIGNAL('messageSent(QString, PyQt_PyObject)'),
                      self, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'))
         self.convos[chum.handle] = convoWindow
-        
+        self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
 
-    sendMessage = QtCore.pyqtSignal(QtCore.QString, chumListing)
+    @QtCore.pyqtSlot(QtGui.QListWidgetItem)
+    def newConversationWindow(self, chumlisting):
+        chum = chumlisting.chum
+        self.newConversation(chum)
+
+    newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
+    sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
@@ -250,11 +277,21 @@ class PesterIRC(QtCore.QObject):
         self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.window.profile.handle)
         self.cli.command_handler.window = self.window
         self.conn = self.cli.connect()
+
+    def getMood(self, *chums):
+        self.cli.command_handler.getMood(*chums)
         
-    @QtCore.pyqtSlot(QtCore.QString, chumListing)
-    def sendMessage(self, text, chumlisting):
-        handle = chumlisting.handle
+    @QtCore.pyqtSlot(QtCore.QString, PesterProfile)
+    def sendMessage(self, text, chum):
+        handle = chum.handle
         helpers.msg(self.cli, handle, text)
+
+    @QtCore.pyqtSlot(QtCore.QString, bool)
+    def startConvo(self, handle, initiated):
+        h = str(handle)
+        if initiated:
+            helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
+        helpers.msg(self.cli, h, "COLOR >%s" % (self.window.profile.colorcmd()))
 
     @QtCore.pyqtSlot()
     def updateIRC(self):
@@ -263,6 +300,9 @@ class PesterIRC(QtCore.QObject):
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
         # display msg, do other stuff
+        # silently ignore CTCP
+        if msg[0] == '\x01':
+            return
         handle = nick[0:nick.find("!")]
         if chan == "#pesterchum":
             # follow instructions
@@ -281,8 +321,21 @@ class PesterHandler(DefaultCommandHandler):
                     
         else:
             # private message
-            self.window.newMessage(handle, msg)
-            pass
+            if msg[0:7] == "COLOR >":
+                colors = msg[7:].split(",")
+                try:
+                    colors = [int(d) for d in colors]
+                except ValueError:
+                    colors = [0,0,0]
+                color = QtGui.QColor(*colors)
+                self.window.changeColor(handle, color)
+            elif msg == "PESTERCHUM:BEGIN":
+                chum = PesterProfile(handle)
+                self.window.newConversation(chum, False)
+            else:
+                self.window.newMessage(handle, msg)
+
+
     def welcome(self, server, nick, msg):
         helpers.join(self.client, "#pesterchum")
         mychumhandle = self.window.profile.handle
@@ -290,6 +343,8 @@ class PesterHandler(DefaultCommandHandler):
         helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
         chums = self.window.chumList.chums
+        self.getMood(*chums)
+    def getMood(self, *chums):
         chumglub = "GETMOOD "
         for c in chums:
             chandle = c.handle
@@ -316,6 +371,9 @@ def main():
     irc.IRCConnect()
     irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'),
                 irc, QtCore.SLOT('sendMessage(QString, PyQt_PyObject)'))
+    irc.connect(widget, 
+                QtCore.SIGNAL('newConvoStarted(QString, bool)'),
+                irc, QtCore.SLOT('startConvo(QString, bool)'))
 
     irctimer = QtCore.QTimer(widget)
     widget.connect(irctimer, QtCore.SIGNAL('timeout()'),

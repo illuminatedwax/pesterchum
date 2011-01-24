@@ -2,7 +2,8 @@
     "chums": ["gamblingGenocider",
               "grimAuxiliatrix",
               "gardenGnostic",
-              "ghostDunk"
+              "ghostDunk",
+              "spaceGhost"
              ],
     "theme": "pesterchum"
 }
