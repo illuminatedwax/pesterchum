@@ -266,16 +266,39 @@ class PesterWindow(MovingWindow):
         chum = chumlisting.chum
         self.newConversation(chum)
 
+    @QtCore.pyqtSlot(QtCore.QString, Mood)
+    def updateMoodSlot(self, handle, mood):
+        h = str(handle)
+        self.updateMood(h, mood)
+
+    @QtCore.pyqtSlot(QtCore.QString, QtGui.QColor)
+    def updateColorSlot(self, handle, color):
+        h = str(handle)
+        self.changeColor(h, color)
+
+    @QtCore.pyqtSlot(PesterProfile)
+    def pesterchumBeginSlot(self, chum):
+        self.newConversation(chum, False)
+
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def deliverMessage(self, handle, msg):
+        h = str(handle)
+        m = str(msg)
+        self.newMessage(h, m)
+
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
 
 class PesterIRC(QtCore.QObject):
-    def __init__(self, window):
+    def __init__(self, profile, chums):
         QtCore.QObject.__init__(self)
-        self.window = window
+        self.profile = profile
+        self.chums = chums
     def IRCConnect(self):
-        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.window.profile.handle)
-        self.cli.command_handler.window = self.window
+        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.profile.handle, blocking=True)
+        self.cli.command_handler.parent = self
+        self.cli.command_handler.profile = self.profile
+        self.cli.command_handler.chums = self.chums
         self.conn = self.cli.connect()
 
     def getMood(self, *chums):
@@ -291,11 +314,16 @@ class PesterIRC(QtCore.QObject):
         h = str(handle)
         if initiated:
             helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.window.profile.colorcmd()))
+        helpers.msg(self.cli, h, "COLOR >%s" % (self.profile.colorcmd()))
 
-    @QtCore.pyqtSlot()
     def updateIRC(self):
         self.conn.next()
+
+    moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
+    colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
+    pesterchumBegin = QtCore.pyqtSignal(PesterProfile)
+    messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+
 
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
@@ -311,10 +339,10 @@ class PesterHandler(DefaultCommandHandler):
                     mood = Mood(int(msg[6:]))
                 except ValueError:
                     mood = Mood(0)
-                self.window.updateMood(handle, mood)
+                self.parent.moodUpdated.emit(handle, mood)
             elif msg[0:7] == "GETMOOD":
-                mychumhandle = self.window.profile.handle
-                mymood = self.window.profile.mood.value()
+                mychumhandle = self.profile.handle
+                mymood = self.profile.mood.value()
                 if msg.find(mychumhandle, 8) != -1:
                     helpers.msg(self.client, "#pesterchum", 
                                 "MOOD >%d" % (mymood))
@@ -328,21 +356,21 @@ class PesterHandler(DefaultCommandHandler):
                 except ValueError:
                     colors = [0,0,0]
                 color = QtGui.QColor(*colors)
-                self.window.changeColor(handle, color)
+                self.parent.colorUpdated.emit(handle, color)
             elif msg == "PESTERCHUM:BEGIN":
                 chum = PesterProfile(handle)
-                self.window.newConversation(chum, False)
+                self.parent.pesterchumBegin.emit(chum)
             else:
-                self.window.newMessage(handle, msg)
+                self.parent.messageReceived.emit(handle, msg)
 
 
     def welcome(self, server, nick, msg):
         helpers.join(self.client, "#pesterchum")
-        mychumhandle = self.window.profile.handle
-        mymood = self.window.profile.mood.value()
+        mychumhandle = self.profile.handle
+        mymood = self.profile.mood.value()
         helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
-        chums = self.window.chumList.chums
+        chums = self.chums
         self.getMood(*chums)
     def getMood(self, *chums):
         chumglub = "GETMOOD "
@@ -355,6 +383,14 @@ class PesterHandler(DefaultCommandHandler):
         if chumglub != "GETMOOD ":
             helpers.msg(self.client, "#pesterchum", chumglub)
 
+class IRCThread(QtCore.QThread):
+    def __init__(self, ircobj):
+        QtCore.QThread.__init__(self)
+        self.irc = ircobj
+    def run(self):
+        irc = self.irc
+        while 1:
+            irc.updateIRC()
 
 def main():
 
@@ -367,18 +403,32 @@ def main():
     trayicon.setContextMenu(traymenu)
     trayicon.show()
 
-    irc = PesterIRC(widget)
+    irc = PesterIRC(widget.profile, widget.chumList.chums)
     irc.IRCConnect()
     irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'),
                 irc, QtCore.SLOT('sendMessage(QString, PyQt_PyObject)'))
     irc.connect(widget, 
                 QtCore.SIGNAL('newConvoStarted(QString, bool)'),
                 irc, QtCore.SLOT('startConvo(QString, bool)'))
+    irc.connect(irc, 
+                QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
+                widget, 
+                QtCore.SLOT('updateMoodSlot(QString, PyQt_PyObject)'))
+    irc.connect(irc,
+                QtCore.SIGNAL('colorUpdated(QString, QColor)'),
+                widget,
+                QtCore.SLOT('updateColorSlot(QString, QColor)'))
+    irc.connect(irc,
+                QtCore.SIGNAL('pesterchumBegin(PyQt_PyObject)'),
+                widget,
+                QtCore.SLOT('pesterchumBeginSlot(PyQt_PyObject)'))
+    irc.connect(irc,
+                QtCore.SIGNAL('messageReceived(QString, QString)'),
+                widget,
+                QtCore.SLOT('deliverMessage(QString, QString)'))
 
-    irctimer = QtCore.QTimer(widget)
-    widget.connect(irctimer, QtCore.SIGNAL('timeout()'),
-                   irc, QtCore.SLOT('updateIRC()'))
-    irctimer.start()
+    ircapp = IRCThread(irc)
+    ircapp.start()
     sys.exit(app.exec_())
 
 main()
