@@ -3,7 +3,10 @@
               "grimAuxiliatrix",
               "gardenGnostic",
               "ghostDunk",
-              "spaceGhost"
+              "spaceGhost",
+              "aquaMarinist",
+              "carcinoGeneticist",
+              "tentacleTherapist"
              ],
     "theme": "pesterchum"
 }
