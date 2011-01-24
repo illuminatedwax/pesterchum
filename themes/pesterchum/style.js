@@ -1,7 +1,6 @@
 {"main":
  {"style": "background-image:url($path/pcbg.png);",
-  "width": 300,
-  "height": 620,
+  "size": [300, 620],
   "icon": "$path/trayicon.gif",
   "close": { "image": "$path/x.gif",
              "loc": [275, 0]},

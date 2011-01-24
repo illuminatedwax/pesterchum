@@ -19,7 +19,11 @@ class Mood(object):
     def value(self):
         return self.mood
     def name(self):
-        return self.moods[self.mood]
+        try:
+            name = self.moods[self.mood]
+        except IndexError:
+            name = "chummy"
+        return name
     def icon(self, theme):
         f = theme["main/chums/moods"][self.name()]["icon"]
         return QtGui.QIcon(f)
@@ -196,6 +200,10 @@ class PesterConvo(QtGui.QFrame):
         else:
             chum = self.chum
         self.textArea.addMessage(text, chum)
+    def showChat(self):
+        self.activateWindow()
+        self.raise_()
+        self.textInput.setFocus()
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
@@ -216,9 +224,8 @@ class PesterWindow(MovingWindow):
         self.config = userConfig()
         self.theme = self.config.getTheme()
         main = self.theme["main"]
-        width = int(main['width'])
-        height = int(main['height'])
-        self.setGeometry(100, 100, width, height)
+        size = main['size']
+        self.setGeometry(100, 100, size[0], size[1])
         self.setWindowIcon(QtGui.QIcon(main["icon"]))
         self.setStyleSheet("QFrame#main { "+main["style"]+" }")
 
@@ -254,6 +261,13 @@ class PesterWindow(MovingWindow):
         if self.convos.has_key(handle):
             self.convos[handle].updateMood(mood)
     def newConversation(self, chum, initiated=True):
+        if self.convos.has_key(chum.handle):
+            self.convos[chum.handle].showChat()
+            if not initiated:
+                # self.convos[chum.handle]
+                # add pesterchum:begin
+                pass
+            return
         convoWindow = PesterConvo(chum, initiated, self)
         self.connect(convoWindow, QtCore.SIGNAL('messageSent(QString, PyQt_PyObject)'),
                      self, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'))
