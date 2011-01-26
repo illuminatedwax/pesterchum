@@ -185,6 +185,9 @@ class PesterTabWindow(QtGui.QFrame):
             nexti = (self.tabIndices[self.currentConvo.chum.handle] + 1) % self.tabs.count()
             self.tabs.setCurrentIndex(nexti)
 
+    def updateMood(self, handle, mood):
+        i = self.tabIndices[handle]
+        self.tabs.setTabIcon(i, mood.icon(self.theme))
     @QtCore.pyqtSlot(int)
     def changeTab(self, i):
         if self.changedTab:
@@ -196,6 +199,9 @@ class PesterTabWindow(QtGui.QFrame):
             self.layout.removeWidget(self.currentConvo)
         self.currentConvo = convo
         self.layout.addWidget(convo)
+        self.setWindowIcon(convo.chum.mood.icon(self.theme))
+        self.activateWindow()
+        self.raise_()
         convo.raiseChat()
 
 class PesterText(QtGui.QTextEdit):
@@ -249,7 +255,10 @@ class PesterConvo(QtGui.QFrame):
             parent.addChat(self)
 
     def updateMood(self, mood):
-        self.setWindowIcon(mood.icon(self.theme))
+        if self.parent():
+            self.parent().updateMood(self.chum.handle, mood)
+        else:
+            self.setWindowIcon(mood.icon(self.theme))
         # print mood update?
     def addMessage(self, text, me=True):
         if me:
@@ -336,7 +345,7 @@ class PesterWindow(MovingWindow):
                 # add pesterchum:begin
                 pass
             return
-        if self.config.tabs:
+        if self.config.tabs():
             if not self.tabconvo:
                 self.tabconvo = PesterTabWindow(self)
             convoWindow = PesterConvo(chum, initiated, self, self.tabconvo)
