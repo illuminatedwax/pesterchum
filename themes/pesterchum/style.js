@@ -28,7 +28,8 @@
   },
   "input": {
       "style": "background: white;"
-  }
+  },
+  "tabstyle": 0
  }
  
 }

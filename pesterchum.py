@@ -77,6 +77,8 @@ class userConfig(object):
         return self.config['chums']
     def getTheme(self):
         return self.theme
+    def tabs(self):
+        return self.config["tabs"]
 
 class exitButton(QtGui.QPushButton):
     def __init__(self, icon, parent=None):
@@ -144,6 +146,58 @@ class MovingWindow(QtGui.QFrame):
             self.update()
             self.moving = None
 
+class PesterTabWindow(QtGui.QFrame):
+    def __init__(self, mainwindow, parent=None):
+        QtGui.QFrame.__init__(self, parent)
+        self.mainwindow = mainwindow
+        self.theme = mainwindow.theme
+        self.resize(*self.theme["convo/size"])
+        self.setStyleSheet(self.theme["convo/style"])
+
+        self.tabs = QtGui.QTabBar(self)
+        self.connect(self.tabs, QtCore.SIGNAL('currentChanged(int)'),
+                     self, QtCore.SLOT('changeTab(int)'))
+        self.tabs.setShape(self.theme["convo/tabstyle"])
+
+
+        self.layout = QtGui.QVBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.addWidget(self.tabs)
+        self.setLayout(self.layout)
+        self.convos = {}
+        self.tabIndices = {}
+        self.currentConvo = None
+        self.changedTab = False
+    def addChat(self, convo):
+        self.convos[convo.chum.handle] = convo
+        # either addTab or setCurrentIndex will trigger changed()
+        newindex = self.tabs.addTab(convo.chum.handle)
+        self.tabIndices[convo.chum.handle] = newindex
+        self.tabs.setCurrentIndex(newindex)
+        self.tabs.setTabIcon(newindex, convo.chum.mood.icon(self.theme))
+    def showChat(self, handle):
+        self.tabs.setCurrentIndex(self.tabIndices[handle])
+    def keyPressEvent(self, event):
+        keypress = event.key()
+        mods = event.modifiers()
+        if ((mods & QtCore.Qt.ControlModifier) and 
+            keypress == QtCore.Qt.Key_Tab):
+            nexti = (self.tabIndices[self.currentConvo.chum.handle] + 1) % self.tabs.count()
+            self.tabs.setCurrentIndex(nexti)
+
+    @QtCore.pyqtSlot(int)
+    def changeTab(self, i):
+        if self.changedTab:
+            self.changedTab = False
+            return
+        handle = unicode(self.tabs.tabText(i))
+        convo = self.convos[handle]
+        if self.currentConvo:
+            self.layout.removeWidget(self.currentConvo)
+        self.currentConvo = convo
+        self.layout.addWidget(convo)
+        convo.raiseChat()
+
 class PesterText(QtGui.QTextEdit):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
@@ -191,6 +245,9 @@ class PesterConvo(QtGui.QFrame):
 
         self.setLayout(self.layout)
 
+        if parent:
+            parent.addChat(self)
+
     def updateMood(self, mood):
         self.setWindowIcon(mood.icon(self.theme))
         # print mood update?
@@ -200,10 +257,18 @@ class PesterConvo(QtGui.QFrame):
         else:
             chum = self.chum
         self.textArea.addMessage(text, chum)
-    def showChat(self):
+    def raiseChat(self):
         self.activateWindow()
         self.raise_()
         self.textInput.setFocus()
+
+    def showChat(self):
+        if self.parent():
+            self.parent().showChat(self.chum.handle)
+        self.raiseChat()
+
+    def closeEvent(self, event):
+        self.windowClosed.emit(self.chum.handle)
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
@@ -214,7 +279,7 @@ class PesterConvo(QtGui.QFrame):
         self.messageSent.emit(text, self.chum)
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
-
+    windowClosed = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterWindow(MovingWindow):
     def __init__(self, parent=None):
@@ -241,9 +306,12 @@ class PesterWindow(MovingWindow):
 
         self.profile = PesterProfile("superGhost", QtGui.QColor("red"), Mood(0))
         self.convos = {}
+        self.tabconvo = None
     def closeEvent(self, event):
         for c in self.convos.itervalues():
             c.close()
+        if self.tabconvo:
+            self.tabconvo.close()
         event.accept()
     def newMessage(self, handle, msg):
         if not self.convos.has_key(handle):
@@ -268,7 +336,13 @@ class PesterWindow(MovingWindow):
                 # add pesterchum:begin
                 pass
             return
-        convoWindow = PesterConvo(chum, initiated, self)
+        if self.config.tabs:
+            if not self.tabconvo:
+                self.tabconvo = PesterTabWindow(self)
+            convoWindow = PesterConvo(chum, initiated, self, self.tabconvo)
+            self.tabconvo.show()
+        else:
+            convoWindow = PesterConvo(chum, initiated, self)
         self.connect(convoWindow, QtCore.SIGNAL('messageSent(QString, PyQt_PyObject)'),
                      self, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'))
         self.convos[chum.handle] = convoWindow
@@ -279,6 +353,10 @@ class PesterWindow(MovingWindow):
     def newConversationWindow(self, chumlisting):
         chum = chumlisting.chum
         self.newConversation(chum)
+    @QtCore.pyqtSlot(QtCore.QString)
+    def closeConvo(self, handle):
+        h = str(handle)
+        del self.convos[chum.handle]
 
     @QtCore.pyqtSlot(QtCore.QString, Mood)
     def updateMoodSlot(self, handle, mood):

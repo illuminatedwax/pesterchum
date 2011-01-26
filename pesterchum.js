@@ -8,5 +8,6 @@
               "carcinoGeneticist",
               "tentacleTherapist"
              ],
-    "theme": "pesterchum"
+    "theme": "pesterchum",
+    "tabs": true
 }
