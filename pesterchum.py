@@ -187,8 +187,11 @@ class PesterTabWindow(QtGui.QFrame):
         self.setStyleSheet(self.theme["convo/style"])
 
         self.tabs = QtGui.QTabBar(self)
+        self.tabs.setTabsClosable(True)
         self.connect(self.tabs, QtCore.SIGNAL('currentChanged(int)'),
                      self, QtCore.SLOT('changeTab(int)'))
+        self.connect(self.tabs, QtCore.SIGNAL('tabCloseRequested(int)'),
+                     self, QtCore.SLOT('tabClose(int)'))
         self.tabs.setShape(self.theme["convo/tabstyle"])
 
 
@@ -220,8 +223,36 @@ class PesterTabWindow(QtGui.QFrame):
     def updateMood(self, handle, mood):
         i = self.tabIndices[handle]
         self.tabs.setTabIcon(i, mood.icon(self.theme))
+    def closeEvent(self, event):
+        while self.tabs.count() > 0:
+            self.tabClose(0)
+        self.windowClosed.emit()
+
+    @QtCore.pyqtSlot(int)
+    def tabClose(self, i):
+        handle = unicode(self.tabs.tabText(i))
+        convo = self.convos[handle]
+        del self.convos[handle]
+        del self.tabIndices[handle]
+        self.tabs.removeTab(i)
+        for (h, j) in self.tabIndices.iteritems():
+            if j > i:
+                self.tabIndices[h] = j-1
+        self.layout.removeWidget(convo)
+        convo.close()
+        if self.tabs.count() == 0:
+            self.close()
+            return
+        if self.currentConvo == convo:
+            currenti = self.tabs.currentIndex()
+            currenth = unicode(self.tabs.tabText(currenti))
+            self.currentConvo = self.convos[currenth]
+        self.currentConvo.raiseChat()
+
     @QtCore.pyqtSlot(int)
     def changeTab(self, i):
+        if i < 0:
+            return
         if self.changedTab:
             self.changedTab = False
             return
@@ -235,6 +266,8 @@ class PesterTabWindow(QtGui.QFrame):
         self.activateWindow()
         self.raise_()
         convo.raiseChat()
+
+    windowClosed = QtCore.pyqtSignal()
 
 class PesterText(QtGui.QTextEdit):
     def __init__(self, theme, parent=None):
@@ -257,7 +290,6 @@ class PesterInput(QtGui.QLineEdit):
 class PesterConvo(QtGui.QFrame):
     def __init__(self, chum, initiated, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         self.chum = chum
         self.theme = mainwindow.theme
@@ -371,7 +403,7 @@ class PesterWindow(MovingWindow):
         self.tabconvo = None
         self.optionmenu = None
     def closeEvent(self, event):
-        for c in self.convos.itervalues():
+        for c in self.convos.values():
             c.close()
         if self.tabconvo:
             self.tabconvo.close()
@@ -402,6 +434,8 @@ class PesterWindow(MovingWindow):
         if self.config.tabs():
             if not self.tabconvo:
                 self.tabconvo = PesterTabWindow(self)
+                self.connect(self.tabconvo, QtCore.SIGNAL('windowClosed()'),
+                             self, QtCore.SLOT('tabsClosed()'))
             convoWindow = PesterConvo(chum, initiated, self, self.tabconvo)
             self.tabconvo.show()
         else:
@@ -423,6 +457,10 @@ class PesterWindow(MovingWindow):
         h = str(handle)
         del self.convos[h]
         self.convoClosed.emit(handle)
+    @QtCore.pyqtSlot(QtCore.QString)
+    def tabsClosed(self):
+        del self.tabconvo
+        self.tabconvo = None
 
     @QtCore.pyqtSlot(QtCore.QString, Mood)
     def updateMoodSlot(self, handle, mood):
@@ -497,9 +535,9 @@ class PesterIRC(QtCore.QObject):
     @QtCore.pyqtSlot(QtCore.QString, bool)
     def startConvo(self, handle, initiated):
         h = str(handle)
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.profile.colorcmd()))
         if initiated:
             helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
+        helpers.msg(self.cli, h, "COLOR >%s" % (self.profile.colorcmd()))
     @QtCore.pyqtSlot(QtCore.QString)
     def endConvo(self, handle):
         h = str(handle)
