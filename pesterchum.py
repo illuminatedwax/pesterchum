@@ -68,8 +68,8 @@ class pesterTheme(dict):
         return d
 
 class userConfig(object):
-    def __init__(self, handle="pesterchum"):
-        fp = open("%s.js" % (handle))
+    def __init__(self):
+        fp = open("pesterchum.js")
         self.config = json.load(fp)
         fp.close()
         self.theme = pesterTheme(self.config["theme"])
@@ -79,8 +79,40 @@ class userConfig(object):
         return self.theme
     def tabs(self):
         return self.config["tabs"]
+    def set(self, item, setting):
+        self.config[item] = setting
+        fp = open("pesterchum.js", 'w')
+        json.dump(self.config, fp)
+        fp.close()
 
-class exitButton(QtGui.QPushButton):
+class PesterOptions(QtGui.QDialog):
+    def __init__(self, config, theme, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setModal(False)
+        self.config = config
+        self.theme = theme
+        self.setStyleSheet(self.theme["main/defaultwindow/style"])
+
+        self.tabcheck = QtGui.QCheckBox(self)
+        if self.config.tabs():
+            self.tabcheck.setChecked(True)
+        self.tablabel = QtGui.QLabel("Tabbed Conversations", self)
+        layout_1 = QtGui.QHBoxLayout()
+        layout_1.addWidget(self.tablabel)
+        layout_1.addWidget(self.tabcheck)
+        
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addLayout(layout_1)
+        layout_0.addWidget(self.ok)
+
+        self.setLayout(layout_0)
+
+class WMButton(QtGui.QPushButton):
     def __init__(self, icon, parent=None):
         QtGui.QPushButton.__init__(self, icon, "", parent)
         self.setFlat(True)
@@ -225,6 +257,7 @@ class PesterInput(QtGui.QLineEdit):
 class PesterConvo(QtGui.QFrame):
     def __init__(self, chum, initiated, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         self.chum = chum
         self.theme = mainwindow.theme
@@ -303,11 +336,31 @@ class PesterWindow(MovingWindow):
         self.setWindowIcon(QtGui.QIcon(main["icon"]))
         self.setStyleSheet("QFrame#main { "+main["style"]+" }")
 
+        opts = QtGui.QAction("OPTIONS", self)
+        self.connect(opts, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openOpts()'))
+        exitaction = QtGui.QAction("EXIT", self)
+        self.connect(exitaction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('close()'))
+        self.menu = QtGui.QMenuBar(self)
+        qmenustyle = "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (self.theme["main/menu/style"], self.theme["main/menu/selected"])
+
+        filemenu = self.menu.addMenu("FILE")
+        filemenu.addAction(opts)
+        filemenu.addAction(exitaction)
+        filemenu.setStyleSheet(qmenustyle)
+        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; } " % (self.theme["main/menubar/style"]))
+
         closestyle = main["close"]
-        self.closeButton = exitButton(QtGui.QIcon(closestyle["image"]), self)
+        self.closeButton = WMButton(QtGui.QIcon(closestyle["image"]), self)
         self.closeButton.move(*closestyle["loc"])
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('close()'))
+        self.miniButton = WMButton(QtGui.QIcon(self.theme["main/minimize/image"]), self)
+        self.miniButton.move(*(self.theme["main/minimize/loc"]))
+        self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('showMinimized()'))
+
         chums = [PesterProfile(c) for c in set(self.config.chums())]
         self.chumList = chumArea(chums, self.theme, self)
         self.connect(self.chumList, QtCore.SIGNAL('itemDoubleClicked(QListWidgetItem *)'),
@@ -316,6 +369,7 @@ class PesterWindow(MovingWindow):
         self.profile = PesterProfile("superGhost", QtGui.QColor("red"), Mood(0))
         self.convos = {}
         self.tabconvo = None
+        self.optionmenu = None
     def closeEvent(self, event):
         for c in self.convos.itervalues():
             c.close()
@@ -354,6 +408,8 @@ class PesterWindow(MovingWindow):
             convoWindow = PesterConvo(chum, initiated, self)
         self.connect(convoWindow, QtCore.SIGNAL('messageSent(QString, PyQt_PyObject)'),
                      self, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'))
+        self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
+                     self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
         self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
@@ -365,7 +421,8 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def closeConvo(self, handle):
         h = str(handle)
-        del self.convos[chum.handle]
+        del self.convos[h]
+        self.convoClosed.emit(handle)
 
     @QtCore.pyqtSlot(QtCore.QString, Mood)
     def updateMoodSlot(self, handle, mood):
@@ -387,8 +444,35 @@ class PesterWindow(MovingWindow):
         m = str(msg)
         self.newMessage(h, m)
 
+    @QtCore.pyqtSlot()
+    def openOpts(self):
+        if not self.optionmenu:
+            self.optionmenu = PesterOptions(self.config, self.theme, self)
+            self.connect(self.optionmenu, QtCore.SIGNAL('accepted()'),
+                         self, QtCore.SLOT('updateOptions()'))
+            self.optionmenu.show()
+            self.optionmenu.raise_()
+            self.optionmenu.activateWindow()
+    @QtCore.pyqtSlot()
+    def updateOptions(self):
+        # tabs
+        curtab = self.config.tabs()
+        tabsetting = self.optionmenu.tabcheck.isChecked()
+        if curtab and not tabsetting:
+            # split tabs into windows
+            # save options
+            self.config.set("tabs", tabsetting)
+            pass
+        elif tabsetting and not curtab:
+            # combine
+            # save options
+            self.config.set("tabs", tabsetting)
+            pass
+        self.optionmenu = None
+        
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
+    convoClosed = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, profile, chums):
@@ -413,9 +497,13 @@ class PesterIRC(QtCore.QObject):
     @QtCore.pyqtSlot(QtCore.QString, bool)
     def startConvo(self, handle, initiated):
         h = str(handle)
+        helpers.msg(self.cli, h, "COLOR >%s" % (self.profile.colorcmd()))
         if initiated:
             helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.profile.colorcmd()))
+    @QtCore.pyqtSlot(QtCore.QString)
+    def endConvo(self, handle):
+        h = str(handle)
+        helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
 
     def updateIRC(self):
         self.conn.next()
@@ -511,6 +599,9 @@ def main():
     irc.connect(widget, 
                 QtCore.SIGNAL('newConvoStarted(QString, bool)'),
                 irc, QtCore.SLOT('startConvo(QString, bool)'))
+    irc.connect(widget,
+                QtCore.SIGNAL('convoClosed(QString)'),
+                irc, QtCore.SLOT('endConvo(QString)'))
     irc.connect(irc, 
                 QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
                 widget, 
