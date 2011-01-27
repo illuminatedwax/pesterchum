@@ -268,6 +268,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.currentConvo = convo
         self.layout.addWidget(convo)
         self.setWindowIcon(convo.chum.mood.icon(self.theme))
+        self.setWindowTitle(convo.chum.handle)
         self.activateWindow()
         self.raise_()
         convo.raiseChat()
@@ -408,10 +409,11 @@ class PesterWindow(MovingWindow):
         self.tabconvo = None
         self.optionmenu = None
     def closeEvent(self, event):
-        for c in self.convos.values():
-            c.close()
         if self.tabconvo:
             self.tabconvo.close()
+        else:
+            for c in self.convos.values():
+                c.close()
         event.accept()
     def newMessage(self, handle, msg):
         if not self.convos.has_key(handle):
@@ -438,9 +440,7 @@ class PesterWindow(MovingWindow):
             return
         if self.config.tabs():
             if not self.tabconvo:
-                self.tabconvo = PesterTabWindow(self)
-                self.connect(self.tabconvo, QtCore.SIGNAL('windowClosed()'),
-                             self, QtCore.SLOT('tabsClosed()'))
+                self.createTabWindow()
             convoWindow = PesterConvo(chum, initiated, self, self.tabconvo)
             self.tabconvo.show()
         else:
@@ -452,6 +452,10 @@ class PesterWindow(MovingWindow):
         self.convos[chum.handle] = convoWindow
         self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
+    def createTabWindow(self):
+        self.tabconvo = PesterTabWindow(self)
+        self.connect(self.tabconvo, QtCore.SIGNAL('windowClosed()'),
+                     self, QtCore.SLOT('tabsClosed()'))
 
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversationWindow(self, chumlisting):
@@ -512,11 +516,19 @@ class PesterWindow(MovingWindow):
                 self.tabconvo.closeSoft()
             # save options
             self.config.set("tabs", tabsetting)
-            pass
         elif tabsetting and not curtab:
             # combine
+            self.createTabWindow()
+            newconvos = {}
+            for (h,c) in self.convos.iteritems():
+                c.setParent(self.tabconvo)
+                self.tabconvo.addChat(c)
+                self.tabconvo.show()
+                newconvos[h] = c
+            self.convos = newconvos
             # save options
             self.config.set("tabs", tabsetting)
+
             pass
         self.optionmenu = None
         
