@@ -203,6 +203,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.tabIndices = {}
         self.currentConvo = None
         self.changedTab = False
+        self.softclose = False
     def addChat(self, convo):
         self.convos[convo.chum.handle] = convo
         # either addTab or setCurrentIndex will trigger changed()
@@ -220,12 +221,16 @@ class PesterTabWindow(QtGui.QFrame):
             nexti = (self.tabIndices[self.currentConvo.chum.handle] + 1) % self.tabs.count()
             self.tabs.setCurrentIndex(nexti)
 
+    def closeSoft(self):
+        self.softclose = True
+        self.close()
     def updateMood(self, handle, mood):
         i = self.tabIndices[handle]
         self.tabs.setTabIcon(i, mood.icon(self.theme))
     def closeEvent(self, event):
-        while self.tabs.count() > 0:
-            self.tabClose(0)
+        if not self.softclose:
+            while self.tabs.count() > 0:
+                self.tabClose(0)
         self.windowClosed.emit()
 
     @QtCore.pyqtSlot(int)
@@ -457,7 +462,7 @@ class PesterWindow(MovingWindow):
         h = str(handle)
         del self.convos[h]
         self.convoClosed.emit(handle)
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot()
     def tabsClosed(self):
         del self.tabconvo
         self.tabconvo = None
@@ -498,6 +503,13 @@ class PesterWindow(MovingWindow):
         tabsetting = self.optionmenu.tabcheck.isChecked()
         if curtab and not tabsetting:
             # split tabs into windows
+            if self.tabconvo:
+                windows = list(self.tabconvo.convos.values())
+                for w in windows:
+                    w.setParent(None)
+                    w.show()
+                    w.raiseChat()
+                self.tabconvo.closeSoft()
             # save options
             self.config.set("tabs", tabsetting)
             pass
