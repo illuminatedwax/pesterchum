@@ -386,6 +386,8 @@ class PesterTabWindow(QtGui.QFrame):
     def updateMood(self, handle, mood):
         i = self.tabIndices[handle]
         self.tabs.setTabIcon(i, mood.icon(self.mainwindow.theme))
+        if self.tabs.currentIndex() == i:
+            self.setWindowIcon(mood.icon(self.mainwindow.theme))
     def closeEvent(self, event):
         if not self.softclose:
             while self.tabs.count() > 0:
