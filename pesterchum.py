@@ -281,6 +281,8 @@ class chumListing(QtGui.QListWidgetItem):
     def setMood(self, mood):
         self.chum.mood = mood
         self.updateMood()
+    def setColor(self, color):
+        self.chum.color = color
     def updateMood(self):
         mood = self.chum.mood
         self.mood = mood
@@ -310,6 +312,10 @@ class chumArea(QtGui.QListWidget):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
         for c in chums:
             c.setMood(mood)
+    def updateColor(self, handle, color):
+        chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
+        for c in chums:
+            c.setColor(color)
 
 class MovingWindow(QtGui.QFrame):
     def __init__(self, *x, **y):
@@ -509,6 +515,8 @@ class PesterConvo(QtGui.QFrame):
         else:
             self.setWindowIcon(mood.icon(self.mainwindow.theme))
         # print mood update?
+    def updateColor(self, color):
+        self.chum.color = color
     def addMessage(self, text, me=True):
         if me:
             chum = self.mainwindow.profile
@@ -634,7 +642,10 @@ class PesterWindow(MovingWindow):
         # play sound here
 
     def changeColor(self, handle, color):
-        pass
+        # pesterconvo and chumlist
+        self.chumList.updateColor(handle, color)
+        if self.convos.has_key(handle):
+            self.convos[handle].updateColor(color)
 
     def updateMood(self, handle, mood):
         self.chumList.updateMood(handle, mood)
@@ -656,6 +667,7 @@ class PesterWindow(MovingWindow):
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
+        convoWindow.setChumOpen(True)
         self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
     def createTabWindow(self):
