@@ -5,6 +5,7 @@ from oyoyo import helpers
 import logging
 import os, sys
 import os.path
+from datetime import *
 import random
 import json
 from PyQt4 import QtGui, QtCore
@@ -47,10 +48,10 @@ class PesterProfile(object):
     def colorcmd(self):
         (r, g, b, a) = self.color.getRgb()
         return "%d,%d,%d" % (r,g,b)
-    def update(self, newprofile):
-        self.handle = newprofile.handle
-        self.color = newprofile.color
-        self.mood = newprofile.mood
+    def beganpestermsg(self, otherchum):
+        return "<span style='color:black;'>-- %s <span style='color:%s'>[%s]</span> began pestering %s <span style='color:%s'>[%s]</span> at %s --</span>" % (self.handle, self.colorhtml(), self.initials(), otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
+
+
 
 class pesterTheme(dict):
     def __init__(self, name):
@@ -434,10 +435,18 @@ class PesterText(QtGui.QTextEdit):
     def addMessage(self, text, chum):
         color = chum.colorhtml()
         initials = chum.initials()
-        msg = str(text)
-        msg = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        self.append("<span style='color:%s'>%s: %s</span>" % \
-                        (color, initials, msg))
+        msg = unicode(text)
+        if msg == "PESTERCHUM:BEGIN":
+            parent = self.parent()
+            parent.ceased = False
+            window = parent.mainwindow
+            me = window.profile
+            msg = chum.beganpestermsg(me)
+            self.append(msg)
+        else:
+            msg = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            self.append("<span style='color:%s'>%s: %s</span>" % \
+                            (color, initials, msg))
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
@@ -471,9 +480,13 @@ class PesterConvo(QtGui.QFrame):
         self.layout.addWidget(self.textInput)
 
         self.setLayout(self.layout)
+        self.ceased = False
 
         if parent:
             parent.addChat(self)
+        if initiated:
+            msg = self.mainwindow.profile.beganpestermsg(self.chum)
+            self.textArea.append(msg)
 
     def updateMood(self, mood):
         if self.parent():
@@ -585,8 +598,15 @@ class PesterWindow(MovingWindow):
         event.accept()
     def newMessage(self, handle, msg):
         if not self.convos.has_key(handle):
-            chum = PesterProfile(handle)
+            matchingChums = [c for c in self.chumList.chums if c.handle == handle]
+            if len(matchingChums) > 0:
+                mood = matchingChums[0].mood
+            else:
+                mood = Mood(0)
+            chum = PesterProfile(handle, mood=mood)
             self.newConversation(chum, False)
+            if len(matchingChums) == 0:
+                self.moodRequest.emit(chum)
         convo = self.convos[handle]
         convo.addMessage(msg, False)
         # play sound here
@@ -601,10 +621,6 @@ class PesterWindow(MovingWindow):
     def newConversation(self, chum, initiated=True):
         if self.convos.has_key(chum.handle):
             self.convos[chum.handle].showChat()
-            if not initiated:
-                # self.convos[chum.handle]
-                # add pesterchum:begin
-                pass
             return
         if self.config.tabs():
             if not self.tabconvo:
@@ -652,10 +668,6 @@ class PesterWindow(MovingWindow):
     def updateColorSlot(self, handle, color):
         h = str(handle)
         self.changeColor(h, color)
-
-    @QtCore.pyqtSlot(PesterProfile)
-    def pesterchumBeginSlot(self, chum):
-        self.newConversation(chum, False)
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def deliverMessage(self, handle, msg):
@@ -754,6 +766,7 @@ class PesterWindow(MovingWindow):
     sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
     profileChanged = QtCore.pyqtSignal()
+    moodRequest = QtCore.pyqtSignal(PesterProfile)
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
@@ -765,6 +778,7 @@ class PesterIRC(QtCore.QObject):
         self.cli.command_handler.window = self.window
         self.conn = self.cli.connect()
 
+    @QtCore.pyqtSlot(PesterProfile)
     def getMood(self, *chums):
         self.cli.command_handler.getMood(*chums)
         
@@ -793,7 +807,6 @@ class PesterIRC(QtCore.QObject):
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
-    pesterchumBegin = QtCore.pyqtSignal(PesterProfile)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     nickCollision = QtCore.pyqtSignal(QtCore.QString)
 
@@ -829,9 +842,6 @@ class PesterHandler(DefaultCommandHandler):
                     colors = [0,0,0]
                 color = QtGui.QColor(*colors)
                 self.parent.colorUpdated.emit(handle, color)
-            elif msg == "PESTERCHUM:BEGIN":
-                chum = PesterProfile(handle)
-                self.parent.pesterchumBegin.emit(chum)
             else:
                 self.parent.messageReceived.emit(handle, msg)
 
@@ -893,6 +903,10 @@ def main():
                 QtCore.SIGNAL('profileChanged()'),
                 irc,
                 QtCore.SLOT('updateProfile()'))
+    irc.connect(widget,
+                QtCore.SIGNAL('moodRequest(PyQt_PyObject)'),
+                irc,
+                QtCore.SLOT('getMood(PyQt_PyObject)'))
     irc.connect(irc, 
                 QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
                 widget, 
@@ -901,10 +915,6 @@ def main():
                 QtCore.SIGNAL('colorUpdated(QString, QColor)'),
                 widget,
                 QtCore.SLOT('updateColorSlot(QString, QColor)'))
-    irc.connect(irc,
-                QtCore.SIGNAL('pesterchumBegin(PyQt_PyObject)'),
-                widget,
-                QtCore.SLOT('pesterchumBeginSlot(PyQt_PyObject)'))
     irc.connect(irc,
                 QtCore.SIGNAL('messageReceived(QString, QString)'),
                 widget,

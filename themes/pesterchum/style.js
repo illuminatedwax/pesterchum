@@ -30,7 +30,7 @@
  },
  "convo":
  {"style": "background: #fdb302; font-family: 'Courier New'",
-  "size": [500, 500],
+  "size": [600, 500],
   "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);" },
   "textarea": {
       "style": "background: white;"
