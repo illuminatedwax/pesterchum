@@ -57,6 +57,7 @@ class PesterProfile(object):
 class pesterTheme(dict):
     def __init__(self, name):
         self.path = "themes/%s" % (name)
+        self.name = name
         fp = open(self.path+"/style.js")
         theme = json.load(fp, object_hook=self.pathHook)
         self.update(theme)
@@ -98,6 +99,13 @@ class userConfig(object):
         fp = open("pesterchum.js", 'w')
         json.dump(self.config, fp)
         fp.close()
+    def availableThemes(self):
+        themes = []
+        for dirname, dirnames, filenames in os.walk('themes'):
+            for d in dirnames:
+                themes.append(d)
+        themes.sort()
+        return themes
     def availableProfiles(self):
         profs = []
         for dirname, dirnames, filenames in os.walk('profiles'):
@@ -145,6 +153,47 @@ class userProfile(object):
 class pesterQuirks(object):
     def __init__(self, quirklist):
         self.quirklist = quirklist
+
+class PesterChooseTheme(QtGui.QDialog):
+    def __init__(self, config, theme, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.config = config
+        self.theme = theme
+        self.parent = parent
+        self.setStyleSheet(self.theme["main/defaultwindow/style"])
+        self.setWindowTitle("Pick a theme")
+
+        instructions = QtGui.QLabel("Pick a theme:")
+
+        avail_themes = config.availableThemes()
+        self.themeBox = QtGui.QComboBox(self)
+        for (i, t) in enumerate(avail_themes):
+            self.themeBox.addItem(t)
+            if t == theme.name:
+                self.themeBox.setCurrentIndex(i)
+
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_ok = QtGui.QHBoxLayout()
+        layout_ok.addWidget(self.cancel)
+        layout_ok.addWidget(self.ok)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(instructions)
+        layout_0.addWidget(self.themeBox)
+        layout_0.addLayout(layout_ok)
+
+        self.setLayout(layout_0)
+
+        self.connect(self, QtCore.SIGNAL('accepted()'),
+                     parent, QtCore.SLOT('themeSelected()'))
+        self.connect(self, QtCore.SIGNAL('rejected()'),
+                     parent, QtCore.SLOT('closeTheme()'))
 
 class PesterChooseProfile(QtGui.QDialog):
     def __init__(self, userprofile, config, theme, parent, collision=None):
@@ -288,6 +337,9 @@ class chumListing(QtGui.QListWidgetItem):
         self.mood = mood
         self.setIcon(self.mood.icon(self.mainwindow.theme))
         self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
+    def changeTheme(self, theme):
+        self.setIcon(self.mood.icon(theme))
+        self.setTextColor(QtGui.QColor(theme["main/chums/moods"][self.mood.name()]["color"]))
     def __lt__(self, cl):
         h1 = self.handle.lower()
         h2 = cl.handle.lower()
@@ -316,6 +368,12 @@ class chumArea(QtGui.QListWidget):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
         for c in chums:
             c.setColor(color)
+    def changeTheme(self, theme):
+        self.setGeometry(*(theme["main/chums/loc"]+theme["main/chums/size"]))
+        self.setStyleSheet(theme["main/chums/style"])
+        chums = [self.item(i) for i in range(0, self.count())]
+        for c in chums:
+            c.changeTheme(theme)
 
 class MovingWindow(QtGui.QFrame):
     def __init__(self, *x, **y):
@@ -393,6 +451,15 @@ class PesterTabWindow(QtGui.QFrame):
             while self.tabs.count() > 0:
                 self.tabClose(0)
         self.windowClosed.emit()
+    def changeTheme(self, theme):
+        self.resize(*theme["convo/size"])
+        self.setStyleSheet(theme["convo/style"])
+        self.tabs.setShape(theme["convo/tabstyle"])
+        for c in self.convos.values():
+            tabi = self.tabIndices[c.chum.handle]
+            self.tabs.setTabIcon(tabi, c.chum.mood.icon(theme))
+        currentHandle = unicode(self.tabs.tabText(self.tabs.currentIndex()))
+        self.setWindowIcon(self.convos[currentHandle].chum.mood.icon(theme))
 
     @QtCore.pyqtSlot(int)
     def tabClose(self, i):
@@ -469,10 +536,14 @@ class PesterText(QtGui.QTextEdit):
             msg = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             self.append("<span style='color:%s'>%s: %s</span>" % \
                             (color, initials, msg))
+    def changeTheme(self, theme):
+        self.setStyleSheet(theme["convo/textarea/style"])
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
         QtGui.QLineEdit.__init__(self, parent)
+        self.setStyleSheet(theme["convo/input/style"])
+    def changeTheme(self, theme):
         self.setStyleSheet(theme["convo/input/style"])
 
 class PesterConvo(QtGui.QFrame):
@@ -539,6 +610,13 @@ class PesterConvo(QtGui.QFrame):
         self.windowClosed.emit(self.chum.handle)
     def setChumOpen(self, o):
         self.chumopen = o
+    def changeTheme(self, theme):
+        self.resize(*theme["convo/size"])
+        self.setStyleSheet(theme["convo/style"])
+        self.setWindowIcon(self.chum.mood.icon(theme))
+        self.chumLabel.setStyleSheet(theme["convo/chumlabel/style"])
+        self.textArea.changeTheme(theme)
+        self.textInput.changeTheme(theme)
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
@@ -570,11 +648,10 @@ class PesterWindow(MovingWindow):
             self.theme = self.userprofile.getTheme()
             self.changeProfile()
 
-        main = self.theme["main"]
-        size = main['size']
+        size = self.theme['main/size']
         self.setGeometry(100, 100, size[0], size[1])
-        self.setWindowIcon(QtGui.QIcon(main["icon"]))
-        self.setStyleSheet("QFrame#main { "+main["style"]+" }")
+        self.setWindowIcon(QtGui.QIcon(self.theme["main/icon"]))
+        self.mainSS()
 
         opts = QtGui.QAction("OPTIONS", self)
         self.connect(opts, QtCore.SIGNAL('triggered()'),
@@ -588,18 +665,20 @@ class PesterWindow(MovingWindow):
         filemenu = self.menu.addMenu("FILE")
         filemenu.addAction(opts)
         filemenu.addAction(exitaction)
-        filemenu.setStyleSheet(qmenustyle)
 
         switch = QtGui.QAction("SWITCH", self)
         self.connect(switch, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('switchProfile()'))
+        changetheme = QtGui.QAction("THEME", self)
+        self.connect(changetheme, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('pickTheme()'))
         profilemenu = self.menu.addMenu("PROFILE")
         profilemenu.addAction(switch)
-        profilemenu.setStyleSheet(qmenustyle)
+        profilemenu.addAction(changetheme)
 
-        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; } " % (self.theme["main/menubar/style"]))
+        self.menuBarSS()
 
-        closestyle = main["close"]
+        closestyle = self.theme["main/close"]
         self.closeButton = WMButton(QtGui.QIcon(closestyle["image"]), self)
         self.closeButton.move(*closestyle["loc"])
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
@@ -617,6 +696,10 @@ class PesterWindow(MovingWindow):
         self.convos = {}
         self.tabconvo = None
         self.optionmenu = None
+    def mainSS(self):
+        self.setStyleSheet("QFrame#main { "+self.theme["main/style"]+" }")
+    def menuBarSS(self):
+        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; } " % (self.theme["main/menubar/style"]) + "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (self.theme["main/menu/style"], self.theme["main/menu/selected"]))
     def closeConversations(self):
         if self.tabconvo:
             self.tabconvo.close()
@@ -680,6 +763,28 @@ class PesterWindow(MovingWindow):
     def changeProfile(self, collision=None):
         self.chooseprofile = PesterChooseProfile(self.userprofile, self.config, self.theme, self, collision=collision)
         self.chooseprofile.exec_()
+
+    def themePicker(self):
+        self.choosetheme = PesterChooseTheme(self.config, self.theme, self)
+        self.choosetheme.exec_()
+    def changeTheme(self, theme):
+        self.theme = theme
+        # do self
+        self.resize(*self.theme["main/size"])
+        self.setWindowIcon(QtGui.QIcon(self.theme["main/icon"]))
+        self.mainSS()
+        self.menuBarSS()
+        self.closeButton.setIcon(QtGui.QIcon(self.theme["main/close/image"]))
+        self.closeButton.move(*self.theme["main/close/loc"])
+        self.miniButton.setIcon(QtGui.QIcon(self.theme["main/minimize/image"]))
+        self.miniButton.move(*self.theme["main/minimize/loc"])
+        # chum area
+        self.chumList.changeTheme(theme)
+        # do open windows
+        if self.tabconvo:
+            self.tabconvo.changeTheme(theme)
+        for c in self.convos.values():
+            c.changeTheme(theme)
 
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversationWindow(self, chumlisting):
@@ -757,6 +862,16 @@ class PesterWindow(MovingWindow):
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
+    def themeSelected(self):
+        themename = self.choosetheme.themeBox.currentText()
+        if themename != self.theme.name:
+            # update profile
+            self.changeTheme(pesterTheme(themename))
+        self.choosetheme = None
+    @QtCore.pyqtSlot()
+    def closeTheme(self):
+        self.choosetheme = None
+    @QtCore.pyqtSlot()
     def profileSelected(self):
         if self.chooseprofile.profileBox and \
                 self.chooseprofile.profileBox.currentIndex() > 0:
@@ -798,6 +913,10 @@ class PesterWindow(MovingWindow):
             h = unicode(handle)
             self.changeProfile(collision=h)
         
+    @QtCore.pyqtSlot()
+    def pickTheme(self):
+        self.themePicker()
+
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)

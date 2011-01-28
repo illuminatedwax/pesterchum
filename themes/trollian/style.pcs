@@ -1,0 +1,167 @@
+#PESTERCHUM STYLE
+
+// The title will appear at the top of the window.
+// Instead of a space in the name or title, use an '_'. It will come out as a space.
+// The name and author will only be in the 'about' section.
+// The name you will enter in the 'options' is the name of the folder this is in.
+// The alarm only plays when a message is recieved.
+// The mode can be set to 'regular' or 'trollian'.
+
+name Trollian
+title Trollian
+author Grimlive95
+alarm alarm.wav
+mode trollian
+
+// Colors are in the format of 'red/green/blue/alpha', alpha being transparency.
+// 255 is solid and 000 is invisible.
+
+// MAIN WINDOW
+
+// If you have a background image, set 'c 3' alpa to '000'.
+// If your background image has a header on it, do the same with the title text color.
+
+c 1 000 000 000 000 // title text
+c 2 000 000 000 255 // chumhandle/ mood label text
+c 3 000 000 000 255 // outside menu text
+c 4 000 000 000 255 // inside menu text
+c 5 229 000 015 000 // main background
+c 6 229 000 015 255 // menu background
+
+// BUTTONS
+
+// Main buttons are the moods that aren't 'rancorous', the 'pester' and 'add chum' buttons.
+// They are also the buttons on the Options, Quirks Manager, and Trollslum.
+// Block buttons are the 'rancorous' and 'block' buttons.
+
+c 7 120 000 000 255 // main button borders
+c 8 120 000 000 255 // block button borders
+c 9 120 000 000 255 // offline button border
+
+c 10 255 164 164 255 // main buttons
+c 11 255 164 164 255 // block buttons
+c 12 000 000 000 255 // offline button
+
+c 13 000 000 000 255 // main button text
+c 14 000 000 000 255 // block button text
+c 15 255 255 255 255 // offline button text
+
+// CHUMROLL & CHUMHANDLE
+
+c 16 255 095 132 255 // chumroll border
+c 17 255 255 255 255 // chumroll background
+c 18 200 200 200 255 // chumroll highlight
+
+c 19 050 050 050 255 // chumroll usertext
+c 20 000 000 000 255 // chumroll highlighted usertext
+
+c 21 255 095 132 255 // my chumhandle border
+c 22 255 255 255 255 // my chumhandle background
+c 23 000 000 000 255 // my chumhandle usertext
+
+// PESTER WINDOW
+
+c 24 229 000 015 255 // pester window background
+c 25 255 255 255 255 // pesterlog background
+c 26 255 255 255 255 // text field background
+c 27 000 000 000 255 // text field text color
+
+c 28 243 046 038 255 // pesterwindow topbar
+c 29 255 255 255 255 // pesterwindow top bar text
+
+c 30 255 095 132 255 // text field border
+c 31 255 095 132 255 // pesterlog border
+
+//PESTER WINDOW BUTTONS
+
+c 32 120 000 000 255 // main button borders
+c 33 120 000 000 255 // block button border
+
+c 34 255 164 164 255 // main buttons
+c 35 255 164 164 255 // block button
+
+c 36 000 000 000 255 // pesterwindow button text
+c 37 000 000 000 255 // pesterwindow block text
+
+// OPTIONS WINDOW
+
+c 38 229 000 015 255 // background
+c 39 000 000 000 255 // text color
+c 40 120 000 000 255 // button borders
+c 41 255 164 164 255 // buttons
+c 42 000 000 000 255 // button text
+
+// QUIRKS MANAGER WINDOW
+
+c 43 229 000 015 255 // background
+c 44 000 000 000 255 // text color
+c 45 120 000 000 255 // button borders
+c 46 255 164 164 255 // buttons
+c 47 000 000 000 255 // button text
+
+// TROLLSLUM WINDOW
+
+c 48 229 000 015 255 // background
+c 49 000 000 000 255 // text color
+c 50 120 000 000 255 // button borders
+c 51 255 164 164 255 // buttons
+c 52 000 000 000 255 // button text
+
+// FONTS (In the format: Font_name MODE size)
+
+// gui is for the main window.
+// menu is for the top menu.
+// tray is for your tray popups.
+// msg is for the pesterwindow.
+
+// menu is for the top menu.
+// tagandmood is for the CHUMHANDLE and MOOD labels.
+// message is for the text field in the pester window.
+// topbar is for the ::nameName:: text on the top of the pester window.
+// tray is for your tray popups.
+// debug is for the debug console.
+
+f title Bitsream_Vera_Sans_mono BOLD 13
+f menu Bitsream_Vera_Sans_mono PLAIN 11
+f buttons Bitsream_Vera_Sans_mono BOLD 13
+
+f tagandmood Bitsream_Vera_Sans_mono BOLD 13
+f chumroll Bitsream_Vera_Sans_mono BOLD 13
+f chumhandle Bitsream_Vera_Sans_mono BOLD 13
+
+f message Courier BOLD 13 
+f topbar Courier BOLD 13 
+
+f tray Bitsream_Vera_Sans_mono PLAIN 11
+
+f debug Courier BOLD 13
+
+// PESTERCHUM MOOD ICONS
+
+i ichummy chummy.gif
+i ipleasant pleasant.gif
+i idistraught distraught.gif
+i iunruly unruly.gif
+i ismooth smooth.gif
+i irancorous rancorous.gif
+i ioffline offline.gif
+
+// TROLLIAN MOOD ICONS
+
+i iestatic estatic.gif
+i irelaxed relaxed.gif
+i idiscontent discontent.gif
+i idevious devious.gif
+i isleek sleek.gif
+i idetestful detestful.gif
+
+// ETC.
+
+// iicon only appears in the about section.
+// ticon will appear in both your tray and your pesterwindow.
+
+i ticon trayicon3.png
+i iicon abouticon.png
+i iclose x.gif
+i ihide m.gif
+i ibg tnbg.png

@@ -1,8 +1,9 @@
 Features:
 * Theme Changing
-* Handle user signoffs
+* Handle user signoffs/signons
 * Handle nick changes
-* Logging
+* theme elements define, implement
+* default user
 * Moods
 * Add chum
 * REMOVE chum
@@ -11,10 +12,15 @@ Features:
 * User profile options
 * menubar should pass on mouse move
 * Quirks
+-- package
+* Logging
 * Block list
 * User list/add from list
 * User commands/stop user from sending commands accidentally
 * System tray stuff
 * Chat rooms
-
+-- release beta
+* Theme checking
 * Spy mode
+
+* put code into separate files
