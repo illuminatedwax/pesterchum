@@ -1,1 +1,1 @@
-{"tabs": true, "chums": ["gamblingGenocider", "grimAuxiliatrix", "gardenGnostic", "ghostDunk", "spaceGhost", "aquaMarinist", "carcinoGeneticist", "tentacleTherapist"], "defaultprofile": "superGhost"}
+{"tabs": true, "chums": ["gamblingGenocider", "grimAuxiliatrix", "gardenGnostic", "ghostDunk", "spaceGhost", "aquaMarinist", "carcinoGeneticist", "tentacleTherapist", "nightmareKitty"], "defaultprofile": "superGhost"}

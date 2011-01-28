@@ -50,7 +50,8 @@ class PesterProfile(object):
         return "%d,%d,%d" % (r,g,b)
     def beganpestermsg(self, otherchum):
         return "<span style='color:black;'>-- %s <span style='color:%s'>[%s]</span> began pestering %s <span style='color:%s'>[%s]</span> at %s --</span>" % (self.handle, self.colorhtml(), self.initials(), otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
-
+    def ceasedpestermsg(self, otherchum):
+        return "<span style='color:black;'>-- %s <span style='color:%s'>[%s]</span> ceased pestering %s <span style='color:%s'>[%s]</span> at %s --</span>" % (self.handle, self.colorhtml(), self.initials(), otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
 
 
 class pesterTheme(dict):
@@ -273,7 +274,7 @@ class WMButton(QtGui.QPushButton):
 class chumListing(QtGui.QListWidgetItem):
     def __init__(self, chum, window):
         QtGui.QListWidgetItem.__init__(self, chum.handle)
-        self.window = window
+        self.mainwindow = window
         self.chum = chum
         self.handle = chum.handle
         self.setMood(Mood("offline"))
@@ -283,8 +284,8 @@ class chumListing(QtGui.QListWidgetItem):
     def updateMood(self):
         mood = self.chum.mood
         self.mood = mood
-        self.setIcon(self.mood.icon(self.window.theme))
-        self.setTextColor(QtGui.QColor(self.window.theme["main/chums/moods"][self.mood.name()]["color"]))
+        self.setIcon(self.mood.icon(self.mainwindow.theme))
+        self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
     def __lt__(self, cl):
         h1 = self.handle.lower()
         h2 = cl.handle.lower()
@@ -293,8 +294,8 @@ class chumListing(QtGui.QListWidgetItem):
 class chumArea(QtGui.QListWidget):
     def __init__(self, chums, parent=None):
         QtGui.QListWidget.__init__(self, parent)
-        self.window = parent
-        theme = self.window.theme
+        self.mainwindow = parent
+        theme = self.mainwindow.theme
         geometry = theme["main/chums/loc"] + theme["main/chums/size"]
         self.setGeometry(*geometry)
         self.setStyleSheet(theme["main/chums/style"])
@@ -302,7 +303,7 @@ class chumArea(QtGui.QListWidget):
         for c in self.chums:
             chandle = c.handle
             if not self.findItems(chandle, QtCore.Qt.MatchFlags(0)):
-                chumLabel = chumListing(c, self.window)
+                chumLabel = chumListing(c, self.mainwindow)
                 self.addItem(chumLabel)
         self.sortItems()
     def updateMood(self, handle, mood):
@@ -438,12 +439,25 @@ class PesterText(QtGui.QTextEdit):
         msg = unicode(text)
         if msg == "PESTERCHUM:BEGIN":
             parent = self.parent()
-            parent.ceased = False
+            parent.setChumOpen(True)
             window = parent.mainwindow
             me = window.profile
             msg = chum.beganpestermsg(me)
             self.append(msg)
+        elif msg == "PESTERCHUM:CEASE":
+            parent = self.parent()
+            parent.setChumOpen(False)
+            window = parent.mainwindow
+            me = window.profile
+            msg = chum.ceasedpestermsg(me)
+            self.append(msg)
         else:
+            if not self.parent().chumopen and chum is not self.parent().mainwindow.profile:
+                me = self.parent().mainwindow.profile
+                beginmsg = chum.beganpestermsg(me)
+                self.parent().setChumOpen(True)
+                self.append(beginmsg)
+                
             msg = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             self.append("<span style='color:%s'>%s: %s</span>" % \
                             (color, initials, msg))
@@ -480,7 +494,8 @@ class PesterConvo(QtGui.QFrame):
         self.layout.addWidget(self.textInput)
 
         self.setLayout(self.layout)
-        self.ceased = False
+
+        self.chumopen = False
 
         if parent:
             parent.addChat(self)
@@ -512,6 +527,8 @@ class PesterConvo(QtGui.QFrame):
 
     def closeEvent(self, event):
         self.windowClosed.emit(self.chum.handle)
+    def setChumOpen(self, o):
+        self.chumopen = o
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
@@ -519,6 +536,9 @@ class PesterConvo(QtGui.QFrame):
         # deal with quirks here
         self.textInput.setText("")
         self.addMessage(text, True)
+        # if ceased, rebegin
+        if not self.chumopen:
+            self.mainwindow.newConvoStarted.emit(QtCore.QString(self.chum.handle), True)
         self.messageSent.emit(text, self.chum)
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
@@ -598,6 +618,8 @@ class PesterWindow(MovingWindow):
         event.accept()
     def newMessage(self, handle, msg):
         if not self.convos.has_key(handle):
+            if msg == "PESTERCHUM:CEASE": # ignore cease after we hang up
+                return
             matchingChums = [c for c in self.chumList.chums if c.handle == handle]
             if len(matchingChums) > 0:
                 mood = matchingChums[0].mood
@@ -771,11 +793,11 @@ class PesterWindow(MovingWindow):
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
         QtCore.QObject.__init__(self)
-        self.window = window
+        self.mainwindow = window
     def IRCConnect(self):
-        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.window.profile.handle, blocking=True)
+        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.mainwindow.profile.handle, blocking=True)
         self.cli.command_handler.parent = self
-        self.cli.command_handler.window = self.window
+        self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
 
     @QtCore.pyqtSlot(PesterProfile)
@@ -792,14 +814,14 @@ class PesterIRC(QtCore.QObject):
         h = str(handle)
         if initiated:
             helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.window.profile.colorcmd()))
+        helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile.colorcmd()))
     @QtCore.pyqtSlot(QtCore.QString)
     def endConvo(self, handle):
         h = str(handle)
         helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
     @QtCore.pyqtSlot()
     def updateProfile(self):
-        handle = self.window.profile.handle
+        handle = self.mainwindow.profile.handle
         helpers.nick(self.cli, handle)
 
     def updateIRC(self):
@@ -826,8 +848,8 @@ class PesterHandler(DefaultCommandHandler):
                     mood = Mood(0)
                 self.parent.moodUpdated.emit(handle, mood)
             elif msg[0:7] == "GETMOOD":
-                mychumhandle = self.window.profile.handle
-                mymood = self.window.profile.mood.value()
+                mychumhandle = self.mainwindow.profile.handle
+                mymood = self.mainwindow.profile.mood.value()
                 if msg.find(mychumhandle, 8) != -1:
                     helpers.msg(self.client, "#pesterchum", 
                                 "MOOD >%d" % (mymood))
@@ -848,11 +870,11 @@ class PesterHandler(DefaultCommandHandler):
 
     def welcome(self, server, nick, msg):
         helpers.join(self.client, "#pesterchum")
-        mychumhandle = self.window.profile.handle
-        mymood = self.window.profile.mood.value()
+        mychumhandle = self.mainwindow.profile.handle
+        mymood = self.mainwindow.profile.mood.value()
         helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
-        chums = self.window.chumList.chums
+        chums = self.mainwindow.chumList.chums
         self.getMood(*chums)
 
     def nicknameinuse(self, server, cmd, nick, msg):
