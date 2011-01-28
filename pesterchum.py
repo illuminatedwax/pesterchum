@@ -781,16 +781,16 @@ class PesterWindow(MovingWindow):
         self.chooseprofile = None
     @QtCore.pyqtSlot()
     def switchProfile(self):
-        closeWarning = QtGui.QMessageBox()
-        closeWarning.setText("WARNING: THIS WILL CLOSE ALL CONVERSATION WINDOWS!")
-        closeWarning.setInformativeText("i warned you bro")
-        closeWarning.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
-        closeWarning.setDefaultButton(QtGui.QMessageBox.Ok)
-        ret = closeWarning.exec_()
-        if ret == QtGui.QMessageBox.Cancel:
-            return
-        elif ret == QtGui.QMessageBox.Ok:
-            self.changeProfile()
+        if self.convos:
+            closeWarning = QtGui.QMessageBox()
+            closeWarning.setText("WARNING: THIS WILL CLOSE ALL CONVERSATION WINDOWS!")
+            closeWarning.setInformativeText("i warned you bro! i warned you about those windows")
+            closeWarning.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+            closeWarning.setDefaultButton(QtGui.QMessageBox.Ok)
+            ret = closeWarning.exec_()
+            if ret == QtGui.QMessageBox.Cancel:
+                return
+        self.changeProfile()
 
     @QtCore.pyqtSlot(QtCore.QString)
     def nickCollision(self, handle):
@@ -835,9 +835,10 @@ class PesterIRC(QtCore.QObject):
         helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
     @QtCore.pyqtSlot()
     def updateProfile(self):
-        handle = self.mainwindow.profile.handle
+        me = self.mainwindow.profile
+        handle = me.handle
         helpers.nick(self.cli, handle)
-
+        helpers.msg(self.cli, "#pesterchum", "MOOD >%d" % (me.mood.value()))
     def updateIRC(self):
         self.conn.next()
 
@@ -870,6 +871,9 @@ class PesterHandler(DefaultCommandHandler):
                     
         else:
             # private message
+            # silently ignore messages to yourself.
+            if handle == self.mainwindow.profile.handle:
+                return
             if msg[0:7] == "COLOR >":
                 colors = msg[7:].split(",")
                 try:

@@ -1,8 +1,7 @@
 Features:
-* changeColor
-* protect against messages from yourself :P
 * Theme Changing
 * Handle user signoffs
+* Handle nick changes
 * Logging
 * Moods
 * Add chum
