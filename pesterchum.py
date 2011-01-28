@@ -546,6 +546,14 @@ class PesterWindow(MovingWindow):
         filemenu.addAction(opts)
         filemenu.addAction(exitaction)
         filemenu.setStyleSheet(qmenustyle)
+
+        switch = QtGui.QAction("SWITCH", self)
+        self.connect(switch, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('switchProfile()'))
+        profilemenu = self.menu.addMenu("PROFILE")
+        profilemenu.addAction(switch)
+        profilemenu.setStyleSheet(qmenustyle)
+
         self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; } " % (self.theme["main/menubar/style"]))
 
         closestyle = main["close"]
@@ -566,12 +574,14 @@ class PesterWindow(MovingWindow):
         self.convos = {}
         self.tabconvo = None
         self.optionmenu = None
-    def closeEvent(self, event):
+    def closeConversations(self):
         if self.tabconvo:
             self.tabconvo.close()
         else:
             for c in self.convos.values():
                 c.close()
+    def closeEvent(self, event):
+        self.closeConversations()
         event.accept()
     def newMessage(self, handle, msg):
         if not self.convos.has_key(handle):
@@ -618,7 +628,6 @@ class PesterWindow(MovingWindow):
     def changeProfile(self, collision=None):
         self.chooseprofile = PesterChooseProfile(self.userprofile, self.config, self.theme, self, collision=collision)
         self.chooseprofile.exec_()
-
 
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversationWindow(self, chumlisting):
@@ -702,7 +711,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def profileSelected(self):
         if self.chooseprofile.profileBox and \
-                self.chooseprofile.profileBox.currentIndex > 0:
+                self.chooseprofile.profileBox.currentIndex() > 0:
             handle = unicode(self.chooseprofile.profileBox.currentText())
             self.userprofile = userProfile(handle)
             self.profile = self.userprofile.chat
@@ -714,10 +723,26 @@ class PesterWindow(MovingWindow):
             self.userprofile = userProfile.newUserProfile(profile)
             self.profile = self.userprofile.chat
 
+        # this may have to be fixed
+        self.closeConversations()
+        self.profileChanged.emit()
+
         self.chooseprofile = None
     @QtCore.pyqtSlot()
     def closeProfile(self):
         self.chooseprofile = None
+    @QtCore.pyqtSlot()
+    def switchProfile(self):
+        closeWarning = QtGui.QMessageBox()
+        closeWarning.setText("WARNING: THIS WILL CLOSE ALL CONVERSATION WINDOWS!")
+        closeWarning.setInformativeText("i warned you bro")
+        closeWarning.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+        closeWarning.setDefaultButton(QtGui.QMessageBox.Ok)
+        ret = closeWarning.exec_()
+        if ret == QtGui.QMessageBox.Cancel:
+            return
+        elif ret == QtGui.QMessageBox.Ok:
+            self.changeProfile()
 
     @QtCore.pyqtSlot(QtCore.QString)
     def nickCollision(self, handle):
@@ -728,6 +753,7 @@ class PesterWindow(MovingWindow):
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
+    profileChanged = QtCore.pyqtSignal()
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
@@ -757,6 +783,10 @@ class PesterIRC(QtCore.QObject):
     def endConvo(self, handle):
         h = str(handle)
         helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
+    @QtCore.pyqtSlot()
+    def updateProfile(self):
+        handle = self.window.profile.handle
+        helpers.nick(self.cli, handle)
 
     def updateIRC(self):
         self.conn.next()
@@ -859,6 +889,10 @@ def main():
     irc.connect(widget,
                 QtCore.SIGNAL('convoClosed(QString)'),
                 irc, QtCore.SLOT('endConvo(QString)'))
+    irc.connect(widget,
+                QtCore.SIGNAL('profileChanged()'),
+                irc,
+                QtCore.SLOT('updateProfile()'))
     irc.connect(irc, 
                 QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
                 widget, 

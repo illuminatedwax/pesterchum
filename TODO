@@ -1,6 +1,7 @@
 Features:
 * Profile management
 * pesterchum:begin
+* pesterchum:cease
 * changeColor
 * protect against messages from yourself :P
 * Theme Changing
@@ -15,6 +16,7 @@ Features:
 * Quirks
 * Block list
 * User list/add from list
+* System tray stuff
 * Chat rooms
 
 * Spy mode
