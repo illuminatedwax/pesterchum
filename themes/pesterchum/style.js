@@ -21,8 +21,9 @@
                                        "color": "red" }
                       }
            },
-  "defaultwindow": { "style": "background: #fdb302;" 
+  "defaultwindow": { "style": "background: #fdb302; font-family:'Courier New';font:bold;" 
                    },
+  "labels": { "mychumhandle": "MYCHUMHANDLE" },
   "elements": [
       { "style": "" }
   ]

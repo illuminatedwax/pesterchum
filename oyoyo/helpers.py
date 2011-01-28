@@ -23,6 +23,9 @@ def msg(cli, user, msg):
     for line in msg.split('\n'):
         cli.send("PRIVMSG", user, ":%s" % line)
 
+def nick(cli, nick):
+    cli.send("NICK", nick)
+
 def msgrandom(cli, choices, dest, user=None):
     o = "%s: " % user if user else ""
     o += random.choice(choices)

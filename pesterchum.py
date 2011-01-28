@@ -3,7 +3,9 @@ from oyoyo.client import IRCClient
 from oyoyo.cmdhandler import DefaultCommandHandler
 from oyoyo import helpers
 import logging
-import sys
+import os, sys
+import os.path
+import random
 import json
 from PyQt4 import QtGui, QtCore
 
@@ -72,11 +74,18 @@ class userConfig(object):
         fp = open("pesterchum.js")
         self.config = json.load(fp)
         fp.close()
-        self.theme = pesterTheme(self.config["theme"])
+        self.defaulttheme = pesterTheme("pesterchum")
+        if self.config.has_key("defaultprofile"):
+            self.profile = userProfile(self.config["defaultprofile"])
+        else:
+            self.profile = None
     def chums(self):
         return self.config['chums']
     def getTheme(self):
-        return self.theme
+        if self.profile:
+            return self.profile.getTheme()
+        else:
+            return self.defaulttheme
     def tabs(self):
         return self.config["tabs"]
     def set(self, item, setting):
@@ -84,6 +93,135 @@ class userConfig(object):
         fp = open("pesterchum.js", 'w')
         json.dump(self.config, fp)
         fp.close()
+    def availableProfiles(self):
+        profs = []
+        for dirname, dirnames, filenames in os.walk('profiles'):
+            for filename in filenames:
+                l = len(filename)
+                if filename[l-3:l] == ".js":
+                    profs.append(filename[0:l-3])
+        profs.sort()
+        return [userProfile(p) for p in profs]
+class userProfile(object):
+    def __init__(self, user):
+        if type(user) is PesterProfile:
+            self.chat = user
+            self.userprofile = {"handle":user.handle,
+                                "color": unicode(user.color.name()),
+                                "quirks": [],
+                                "theme": "pesterchum"}
+            self.theme = pesterTheme("pesterchum")
+            self.quirks = pesterQuirks([])
+        else:
+            fp = open("profiles/%s.js" % (user))
+            self.userprofile = json.load(fp)
+            fp.close()
+            self.chat = PesterProfile(self.userprofile["handle"],
+                                      QtGui.QColor(self.userprofile["color"]),
+                                      Mood(0))
+            self.theme = pesterTheme(self.userprofile["theme"])
+            self.quirks = pesterQuirks(self.userprofile["quirks"])
+    def getTheme(self):
+        return self.theme
+    def save(self):
+        handle = self.chat.handle
+        fp = open("profiles/%s.js" % (handle), 'w')
+        json.dump(self.userprofile, fp)
+        fp.close()
+    @staticmethod
+    def newUserProfile(chatprofile):
+        if os.path.exists("profiles/%s.js" % (chatprofile.handle)):
+            newprofile = userProfile(chatprofile.handle)
+        else:
+            newprofile = userProfile(chatprofile)
+            newprofile.save()
+        return newprofile
+        
+class pesterQuirks(object):
+    def __init__(self, quirklist):
+        self.quirklist = quirklist
+
+class PesterChooseProfile(QtGui.QDialog):
+    def __init__(self, userprofile, config, theme, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.userprofile = userprofile
+        self.theme = theme
+        self.config = config
+        self.parent = parent
+        self.setStyleSheet(self.theme["main/defaultwindow/style"])
+
+        self.chumHandle = QtGui.QLineEdit(self)
+        self.chumHandle.setMinimumWidth(200)
+        self.chumHandleLabel = QtGui.QLabel(self.theme["main/labels/mychumhandle"], self)
+        self.chumColorButton = QtGui.QPushButton(self)
+        self.chumColorButton.resize(50, 20)
+        self.chumColorButton.setStyleSheet("background: %s" % (userprofile.chat.colorhtml()))
+        self.chumcolor = userprofile.chat.color
+        self.connect(self.chumColorButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('openColorDialog()'))
+        layout_1 = QtGui.QHBoxLayout()
+        layout_1.addWidget(self.chumHandleLabel)
+        layout_1.addWidget(self.chumHandle)
+        layout_1.addWidget(self.chumColorButton)
+
+        # available profiles?
+        avail_profiles = self.config.availableProfiles()
+        if avail_profiles:
+            self.profileBox = QtGui.QComboBox(self)
+            self.profileBox.addItem("Choose a profile...")
+            for p in avail_profiles:
+                self.profileBox.addItem(p.chat.handle)
+        else:
+            self.profileBox = None
+
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('validateProfile()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_ok = QtGui.QHBoxLayout()
+        layout_ok.addWidget(self.cancel)
+        layout_ok.addWidget(self.ok)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addLayout(layout_1)
+        if avail_profiles:
+            profileLabel = QtGui.QLabel("Or choose an existing profile:", self)
+            layout_0.addWidget(profileLabel)
+            layout_0.addWidget(self.profileBox)
+        layout_0.addLayout(layout_ok)
+        self.errorMsg = QtGui.QLabel(self)
+        self.errorMsg.setStyleSheet("color:red;")
+        layout_0.addWidget(self.errorMsg)
+        self.setLayout(layout_0)
+
+        self.connect(self, QtCore.SIGNAL('accepted()'),
+                     parent, QtCore.SLOT('profileSelected()'))
+        self.connect(self, QtCore.SIGNAL('rejected()'),
+                     parent, QtCore.SLOT('closeProfile()'))
+
+    @QtCore.pyqtSlot()
+    def openColorDialog(self):
+        self.colorDialog = QtGui.QColorDialog(self)
+        color = self.colorDialog.getColor(initial=self.userprofile.chat.color)
+        self.chumColorButton.setStyleSheet("background: %s" % color.name())
+        self.chumcolor = color
+        self.colorDialog = None
+
+    @QtCore.pyqtSlot()
+    def validateProfile(self):
+        if not self.profileBox or self.profileBox.currentIndex() == 0:
+            handle = unicode(self.chumHandle.text())
+            if len(handle) > 256:
+                self.errorMsg.setText("PROFILE HANDLE IS TOO LONG")
+                return
+            caps = [l for l in handle if l.isupper()]
+            if len(caps) != 1 or handle[0].isupper():
+                self.errorMsg.setText("NOT A VALID CHUMTAG")
+                return
+        self.accept()
 
 class PesterOptions(QtGui.QDialog):
     def __init__(self, config, theme, parent):
@@ -105,10 +243,16 @@ class PesterOptions(QtGui.QDialog):
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_2 = QtGui.QHBoxLayout()
+        layout_2.addWidget(self.cancel)
+        layout_2.addWidget(self.ok)
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addLayout(layout_1)
-        layout_0.addWidget(self.ok)
+        layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)
 
@@ -403,8 +547,16 @@ class PesterWindow(MovingWindow):
         self.chumList = chumArea(chums, self.theme, self)
         self.connect(self.chumList, QtCore.SIGNAL('itemDoubleClicked(QListWidgetItem *)'),
                      self, QtCore.SLOT('newConversationWindow(QListWidgetItem *)'))
+        if self.config.profile:
+            pass
+            #self.userprofile = self.config.profile
+            #self.profile = self.userprofile.chat
+        else:
+            self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
+            self.profile = self.userprofile.chat
+            self.chooseprofile = PesterChooseProfile(self.userprofile, self.config, self.theme, self)
+            self.chooseprofile.exec_()
 
-        self.profile = PesterProfile("superGhost", QtGui.QColor("red"), Mood(0))
         self.convos = {}
         self.tabconvo = None
         self.optionmenu = None
@@ -497,9 +649,15 @@ class PesterWindow(MovingWindow):
             self.optionmenu = PesterOptions(self.config, self.theme, self)
             self.connect(self.optionmenu, QtCore.SIGNAL('accepted()'),
                          self, QtCore.SLOT('updateOptions()'))
+            self.connect(self.optionmenu, QtCore.SIGNAL('rejected()'),
+                         self, QtCore.SLOT('closeOptions()'))
             self.optionmenu.show()
             self.optionmenu.raise_()
             self.optionmenu.activateWindow()
+    @QtCore.pyqtSlot()
+    def closeOptions(self):
+        self.optionmenu.close()
+        self.optionmenu = None
     @QtCore.pyqtSlot()
     def updateOptions(self):
         # tabs
@@ -528,9 +686,31 @@ class PesterWindow(MovingWindow):
             self.convos = newconvos
             # save options
             self.config.set("tabs", tabsetting)
-
-            pass
         self.optionmenu = None
+
+    @QtCore.pyqtSlot()
+    def profileSelected(self):
+        if self.chooseprofile.profileBox and \
+                self.chooseprofile.profileBox.currentIndex > 0:
+            handle = unicode(self.chooseprofile.profileBox.currentText())
+            self.userprofile = userProfile(handle)
+            self.profile = self.userprofile.chat
+            # update themes here
+        else:
+            profile = PesterProfile(unicode(self.chooseprofile.chumHandle.text()),
+                                    self.chooseprofile.chumcolor,
+                                    Mood(0))
+            self.userprofile = userProfile.newUserProfile(profile)
+            self.profile = self.userprofile.chat
+
+        self.chooseprofile = None
+    @QtCore.pyqtSlot()
+    def closeProfile(self):
+        self.chooseprofile = None
+
+    @QtCore.pyqtSlot()
+    def nickCollision(self):
+        pass
         
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
@@ -574,7 +754,7 @@ class PesterIRC(QtCore.QObject):
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     pesterchumBegin = QtCore.pyqtSignal(PesterProfile)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-
+    nickCollision = QtCore.pyqtSignal()
 
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
@@ -623,6 +803,10 @@ class PesterHandler(DefaultCommandHandler):
 
         chums = self.chums
         self.getMood(*chums)
+
+    def nicknameinuse(self, server, cmd, nick, msg):
+        helpers.nick(self.client, "pesterClient%d" % (random.randint(100,999)))
+        self.parent().emit.nickCollision.emit()
     def getMood(self, *chums):
         chumglub = "GETMOOD "
         for c in chums:
@@ -680,6 +864,10 @@ def main():
                 QtCore.SIGNAL('messageReceived(QString, QString)'),
                 widget,
                 QtCore.SLOT('deliverMessage(QString, QString)'))
+    irc.connect(irc,
+                QtCore.SIGNAL('nickCollision()'),
+                widget,
+                QtCore.SLOT('nickCollision()'))
 
     ircapp = IRCThread(irc)
     ircapp.start()
