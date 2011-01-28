@@ -1,11 +1,15 @@
 Features:
 * Profile management
+* pesterchum:begin
+* changeColor
+* protect against messages from yourself :P
 * Theme Changing
 * Handle user signoffs
 * Logging
 * Moods
 * Add chum
 * REMOVE chum
+* Sounds
 * New message reminder
 * User profile options
 * Quirks

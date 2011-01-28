@@ -1,1 +1,1 @@
-{"tabs": true, "theme": "pesterchum", "chums": ["gamblingGenocider", "grimAuxiliatrix", "gardenGnostic", "ghostDunk", "spaceGhost", "aquaMarinist", "carcinoGeneticist", "tentacleTherapist"]}
+{"tabs": false, "theme": "pesterchum", "chums": ["gamblingGenocider", "grimAuxiliatrix", "gardenGnostic", "ghostDunk", "spaceGhost", "aquaMarinist", "carcinoGeneticist", "tentacleTherapist"]}
