@@ -134,6 +134,18 @@ class userProfile(object):
                                       Mood(0))
             self.theme = pesterTheme(self.userprofile["theme"])
             self.quirks = pesterQuirks(self.userprofile["quirks"])
+    def setTheme(self, theme):
+        self.theme = theme
+        self.userprofile["theme"] = theme.name
+        self.save()
+    def setColor(self, color):
+        self.chat.color = color
+        self.userprofile["color"] = color.name()
+        self.save()
+    def setQuirks(self, quirks):
+        self.quirks = quirks
+        self.userprofile["quirks"] = quirks.repr()
+        self.save()
     def getTheme(self):
         return self.theme
     def save(self):
@@ -863,10 +875,11 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def themeSelected(self):
-        themename = self.choosetheme.themeBox.currentText()
+        themename = unicode(self.choosetheme.themeBox.currentText())
         if themename != self.theme.name:
-            # update profile
             self.changeTheme(pesterTheme(themename))
+            # update profile
+            self.userprofile.setTheme(self.theme)
         self.choosetheme = None
     @QtCore.pyqtSlot()
     def closeTheme(self):
@@ -878,7 +891,7 @@ class PesterWindow(MovingWindow):
             handle = unicode(self.chooseprofile.profileBox.currentText())
             self.userprofile = userProfile(handle)
             self.profile = self.userprofile.chat
-            # update themes here
+            self.changeTheme(self.userprofile.getTheme())
         else:
             profile = PesterProfile(unicode(self.chooseprofile.chumHandle.text()),
                                     self.chooseprofile.chumcolor,
