@@ -1,23 +1,25 @@
 Features:
-* Add chum
-* REMOVE chum
-* Sounds
-* New message reminder
-* User profile options
-* menubar should pass on mouse move
+* mychumhandle/color/pester button
+* User profile options (color...?)
 * Quirks
 -- package
-* theme elements define, implement
+* menubar should pass on mouse move
 * User signon?
 * Logging
 * Block list
 * User list/add from list
 * User commands/stop user from sending commands accidentally
 -- release alpha
-* System tray stuff
+* System tray menu
+* comment history (up button)
 * Chat rooms
+* Implement TC options
 -- release beta
+* theme elements define, implement
 * Theme checking
+* don't clear new message when clicking away from tab?
 * Spy mode
 
 * put code into separate files
+* hide offline chums
+* chum list groups

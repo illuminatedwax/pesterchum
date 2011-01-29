@@ -2,6 +2,7 @@
  {"style": "background-image:url($path/pcbg.png);",
   "size": [300, 620],
   "icon": "$path/trayicon.gif",
+  "newmsgicon": "$path/trayicon2.png",
   "close": { "image": "$path/x.gif",
              "loc": [275, 0]},
   "minimize": { "image": "$path/m.gif",
@@ -10,9 +11,10 @@
   "menu" : { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
              "selected": "background-color: #ffff00"
            },
+  "sounds": { "alertsound": "$path/alarm.wav" },
   "chums": { "style": "background-color: black;color: white;font: bold;font-family: 'Courier New';selection-background-color:#919191; ",
              "loc": [20, 65],
-             "size": [265, 350],
+             "size": [266, 300],
              "moods": { "chummy": { "icon": "$path/chummy.gif",
                                     "color": "white" },
                         "offline": { "icon": "$path/offline.gif",
@@ -44,6 +46,11 @@
   "defaultwindow": { "style": "background: #fdb302; font-family:'Courier New';font:bold;selection-background-color:#919191; " 
                    },
   "labels": { "mychumhandle": "MYCHUMHANDLE" },
+  "addchum": { "style": "background: #fdb302; border:5px solid yellow; font: bold;",
+               "loc": [20,370],
+               "size": [100, 50],
+               "text": "ADD CHUM"
+             },
   "defaultmood": 0,
   "moods": [
       { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
@@ -114,7 +121,11 @@
   "input": {
       "style": "background: white;"
   },
-  "tabstyle": 0
+  "tabs": {
+      "style": "",
+      "newmsgcolor": "#fdb302",
+      "tabstyle": 0
+  }
  }
  
 }

@@ -2,6 +2,7 @@
  {"style": "background-image:url($path/tnbg2.png);",
   "size": [300, 620],
   "icon": "$path/trayicon3.png",
+  "newmsgicon": "$path/trayicon.gif",
   "close": { "image": "$path/x.gif",
              "loc": [275, 0]},
   "minimize": { "image": "$path/m.gif",
@@ -10,9 +11,10 @@
   "menu" : { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px; background-color: #e5000f; border:2px solid #ff0000",
              "selected": "background-color: #ff0000"
            },
+  "sounds": { "alertsound": "$path/alarm.wav" },
   "chums": { "style": "background-color: black;color: white;font: bold;font-family: 'Courier New';selection-background-color:#ffb6b6; ",
              "loc": [20, 65],
-             "size": [266, 350],
+             "size": [266, 300],
              "moods": { "chummy": { "icon": "$path/chummy.gif",
                                     "color": "white" },
                         "offline": { "icon": "$path/offline.gif",
@@ -44,6 +46,11 @@
   "defaultwindow": { "style": "background: #e5000f; font-family:'Courier New';font:bold;selection-background-color:#ffb6b6; " 
                    },
   "labels": { "mychumhandle": "MYTROLLTAG" },
+  "addchum": { "style": "background: black; border:5px solid #550000; font: bold;color:white;",
+               "loc": [20,370],
+               "size": [100, 50],
+               "text": "ADD LOSER"
+             },
   "defaultmood": 7,
   "moods": [
       { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
@@ -114,7 +121,11 @@
   "input": {
       "style": "background: white;"
   },
-  "tabstyle": 0
+  "tabs": {
+      "style": "",
+      "newmsgcolor": "red",
+      "tabstyle": 0
+  }
  }
  
 }
