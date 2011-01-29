@@ -1,1 +1,1 @@
-{"color": "#00aaff", "theme": "trollian", "quirks": [], "handle": "superGhost"}
+{"color": "#00aaff", "theme": "pesterchum", "quirks": [], "handle": "superGhost"}

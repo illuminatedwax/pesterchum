@@ -13,7 +13,9 @@ from PyQt4 import QtGui, QtCore
 logging.basicConfig(level=logging.INFO)
 
 class Mood(object):
-    moods = ["chummy", "rancorous", "offline"]
+    moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
+             "unruly", "smooth", "ecstatic", "relaxed", "discontent", 
+             "devious", "sleek", "detestful"]
     def __init__(self, mood):
         if type(mood) is int:
             self.mood = mood
@@ -124,16 +126,19 @@ class userProfile(object):
                                 "quirks": [],
                                 "theme": "pesterchum"}
             self.theme = pesterTheme("pesterchum")
+            self.chat.mood = Mood(self.theme["main/defaultmood"])
             self.quirks = pesterQuirks([])
         else:
             fp = open("profiles/%s.js" % (user))
             self.userprofile = json.load(fp)
             fp.close()
+            self.theme = pesterTheme(self.userprofile["theme"])
             self.chat = PesterProfile(self.userprofile["handle"],
                                       QtGui.QColor(self.userprofile["color"]),
-                                      Mood(0))
-            self.theme = pesterTheme(self.userprofile["theme"])
+                                      Mood(self.theme["main/defaultmood"]))
             self.quirks = pesterQuirks(self.userprofile["quirks"])
+    def setMood(self, mood):
+        self.chat.mood = mood
     def setTheme(self, theme):
         self.theme = theme
         self.userprofile["theme"] = theme.name
@@ -240,6 +245,12 @@ class PesterChooseProfile(QtGui.QDialog):
         else:
             self.profileBox = None
 
+        self.defaultcheck = QtGui.QCheckBox(self)
+        self.defaultlabel = QtGui.QLabel("Set This Profile As Default", self)
+        layout_2 = QtGui.QHBoxLayout()
+        layout_2.addWidget(self.defaultlabel)
+        layout_2.addWidget(self.defaultcheck)
+        
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -261,6 +272,7 @@ class PesterChooseProfile(QtGui.QDialog):
             layout_0.addWidget(profileLabel)
             layout_0.addWidget(self.profileBox)
         layout_0.addLayout(layout_ok)
+        layout_0.addLayout(layout_2)
         self.errorMsg = QtGui.QLabel(self)
         self.errorMsg.setStyleSheet("color:red;")
         layout_0.addWidget(self.errorMsg)
@@ -386,6 +398,59 @@ class chumArea(QtGui.QListWidget):
         chums = [self.item(i) for i in range(0, self.count())]
         for c in chums:
             c.changeTheme(theme)
+
+class PesterMoodHandler(QtCore.QObject):
+    def __init__(self, parent, *buttons):
+        QtCore.QObject.__init__(self)
+        self.buttons = {}
+        self.mainwindow = parent
+        for b in buttons:
+            self.buttons[b.mood.value()] = b
+            if b.mood.value() == self.mainwindow.profile().mood.value():
+                b.setSelected(True)
+            self.connect(b, QtCore.SIGNAL('clicked()'),
+                         b, QtCore.SLOT('updateMood()'))
+            self.connect(b, QtCore.SIGNAL('moodUpdated(int)'),
+                         self, QtCore.SLOT('updateMood(int)'))
+    def removeButtons(self):
+        for b in self.buttons.values():
+            b.close()
+    def showButtons(self):
+        for b in self.buttons.values():
+            b.show()
+            b.raise_()
+    @QtCore.pyqtSlot(int)
+    def updateMood(self, m):
+        oldmood = self.mainwindow.profile().mood
+        oldbutton = self.buttons[oldmood.value()]
+        newbutton = self.buttons[m]
+        oldbutton.setSelected(False)
+        newbutton.setSelected(True)
+        newmood = Mood(m)
+        self.mainwindow.userprofile.chat.mood = newmood
+        self.mainwindow.moodUpdated.emit()
+
+class PesterMoodButton(QtGui.QPushButton):
+    def __init__(self, parent, **options):
+        icon = QtGui.QIcon(options["icon"])
+        QtGui.QPushButton.__init__(self, icon, options["text"], parent)
+        self.setFlat(True)
+        self.resize(*options["size"])
+        self.move(*options["loc"])
+        self.unselectedSheet = options["style"]
+        self.selectedSheet = options["selected"]
+        self.setStyleSheet(self.unselectedSheet)
+        self.mainwindow = parent
+        self.mood = Mood(options["mood"])
+    def setSelected(self, selected):
+        if selected:
+            self.setStyleSheet(self.selectedSheet)
+        else:
+            self.setStyleSheet(self.unselectedSheet)
+    @QtCore.pyqtSlot()
+    def updateMood(self):
+        self.moodUpdated.emit(self.mood.value())
+    moodUpdated = QtCore.pyqtSignal(int)
 
 class MovingWindow(QtGui.QFrame):
     def __init__(self, *x, **y):
@@ -528,19 +593,19 @@ class PesterText(QtGui.QTextEdit):
             parent = self.parent()
             parent.setChumOpen(True)
             window = parent.mainwindow
-            me = window.profile
+            me = window.profile()
             msg = chum.beganpestermsg(me)
             self.append(msg)
         elif msg == "PESTERCHUM:CEASE":
             parent = self.parent()
             parent.setChumOpen(False)
             window = parent.mainwindow
-            me = window.profile
+            me = window.profile()
             msg = chum.ceasedpestermsg(me)
             self.append(msg)
         else:
-            if not self.parent().chumopen and chum is not self.parent().mainwindow.profile:
-                me = self.parent().mainwindow.profile
+            if not self.parent().chumopen and chum is not self.parent().mainwindow.profile():
+                me = self.parent().mainwindow.profile()
                 beginmsg = chum.beganpestermsg(me)
                 self.parent().setChumOpen(True)
                 self.append(beginmsg)
@@ -591,10 +656,14 @@ class PesterConvo(QtGui.QFrame):
         if parent:
             parent.addChat(self)
         if initiated:
-            msg = self.mainwindow.profile.beganpestermsg(self.chum)
+            msg = self.mainwindow.profile().beganpestermsg(self.chum)
             self.textArea.append(msg)
 
     def updateMood(self, mood):
+        if mood.name() == "offline":
+            msg = self.mainwindow.profile().ceasepestermsg(self.chum)
+            self.textArea.append(msg)
+            self.chumopen = False
         if self.parent():
             self.parent().updateMood(self.chum.handle, mood)
         else:
@@ -604,7 +673,7 @@ class PesterConvo(QtGui.QFrame):
         self.chum.color = color
     def addMessage(self, text, me=True):
         if me:
-            chum = self.mainwindow.profile
+            chum = self.mainwindow.profile()
         else:
             chum = self.chum
         self.textArea.addMessage(text, chum)
@@ -652,11 +721,9 @@ class PesterWindow(MovingWindow):
         self.config = userConfig()
         if self.config.defaultprofile():
             self.userprofile = userProfile(self.config.defaultprofile())
-            self.profile = self.userprofile.chat
             self.theme = self.userprofile.getTheme()
         else:
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
-            self.profile = self.userprofile.chat
             self.theme = self.userprofile.getTheme()
             self.changeProfile()
 
@@ -705,9 +772,13 @@ class PesterWindow(MovingWindow):
         self.connect(self.chumList, QtCore.SIGNAL('itemDoubleClicked(QListWidgetItem *)'),
                      self, QtCore.SLOT('newConversationWindow(QListWidgetItem *)'))
 
+        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in self.theme["main/moods"]])
+
         self.convos = {}
         self.tabconvo = None
         self.optionmenu = None
+    def profile(self):
+        return self.userprofile.chat
     def mainSS(self):
         self.setStyleSheet("QFrame#main { "+self.theme["main/style"]+" }")
     def menuBarSS(self):
@@ -792,6 +863,10 @@ class PesterWindow(MovingWindow):
         self.miniButton.move(*self.theme["main/minimize/loc"])
         # chum area
         self.chumList.changeTheme(theme)
+        # moods
+        self.moods.removeButtons()
+        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in self.theme["main/moods"]])
+        self.moods.showButtons()
         # do open windows
         if self.tabconvo:
             self.tabconvo.changeTheme(theme)
@@ -811,7 +886,7 @@ class PesterWindow(MovingWindow):
     def tabsClosed(self):
         del self.tabconvo
         self.tabconvo = None
-
+                 
     @QtCore.pyqtSlot(QtCore.QString, Mood)
     def updateMoodSlot(self, handle, mood):
         h = str(handle)
@@ -889,16 +964,21 @@ class PesterWindow(MovingWindow):
         if self.chooseprofile.profileBox and \
                 self.chooseprofile.profileBox.currentIndex() > 0:
             handle = unicode(self.chooseprofile.profileBox.currentText())
+            if handle == self.profile().handle:
+                return
             self.userprofile = userProfile(handle)
-            self.profile = self.userprofile.chat
             self.changeTheme(self.userprofile.getTheme())
         else:
-            profile = PesterProfile(unicode(self.chooseprofile.chumHandle.text()),
-                                    self.chooseprofile.chumcolor,
-                                    Mood(0))
+            handle = unicode(self.chooseprofile.chumHandle.text())
+            if handle == self.profile().handle:
+                return
+            profile = PesterProfile(handle,
+                                    self.chooseprofile.chumcolor)
             self.userprofile = userProfile.newUserProfile(profile)
-            self.profile = self.userprofile.chat
 
+        # is default?
+        if self.chooseprofile.defaultcheck.isChecked():
+            self.config.set("defaultprofile", self.userprofile.chat.handle)
         # this may have to be fixed
         self.closeConversations()
         self.profileChanged.emit()
@@ -935,13 +1015,14 @@ class PesterWindow(MovingWindow):
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
     profileChanged = QtCore.pyqtSignal()
     moodRequest = QtCore.pyqtSignal(PesterProfile)
+    moodUpdated = QtCore.pyqtSignal()
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
         QtCore.QObject.__init__(self)
         self.mainwindow = window
     def IRCConnect(self):
-        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.mainwindow.profile.handle, blocking=True)
+        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.mainwindow.profile().handle, blocking=True)
         self.cli.command_handler.parent = self
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
@@ -960,16 +1041,20 @@ class PesterIRC(QtCore.QObject):
         h = str(handle)
         if initiated:
             helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile.colorcmd()))
+        helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
     @QtCore.pyqtSlot(QtCore.QString)
     def endConvo(self, handle):
         h = str(handle)
         helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
     @QtCore.pyqtSlot()
     def updateProfile(self):
-        me = self.mainwindow.profile
+        me = self.mainwindow.profile()
         handle = me.handle
         helpers.nick(self.cli, handle)
+        self.updateMood()
+    @QtCore.pyqtSlot()
+    def updateMood(self):
+        me = self.mainwindow.profile()
         helpers.msg(self.cli, "#pesterchum", "MOOD >%d" % (me.mood.value()))
     def updateIRC(self):
         self.conn.next()
@@ -995,8 +1080,8 @@ class PesterHandler(DefaultCommandHandler):
                     mood = Mood(0)
                 self.parent.moodUpdated.emit(handle, mood)
             elif msg[0:7] == "GETMOOD":
-                mychumhandle = self.mainwindow.profile.handle
-                mymood = self.mainwindow.profile.mood.value()
+                mychumhandle = self.mainwindow.profile().handle
+                mymood = self.mainwindow.profile().mood.value()
                 if msg.find(mychumhandle, 8) != -1:
                     helpers.msg(self.client, "#pesterchum", 
                                 "MOOD >%d" % (mymood))
@@ -1004,7 +1089,7 @@ class PesterHandler(DefaultCommandHandler):
         else:
             # private message
             # silently ignore messages to yourself.
-            if handle == self.mainwindow.profile.handle:
+            if handle == self.mainwindow.profile().handle:
                 return
             if msg[0:7] == "COLOR >":
                 colors = msg[7:].split(",")
@@ -1020,8 +1105,8 @@ class PesterHandler(DefaultCommandHandler):
 
     def welcome(self, server, nick, msg):
         helpers.join(self.client, "#pesterchum")
-        mychumhandle = self.mainwindow.profile.handle
-        mymood = self.mainwindow.profile.mood.value()
+        mychumhandle = self.mainwindow.profile().handle
+        mymood = self.mainwindow.profile().mood.value()
         helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
         chums = self.mainwindow.chumList.chums
@@ -1030,11 +1115,20 @@ class PesterHandler(DefaultCommandHandler):
     def nicknameinuse(self, server, cmd, nick, msg):
         helpers.nick(self.client, "pesterClient%d" % (random.randint(100,999)))
         self.parent.nickCollision.emit(nick)
+    def quit(self, nick, reason):
+        handle = nick[0:nick.find("!")]
+        self.parent.moodUpdated.emit(handle, Mood("offline"))        
+    def nick(self, oldnick, newnick):
+        oldhandle = oldnick[0:oldnick.find("!")]
+        newchum = PesterProfile(newnick)
+        self.parent.moodUpdated.emit(oldhandle, Mood("offline"))        
+        self.getMood(newchum)
+        
     def getMood(self, *chums):
         chumglub = "GETMOOD "
         for c in chums:
             chandle = c.handle
-            if len(chumglub+chandle) >= 510:
+            if len(chumglub+chandle) >= 350:
                 helpers.msg(self.client, "#pesterchum", chumglub)
                 chumglub = "GETMOOD "
             chumglub += chandle
@@ -1079,6 +1173,10 @@ def main():
                 QtCore.SIGNAL('moodRequest(PyQt_PyObject)'),
                 irc,
                 QtCore.SLOT('getMood(PyQt_PyObject)'))
+    irc.connect(widget,
+                QtCore.SIGNAL('moodUpdated()'),
+                irc,
+                QtCore.SLOT('updateMood()'))
     irc.connect(irc, 
                 QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
                 widget, 

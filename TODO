@@ -1,9 +1,4 @@
 Features:
-* Handle user signoffs/signons
-* Handle nick changes
-* theme elements define, implement
-* default user
-* Moods
 * Add chum
 * REMOVE chum
 * Sounds
@@ -12,10 +7,13 @@ Features:
 * menubar should pass on mouse move
 * Quirks
 -- package
+* theme elements define, implement
+* User signon?
 * Logging
 * Block list
 * User list/add from list
 * User commands/stop user from sending commands accidentally
+-- release alpha
 * System tray stuff
 * Chat rooms
 -- release beta
