@@ -1,11 +1,11 @@
 Features:
-* Quirks
 -- package
 * menubar should pass on mouse move
 * User signon?
 * Logging
 * Block list
 * User list/add from list
+* Turn quirks off
 * User commands/stop user from sending commands accidentally
 * cleanup theme code
 -- release alpha
@@ -13,6 +13,7 @@ Features:
 * System tray menu
 * comment history (up button)
 * Chat rooms
+* More complex quirks
 * Implement TC options
 * Transparent background
 -- release beta

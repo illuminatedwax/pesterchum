@@ -120,9 +120,55 @@ class pesterTheme(dict):
                 d[k] = s.substitute(path=self.path)
         return d
 
+class pesterQuirk(object):
+    def __init__(self, quirk):
+        if type(quirk) != dict:
+            raise ValueError("Quirks must be given a dictionary")
+        self.quirk = quirk
+        self.type = self.quirk["type"]
+    def apply(self, string):
+        if self.type == "prefix":
+            return self.quirk["value"] + string
+        if self.type == "suffix":
+            return string + self.quirk["value"]
+        if self.type == "replace":
+            return string.replace(self.quirk["from"], self.quirk["to"])
+        if self.type == "regexp":
+            return re.sub(self.quirk["from"], self.quirk["to"], string)
+    def __str__(self):
+        if self.type == "prefix":
+            return "BEGIN WITH: %s" % (self.quirk["value"])
+        elif self.type == "suffix":
+            return "END WITH: %s" % (self.quirk["value"])
+        elif self.type == "replace":
+            return "REPLACE %s WITH %s" % (self.quirk["from"], self.quirk["to"])
+        elif self.type == "regexp":
+            return "REGEXP: %s REPLACED WITH %s" % (self.quirk["from"], self.quirk["to"])
+
 class pesterQuirks(object):
     def __init__(self, quirklist):
-        self.quirklist = quirklist
+        self.quirklist = []
+        for q in quirklist:
+            if type(q) == dict:
+                self.quirklist.append(pesterQuirk(q))
+            elif type(q) == pesterQuirk:
+                self.quirklist.append(q)
+    def plainList(self):
+        return [q.quirk for q in self.quirklist]
+    def apply(self, string):
+        presuffix = [q for q in self.quirklist if 
+                     q.type=='prefix' or q.type=='suffix']
+        replace = [q for q in self.quirklist if
+                   q.type=='replace' or q.type=='regexp']
+        for r in replace:
+            string = r.apply(string)
+        for ps in presuffix:
+            string = ps.apply(string)
+        return string
+
+    def __iter__(self):
+        for q in self.quirklist:
+            yield q
 
 class userConfig(object):
     def __init__(self):
@@ -201,7 +247,7 @@ class userProfile(object):
         self.save()
     def setQuirks(self, quirks):
         self.quirks = quirks
-        self.userprofile["quirks"] = self.quirks.quirklist
+        self.userprofile["quirks"] = self.quirks.plainList()
         self.save()
     def getTheme(self):
         return self.theme
@@ -218,7 +264,171 @@ class userProfile(object):
             newprofile = userProfile(chatprofile)
             newprofile.save()
         return newprofile
+
+class MultiTextDialog(QtGui.QDialog):
+    def __init__(self, title, parent, *queries):
+        QtGui.QDialog.__init__(self, parent)
+        self.setWindowTitle(title)
+        if len(queries) == 0:
+            return
+        self.inputs = {}
+        layout_1 = QtGui.QHBoxLayout()
+        for d in queries:
+            label = d["label"]
+            inputname = d["inputname"]
+            value = d.get("value", "")
+            l = QtGui.QLabel(label, self)
+            layout_1.addWidget(l)
+            self.inputs[inputname] = QtGui.QLineEdit(value, self)
+            layout_1.addWidget(self.inputs[inputname])
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_ok = QtGui.QHBoxLayout()
+        layout_ok.addWidget(self.cancel)
+        layout_ok.addWidget(self.ok)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addLayout(layout_1)
+        layout_0.addLayout(layout_ok)
+
+        self.setLayout(layout_0)
+    def getText(self):
+        r = self.exec_()
+        if r == QtGui.QDialog.Accepted:
+            retval = {}
+            for (name, widget) in self.inputs.iteritems():
+                retval[name] = unicode(widget.text())
+            return retval
+        else:
+            return None
+class PesterQuirkItem(QtGui.QListWidgetItem):
+    def __init__(self, quirk, parent):
+        QtGui.QListWidgetItem.__init__(self, parent)
+        self.quirk = quirk
+        self.setText(str(quirk))
+
+    def __lt__(self, quirkitem):
+        if self.quirk.type == "prefix":
+            return True
+        elif (self.quirk.type == "replace" or self.quirk.type == "regexp") and \
+                quirkitem.type == "suffix":
+            return True
+        else:
+            return False
         
+class PesterQuirkList(QtGui.QListWidget):
+    def __init__(self, mainwindow, parent):
+        QtGui.QListWidget.__init__(self, parent)
+        self.resize(400, 200)
+        self.mainwindow = mainwindow
+        self.setStyleSheet("background:black; color:white;")
+
+        for q in mainwindow.userprofile.quirks:
+            item = PesterQuirkItem(q, self)
+            self.addItem(item)
+        self.sortItems()
+
+    @QtCore.pyqtSlot()
+    def removeCurrent(self):
+        i = self.currentRow()
+        if i >= 0:
+            self.takeItem(i)
+
+class PesterChooseQuirks(QtGui.QDialog):
+    def __init__(self, config, theme, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setModal(False)
+        self.config = config
+        self.theme = theme
+        self.mainwindow = parent
+        self.setStyleSheet(self.theme["main/defaultwindow/style"])
+        self.setWindowTitle("Set Quirks")
+
+        self.quirkList = PesterQuirkList(self.mainwindow, self)
+        
+        self.addPrefixButton = QtGui.QPushButton("ADD PREFIX", self)
+        self.connect(self.addPrefixButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addPrefixDialog()'))
+        self.addSuffixButton = QtGui.QPushButton("ADD SUFFIX", self)
+        self.connect(self.addSuffixButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addSuffixDialog()'))
+        self.addSimpleReplaceButton = QtGui.QPushButton("SIMPLE REPLACE", self)
+        self.connect(self.addSimpleReplaceButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addSimpleReplaceDialog()'))
+        self.addRegexpReplaceButton = QtGui.QPushButton("REGEXP REPLACE", self)
+        self.connect(self.addRegexpReplaceButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addRegexpDialog()'))
+        layout_1 = QtGui.QHBoxLayout()
+        layout_1.addWidget(self.addPrefixButton)
+        layout_1.addWidget(self.addSuffixButton)
+        layout_1.addWidget(self.addSimpleReplaceButton)
+        layout_1.addWidget(self.addRegexpReplaceButton)
+
+        self.removeSelectedButton = QtGui.QPushButton("REMOVE", self)
+        self.connect(self.removeSelectedButton, QtCore.SIGNAL('clicked()'),
+                     self.quirkList, QtCore.SLOT('removeCurrent()'))
+        
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_ok = QtGui.QHBoxLayout()
+        layout_ok.addWidget(self.cancel)
+        layout_ok.addWidget(self.ok)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.quirkList)
+        layout_0.addLayout(layout_1)
+        layout_0.addWidget(self.removeSelectedButton)
+        layout_0.addLayout(layout_ok)
+        self.setLayout(layout_0)
+
+    def quirks(self):
+        return [self.quirkList.item(i).quirk for i in 
+                range(0,self.quirkList.count())]
+            
+
+    @QtCore.pyqtSlot()
+    def addPrefixDialog(self):
+        pdict = MultiTextDialog("ENTER PREFIX", self, {"label": "Value:", "inputname": "value"}).getText()
+        pdict["type"] = "prefix"
+        prefix = pesterQuirk(pdict)
+        pitem = PesterQuirkItem(prefix, self.quirkList)
+        self.quirkList.addItem(pitem)
+        self.quirkList.sortItems()
+    @QtCore.pyqtSlot()
+    def addSuffixDialog(self):
+        vdict = MultiTextDialog("ENTER SUFFIX", self, {"label": "Value:", "inputname": "value"}).getText()
+        vdict["type"] = "suffix"
+        quirk = pesterQuirk(vdict)
+        item = PesterQuirkItem(quirk, self.quirkList)
+        self.quirkList.addItem(item)
+        self.quirkList.sortItems()
+    @QtCore.pyqtSlot()
+    def addSimpleReplaceDialog(self):
+        vdict = MultiTextDialog("REPLACE", self, {"label": "Replace:", "inputname": "from"}, {"label": "With:", "inputname": "to"}).getText()
+        vdict["type"] = "replace"
+        quirk = pesterQuirk(vdict)
+        item = PesterQuirkItem(quirk, self.quirkList)
+        self.quirkList.addItem(item)
+        self.quirkList.sortItems()
+    @QtCore.pyqtSlot()
+    def addRegexpDialog(self):
+        vdict = MultiTextDialog("REGEXP REPLACE", self, {"label": "Regexp:", "inputname": "from"}, {"label": "Replace With:", "inputname": "to"}).getText()
+        vdict["type"] = "regexp"
+        quirk = pesterQuirk(vdict)
+        item = PesterQuirkItem(quirk, self.quirkList)
+        self.quirkList.addItem(item)
+        self.quirkList.sortItems()
+
 class PesterChooseTheme(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -879,6 +1089,8 @@ class PesterConvo(QtGui.QFrame):
         if text == "":
             return
         # deal with quirks here
+        qtext = self.mainwindow.userprofile.quirks.apply(unicode(text))
+        text = QtCore.QString(qtext)
         self.textInput.setText("")
         self.addMessage(text, True)
         # if ceased, rebegin
@@ -927,9 +1139,14 @@ class PesterWindow(MovingWindow):
         changetheme = QtGui.QAction("THEME", self)
         self.connect(changetheme, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('pickTheme()'))
+        changequirks = QtGui.QAction("QUIRKS", self)
+        self.connect(changequirks, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openQuirks()'))
+
         profilemenu = self.menu.addMenu("PROFILE")
-        profilemenu.addAction(switch)
         profilemenu.addAction(changetheme)
+        profilemenu.addAction(changequirks)
+        profilemenu.addAction(switch)
 
         self.menuBarSS()
 
@@ -999,6 +1216,7 @@ class PesterWindow(MovingWindow):
         self.convos = {}
         self.tabconvo = None
         self.optionmenu = None
+        self.quirkmenu = None
         self.choosetheme = None
         self.chooseprofile = None
         self.addchumdialog = None
@@ -1208,6 +1426,25 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def removeChum(self, chumlisting):
         self.config.removeChum(chumlisting.chum)
+    @QtCore.pyqtSlot()
+    def openQuirks(self):
+        if not self.quirkmenu:
+            self.quirkmenu = PesterChooseQuirks(self.config, self.theme, self)
+            self.connect(self.quirkmenu, QtCore.SIGNAL('accepted()'),
+                         self, QtCore.SLOT('updateQuirks()'))
+            self.connect(self.quirkmenu, QtCore.SIGNAL('rejected()'),
+                         self, QtCore.SLOT('closeQuirks()'))
+            self.quirkmenu.show()
+            self.quirkmenu.raise_()
+            self.quirkmenu.activateWindow()
+    @QtCore.pyqtSlot()
+    def updateQuirks(self):
+        quirks = pesterQuirks(self.quirkmenu.quirks())
+        self.userprofile.setQuirks(quirks)
+        self.quirkmenu = None
+    @QtCore.pyqtSlot()
+    def closeQuirks(self):
+        self.quirkmenu = None
     @QtCore.pyqtSlot()
     def openOpts(self):
         if not self.optionmenu:
