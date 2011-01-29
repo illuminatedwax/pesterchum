@@ -1,6 +1,4 @@
 Features:
-* mychumhandle/color/pester button
-* User profile options (color...?)
 * Quirks
 -- package
 * menubar should pass on mouse move
@@ -9,11 +7,14 @@ Features:
 * Block list
 * User list/add from list
 * User commands/stop user from sending commands accidentally
+* cleanup theme code
 -- release alpha
+* User profile menu options (color...?)
 * System tray menu
 * comment history (up button)
 * Chat rooms
 * Implement TC options
+* Transparent background
 -- release beta
 * theme elements define, implement
 * Theme checking

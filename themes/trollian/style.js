@@ -1,5 +1,5 @@
 {"main":
- {"style": "background-image:url($path/tnbg2.png);",
+ {"style": "background-image:url($path/tnbg2.png);background-color:rgba(255,255,255,0);",
   "size": [300, 620],
   "icon": "$path/trayicon3.png",
   "newmsgicon": "$path/trayicon.gif",
@@ -14,7 +14,7 @@
   "sounds": { "alertsound": "$path/alarm.wav" },
   "chums": { "style": "background-color: black;color: white;font: bold;font-family: 'Courier New';selection-background-color:#ffb6b6; ",
              "loc": [20, 65],
-             "size": [266, 300],
+             "size": [266, 270],
              "moods": { "chummy": { "icon": "$path/chummy.gif",
                                     "color": "white" },
                         "offline": { "icon": "$path/offline.gif",
@@ -43,13 +43,27 @@
 									"color": "white" }
                       }
            },
+  "mychumhandle": { "label": { "text": "MYTROLLTAG",
+                               "loc": [85,410],
+                               "style": "color:black;font:bold;" },
+                    "handle": { "style": "border:3px solid #550000; background: black; color:white;",
+                                "loc": [20,430],
+                                "size": [220,30] },
+                    "colorswatch": { "loc": [243,430],
+                                     "size": [40,30],
+                                     "text": "" }
+                  },
   "defaultwindow": { "style": "background: #e5000f; font-family:'Courier New';font:bold;selection-background-color:#ffb6b6; " 
                    },
-  "labels": { "mychumhandle": "MYTROLLTAG" },
   "addchum": { "style": "background: black; border:5px solid #550000; font: bold;color:white;",
-               "loc": [20,370],
-               "size": [100, 50],
+               "loc": [20,340],
+               "size": [100, 40],
                "text": "ADD LOSER"
+             },
+  "pester": { "style": "background: black; border:5px solid #550000; font: bold;color:white;",
+               "loc": [130,340],
+               "size": [100, 40],
+               "text": "TROLL"
              },
   "defaultmood": 7,
   "moods": [

@@ -120,6 +120,10 @@ class pesterTheme(dict):
                 d[k] = s.substitute(path=self.path)
         return d
 
+class pesterQuirks(object):
+    def __init__(self, quirklist):
+        self.quirklist = quirklist
+
 class userConfig(object):
     def __init__(self):
         fp = open("pesterchum.js")
@@ -193,11 +197,11 @@ class userProfile(object):
         self.save()
     def setColor(self, color):
         self.chat.color = color
-        self.userprofile["color"] = color.name()
+        self.userprofile["color"] = unicode(color.name())
         self.save()
     def setQuirks(self, quirks):
         self.quirks = quirks
-        self.userprofile["quirks"] = quirks.repr()
+        self.userprofile["quirks"] = self.quirks.quirklist
         self.save()
     def getTheme(self):
         return self.theme
@@ -215,10 +219,6 @@ class userProfile(object):
             newprofile.save()
         return newprofile
         
-class pesterQuirks(object):
-    def __init__(self, quirklist):
-        self.quirklist = quirklist
-
 class PesterChooseTheme(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -271,7 +271,7 @@ class PesterChooseProfile(QtGui.QDialog):
 
         self.chumHandle = QtGui.QLineEdit(self)
         self.chumHandle.setMinimumWidth(200)
-        self.chumHandleLabel = QtGui.QLabel(self.theme["main/labels/mychumhandle"], self)
+        self.chumHandleLabel = QtGui.QLabel(self.theme["main/mychumhandle/label/text"], self)
         self.chumColorButton = QtGui.QPushButton(self)
         self.chumColorButton.resize(50, 20)
         self.chumColorButton.setStyleSheet("background: %s" % (userprofile.chat.colorhtml()))
@@ -962,6 +962,32 @@ class PesterWindow(MovingWindow):
         self.addChumButton.setStyleSheet(self.theme["main/addchum/style"])
         self.connect(self.addChumButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addChumWindow()'))
+        self.pesterButton = QtGui.QPushButton(self.theme["main/pester/text"], self)
+        self.pesterButton.resize(*self.theme["main/pester/size"])
+        self.pesterButton.move(*self.theme["main/pester/loc"])
+        self.pesterButton.setStyleSheet(self.theme["main/pester/style"])
+        self.connect(self.pesterButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('pesterSelectedChum()'))
+
+        self.mychumhandleLabel = QtGui.QLabel(self.theme["main/mychumhandle/label/text"], self)
+        self.mychumhandleLabel.move(*self.theme["main/mychumhandle/label/loc"])
+        self.mychumhandleLabel.setStyleSheet(self.theme["main/mychumhandle/label/style"])
+        self.mychumhandle = QtGui.QPushButton(self.profile().handle, self)
+        self.mychumhandle.setFlat(True)
+        self.mychumhandle.move(*self.theme["main/mychumhandle/handle/loc"])
+        self.mychumhandle.resize(*self.theme["main/mychumhandle/handle/size"])
+        self.mychumhandle.setStyleSheet(self.theme["main/mychumhandle/handle/style"])
+        self.connect(self.mychumhandle, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('switchProfile()'))
+
+        self.mychumcolor = QtGui.QPushButton(self)
+        self.mychumcolor.resize(*self.theme["main/mychumhandle/colorswatch/size"])
+        self.mychumcolor.move(*self.theme["main/mychumhandle/colorswatch/loc"])
+        self.mychumcolor.setStyleSheet("background: %s" % (self.profile().colorhtml()))
+        if self.theme["main/mychumhandle/colorswatch/text"]:
+            self.mychumcolor.setText(self.theme["main/mychumhandle/colorswatch/text"])
+        self.connect(self.mychumcolor, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('changeMyColor()'))
 
         if not pygame.mixer:
             self.alarm = NoneSound()
@@ -969,12 +995,14 @@ class PesterWindow(MovingWindow):
             self.alarm = pygame.mixer.Sound(self.theme["main/sounds/alertsound"])
         self.waitingMessages = waitingMessageHolder(self)
         
+# these are mostly initial values so we dont get AttributeErrors later
         self.convos = {}
         self.tabconvo = None
         self.optionmenu = None
         self.choosetheme = None
         self.chooseprofile = None
         self.addchumdialog = None
+        self.colorDialog = None
 
     def profile(self):
         return self.userprofile.chat
@@ -1070,14 +1098,33 @@ class PesterWindow(MovingWindow):
         self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in self.theme["main/moods"]])
         self.moods.showButtons()
         # chum
+        self.addChumButton.setText(self.theme["main/addchum/text"])
         self.addChumButton.resize(*self.theme["main/addchum/size"])
         self.addChumButton.move(*self.theme["main/addchum/loc"])
         self.addChumButton.setStyleSheet(self.theme["main/addchum/style"])
+        self.pesterButton.setText(self.theme["main/pester/text"])
+        self.pesterButton.resize(*self.theme["main/pester/size"])
+        self.pesterButton.move(*self.theme["main/pester/loc"])
+        self.pesterButton.setStyleSheet(self.theme["main/pester/style"])
         # do open windows
         if self.tabconvo:
             self.tabconvo.changeTheme(theme)
         for c in self.convos.values():
             c.changeTheme(theme)
+        # buttons
+        self.mychumhandleLabel.setText(self.theme["main/mychumhandle/label/text"])
+        self.mychumhandleLabel.move(*self.theme["main/mychumhandle/label/loc"])
+        self.mychumhandleLabel.setStyleSheet(self.theme["main/mychumhandle/label/style"])
+        self.mychumhandle.setText(self.profile().handle)
+        self.mychumhandle.move(*self.theme["main/mychumhandle/handle/loc"])
+        self.mychumhandle.resize(*self.theme["main/mychumhandle/handle/size"])
+        self.mychumhandle.setStyleSheet(self.theme["main/mychumhandle/handle/style"])
+        self.mychumcolor.resize(*self.theme["main/mychumhandle/colorswatch/size"])
+        self.mychumcolor.move(*self.theme["main/mychumhandle/colorswatch/loc"])
+        self.mychumcolor.setStyleSheet("background: %s" % (self.profile().colorhtml()))
+        if self.theme["main/mychumhandle/colorswatch/text"]:
+            self.mychumcolor.setText(self.theme["main/mychumhandle/colorswatch/text"])
+
         # sounds
         if not pygame.mixer:
             self.alarm = NoneSound()
@@ -1105,6 +1152,11 @@ class PesterWindow(MovingWindow):
         else:
             self.waitingMessages.answerMessage()
 
+    @QtCore.pyqtSlot()
+    def pesterSelectedChum(self):
+        curChum = self.chumList.currentItem()
+        if curChum:
+            self.newConversationWindow(curChum)
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversationWindow(self, chumlisting):
         chum = chumlisting.chum
@@ -1238,14 +1290,23 @@ class PesterWindow(MovingWindow):
 
         self.chooseprofile = None
     @QtCore.pyqtSlot()
+    def changeMyColor(self):
+        if self.colorDialog:
+            return
+        self.colorDialog = QtGui.QColorDialog(self)
+        color = self.colorDialog.getColor(initial=self.profile().color)
+        self.mychumcolor.setStyleSheet("background: %s" % color.name())
+        self.userprofile.setColor(color)
+        self.colorDialog = None
+    @QtCore.pyqtSlot()
     def closeProfile(self):
         self.chooseprofile = None
     @QtCore.pyqtSlot()
     def switchProfile(self):
         if self.convos:
             closeWarning = QtGui.QMessageBox()
-            closeWarning.setText("WARNING: THIS WILL CLOSE ALL CONVERSATION WINDOWS!")
-            closeWarning.setInformativeText("i warned you bro! i warned you about those windows")
+            closeWarning.setText("WARNING: CHANGING PROFILES WILL CLOSE ALL CONVERSATION WINDOWS!")
+            closeWarning.setInformativeText("i warned you about windows bro!!!! i told you dog!")
             closeWarning.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
             closeWarning.setDefaultButton(QtGui.QMessageBox.Ok)
             ret = closeWarning.exec_()
@@ -1381,7 +1442,7 @@ class PesterHandler(DefaultCommandHandler):
         handle = nick[0:nick.find("!")]
         self.parent.moodUpdated.emit(handle, Mood("offline"))        
     def part(self, nick, channel):
-        handle = nick[0:oldnick.find("!")]
+        handle = nick[0:nick.find("!")]
         if channel == "#pesterchum":
             self.parent.moodUpdated.emit(handle, Mood("offline"))            
     def nick(self, oldnick, newnick):
