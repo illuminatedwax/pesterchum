@@ -1,1 +1,1 @@
-{"tabs": true, "chums": ["gamblingGenocider", "grimAuxiliatrix", "gardenGnostic", "ghostDunk", "spaceGhost", "aquaMarinist", "carcinoGeneticist", "tentacleTherapist", "gallowsCalibrator", "waitWhat", "captainCaveman"], "defaultprofile": "ghostDunk"}
+{"tabs": true, "chums": []}

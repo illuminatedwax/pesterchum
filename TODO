@@ -1,5 +1,9 @@
 Features:
 -- package
+* CEASE shouldn't be sent if chum window is closed
+* color is lost if you close window!
+* switch focus to lineedit
+* colors from ppl msging you not on your buddy list dont work
 * menubar should pass on mouse move
 * User signon?
 * Logging

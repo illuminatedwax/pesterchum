@@ -881,8 +881,10 @@ class PesterTabWindow(QtGui.QFrame):
         for c in self.convos.values():
             tabi = self.tabIndices[c.chum.handle]
             self.tabs.setTabIcon(tabi, c.chum.mood.icon(theme))
-        currentHandle = unicode(self.tabs.tabText(self.tabs.currentIndex()))
-        self.setWindowIcon(self.convos[currentHandle].chum.mood.icon(theme))
+        currenttabi = self.tabs.currentIndex()
+        if currenttabi >= 0:
+            currentHandle = unicode(self.tabs.tabText(self.tabs.currentIndex()))
+            self.setWindowIcon(self.convos[currentHandle].chum.mood.icon(theme))
         self.defaultTabTextColor = self.getTabTextColor()
 
     @QtCore.pyqtSlot(int)
@@ -1118,6 +1120,7 @@ class PesterWindow(MovingWindow):
         size = self.theme['main/size']
         self.setGeometry(100, 100, size[0], size[1])
         self.setWindowIcon(QtGui.QIcon(self.theme["main/icon"]))
+        self.setWindowTitle("P3ST3RCHUM")
         self.mainSS()
 
         opts = QtGui.QAction("OPTIONS", self)

@@ -1,1 +1,0 @@
-{"color": "#ffff00", "theme": "pesterchum", "quirks": [], "handle": "spaceGhost"}

@@ -1,1 +1,0 @@
-{"color": "#65cf91", "theme": "trollian", "quirks": [], "handle": "superGhost"}
