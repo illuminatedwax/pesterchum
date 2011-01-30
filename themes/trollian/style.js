@@ -130,7 +130,7 @@
   "size": [600, 500],
   "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);" },
   "textarea": {
-      "style": "background: white;"
+      "style": "background: white;font:bold;"
   },
   "input": {
       "style": "background: white;"
