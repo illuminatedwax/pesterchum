@@ -66,7 +66,11 @@
                "size": [100, 40],
                "text": "TROLL"
              },
-  "defaultmood": 7,
+  "defaultmood": "ecstatic",
+  "moodlabel": { "style": "",
+				 "loc": [20, 430],
+				 "text": "MOODS"
+			   },
   "moods": [
       { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -74,7 +78,7 @@
 		"size": [133, 30],
 	    "text": "ECSTATIC",
 		"icon": "$path/estatic.gif",
-		"mood": 7
+		"mood": "ecstatic"
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color: #dbdbdb", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -82,7 +86,7 @@
 		"size": [133, 30],
 		"text": "RELAXED",
 		"icon": "$path/relaxed.gif",
-		"mood": 8
+		"mood": "relaxed"
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -90,7 +94,7 @@
 		"size": [133, 30],
 		"text": "DISCONTENT",
 		"icon": "$path/discontent.gif",
-		"mood": 9
+		"mood": "discontent"
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -98,7 +102,7 @@
 		"size": [133, 30],
 		"text": "DEVIOUS",
 		"icon": "$path/devious.gif",
-		"mood": 10
+		"mood": "devious"
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -106,7 +110,7 @@
 		"size": [133, 30],
 		"text": "SLEEK",
 		"icon": "$path/sleek.gif",
-		"mood": 11
+		"mood": "sleek"
 	  },
 	  { "style": "text-align:left; background: red; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:left; background: red; border:3px solid black; padding: 5px;font: bold;",
@@ -114,7 +118,7 @@
 		"size": [133, 30],
 		"text": "DETESTFUL",
 		"icon": "$path/detestful.gif",
-		"mood": 12
+		"mood": "detestful"
 	  },
 	  { "style": "text-align:center; background: #919191; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:center; background: #919191; border:3px solid black; padding: 5px;font: bold;",
@@ -122,7 +126,7 @@
 		"size": [263, 30],
 		"text": "ABSCOND",
 		"icon": "$path/offline.gif",
-		"mood": 2
+		"mood": "offline"
 	  }
   ]
  },

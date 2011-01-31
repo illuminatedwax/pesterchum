@@ -45,12 +45,12 @@
                       }
            },
   "mychumhandle": { "label": { "text": "MYCHUMHANDLE",
-                               "loc": [70,410],
+                               "loc": [70,380],
                                "style": "color:black;font:bold;" },
                     "handle": { "style": "border:3px solid yellow; background: black; color:white;",
-                                "loc": [20,430],
+                                "loc": [20,400],
                                 "size": [220,30] },
-                    "colorswatch": { "loc": [243,430],
+                    "colorswatch": { "loc": [243,400],
                                      "size": [40,30],
                                      "text": "" }
                   },
@@ -66,7 +66,11 @@
                "size": [100, 40],
                "text": "PESTER!"
              },
-  "defaultmood": 0,
+  "defaultmood": "chummy",
+  "moodlabel": { "style": "",
+				 "loc": [20, 430],
+				 "text": "MOODS"
+			   },
   "moods": [
       { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -74,7 +78,7 @@
 		"size": [133, 30],
 	    "text": "CHUMMY",
 		"icon": "$path/chummy.gif",
-		"mood": 0
+		"mood": "chummy"
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color: #919191", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -82,7 +86,7 @@
 		"size": [133, 30],
 		"text": "PLEASANT",
 		"icon": "$path/pleasant.gif",
-		"mood": 3
+		"mood": "pleasant"
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -90,7 +94,7 @@
 		"size": [133, 30],
 		"text": "DISTRAUGHT",
 		"icon": "$path/distraught.gif",
-		"mood": 4
+		"mood": "distraught"
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -98,7 +102,7 @@
 		"size": [133, 30],
 		"text": "UNRULY",
 		"icon": "$path/unruly.gif",
-		"mood": 5
+		"mood": "unruly"
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -106,7 +110,7 @@
 		"size": [133, 30],
 		"text": "SMOOTH",
 		"icon": "$path/smooth.gif",
-		"mood": 6
+		"mood": "smooth"
 	  },
 	  { "style": "text-align:left; background: red; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:left; background: red; border:3px solid black; padding: 5px;font: bold;",
@@ -114,7 +118,7 @@
 		"size": [133, 30],
 		"text": "RANCOROUS",
 		"icon": "$path/rancorous.gif",
-		"mood": 1
+		"mood": "rancorous"
 	  },
 	  { "style": "text-align:center; background: #919191; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:center; background: #919191; border:3px solid black; padding: 5px;font: bold;",
@@ -122,7 +126,7 @@
 		"size": [263, 30],
 		"text": "ABSCOND",
 		"icon": "$path/offline.gif",
-		"mood": 2
+		"mood": "offline"
 	  }
   ]
  },
