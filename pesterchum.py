@@ -1107,6 +1107,10 @@ class PesterWindow(MovingWindow):
     def __init__(self, parent=None):
         MovingWindow.__init__(self, parent, 
                               flags=QtCore.Qt.CustomizeWindowHint)
+
+        self.convos = {}
+        self.tabconvo = None
+
         self.setObjectName("main")
         self.config = userConfig()
         if self.config.defaultprofile():
@@ -1115,13 +1119,8 @@ class PesterWindow(MovingWindow):
         else:
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
             self.theme = self.userprofile.getTheme()
-            self.changeProfile()
 
-        size = self.theme['main/size']
-        self.setGeometry(100, 100, size[0], size[1])
-        self.setWindowIcon(QtGui.QIcon(self.theme["main/icon"]))
-        self.setWindowTitle("P3ST3RCHUM")
-        self.mainSS()
+        self.move(100, 100)
 
         opts = QtGui.QAction("OPTIONS", self)
         self.connect(opts, QtCore.SIGNAL('triggered()'),
@@ -1130,7 +1129,6 @@ class PesterWindow(MovingWindow):
         self.connect(exitaction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('close()'))
         self.menu = QtGui.QMenuBar(self)
-        qmenustyle = "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (self.theme["main/menu/style"], self.theme["main/menu/selected"])
 
         filemenu = self.menu.addMenu("FILE")
         filemenu.addAction(opts)
@@ -1151,15 +1149,10 @@ class PesterWindow(MovingWindow):
         profilemenu.addAction(changequirks)
         profilemenu.addAction(switch)
 
-        self.menuBarSS()
-
-        closestyle = self.theme["main/close"]
-        self.closeButton = WMButton(QtGui.QIcon(closestyle["image"]), self)
-        self.closeButton.move(*closestyle["loc"])
+        self.closeButton = WMButton(QtGui.QIcon(self.theme["main/close/image"]), self)
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('close()'))
         self.miniButton = WMButton(QtGui.QIcon(self.theme["main/minimize/image"]), self)
-        self.miniButton.move(*(self.theme["main/minimize/loc"]))
         self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('showMinimized()'))
 
@@ -1173,65 +1166,36 @@ class PesterWindow(MovingWindow):
                      QtCore.SIGNAL('removeChumSignal(QListWidgetItem *)'),
                      self,
                      QtCore.SLOT('removeChum(QListWidgetItem *)'))
-
-        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in self.theme["main/moods"]])
         
         self.addChumButton = QtGui.QPushButton(self.theme["main/addchum/text"], self)
-        self.addChumButton.resize(*self.theme["main/addchum/size"])
-        self.addChumButton.move(*self.theme["main/addchum/loc"])
-        self.addChumButton.setStyleSheet(self.theme["main/addchum/style"])
         self.connect(self.addChumButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addChumWindow()'))
         self.pesterButton = QtGui.QPushButton(self.theme["main/pester/text"], self)
-        self.pesterButton.resize(*self.theme["main/pester/size"])
-        self.pesterButton.move(*self.theme["main/pester/loc"])
-        self.pesterButton.setStyleSheet(self.theme["main/pester/style"])
         self.connect(self.pesterButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('pesterSelectedChum()'))
 
         self.mychumhandleLabel = QtGui.QLabel(self.theme["main/mychumhandle/label/text"], self)
-        self.mychumhandleLabel.move(*self.theme["main/mychumhandle/label/loc"])
-        self.mychumhandleLabel.setStyleSheet(self.theme["main/mychumhandle/label/style"])
         self.mychumhandle = QtGui.QPushButton(self.profile().handle, self)
         self.mychumhandle.setFlat(True)
-        self.mychumhandle.move(*self.theme["main/mychumhandle/handle/loc"])
-        self.mychumhandle.resize(*self.theme["main/mychumhandle/handle/size"])
-        self.mychumhandle.setStyleSheet(self.theme["main/mychumhandle/handle/style"])
         self.connect(self.mychumhandle, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('switchProfile()'))
 
         self.mychumcolor = QtGui.QPushButton(self)
-        self.mychumcolor.resize(*self.theme["main/mychumhandle/colorswatch/size"])
-        self.mychumcolor.move(*self.theme["main/mychumhandle/colorswatch/loc"])
-        self.mychumcolor.setStyleSheet("background: %s" % (self.profile().colorhtml()))
-        if self.theme["main/mychumhandle/colorswatch/text"]:
-            self.mychumcolor.setText(self.theme["main/mychumhandle/colorswatch/text"])
         self.connect(self.mychumcolor, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('changeMyColor()'))
 
-        if not pygame.mixer:
-            self.alarm = NoneSound()
-        else:
-            self.alarm = pygame.mixer.Sound(self.theme["main/sounds/alertsound"])
+        self.initTheme(self.theme)
+
         self.waitingMessages = waitingMessageHolder(self)
-        
-# these are mostly initial values so we dont get AttributeErrors later
-        self.convos = {}
-        self.tabconvo = None
-        self.optionmenu = None
-        self.quirkmenu = None
-        self.choosetheme = None
-        self.chooseprofile = None
-        self.addchumdialog = None
-        self.colorDialog = None
+
+        if not self.config.defaultprofile():
+            self.changeProfile()
 
     def profile(self):
         return self.userprofile.chat
-    def mainSS(self):
-        self.setStyleSheet("QFrame#main { "+self.theme["main/style"]+" }")
-    def menuBarSS(self):
-        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; } " % (self.theme["main/menubar/style"]) + "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (self.theme["main/menu/style"], self.theme["main/menu/selected"]))
     def closeConversations(self):
+        if not hasattr(self, 'tabconvo'):
+            self.tabconvo = None
         if self.tabconvo:
             self.tabconvo.close()
         else:
@@ -1293,67 +1257,77 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SLOT('tabsClosed()'))
 
     def changeProfile(self, collision=None):
+        if not hasattr(self, 'chooseprofile'):
+            self.chooseprofile = None
         if not self.chooseprofile:
             self.chooseprofile = PesterChooseProfile(self.userprofile, self.config, self.theme, self, collision=collision)
             self.chooseprofile.exec_()
 
     def themePicker(self):
+        if not hasattr(self, 'choosetheme'):
+            self.choosetheme = None
         if not self.choosetheme:
             self.choosetheme = PesterChooseTheme(self.config, self.theme, self)
             self.choosetheme.exec_()
-    def changeTheme(self, theme):
-        self.theme = theme
-        # do self
-        self.resize(*self.theme["main/size"])
-        self.setWindowIcon(QtGui.QIcon(self.theme["main/icon"]))
-        self.mainSS()
-        self.menuBarSS()
-        self.closeButton.setIcon(QtGui.QIcon(self.theme["main/close/image"]))
-        self.closeButton.move(*self.theme["main/close/loc"])
-        self.miniButton.setIcon(QtGui.QIcon(self.theme["main/minimize/image"]))
-        self.miniButton.move(*self.theme["main/minimize/loc"])
-        # chum area
-        self.chumList.changeTheme(theme)
+    def initTheme(self, theme):
+        self.resize(*theme["main/size"])
+        self.setWindowIcon(QtGui.QIcon(theme["main/icon"]))
+        self.setWindowTitle(theme["main/windowtitle"])
+        self.setStyleSheet("QFrame#main { "+theme["main/style"]+" }")
+        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; } " % (theme["main/menubar/style"]) + "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (theme["main/menu/style"], theme["main/menu/selected"]))
+        self.closeButton.setIcon(QtGui.QIcon(theme["main/close/image"]))
+        self.closeButton.move(*theme["main/close/loc"])
+        self.miniButton.setIcon(QtGui.QIcon(theme["main/minimize/image"]))
+        self.miniButton.move(*theme["main/minimize/loc"])
         # moods
-        self.moods.removeButtons()
-        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in self.theme["main/moods"]])
+        if hasattr(self, 'moods'):
+            self.moods.removeButtons()
+        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in theme["main/moods"]])
         self.moods.showButtons()
         # chum
-        self.addChumButton.setText(self.theme["main/addchum/text"])
-        self.addChumButton.resize(*self.theme["main/addchum/size"])
-        self.addChumButton.move(*self.theme["main/addchum/loc"])
-        self.addChumButton.setStyleSheet(self.theme["main/addchum/style"])
-        self.pesterButton.setText(self.theme["main/pester/text"])
-        self.pesterButton.resize(*self.theme["main/pester/size"])
-        self.pesterButton.move(*self.theme["main/pester/loc"])
-        self.pesterButton.setStyleSheet(self.theme["main/pester/style"])
-        # do open windows
-        if self.tabconvo:
-            self.tabconvo.changeTheme(theme)
-        for c in self.convos.values():
-            c.changeTheme(theme)
+        self.addChumButton.setText(theme["main/addchum/text"])
+        self.addChumButton.resize(*theme["main/addchum/size"])
+        self.addChumButton.move(*theme["main/addchum/loc"])
+        self.addChumButton.setStyleSheet(theme["main/addchum/style"])
+        self.pesterButton.setText(theme["main/pester/text"])
+        self.pesterButton.resize(*theme["main/pester/size"])
+        self.pesterButton.move(*theme["main/pester/loc"])
+        self.pesterButton.setStyleSheet(theme["main/pester/style"])
         # buttons
-        self.mychumhandleLabel.setText(self.theme["main/mychumhandle/label/text"])
-        self.mychumhandleLabel.move(*self.theme["main/mychumhandle/label/loc"])
-        self.mychumhandleLabel.setStyleSheet(self.theme["main/mychumhandle/label/style"])
+        self.mychumhandleLabel.setText(theme["main/mychumhandle/label/text"])
+        self.mychumhandleLabel.move(*theme["main/mychumhandle/label/loc"])
+        self.mychumhandleLabel.setStyleSheet(theme["main/mychumhandle/label/style"])
         self.mychumhandle.setText(self.profile().handle)
-        self.mychumhandle.move(*self.theme["main/mychumhandle/handle/loc"])
-        self.mychumhandle.resize(*self.theme["main/mychumhandle/handle/size"])
-        self.mychumhandle.setStyleSheet(self.theme["main/mychumhandle/handle/style"])
-        self.mychumcolor.resize(*self.theme["main/mychumhandle/colorswatch/size"])
-        self.mychumcolor.move(*self.theme["main/mychumhandle/colorswatch/loc"])
+        self.mychumhandle.move(*theme["main/mychumhandle/handle/loc"])
+        self.mychumhandle.resize(*theme["main/mychumhandle/handle/size"])
+        self.mychumhandle.setStyleSheet(theme["main/mychumhandle/handle/style"])
+        self.mychumcolor.resize(*theme["main/mychumhandle/colorswatch/size"])
+        self.mychumcolor.move(*theme["main/mychumhandle/colorswatch/loc"])
         self.mychumcolor.setStyleSheet("background: %s" % (self.profile().colorhtml()))
-        if self.theme["main/mychumhandle/colorswatch/text"]:
-            self.mychumcolor.setText(self.theme["main/mychumhandle/colorswatch/text"])
+        if theme["main/mychumhandle/colorswatch/text"]:
+            self.mychumcolor.setText(theme["main/mychumhandle/colorswatch/text"])
 
         # sounds
         if not pygame.mixer:
             self.alarm = NoneSound()
         else:
-            self.alarm = pygame.mixer.Sound(self.theme["main/sounds/alertsound"]
+            self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"]
 )
+
+    def changeTheme(self, theme):
+        self.theme = theme
+        # do self
+        self.initTheme(theme)
+        # chum area
+        self.chumList.changeTheme(theme)
+        # do open windows
+        if self.tabconvo:
+            self.tabconvo.changeTheme(theme)
+        for c in self.convos.values():
+            c.changeTheme(theme)
         # system tray icon
         self.updateSystemTray()
+
     def updateSystemTray(self):
         if len(self.waitingMessages) == 0:
             self.trayIconSignal.emit(0)
@@ -1410,6 +1384,8 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def addChumWindow(self):
+        if not hasattr(self, 'addchumdialog'):
+            self.addchumdialog = None
         if not self.addchumdialog:
             self.addchumdialog = QtGui.QInputDialog(self)
             (handle, ok) = self.addchumdialog.getText(self, "New Chum", "Enter Chum Handle:")
@@ -1431,6 +1407,8 @@ class PesterWindow(MovingWindow):
         self.config.removeChum(chumlisting.chum)
     @QtCore.pyqtSlot()
     def openQuirks(self):
+        if not hasattr(self, 'quirkmenu'):
+            self.quirkmenu = None
         if not self.quirkmenu:
             self.quirkmenu = PesterChooseQuirks(self.config, self.theme, self)
             self.connect(self.quirkmenu, QtCore.SIGNAL('accepted()'),
@@ -1450,6 +1428,8 @@ class PesterWindow(MovingWindow):
         self.quirkmenu = None
     @QtCore.pyqtSlot()
     def openOpts(self):
+        if not hasattr(self, 'optionmenu'):
+            self.optionmenu = None
         if not self.optionmenu:
             self.optionmenu = PesterOptions(self.config, self.theme, self)
             self.connect(self.optionmenu, QtCore.SIGNAL('accepted()'),
@@ -1520,6 +1500,7 @@ class PesterWindow(MovingWindow):
             profile = PesterProfile(handle,
                                     self.chooseprofile.chumcolor)
             self.userprofile = userProfile.newUserProfile(profile)
+            self.changeTheme(self.userprofile.getTheme())
 
         # is default?
         if self.chooseprofile.defaultcheck.isChecked():
@@ -1531,6 +1512,8 @@ class PesterWindow(MovingWindow):
         self.chooseprofile = None
     @QtCore.pyqtSlot()
     def changeMyColor(self):
+        if not hasattr(self, 'colorDialog'):
+            self.colorDialog = None
         if self.colorDialog:
             return
         self.colorDialog = QtGui.QColorDialog(self)

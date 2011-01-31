@@ -1,1 +1,1 @@
-{"tabs": true, "chums": []}
+{"tabs": true, "chums": ["aquaMarinist", "gardenGnostic", "gamblingGenocider", "schlagzeugGator"]}

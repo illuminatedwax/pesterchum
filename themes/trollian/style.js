@@ -3,6 +3,7 @@
   "size": [300, 620],
   "icon": "$path/trayicon3.png",
   "newmsgicon": "$path/trayicon.gif",
+  "windowtitle": "TROLLIAN"
   "close": { "image": "$path/x.gif",
              "loc": [275, 0]},
   "minimize": { "image": "$path/m.gif",

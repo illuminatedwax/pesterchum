@@ -3,6 +3,7 @@
   "size": [300, 620],
   "icon": "$path/trayicon.gif",
   "newmsgicon": "$path/trayicon2.png",
+  "windowtitle": "P3ST3RCHUM",
   "close": { "image": "$path/x.gif",
              "loc": [275, 0]},
   "minimize": { "image": "$path/m.gif",
