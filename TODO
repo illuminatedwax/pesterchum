@@ -11,15 +11,22 @@ Features:
 * User list/add from list
 * Turn quirks off
 * User commands/stop user from sending commands accidentally
+* Hyperlinks
+* color tags
+* Transparent background
+* /me
 -- release alpha
+* shared buddy lists - changes to the buddy list should refresh it?
+  multiple clients share buddy list???
 * User profile menu options (color...?)
 * System tray menu
 * comment history (up button)
-* Chat rooms
+* Chat rooms/browser
 * More complex quirks
 * Implement TC options
-* Transparent background
+* spell check?
 -- release beta
+* time codes
 * theme elements define, implement
 * Theme checking
 * don't clear new message when clicking away from tab?
