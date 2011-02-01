@@ -10,9 +10,21 @@
                 "loc": [255, 0]},
   "menubar": { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px;" },
   "menu" : { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px; background-color: #e5000f; border:2px solid #ff0000",
-             "selected": "background-color: #ff0000"
+             "selected": "background-color: #ff0000",
+             "menuitem": "margin-right:10px;",
+             "loc": [10,0]
            },
   "sounds": { "alertsound": "$path/alarm.wav" },
+  "menus": {"client": {"_name": "GRUBBER",
+                       "options": "OPTIONS",
+                       "exit": "ABSCOND"},
+            "profile": {"_name": "HEMOSPECTRUM",
+                        "switch": "SWITCH",
+                        "theme": "THEME",
+                        "quirks": "ANNOYING"},
+            "rclickchumlist": {"pester": "TROLL",
+                               "removechum": "REMOVE LOSER"}
+           },
   "chums": { "style": "background-color: black;color: white;font: bold;font-family: 'Courier New';selection-background-color:#ffb6b6; ",
              "loc": [20, 65],
              "size": [266, 270],
@@ -66,7 +78,7 @@
                "size": [100, 40],
                "text": "TROLL"
              },
-  "defaultmood": "ecstatic",
+  "defaultmood": 7,
   "moodlabel": { "style": "",
 				 "loc": [20, 430],
 				 "text": "MOODS"
@@ -78,7 +90,7 @@
 		"size": [133, 30],
 	    "text": "ECSTATIC",
 		"icon": "$path/estatic.gif",
-		"mood": "ecstatic"
+		"mood": 7
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color: #dbdbdb", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -86,7 +98,7 @@
 		"size": [133, 30],
 		"text": "RELAXED",
 		"icon": "$path/relaxed.gif",
-		"mood": "relaxed"
+		"mood": 8
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -94,7 +106,7 @@
 		"size": [133, 30],
 		"text": "DISCONTENT",
 		"icon": "$path/discontent.gif",
-		"mood": "discontent"
+		"mood": 9
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -102,7 +114,7 @@
 		"size": [133, 30],
 		"text": "DEVIOUS",
 		"icon": "$path/devious.gif",
-		"mood": "devious"
+		"mood": 10
 	  },
 	  { "style": "text-align:left; background: black; border:3px solid black; padding: 5px;color:#dbdbdb;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -110,7 +122,7 @@
 		"size": [133, 30],
 		"text": "SLEEK",
 		"icon": "$path/sleek.gif",
-		"mood": "sleek"
+		"mood": 11
 	  },
 	  { "style": "text-align:left; background: red; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:left; background: red; border:3px solid black; padding: 5px;font: bold;",
@@ -118,7 +130,7 @@
 		"size": [133, 30],
 		"text": "DETESTFUL",
 		"icon": "$path/detestful.gif",
-		"mood": "detestful"
+		"mood": 12
 	  },
 	  { "style": "text-align:center; background: #919191; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:center; background: #919191; border:3px solid black; padding: 5px;font: bold;",
@@ -126,14 +138,16 @@
 		"size": [263, 30],
 		"text": "ABSCOND",
 		"icon": "$path/offline.gif",
-		"mood": "offline"
+		"mood": 2
 	  }
   ]
  },
  "convo":
  {"style": "background: #e5000f; font-family: 'Courier New'",
   "size": [600, 500],
-  "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);" },
+  "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);",
+                 "text" : "trolling $handle" 
+               },
   "textarea": {
       "style": "background: white;font:bold;"
   },
@@ -144,6 +158,10 @@
       "style": "",
       "newmsgcolor": "red",
       "tabstyle": 0
+  },
+  "text": {
+      "beganpester": "began trolling",
+      "ceasepester": "gave up trolling"
   }
  }
  

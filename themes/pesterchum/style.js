@@ -10,9 +10,21 @@
                 "loc": [255, 0]},
   "menubar": { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px;" },
   "menu" : { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
-             "selected": "background-color: #ffff00"
+             "selected": "background-color: #ffff00",
+             "menuitem": "margin-right:10px;",
+             "loc": [7,3]
            },
   "sounds": { "alertsound": "$path/alarm.wav" },
+  "menus": {"client": {"_name": "CLIENT",
+                       "options": "OPTIONS",
+                       "exit": "EXIT"},
+            "profile": {"_name": "PROFILE",
+                        "switch": "SWITCH",
+                        "theme": "THEME",
+                        "quirks": "QUIRKS"},
+            "rclickchumlist": {"pester": "PESTER",
+                               "removechum": "REMOVE CHUM"}
+           },
   "chums": { "style": "background-color: black;color: white;font: bold;font-family: 'Courier New';selection-background-color:#919191; ",
              "loc": [20, 65],
              "size": [266, 270],
@@ -66,7 +78,7 @@
                "size": [100, 40],
                "text": "PESTER!"
              },
-  "defaultmood": "chummy",
+  "defaultmood": 0,
   "moodlabel": { "style": "",
 				 "loc": [20, 430],
 				 "text": "MOODS"
@@ -78,7 +90,7 @@
 		"size": [133, 30],
 	    "text": "CHUMMY",
 		"icon": "$path/chummy.gif",
-		"mood": "chummy"
+		"mood": 0
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color: #919191", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -86,7 +98,7 @@
 		"size": [133, 30],
 		"text": "PLEASANT",
 		"icon": "$path/pleasant.gif",
-		"mood": "pleasant"
+		"mood": 3
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -94,7 +106,7 @@
 		"size": [133, 30],
 		"text": "DISTRAUGHT",
 		"icon": "$path/distraught.gif",
-		"mood": "distraught"
+		"mood": 4
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -102,7 +114,7 @@
 		"size": [133, 30],
 		"text": "UNRULY",
 		"icon": "$path/unruly.gif",
-		"mood": "unruly"
+		"mood": 5
 	  },
 	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
 		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
@@ -110,7 +122,7 @@
 		"size": [133, 30],
 		"text": "SMOOTH",
 		"icon": "$path/smooth.gif",
-		"mood": "smooth"
+		"mood": 6
 	  },
 	  { "style": "text-align:left; background: red; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:left; background: red; border:3px solid black; padding: 5px;font: bold;",
@@ -118,7 +130,7 @@
 		"size": [133, 30],
 		"text": "RANCOROUS",
 		"icon": "$path/rancorous.gif",
-		"mood": "rancorous"
+		"mood": 1
 	  },
 	  { "style": "text-align:center; background: #919191; border:3px solid black; padding: 5px;", 
 		"selected": "text-align:center; background: #919191; border:3px solid black; padding: 5px;font: bold;",
@@ -126,14 +138,16 @@
 		"size": [263, 30],
 		"text": "ABSCOND",
 		"icon": "$path/offline.gif",
-		"mood": "offline"
+		"mood": 2
 	  }
   ]
  },
  "convo":
  {"style": "background: #fdb302; font-family: 'Courier New'",
   "size": [600, 500],
-  "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);" },
+  "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);",
+                 "text" : ":: $handle ::" 
+               },
   "textarea": {
       "style": "background: white;font:bold;"
   },
@@ -144,6 +158,10 @@
       "style": "",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
+  },
+  "text": {
+      "beganpester": "began pestering",
+      "ceasepester": "ceased pestering"
   }
  }
  
