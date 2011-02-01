@@ -75,7 +75,7 @@ class PesterProfileDB(dict):
             fp = open("logs/chums.js", 'w')
             json.dump(chumdict, fp)
             fp.close()
-        converted = dict([(handle, PesterProfile(handle, color=QtGui.Color(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
+        converted = dict([(handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
         self.update(converted)
 
     def save(self):
@@ -85,8 +85,10 @@ class PesterProfileDB(dict):
         fp.close()
     def getColor(self, handle, default=None):
         if not self.has_key(handle):
+            print "no color found for %s" % (handle)
             return default
         else:
+            print "pulled %s from db" % (handle)
             return self[handle]["color"]
     def setColor(self, handle, color):
         if self.has_key(handle):

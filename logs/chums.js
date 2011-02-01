@@ -1,0 +1,1 @@
+{"gamblingGenocider": {"color": "#00ff00", "handle": "gamblingGenocider", "mood": "offline"}, "aquaMarinist": {"color": "#00caca", "handle": "aquaMarinist", "mood": "offline"}, "unknownTraveler": {"color": "#006666", "handle": "unknownTraveler", "mood": "offline"}, "captainCaveman": {"color": "#7c414e", "handle": "captainCaveman", "mood": "offline"}}

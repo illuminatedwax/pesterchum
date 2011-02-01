@@ -1,14 +1,18 @@
 Features:
-* chumdb still trying to serialize QString?
-* Windows: courier doesn't bold??
-* Transparent background
+* chumdb not working great
+* tab recombining gives wrong window icon
 * switch focus to lineedit
 * colors from ppl msging you not on your buddy list dont work - check chumdb
 * scaling icons
 * menubar should pass on mouse move
+* tab background
+* softcode conversation handle
+* top box layout
+* mood change image -- can't it be done already?
 * chat scrolls when switch theme
 * softcode menu names and protocol messages, menu location
 * eliminate "SWITCH" in profile menu
+* remove highlighted text area if focus in textinput
 * windows text goes gray when out of focus
 * Logging
 * Block list
@@ -17,18 +21,23 @@ Features:
 * User commands/stop user from sending commands accidentally
 * Hyperlinks
 * color tags
-* /me
+* /me ghostDunk's [GD'S]
+* Transparent background
 -- release alpha
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * User profile menu options (color...?)
 * System tray menu
 * comment history (up button)
+* page up/down scrolling
+* ctrl-tab should prefer new convos
 * Chat rooms/browser
 * More complex quirks
 * Implement TC options
 * spell check?
+* Help menu
 -- release beta
+* pick your own icon
 * time codes
 * theme elements define, implement
 * Theme checking
