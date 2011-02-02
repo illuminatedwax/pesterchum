@@ -32,7 +32,9 @@
                         "color": "Hemospectrum",
                         "quirks": "Annoying"},
             "rclickchumlist": {"pester": "Troll",
-                               "removechum": "Trash"}
+                               "removechum": "Trash",
+                               "blockchum": "Block",
+                               "unblockchum": "Mercy"}
            },
   "chums": { "style": "border: 0px; background-color: white; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [476, 90],
