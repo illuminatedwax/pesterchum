@@ -1,1 +1,1 @@
-{"tabs": true, "chums": ["aquaMarinist", "gardenGnostic", "gamblingGenocider", "schlagzeugGator", "mechanicalSpectacle", "marineAquist", "unknownTraveler", "tentacleTherapist", "macruralAlchemist"], "defaultprofile": "testProfile"}
+{"tabs": true, "chums": ["aquaMarinist", "gardenGnostic", "gamblingGenocider", "schlagzeugGator", "marineAquist", "unknownTraveler", "tentacleTherapist", "macruralAlchemist", "fireSwallow", "vaginalEngineer", "mechanicalSpectacle"], "defaultprofile": "ghostDunk"}

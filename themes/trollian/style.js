@@ -29,6 +29,7 @@
             "profile": {"_name": "View",
                         "switch": "Trolltag",
                         "theme": "Theme",
+                        "color": "Hemospectrum",
                         "quirks": "Annoying"},
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash"}
@@ -51,6 +52,7 @@
 "distraught": { "icon": "$path/distraught.png", "color": "#706eba" },
 
 "unruly": { "icon": "$path/unruly.png", "color": "blue" },
+
 
 "smooth": { "icon": "$path/smooth.png", "color": "red" },
 
@@ -77,7 +79,9 @@
 
 "acceptant": { "icon": "$path/acceptant.png", "color": "#a10000" },
 
-"protective": { "icon": "$path/protective.png", "color": "white" }
+"protective": { "icon": "$path/protective.png", "color": "white" },
+
+"blocked": { "icon": "$path/blocked.gif", "color": "black" }
 					
                       }
            },
@@ -101,6 +105,11 @@
   "pester": { "style": "background: rgba(0,0,0,0); border:0px; color: rgba(0,0,0,0);",
                "loc": [0,0],
                "size": [0, 0],
+               "text": ""
+             },
+  "block": { "style": "background: rgba(0,0,0,0); border:0px; color: rgba(0,0,0,0);",
+               "loc": [1500,202],
+               "size": [71, 22],
                "text": ""
              },
   "defaultmood": 7,
@@ -239,7 +248,9 @@
   },
   "text": {
       "beganpester": "began trolling",
-      "ceasepester": "gave up trolling"
+      "ceasepester": "gave up trolling",
+      "blocked": "blocked",
+      "unblocked": "mercifully forgave"
   },
   "systemMsgColor": "#646464"
  }

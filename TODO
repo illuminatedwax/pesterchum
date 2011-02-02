@@ -1,8 +1,4 @@
 Features:
-* chat scrolls when switch theme
-* remove highlighted text area if focus in textinput
-* windows text goes gray when out of focus?
-* Block list
 * User list/add from list
 * Turn quirks off
 * User commands/stop user from sending commands accidentally
@@ -15,7 +11,6 @@ Features:
 -- release alpha
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
-* User profile menu options (color...?)
 * System tray menu
 * comment history (up button)
 * page up/down scrolling

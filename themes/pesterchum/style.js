@@ -20,10 +20,14 @@
                        "exit": "EXIT"},
             "profile": {"_name": "PROFILE",
                         "switch": "SWITCH",
+                        "color": "COLOR",
                         "theme": "THEME",
                         "quirks": "QUIRKS"},
             "rclickchumlist": {"pester": "PESTER",
-                               "removechum": "REMOVE CHUM"}
+                               "removechum": "REMOVE CHUM",
+                               "blockchum": "BLOCK",
+                               "unblockchum": "UNBLOCK"
+                              }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
              "loc": [12, 117],
@@ -53,7 +57,9 @@
 						"smooth": { "icon": "$path/smooth.gif",
 									"color": "white" },
 						"unruly": { "icon": "$path/unruly.gif",
-									"color": "white" }
+									"color": "white" },
+                        "blocked": { "icon": "$path/blocked.gif",
+                                     "color": "black" }
                       }
            },
   "mychumhandle": { "label": { "text": "CHUMHANDLE:",
@@ -77,6 +83,11 @@
                "loc": [150,202],
                "size": [71, 22],
                "text": "PESTER!"
+             },
+  "block": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",
+               "loc": [1500,202],
+               "size": [0, 0],
+               "text": "BLOCK"
              },
   "defaultmood": 0,
   "moodlabel": { "style": "",
@@ -165,7 +176,9 @@
   },
   "text": {
       "beganpester": "began pestering",
-      "ceasepester": "ceased pestering"
+      "ceasepester": "ceased pestering",
+      "blocked": "blocked",
+      "unblocked": "unblocked"
   },
   "systemMsgColor": "#646464"
  }
