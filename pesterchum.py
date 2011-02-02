@@ -18,7 +18,8 @@ logging.basicConfig(level=logging.INFO)
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
              "unruly", "smooth", "ecstatic", "relaxed", "discontent", 
-             "devious", "sleek", "detestful"]
+             "devious", "sleek", "detestful", "mirthful", "manipulative",
+             "vigorous", "perky", "acceptant", "protective"]
     def __init__(self, mood):
         if type(mood) is int:
             self.mood = mood
@@ -34,7 +35,83 @@ class Mood(object):
         return name
     def icon(self, theme):
         f = theme["main/chums/moods"][self.name()]["icon"]
-        return QtGui.QIcon(f)
+        return PesterIcon(f)
+
+_ctag_begin = re.compile(r'<c=(.*?)>')
+_ctag_rgb = re.compile(r'\d+,\d+,\d+')
+
+def convertColorTags(string, format="html"):
+    if format not in ["html", "bbcode", "ctag"]:
+        raise ValueError("Color format not recognized")
+    def repfunc(matchobj):
+        color = matchobj.group(1)
+        if _ctag_rgb.match(color) is not None:
+            if format=='ctag':
+                return "<c=%s,%s,%s>"
+            qc = QtGui.QColor(*color.split(","))
+        else:
+            qc = QtGui.QColor(color)
+        if not qc.isValid():
+            qc = QtGui.QColor("black")
+        if format == "html":
+            return '<span style="color:%s">' % (qc.name())
+        elif format == "bbcode":
+            return '[color=%s]' % (qc.name())
+        elif format == "ctag":
+            (r,g,b,a) = qc.getRgb()
+            return '<c=%s,%s,%s>' % (r,g,b)
+    string = _ctag_begin.sub(repfunc, string)
+    endtag = {"html": "</span>", "bbcode": "[/color]", "ctag": "</c>"}
+    string = string.replace("</c>", endtag[format])
+    return string
+
+def escapeBrackets(string):
+    class beginTag(object):
+        def __init__(self, tag):
+            self.tag = tag
+    class endTag(object):
+        pass
+    newlist = []
+    begintagpos = [(m.start(), m.end()) for m in _ctag_begin.finditer(string)]
+    lasti = 0
+    for (s, e) in begintagpos:
+        newlist.append(string[lasti:s])
+        newlist.append(beginTag(string[s:e]))
+        lasti = e
+    if lasti < len(string):
+        newlist.append(string[lasti:])
+    tmp = []
+    for o in newlist:
+        if type(o) is not beginTag:
+            l = o.split("</c>")
+            tmp.append(l[0])
+            l = l[1:]
+            for item in l:
+                tmp.append(endTag())
+                tmp.append(item)
+        else:
+            tmp.append(o)
+    btlen = 0
+    etlen = 0
+    retval = ""
+    newlist = tmp
+    for o in newlist:
+        if type(o) is beginTag:
+            retval += o.tag.replace("&", "&amp;")
+            btlen +=1
+        elif type(o) is endTag:
+            if etlen >= btlen:
+                continue
+            else:
+                retval += "</c>"
+                etlen += 1
+        else:
+            retval += o.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    if btlen > etlen:
+        for i in range(0, btlen-etlen):
+            retval += "</c>"
+    return retval
+                
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -64,6 +141,30 @@ class waitingMessageHolder(object):
 
 class NoneSound(object):
     def play(self): pass
+
+class PesterLog(object):
+    def __init__(self, handle):
+        self.handle = handle
+        if not os.path.exists("logs/%s" % (handle)):
+            os.mkdir("logs/%s" % (handle))
+        self.convos = {}
+    def log(self, handle, msg):
+        if not self.convos.has_key(handle):
+            time = datetime.now().strftime("%Y-%m-%d.%H:%M")
+            if not os.path.exists("logs/%s/%s" % (self.handle, handle)):
+                os.mkdir("logs/%s/%s" % (self.handle, handle))
+            fp = open("logs/%s/%s/%s.%s" % (self.handle, handle, handle, time), 'a')
+            self.convos[handle] = fp
+        self.convos[handle].write(msg+"\n")
+        self.convos[handle].flush()
+    def finish(self, handle):
+        if not self.convos.has_key(handle):
+            return
+        self.convos[handle].close()
+        del self.convos[handle]
+    def close(self):
+        for h in self.convos.keys():
+            self.close(h)
 
 class PesterProfileDB(dict):
     def __init__(self):
@@ -124,10 +225,10 @@ class PesterProfile(object):
                               "mood": self.mood.name(),
                               "color": unicode(self.color.name())})
 
-    def beganpestermsg(self, otherchum, verb="began pestering"):
-        return "<span style='color:black;'>-- %s <span style='color:%s'>[%s]</span> %s %s <span style='color:%s'>[%s]</span> at %s --</span>" % (self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
-    def ceasedpestermsg(self, otherchum, verb="ceased pestering"):
-        return "<span style='color:black;'>-- %s <span style='color:%s'>[%s]</span> %s %s <span style='color:%s'>[%s]</span> at %s --</span>" % (self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
+    def beganpestermsg(self, otherchum, syscolor, verb="began pestering"):
+        return "<c=%s>-- %s <c=%s>[%s]</c> %s %s <c=%s>[%s]</c> at %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
+    def ceasedpestermsg(self, otherchum, syscolor, verb="ceased pestering"):
+        return "<c=%s>-- %s <c=%s>[%s]</c> %s %s <c=%s>[%s]</c> at %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
 
     @staticmethod
     def checkLength(handle):
@@ -643,6 +744,7 @@ class PesterOptions(QtGui.QDialog):
 class WMButton(QtGui.QPushButton):
     def __init__(self, icon, parent=None):
         QtGui.QPushButton.__init__(self, icon, "", parent)
+        self.setIconSize(icon.realsize())
         self.setFlat(True)
         self.setStyleSheet("QPushButton { padding: 0px; }")
         self.setAutoDefault(False)
@@ -775,8 +877,9 @@ class PesterMoodHandler(QtCore.QObject):
 
 class PesterMoodButton(QtGui.QPushButton):
     def __init__(self, parent, **options):
-        icon = QtGui.QIcon(options["icon"])
+        icon = PesterIcon(options["icon"])
         QtGui.QPushButton.__init__(self, icon, options["text"], parent)
+        self.setIconSize(icon.realsize())
         self.setFlat(True)
         self.resize(*options["size"])
         self.move(*options["loc"])
@@ -794,6 +897,22 @@ class PesterMoodButton(QtGui.QPushButton):
     def updateMood(self):
         self.moodUpdated.emit(self.mood.value())
     moodUpdated = QtCore.pyqtSignal(int)
+
+class PesterIcon(QtGui.QIcon):
+    def __init__(self, *x, **y):
+        QtGui.QIcon.__init__(self, *x, **y)
+        if type(x[0]) in [str, unicode]:
+            self.icon_pixmap = QtGui.QPixmap(x[0])
+        else:
+            self.icon_pixmap = None
+    def realsize(self):
+        if self.icon_pixmap:
+            return self.icon_pixmap.size()
+        else:
+            try:
+                return self.availableSizes()[0]
+            except IndexError:
+                return None
 
 class MovingWindow(QtGui.QFrame):
     def __init__(self, *x, **y):
@@ -831,7 +950,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.connect(self.tabs, QtCore.SIGNAL('tabCloseRequested(int)'),
                      self, QtCore.SLOT('tabClose(int)'))
         self.tabs.setShape(self.mainwindow.theme["convo/tabs/tabstyle"])
-        self.tabs.setStyleSheet("QTabBar::tabs{ %s }" % (self.mainwindow.theme["convo/tabs/style"]))
+        self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (self.mainwindow.theme["convo/tabs/style"], self.mainwindow.theme["convo/tabs/selectedstyle"]))
 
         self.layout = QtGui.QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
@@ -986,6 +1105,7 @@ class PesterText(QtGui.QTextEdit):
         self.setReadOnly(True)
     def addMessage(self, text, chum):
         color = chum.colorhtml()
+        systemColor = QtGui.QColor(self.parent().mainwindow.theme["convo/systemMsgColor"])
         initials = chum.initials()
         msg = unicode(text)
         if msg == "PESTERCHUM:BEGIN":
@@ -993,31 +1113,37 @@ class PesterText(QtGui.QTextEdit):
             parent.setChumOpen(True)
             window = parent.mainwindow
             me = window.profile()
-            msg = chum.beganpestermsg(me, window.theme["convo/text/beganpester"])
-            self.append(msg)
+            msg = chum.beganpestermsg(me, systemColor, window.theme["convo/text/beganpester"])
+            window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
+            self.append(convertColorTags(msg))
         elif msg == "PESTERCHUM:CEASE":
             parent = self.parent()
             parent.setChumOpen(False)
             window = parent.mainwindow
             me = window.profile()
-            msg = chum.ceasedpestermsg(me, window.theme["convo/text/ceasepester"])
-            self.append(msg)
+            msg = chum.ceasedpestermsg(me, systemColor, window.theme["convo/text/ceasepester"])
+            window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
+            self.append(convertColorTags(msg))
         else:
             if not self.parent().chumopen and chum is not self.parent().mainwindow.profile():
                 me = self.parent().mainwindow.profile()
-                beginmsg = chum.beganpestermsg(me, self.parent().mainwindow.theme["convo/text/beganpester"])
+                beginmsg = chum.beganpestermsg(me, systemColor, self.parent().mainwindow.theme["convo/text/beganpester"])
                 self.parent().setChumOpen(True)
-                self.append(beginmsg)
+                self.parent().mainwindow.chatlog.log(chum.handle, convertColorTags(beginmsg, "bbcode"))
+                self.append(convertColorTags(beginmsg))
                 
-            msg = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            self.append("<span style='color:%s'>%s: %s</span>" % \
-                            (color, initials, msg))
+            msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
+            msg = escapeBrackets(msg)
+            self.append(convertColorTags(msg))
+            if chum.handle == self.parent().mainwindow.profile().handle:
+                self.parent().mainwindow.chatlog.log(self.parent().chum.handle, convertColorTags(msg, "bbcode"))
+            else:
+                self.parent().mainwindow.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
     def changeTheme(self, theme):
         self.setStyleSheet(theme["convo/textarea/style"])
     def focusInEvent(self, event):
         self.parent().clearNewMessage()
         QtGui.QTextEdit.focusInEvent(self, event)
-        self.parent().textInput.setFocus()
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
@@ -1045,6 +1171,10 @@ class PesterConvo(QtGui.QFrame):
         
         self.chumLabel = QtGui.QLabel(t.safe_substitute(handle=chum.handle), self)
         self.chumLabel.setStyleSheet(self.mainwindow.theme["convo/chumlabel/style"])
+        self.chumLabel.setAlignment(self.aligndict["h"][self.mainwindow.theme["convo/chumlabel/align/h"]] | self.aligndict["v"][self.mainwindow.theme["convo/chumlabel/align/v"]])
+        self.chumLabel.setMaximumHeight(self.mainwindow.theme["convo/chumlabel/maxheight"])
+        self.chumLabel.setMinimumHeight(self.mainwindow.theme["convo/chumlabel/minheight"])
+        self.chumLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding))
         self.textArea = PesterText(self.mainwindow.theme, self)
         self.textInput = PesterInput(self.mainwindow.theme, self)
         self.textInput.setFocus()
@@ -1056,7 +1186,8 @@ class PesterConvo(QtGui.QFrame):
         self.layout.addWidget(self.chumLabel)
         self.layout.addWidget(self.textArea)
         self.layout.addWidget(self.textInput)
-
+        self.layout.setSpacing(0)
+        
         self.setLayout(self.layout)
 
         self.chumopen = False
@@ -1064,14 +1195,16 @@ class PesterConvo(QtGui.QFrame):
         if parent:
             parent.addChat(self)
         if initiated:
-            msg = self.mainwindow.profile().beganpestermsg(self.chum, self.mainwindow.theme["convo/text/beganpester"])
-            self.textArea.append(msg)
+            msg = self.mainwindow.profile().beganpestermsg(self.chum, QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/beganpester"])
+            self.textArea.append(convertColorTags(msg))
+            self.mainwindow.chatlog.log(self.chum.handle, convertColorTags(msg, "bbcode"))
         self.newmessage = False
 
     def updateMood(self, mood):
         if mood.name() == "offline" and self.chumopen == True:
-            msg = self.chum.ceasedpestermsg(self.mainwindow.profile(), self.mainwindow.theme["convo/text/ceasepester"])
-            self.textArea.append(msg)
+            msg = self.chum.ceasedpestermsg(self.mainwindow.profile(), QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/ceasepester"])
+            self.textArea.append(convertColorTags(msg))
+            self.mainwindow.chatlog.log(self.chum.handle, convertColorTags(msg, "bbcode"))
             self.chumopen = False
         if self.parent():
             self.parent().updateMood(self.chum.handle, mood)
@@ -1114,6 +1247,7 @@ class PesterConvo(QtGui.QFrame):
             # reset system tray
     def focusInEvent(self, event):
         self.clearNewMessage()
+        self.textInput.setFocus()
     def raiseChat(self):
         self.activateWindow()
         self.raise_()
@@ -1136,6 +1270,10 @@ class PesterConvo(QtGui.QFrame):
         t = Template(self.mainwindow.theme["convo/chumlabel/text"])
         self.chumLabel.setText(t.safe_substitute(handle=self.chum.handle))
         self.chumLabel.setStyleSheet(theme["convo/chumlabel/style"])
+        self.chumLabel.setAlignment(self.aligndict["h"][self.mainwindow.theme["convo/chumlabel/align/h"]] | self.aligndict["v"][self.mainwindow.theme["convo/chumlabel/align/v"]])
+        self.chumLabel.setMaximumHeight(self.mainwindow.theme["convo/chumlabel/maxheight"])
+        self.chumLabel.setMinimumHeight(self.mainwindow.theme["convo/chumlabel/minheight"])
+        self.chumLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding))
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
 
@@ -1157,10 +1295,18 @@ class PesterConvo(QtGui.QFrame):
     messageSent = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
     windowClosed = QtCore.pyqtSignal(QtCore.QString)
 
+    aligndict = {"h": {"center": QtCore.Qt.AlignHCenter,
+                       "left": QtCore.Qt.AlignLeft,
+                       "right": QtCore.Qt.AlignRight },
+                 "v": {"center": QtCore.Qt.AlignVCenter,
+                       "top": QtCore.Qt.AlignTop,
+                       "bottom": QtCore.Qt.AlignBottom } }
+
 class PesterWindow(MovingWindow):
     def __init__(self, parent=None):
         MovingWindow.__init__(self, parent, 
-                              flags=QtCore.Qt.CustomizeWindowHint)
+                              flags=(QtCore.Qt.CustomizeWindowHint | 
+                                     QtCore.Qt.FramelessWindowHint))
 
         self.convos = {}
         self.tabconvo = None
@@ -1173,6 +1319,8 @@ class PesterWindow(MovingWindow):
         else:
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
             self.theme = self.userprofile.getTheme()
+
+        self.chatlog = PesterLog(self.profile().handle)
 
         self.move(100, 100)
 
@@ -1211,10 +1359,10 @@ class PesterWindow(MovingWindow):
         profilemenu.addAction(changequirks)
         profilemenu.addAction(switch)
 
-        self.closeButton = WMButton(QtGui.QIcon(self.theme["main/close/image"]), self)
+        self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('close()'))
-        self.miniButton = WMButton(QtGui.QIcon(self.theme["main/minimize/image"]), self)
+        self.miniButton = WMButton(PesterIcon(self.theme["main/minimize/image"]), self)
         self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('showMinimized()'))
 
@@ -1338,13 +1486,17 @@ class PesterWindow(MovingWindow):
             self.choosetheme.exec_()
     def initTheme(self, theme):
         self.resize(*theme["main/size"])
-        self.setWindowIcon(QtGui.QIcon(theme["main/icon"]))
+        self.setWindowIcon(PesterIcon(theme["main/icon"]))
         self.setWindowTitle(theme["main/windowtitle"])
         self.setStyleSheet("QFrame#main { "+theme["main/style"]+" }")
         self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; %s } " % (theme["main/menubar/style"], theme["main/menu/menuitem"]) + "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (theme["main/menu/style"], theme["main/menu/selected"]))
-        self.closeButton.setIcon(QtGui.QIcon(theme["main/close/image"]))
+        newcloseicon = PesterIcon(theme["main/close/image"])
+        self.closeButton.setIcon(newcloseicon)
+        self.closeButton.setIconSize(newcloseicon.realsize())
         self.closeButton.move(*theme["main/close/loc"])
-        self.miniButton.setIcon(QtGui.QIcon(theme["main/minimize/image"]))
+        newminiicon = PesterIcon(theme["main/minimize/image"])
+        self.miniButton.setIcon(newminiicon)
+        self.miniButton.setIconSize(newminiicon.realsize())
         self.miniButton.move(*theme["main/minimize/loc"])
         # menus
         self.menu.move(*theme["main/menu/loc"])
@@ -1444,10 +1596,13 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def closeConvo(self, handle):
         h = unicode(handle)
+        chum = self.convos[h].chum
         chumopen = self.convos[h].chumopen
-        del self.convos[h]
         if chumopen:
+            self.chatlog.log(chum.handle, convertColorTags(self.profile().ceasedpestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]), "bbcode"))
+            self.chatlog.finish(h)
             self.convoClosed.emit(handle)
+        del self.convos[h]
     @QtCore.pyqtSlot()
     def tabsClosed(self):
         del self.tabconvo
@@ -1597,6 +1752,9 @@ class PesterWindow(MovingWindow):
                                     self.chooseprofile.chumcolor)
             self.userprofile = userProfile.newUserProfile(profile)
             self.changeTheme(self.userprofile.getTheme())
+
+        self.chatlog.close()
+        self.chatlog = PesterLog(handle)
 
         # is default?
         if self.chooseprofile.defaultcheck.isChecked():
@@ -1818,9 +1976,9 @@ class PesterTray(QtGui.QSystemTrayIcon):
     @QtCore.pyqtSlot(int)
     def changeTrayIcon(self, i):
         if i == 0:
-            self.setIcon(QtGui.QIcon(self.mainwindow.theme["main/icon"]))
+            self.setIcon(PesterIcon(self.mainwindow.theme["main/icon"]))
         else:
-            self.setIcon(QtGui.QIcon(self.mainwindow.theme["main/newmsgicon"]))
+            self.setIcon(PesterIcon(self.mainwindow.theme["main/newmsgicon"]))
 
 def main():
 
@@ -1833,7 +1991,7 @@ def main():
     widget = PesterWindow()
     widget.show()
 
-    trayicon = PesterTray(QtGui.QIcon(widget.theme["main/icon"]), widget, app)
+    trayicon = PesterTray(PesterIcon(widget.theme["main/icon"]), widget, app)
     trayicon.show()
     
     trayicon.connect(trayicon, 

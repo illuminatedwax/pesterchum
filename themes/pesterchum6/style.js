@@ -145,23 +145,29 @@
  "convo":
  {"style": "background: #fdb302; border:2px solid yellow; font-family: 'Courier'",
   "size": [295, 191],
-  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; text-align:center;",
-                 "text" : ":: $handle ::" },
+  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px;",
+                 "align": { "h": "center", "v": "center" },
+                 "minheight": 30,
+                 "maxheight": 50,
+                 "text" : ":: $handle ::"
+               },
   "textarea": {
       "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center;"
   },
   "input": {
-      "style": "background: white; border:2px solid #c48a00;"
+      "style": "background: white; border:2px solid #c48a00;margin-top:5px;"
   },
   "tabs": {
       "style": "",
+      "selectedstyle": "",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
   },
   "text": {
       "beganpester": "began pestering",
       "ceasepester": "ceased pestering"
-  }
+  },
+  "systemMsgColor": "#646464"
  }
  
 }

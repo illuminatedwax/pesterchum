@@ -1,18 +1,18 @@
 {"main":
  {"style": "background-image:url($path/pcbg.png);",
-  "size": [300, 620],
-  "icon": "$path/trayicon.gif",
+  "size": [232, 380],
+  "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
-  "windowtitle": "P3ST3RCHUM",
+  "windowtitle": "PESTERCHUM",
   "close": { "image": "$path/x.gif",
-             "loc": [275, 0]},
+             "loc": [210, 2]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [255, 0]},
-  "menubar": { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px;" },
-  "menu" : { "style": "font-family: 'Courier New'; font-weight: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
-             "selected": "background-color: #ffff00",
+                "loc": [190, 2]},
+  "menubar": { "style": "font-family: 'Courier'; font:bold; font-size: 12px;" },
+  "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
              "menuitem": "margin-right:10px;",
-             "loc": [7,3]
+             "selected": "background-color: #ffff00",
+             "loc": [10,0]
            },
   "sounds": { "alertsound": "$path/alarm.wav" },
   "menus": {"client": {"_name": "CLIENT",
@@ -25,13 +25,13 @@
             "rclickchumlist": {"pester": "PESTER",
                                "removechum": "REMOVE CHUM"}
            },
-  "chums": { "style": "background-color: black;color: white;font: bold;font-family: 'Courier New';selection-background-color:#919191; ",
-             "loc": [20, 65],
-             "size": [266, 270],
+  "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
+             "loc": [12, 117],
+             "size": [209, 82],
              "moods": { "chummy": { "icon": "$path/chummy.gif",
                                     "color": "white" },
                         "offline": { "icon": "$path/offline.gif",
-                                     "color": "#919191"},
+                                     "color": "#646464"},
                         "rancorous": { "icon": "$path/rancorous.gif",
                                        "color": "red" },
 						"detestful": { "icon": "$path/detestful.gif",
@@ -56,26 +56,26 @@
 									"color": "white" }
                       }
            },
-  "mychumhandle": { "label": { "text": "MYCHUMHANDLE",
-                               "loc": [70,380],
-                               "style": "color:black;font:bold;" },
-                    "handle": { "style": "border:3px solid yellow; background: black; color:white;",
-                                "loc": [20,400],
-                                "size": [220,30] },
-                    "colorswatch": { "loc": [243,400],
-                                     "size": [40,30],
+  "mychumhandle": { "label": { "text": "CHUMHANDLE:",
+                               "loc": [19,232],
+                 "style": "color: rgba(255, 255, 0, 0%) ;font:bold; font-family: 'Courier';" },
+                    "handle": { "style": "background: black; padding: 3px; color:white; font-family:'Courier'; font:bold; text-align:left;",
+                             "loc": [14,246],
+                                "size": [190, 21] },
+                    "colorswatch": { "loc": [196,246],
+                                     "size": [23,21],
                                      "text": "" }
                   },
-  "defaultwindow": { "style": "background: #fdb302; font-family:'Courier New';font:bold;selection-background-color:#919191; " 
+  "defaultwindow": { "style": "background: #fdb302; font-family:'Courier';font:bold;selection-background-color:#919191; " 
                    },
-  "addchum": { "style": "background: #fdb302; border:5px solid yellow; font: bold;",
-               "loc": [20,340],
-               "size": [100, 40],
+  "addchum":  { "style": "background: rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+               "loc": [12,202],
+               "size": [71, 22],
                "text": "ADD CHUM"
              },
-  "pester": { "style": "background: #fdb302; border:5px solid yellow; font: bold;",
-               "loc": [130,340],
-               "size": [100, 40],
+  "pester": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",
+               "loc": [150,202],
+               "size": [71, 22],
                "text": "PESTER!"
              },
   "defaultmood": 0,
@@ -84,85 +84,90 @@
 				 "text": "MOODS"
 			   },
   "moods": [
-      { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
-		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [20, 470],
-		"size": [133, 30],
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck1.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [12, 288],
+		"size": [104, 22],
 	    "text": "CHUMMY",
 		"icon": "$path/chummy.gif",
 		"mood": 0
 	  },
-	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color: #919191", 
-		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [20, 497],
-		"size": [133, 30],
-		"text": "PLEASANT",
-		"icon": "$path/pleasant.gif",
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck2.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [12, 308],
+		"size": [104, 22],
+		"text": "PALSY",
+		"icon": "$path/chummy.gif",
 		"mood": 3
 	  },
-	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
-		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [20, 524],
-		"size": [133, 30],
-		"text": "DISTRAUGHT",
-		"icon": "$path/distraught.gif",
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck3.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [12, 328],
+		"size": [104, 22],
+		"text": "CHIPPER",
+		"icon": "$path/chummy.gif",
 		"mood": 4
 	  },
-	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
-		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [150, 470],
-		"size": [133, 30],
-		"text": "UNRULY",
-		"icon": "$path/unruly.gif",
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck2.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [117, 288],
+		"size": [104, 22],
+		"text": "BULLY",
+		"icon": "$path/chummy.gif",
 		"mood": 5
 	  },
-	  { "style": "text-align:left; background: white; border:3px solid black; padding: 5px;color:#919191;", 
-		"selected": "text-align:left; background: white; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [150, 497],
-		"size": [133, 30],
-		"text": "SMOOTH",
-		"icon": "$path/smooth.gif",
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck2.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [117, 308],
+		"size": [104, 22],
+		"text": "PEPPY",
+		"icon": "$path/chummy.gif",
 		"mood": 6
 	  },
-	  { "style": "text-align:left; background: red; border:3px solid black; padding: 5px;", 
-		"selected": "text-align:left; background: red; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [150, 524],
-		"size": [133, 30],
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck4.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [117, 328],
+		"size": [104, 22],
 		"text": "RANCOROUS",
 		"icon": "$path/rancorous.gif",
 		"mood": 1
 	  },
-	  { "style": "text-align:center; background: #919191; border:3px solid black; padding: 5px;", 
-		"selected": "text-align:center; background: #919191; border:3px solid black; padding: 5px;font: bold;",
-		"loc": [20, 551],
-		"size": [263, 30],
+                { "style": "text-align:left; border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier'", 
+		"selected": "text-align:left; background-image:url($path/moodcheck5.gif); border:2px solid #c48a00; padding: 5px;color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+		"loc": [12, 348],
+		"size": [209, 22],
 		"text": "ABSCOND",
-		"icon": "$path/offline.gif",
+		"icon": "$path/x.gif",
 		"mood": 2
 	  }
   ]
  },
  "convo":
- {"style": "background: #fdb302; font-family: 'Courier New'",
-  "size": [600, 500],
-  "chumlabel": { "style": "background: rgba(255, 255, 255, 25%);",
-                 "text" : ":: $handle ::" 
+ {"style": "background: #fdb302; border:2px solid yellow; font-family: 'Courier'",
+  "size": [295, 191],
+  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px;",
+                 "align": { "h": "center", "v": "center" },
+                 "minheight": 30,
+                 "maxheight": 50,
+                 "text" : ":: $handle ::"
                },
   "textarea": {
-      "style": "background: white;font:bold;"
+      "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center;"
   },
   "input": {
-      "style": "background: white;"
+      "style": "background: white; border:2px solid #c48a00;margin-top:5px;"
   },
   "tabs": {
       "style": "",
+      "selectedstyle": "",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
   },
   "text": {
       "beganpester": "began pestering",
       "ceasepester": "ceased pestering"
-  }
+  },
+  "systemMsgColor": "#646464"
  }
  
 }
