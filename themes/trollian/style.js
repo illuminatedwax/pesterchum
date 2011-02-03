@@ -30,6 +30,7 @@
                         "switch": "Trolltag",
                         "theme": "Theme",
                         "color": "Hemospectrum",
+                        "block": "Trollslum",
                         "quirks": "Annoying"},
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
@@ -87,6 +88,13 @@
 					
                       }
            },
+  "trollslum": { 
+      "style": "background:  rgb(190, 19, 4); font-family: 'Arial'",
+      "size": [175, 461],
+      "label": { "text": "TROLLSLUM",
+                 "style": "color: rgba(0, 0, 0, 100%) ;font:bold; font-family: 'Arial';border: 0px;" },
+      "chumroll": {"style": "border: 0px; background-color: white; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); " }
+  },
   "mychumhandle": { "label": { "text": "",
                                "loc": [85,410],
                                "style": "color:rgba(0,0,0,0);" },

@@ -22,6 +22,7 @@
                         "switch": "SWITCH",
                         "color": "COLOR",
                         "theme": "THEME",
+                        "block": "TROLLSLUM",
                         "quirks": "QUIRKS"},
             "rclickchumlist": {"pester": "PESTER",
                                "removechum": "REMOVE CHUM",
@@ -62,6 +63,13 @@
                                      "color": "black" }
                       }
            },
+  "trollslum": { 
+      "style": "background: #fdb302; border:2px solid yellow; font-family: 'Courier'",
+      "size": [195, 200],
+      "label": { "text": "TROLLSLUM",
+                 "style": "color: rgba(0, 0, 0, 100%) ;font:bold; font-family: 'Courier';border:0px;" },
+      "chumroll": {"style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; " }
+  },
   "mychumhandle": { "label": { "text": "CHUMHANDLE:",
                                "loc": [19,232],
                  "style": "color: rgba(255, 255, 0, 0%) ;font:bold; font-family: 'Courier';" },
