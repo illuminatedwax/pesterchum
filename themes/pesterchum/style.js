@@ -35,7 +35,7 @@
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
              "loc": [12, 117],
              "size": [209, 82],
-             "userlistcolor": "black",
+             "userlistcolor": "white",
              "moods": { 
 
 "chummy": { "icon": "$path/chummy.gif", "color": "white" },

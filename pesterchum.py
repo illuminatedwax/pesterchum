@@ -859,6 +859,18 @@ class PesterText(QtGui.QTextEdit):
             msg = chum.pestermsg(me, systemColor, window.theme['convo/text/unblocked'])
             window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
             self.append(convertTags(msg))
+        elif msg[0:3] == "/me" or msg[0:13] == "PESTERCHUM:ME":
+            if msg[0:3] == "/me":
+                start = 3
+            else:
+                start = 13
+            space = msg.find(" ")
+            msg = chum.memsg(systemColor, msg[start:space], msg[space:])
+            if chum is me:
+                window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode"))
+            else:
+                window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
         else:
             if not parent.chumopen and chum is not me:
                 beginmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])

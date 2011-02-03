@@ -108,6 +108,9 @@ class PesterProfile(object):
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 
+    def memsg(self, syscolor, suffix, msg):
+        uppersuffix = suffix.upper()
+        return "<c=%s>-- %s%s <c=%s>[%s%s]</c> %s --</c>" % (syscolor.name(), self.handle, suffix, self.colorhtml(), self.initials(), uppersuffix, msg)
     def pestermsg(self, otherchum, syscolor, verb):
         return "<c=%s>-- %s <c=%s>[%s]</c> %s %s <c=%s>[%s]</c> at %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
 
