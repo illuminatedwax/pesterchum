@@ -17,6 +17,7 @@
   "sounds": { "alertsound": "$path/alarm.wav" },
   "menus": {"client": {"_name": "CLIENT",
                        "options": "OPTIONS",
+                       "userlist": "USERLIST",
                        "exit": "EXIT"},
             "profile": {"_name": "PROFILE",
                         "switch": "SWITCH",
@@ -27,7 +28,8 @@
             "rclickchumlist": {"pester": "PESTER",
                                "removechum": "REMOVE CHUM",
                                "blockchum": "BLOCK",
-                               "unblockchum": "UNBLOCK"
+                               "unblockchum": "UNBLOCK",
+                               "addchum": "Add Chump"
                               }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",

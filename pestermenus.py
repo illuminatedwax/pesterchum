@@ -1,6 +1,8 @@
 from PyQt4 import QtGui, QtCore
+import re
 
-from generic import RightClickList
+from generic import RightClickList, MultiTextDialog
+from pesterdata import pesterQuirk, PesterProfile
 
 class PesterQuirkItem(QtGui.QListWidgetItem):
     def __init__(self, quirk, parent):
@@ -120,6 +122,15 @@ class PesterChooseQuirks(QtGui.QDialog):
     def addRegexpDialog(self):
         vdict = MultiTextDialog("REGEXP REPLACE", self, {"label": "Regexp:", "inputname": "from"}, {"label": "Replace With:", "inputname": "to"}).getText()
         vdict["type"] = "regexp"
+        try:
+            re.compile(vdict["from"])
+        except re.error, e:
+            quirkWarning = QtGui.QMessageBox(self)
+            quirkWarning.setText("Not a valid regular expression!")
+            quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
+            quirkWarning.exec_()
+            return
+            
         quirk = pesterQuirk(vdict)
         item = PesterQuirkItem(quirk, self.quirkList)
         self.quirkList.addItem(item)
@@ -296,21 +307,82 @@ class PesterUserlist(QtGui.QDialog):
         self.setModal(False)
         self.config = config
         self.theme = theme
+        self.mainwindow = parent
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
-        self.resize([200, 600])
+        self.resize(200, 600)
 
         self.label = QtGui.QLabel("USERLIST")
         self.userarea = RightClickList(self)
         self.userarea.setStyleSheet(self.theme["main/chums/style"])
+        self.userarea.optionsMenu = QtGui.QMenu(self)
+
+        self.addChumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/addchum"], self)
+        self.connect(self.addChumAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('addChumSlot()'))
+        self.userarea.optionsMenu.addAction(self.addChumAction)
 
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('accept()'))
 
-        layout_0 = QVBoxLayout()
-        layout.addWidget(self.label)
-        layout.addWidget(self.userarea)
-        layout.addWidget(self.ok)
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.label)
+        layout_0.addWidget(self.userarea)
+        layout_0.addWidget(self.ok)
         
-        self.setLayout(layout)
+        self.setLayout(layout_0)
+
+        self.connect(self.mainwindow, QtCore.SIGNAL('namesUpdated()'),
+                     self, QtCore.SLOT('updateUsers()'))
+
+        self.connect(self.mainwindow, 
+                     QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
+                     self, 
+                     QtCore.SLOT('updateUserPresent(QString, QString, QString)'))
+        self.updateUsers()
+    @QtCore.pyqtSlot()
+    def updateUsers(self):
+        names = self.mainwindow.namesdb["#pesterchum"]
+        self.userarea.clear()
+        for n in names:
+            item = QtGui.QListWidgetItem(n)
+            item.setTextColor(QtGui.QColor(self.theme["main/chums/moods/chummy/color"]))
+            self.userarea.addItem(item)
+        self.userarea.sortItems()
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
+    def updateUserPresent(self, handle, channel, update):
+        h = unicode(handle)
+        c = unicode(channel)
+        if update == "quit":
+            self.delUser(h)
+        elif update == "left" and c == "#pesterchum":
+            self.delUser(h)
+        elif update == "join" and c == "#pesterchum":
+            self.addUser(h)
+    def addUser(self, name):
+        item = QtGui.QListWidgetItem(name)
+        item.setTextColor(QtGui.QColor(self.theme["main/chums/moods/chummy/color"]))
+        self.userarea.addItem(item)
+        self.userarea.sortItems()
+    def delUser(self, name):
+        matches = self.userarea.findItems(name, QtCore.Qt.MatchFlags(0))
+        for m in matches:
+            self.userarea.takeItem(self.userarea.row(m))
+
+    def changeTheme(self, theme):
+        self.setStyleSheet(theme["main/defaultwindow/style"])
+        self.userarea.setStyleSheet(theme["main/chums/style"])
+        self.addChumAction.setText(theme["main/menus/rclickchumlist/addchum"])
+        for item in [self.userarea.row(i) for i in range(0, self.userarea.count())]:
+            item.setTextColor(QtGui.QColor(self.theme["main/chums/moods/chummy/color"]))
+
+    @QtCore.pyqtSlot()
+    def addChumSlot(self):
+        cur = self.userarea.currentItem()
+        if not cur:
+            return
+        self.addChum.emit(cur.text())
+
+    addChum = QtCore.pyqtSignal(QtCore.QString)
+

@@ -23,8 +23,17 @@ def msg(cli, user, msg):
     for line in msg.split('\n'):
         cli.send("PRIVMSG", user, ":%s" % line)
 
-def nick(cli, nick):
-    cli.send("NICK", nick)
+def names(cli, *channels):
+    tmp = __builtins__['list'](channels)
+    msglist = []
+    while len(tmp) > 0:
+        msglist.append(tmp.pop())
+        if len(",".join(msglist)) > 490:
+            tmp.append(msglist.pop())
+            cli.send("NAMES %s" % (",".join(msglist)))
+            msglist = []
+    if len(msglist) > 0:
+        cli.send("NAMES %s" % (",".join(msglist)))
 
 def msgrandom(cli, choices, dest, user=None):
     o = "%s: " % user if user else ""

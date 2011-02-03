@@ -25,6 +25,7 @@
   "sounds": { "alertsound": "$path/alarm.wav" },
   "menus": {"client": {"_name": "Trollian",
                        "options": "Options",
+                       "userlist": "Target List",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
@@ -35,7 +36,8 @@
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
                                "blockchum": "Block",
-                               "unblockchum": "Mercy"}
+                               "unblockchum": "Mercy",
+                               "addchum": "Add Chump"}
            },
   "chums": { "style": "border: 0px; background-color: white; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [476, 90],
