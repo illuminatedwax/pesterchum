@@ -896,10 +896,9 @@ class PesterText(QtGui.QTextEdit):
 
     def mousePressEvent(self, event):
         url = self.anchorAt(event.pos())
-        if url == "":
-            return
-        else:
+        if url != "":
             QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
+        QtGui.QTextEdit.mousePressEvent(self, event)
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
