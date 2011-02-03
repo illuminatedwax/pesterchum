@@ -97,7 +97,10 @@ def escapeBrackets(string):
         for i in range(0, btlen-etlen):
             retval += "</c>"
     return retval
-                
+
+#_urlre = re.compile()
+#def findURLs(string):
+    
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -320,7 +323,7 @@ class userProfile(object):
     def save(self):
         handle = self.chat.handle
         try:
-            jsonoutput = json.dumps(self.userprofile, fp)
+            jsonoutput = json.dumps(self.userprofile)
         except ValueError, e:
             raise e
         fp = open("profiles/%s.js" % (handle), 'w')
@@ -862,6 +865,7 @@ class PesterText(QtGui.QTextEdit):
 
             msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
             msg = escapeBrackets(msg)
+            #msg = findURLs(msg)
             self.append(convertColorTags(msg))
             if chum is me:
                 window.chatlog.log(parent.chum.handle, convertColorTags(msg, "bbcode"))

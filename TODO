@@ -1,14 +1,13 @@
 Features:
-* Turn quirks off
-* User commands/stop user from sending commands accidentally
 * Hyperlinks
 * /me ghostDunk's [GD'S]
 * Transparent background
 * tab recombining gives wrong window icon
 * help menu -- about and forum
 * new sound on CEASE and BEGIN?
--- release alpha
 * Chat rooms/browser
+-- release alpha
+* User commands/stop user from sending commands accidentally
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * System tray menu

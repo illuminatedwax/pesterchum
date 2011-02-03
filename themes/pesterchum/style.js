@@ -28,41 +28,58 @@
             "rclickchumlist": {"pester": "PESTER",
                                "removechum": "REMOVE CHUM",
                                "blockchum": "BLOCK",
-                               "unblockchum": "UNBLOCK",
-                               "addchum": "Add Chump"
+                               "addchum": "ADD CHUM",
+                               "unblockchum": "UNBLOCK"
                               }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
              "loc": [12, 117],
              "size": [209, 82],
-             "moods": { "chummy": { "icon": "$path/chummy.gif",
-                                    "color": "white" },
-                        "offline": { "icon": "$path/offline.gif",
-                                     "color": "#646464"},
-                        "rancorous": { "icon": "$path/rancorous.gif",
-                                       "color": "red" },
-						"detestful": { "icon": "$path/detestful.gif",
-									   "color": "red" },
-						"devious": { "icon": "$path/devious.gif",
-									 "color": "white" },
-						"discontent": { "icon": "$path/discontent.gif",
-										"color": "white" },
-						"distraught": { "icon": "$path/distraught.gif",
-										"color": "white" },
-						"ecstatic": { "icon": "$path/estatic.gif",
-									  "color": "white" },
-						"pleasant": { "icon": "$path/pleasant.gif",
-									  "color": "white" },
-						"relaxed": { "icon": "$path/relaxed.gif",
-									 "color": "white" },
-						"sleek": { "icon": "$path/sleek.gif",
-								   "color": "white" },
-						"smooth": { "icon": "$path/smooth.gif",
-									"color": "white" },
-						"unruly": { "icon": "$path/unruly.gif",
-									"color": "white" },
-                        "blocked": { "icon": "$path/blocked.gif",
-                                     "color": "black" }
+             "moods": { 
+
+"chummy": { "icon": "$path/chummy.gif", "color": "white" },
+
+"rancorous": { "icon": "$path/rancorous.gif", "color": "red" },
+
+"offline": { "icon": "$path/offline.gif", "color": "#646464"},
+
+			
+"pleasant": { "icon": "$path/pleasant.gif", "color": "white" },
+
+"distraught": { "icon": "$path/distraught.gif", "color": "white" },
+
+"unruly": { "icon": "$path/unruly.gif", "color": "white" },
+
+
+"smooth": { "icon": "$path/smooth.gif", "color": "white" },
+
+
+"ecstatic": { "icon": "$path/ecstatic.gif", "color": "red" },
+
+"relaxed": { "icon": "$path/relaxed.gif", "color": "red" },
+
+"discontent": { "icon": "$path/discontent.gif", "color": "red" },
+
+"devious": { "icon": "$path/devious.gif", "color": "red" },
+
+"sleek": { "icon": "$path/sleek.gif", "color": "red" },
+			
+"detestful": { "icon": "$path/detestful.gif", "color": "red" },
+
+"mirthful": { "icon": "$path/mirthful.gif", "color": "red" },
+
+"manipulative": { "icon": "$path/manipulative.gif", "color": "red" },
+
+"vigorous": { "icon": "$path/vigorous.gif", "color": "red" },
+
+"perky": { "icon": "$path/perky.gif", "color": "red" },
+
+"acceptant": { "icon": "$path/acceptant.gif", "color": "red" },
+
+"protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
+
+"blocked": { "icon": "$path/blocked.gif", "color": "black" }
+
                       }
            },
   "trollslum": { 
@@ -87,17 +104,17 @@
   "addchum":  { "style": "background: rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color: rgba(0, 0, 0, 0%); font-family:'Courier';",
                "loc": [12,202],
                "size": [71, 22],
-               "text": "ADD CHUM"
+               "text": ""
              },
   "pester": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",
                "loc": [150,202],
                "size": [71, 22],
-               "text": "PESTER!"
+               "text": ""
              },
   "block": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",
                "loc": [1500,202],
                "size": [0, 0],
-               "text": "BLOCK"
+               "text": ""
              },
   "defaultmood": 0,
   "moodlabel": { "style": "",
@@ -158,7 +175,7 @@
 		"loc": [12, 348],
 		"size": [209, 22],
 		"text": "ABSCOND",
-		"icon": "$path/x.gif",
+		"icon": "",
 		"mood": 2
 	  }
   ]

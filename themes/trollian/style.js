@@ -1,31 +1,23 @@
 {"main":
  {"style": "background-image:url($path/tnbg.png);background-color:rgba(255,255,255,0);",
   "size": [650, 450],
-  "icon": "$path/trayicon2.png",
-  "newmsgicon": "$path/trayicon3.png",
+  "icon": "$path/trayicon.png",
+  "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "TROLLIAN",
   "close": { "image": "$path/x.gif",
              "loc": [635, 2]},
   "minimize": { "image": "$path/m.gif",
                 "loc": [621, 8]},
   "menubar": { "style": "font-family: 'Arial'; font-size: 11px; color: rgba(0,0,0,0);" },
-  
-
   "menu" : { "style": "font-family: 'Arial'; font-size: 11px; background-color: #c2c2c2; border:1px solid #545454;",
-    
-         
   "selected": "background-color: #545454",
-        
-     
    "menuitem": "margin-right:14px;",
-         
    	"loc": [14,90]
            },
-
   "sounds": { "alertsound": "$path/alarm.wav" },
   "menus": {"client": {"_name": "Trollian",
                        "options": "Options",
-                       "userlist": "Target List",
+                       "userlist": "Fresh Targets",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
@@ -36,8 +28,8 @@
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
                                "blockchum": "Block",
-                               "unblockchum": "Mercy",
-                               "addchum": "Add Chump"}
+                               "addchum": "Add Chump",
+                               "unblockchum": "Mercy"}
            },
   "chums": { "style": "border: 0px; background-color: white; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [476, 90],
@@ -86,7 +78,7 @@
 
 "protective": { "icon": "$path/protective.png", "color": "white" },
 
-"blocked": { "icon": "$path/blocked.gif", "color": "black" }
+"blocked": { "icon": "$path/blocked.png", "color": "black" }
 					
                       }
            },

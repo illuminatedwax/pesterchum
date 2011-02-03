@@ -371,11 +371,13 @@ class PesterUserlist(QtGui.QDialog):
             self.userarea.takeItem(self.userarea.row(m))
 
     def changeTheme(self, theme):
+        self.theme = theme
         self.setStyleSheet(theme["main/defaultwindow/style"])
         self.userarea.setStyleSheet(theme["main/chums/style"])
         self.addChumAction.setText(theme["main/menus/rclickchumlist/addchum"])
-        for item in [self.userarea.row(i) for i in range(0, self.userarea.count())]:
-            item.setTextColor(QtGui.QColor(self.theme["main/chums/moods/chummy/color"]))
+        for item in [self.userarea.item(i) for i in range(0, self.userarea.count())]:
+            print item.text()
+            item.setTextColor(QtGui.QColor(theme["main/chums/moods/chummy/color"]))
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):
