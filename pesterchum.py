@@ -22,11 +22,12 @@ logging.basicConfig(level=logging.INFO)
 
 _ctag_begin = re.compile(r'<c=(.*?)>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
+_urlre = re.compile(r"(?i)(http://[^\s<]+)")
 
-def convertColorTags(string, format="html"):
+def convertTags(string, format="html"):
     if format not in ["html", "bbcode", "ctag"]:
         raise ValueError("Color format not recognized")
-    def repfunc(matchobj):
+    def colorrepfunc(matchobj):
         color = matchobj.group(1)
         if _ctag_rgb.match(color) is not None:
             if format=='ctag':
@@ -46,9 +47,13 @@ def convertColorTags(string, format="html"):
         elif format == "ctag":
             (r,g,b,a) = qc.getRgb()
             return '<c=%s,%s,%s>' % (r,g,b)
-    string = _ctag_begin.sub(repfunc, string)
+    string = _ctag_begin.sub(colorrepfunc, string)
     endtag = {"html": "</span>", "bbcode": "[/color]", "ctag": "</c>"}
     string = string.replace("</c>", endtag[format])
+    urlrep = {"html": r"<a href='\1'>\1</a>", 
+              "bbcode": r"[url]\1[/url]",
+              "ctag": r"\1" }
+    string = _urlre.sub(urlrep[format], string)
     return string
 
 def escapeBrackets(string):
@@ -97,10 +102,6 @@ def escapeBrackets(string):
         for i in range(0, btlen-etlen):
             retval += "</c>"
     return retval
-
-#_urlre = re.compile()
-#def findURLs(string):
-    
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -362,13 +363,15 @@ class chumListing(QtGui.QListWidgetItem):
     def updateMood(self, unblock=False):
         mood = self.chum.mood
         self.mood = mood
-        self.setIcon(self.mood.icon(self.mainwindow.theme))
+        icon = self.mood.icon(self.mainwindow.theme)
+        self.setIcon(icon)
         try:
             self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
         except KeyError:
             self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods/chummy/color"]))
     def changeTheme(self, theme):
-        self.setIcon(self.mood.icon(theme))
+        icon = self.mood.icon(theme)
+        self.setIcon(icon)
         try:
             self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
         except KeyError:
@@ -841,36 +844,35 @@ class PesterText(QtGui.QTextEdit):
         if msg == "PESTERCHUM:BEGIN":
             parent.setChumOpen(True)
             msg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
-            window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
-            self.append(convertColorTags(msg))
+            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
         elif msg == "PESTERCHUM:CEASE":
             parent.setChumOpen(False)
             msg = chum.pestermsg(me, systemColor, window.theme["convo/text/ceasepester"])
-            window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
-            self.append(convertColorTags(msg))
+            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
         elif msg == "PESTERCHUM:BLOCK":
             msg = chum.pestermsg(me, systemColor, window.theme['convo/text/blocked'])
-            window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
-            self.append(convertColorTags(msg))
+            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
         elif msg == "PESTERCHUM:UNBLOCK":
             msg = chum.pestermsg(me, systemColor, window.theme['convo/text/unblocked'])
-            window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
-            self.append(convertColorTags(msg))
+            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
         else:
             if not parent.chumopen and chum is not me:
                 beginmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
                 parent.setChumOpen(True)
-                window.chatlog.log(chum.handle, convertColorTags(beginmsg, "bbcode"))
-                self.append(convertColorTags(beginmsg))
+                window.chatlog.log(chum.handle, convertTags(beginmsg, "bbcode"))
+                self.append(convertTags(beginmsg))
 
             msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
             msg = escapeBrackets(msg)
-            #msg = findURLs(msg)
-            self.append(convertColorTags(msg))
+            self.append(convertTags(msg))
             if chum is me:
-                window.chatlog.log(parent.chum.handle, convertColorTags(msg, "bbcode"))
+                window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode"))
             else:
-                window.chatlog.log(chum.handle, convertColorTags(msg, "bbcode"))
+                window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
     def changeTheme(self, theme):
         self.setStyleSheet(theme["convo/textarea/style"])
         sb = self.verticalScrollBar()
@@ -879,6 +881,13 @@ class PesterText(QtGui.QTextEdit):
     def focusInEvent(self, event):
         self.parent().clearNewMessage()
         QtGui.QTextEdit.focusInEvent(self, event)
+
+    def mousePressEvent(self, event):
+        url = self.anchorAt(event.pos())
+        if url == "":
+            return
+        else:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
@@ -932,15 +941,15 @@ class PesterConvo(QtGui.QFrame):
         if initiated:
             msg = self.mainwindow.profile().pestermsg(self.chum, QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/beganpester"])
             self.setChumOpen(True)
-            self.textArea.append(convertColorTags(msg))
-            self.mainwindow.chatlog.log(self.chum.handle, convertColorTags(msg, "bbcode"))
+            self.textArea.append(convertTags(msg))
+            self.mainwindow.chatlog.log(self.chum.handle, convertTags(msg, "bbcode"))
         self.newmessage = False
 
     def updateMood(self, mood, unblocked=False):
         if mood.name() == "offline" and self.chumopen == True and not unblocked:
             msg = self.chum.pestermsg(self.mainwindow.profile(), QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/ceasepester"])
-            self.textArea.append(convertColorTags(msg))
-            self.mainwindow.chatlog.log(self.chum.handle, convertColorTags(msg, "bbcode"))
+            self.textArea.append(convertTags(msg))
+            self.mainwindow.chatlog.log(self.chum.handle, convertTags(msg, "bbcode"))
             self.chumopen = False
         if self.parent():
             self.parent().updateMood(self.chum.handle, mood, unblocked)
@@ -1034,6 +1043,8 @@ class PesterConvo(QtGui.QFrame):
         # if ceased, rebegin
         if not self.chumopen:
             self.mainwindow.newConvoStarted.emit(QtCore.QString(self.chum.handle), True)
+        # convert color tags
+        text = convertTags(unicode(text), "ctag")
         self.messageSent.emit(text, self.chum)
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
@@ -1395,7 +1406,7 @@ class PesterWindow(MovingWindow):
         chum = self.convos[h].chum
         chumopen = self.convos[h].chumopen
         if chumopen:
-            self.chatlog.log(chum.handle, convertColorTags(self.profile().pestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]), "bbcode"))
+            self.chatlog.log(chum.handle, convertTags(self.profile().pestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]), "bbcode"))
             self.chatlog.finish(h)
             self.convoClosed.emit(handle)
         del self.convos[h]
@@ -1487,8 +1498,8 @@ class PesterWindow(MovingWindow):
         if self.convos.has_key(h):
             convo = self.convos[h]
             msg = self.profile().pestermsg(convo.chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/blocked"])
-            convo.textArea.append(convertColorTags(msg))
-            self.chatlog.log(convo.chum.handle, convertColorTags(msg, "bbcode"))
+            convo.textArea.append(convertTags(msg))
+            self.chatlog.log(convo.chum.handle, convertTags(msg, "bbcode"))
             convo.updateBlocked()
         self.chumList.removeChum(h)
         if hasattr(self, 'trollslum') and self.trollslum:
@@ -1504,8 +1515,8 @@ class PesterWindow(MovingWindow):
         if self.convos.has_key(h):
             convo = self.convos[h]
             msg = self.profile().pestermsg(convo.chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/unblocked"])
-            convo.textArea.append(convertColorTags(msg))
-            self.chatlog.log(convo.chum.handle, convertColorTags(msg, "bbcode"))
+            convo.textArea.append(convertTags(msg))
+            self.chatlog.log(convo.chum.handle, convertTags(msg, "bbcode"))
             convo.updateMood(convo.chum.mood, unblocked=True)
         chum = PesterProfile(h, chumdb=self.chumdb)
         if hasattr(self, 'trollslum') and self.trollslum:

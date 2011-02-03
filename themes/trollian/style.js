@@ -34,7 +34,7 @@
   "chums": { "style": "border: 0px; background-color: white; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [476, 90],
              "size": [175, 361],
-
+             "userlistcolor": "black",
              "moods": { 
 
 "chummy": { "icon": "$path/chummy.png", "color": "#63ea00" },

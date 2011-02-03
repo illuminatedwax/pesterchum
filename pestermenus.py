@@ -347,7 +347,7 @@ class PesterUserlist(QtGui.QDialog):
         self.userarea.clear()
         for n in names:
             item = QtGui.QListWidgetItem(n)
-            item.setTextColor(QtGui.QColor(self.theme["main/chums/moods/chummy/color"]))
+            item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
             self.userarea.addItem(item)
         self.userarea.sortItems()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
@@ -362,7 +362,7 @@ class PesterUserlist(QtGui.QDialog):
             self.addUser(h)
     def addUser(self, name):
         item = QtGui.QListWidgetItem(name)
-        item.setTextColor(QtGui.QColor(self.theme["main/chums/moods/chummy/color"]))
+        item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
         self.userarea.addItem(item)
         self.userarea.sortItems()
     def delUser(self, name):
@@ -377,7 +377,7 @@ class PesterUserlist(QtGui.QDialog):
         self.addChumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         for item in [self.userarea.item(i) for i in range(0, self.userarea.count())]:
             print item.text()
-            item.setTextColor(QtGui.QColor(theme["main/chums/moods/chummy/color"]))
+            item.setTextColor(QtGui.QColor(theme["main/chums/userlistcolor"]))
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):

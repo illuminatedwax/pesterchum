@@ -1,5 +1,5 @@
 Features:
-* Hyperlinks
+* chat window margins
 * /me ghostDunk's [GD'S]
 * Transparent background
 * tab recombining gives wrong window icon
@@ -17,6 +17,7 @@ Features:
 * ctrl-tab should prefer new convos
 * More complex quirks: random, spelling, by-sound
 * Implement TC options
+* chumList not scaling -- QListView + delegate?
 * spell check?
 * Help menu
 * more robust IRC error handling
