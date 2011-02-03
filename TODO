@@ -9,13 +9,14 @@ Features:
 * help menu -- about and forum
 * new sound on CEASE and BEGIN?
 -- release alpha
+* Chat rooms/browser
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * System tray menu
+* tab right-click menu on tabbed convos
 * comment history (up button)
 * page up/down scrolling
 * ctrl-tab should prefer new convos
-* Chat rooms/browser
 * More complex quirks: random, spelling, by-sound
 * Implement TC options
 * spell check?
