@@ -931,6 +931,7 @@ class PesterConvo(QtGui.QFrame):
         self.layout.addWidget(self.textArea)
         self.layout.addWidget(self.textInput)
         self.layout.setSpacing(0)
+        self.layout.setMargin(0)
         
         self.setLayout(self.layout)
 
@@ -954,7 +955,7 @@ class PesterConvo(QtGui.QFrame):
         if self.parent():
             self.parent().updateMood(self.chum.handle, mood, unblocked)
         else:
-            if self.chum.blocked(self.mainwindow.userprofile) and not unblocked:
+            if self.chum.blocked(self.mainwindow.config) and not unblocked:
                 self.setWindowIcon(QtGui.QIcon(self.mainwindow.theme["main/chums/moods/blocked/icon"]))
             else:
                 self.setWindowIcon(mood.icon(self.mainwindow.theme))

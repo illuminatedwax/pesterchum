@@ -230,7 +230,7 @@
   ]
  },
  "convo":
- {"style": "background:  rgb(190, 19, 4); font-family: 'Arial'",
+ {"style": "background:  rgb(190, 19, 4); font-family: 'Arial';",
   "size": [308, 194],
   "chumlabel": { "style": "background: rgb(255, 38, 18); color: white;",
                  "align": { "h": "center", "v": "center" },

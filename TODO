@@ -1,16 +1,16 @@
 Features:
-* chat window margins
 * /me ghostDunk's [GD'S]
-* Transparent background
 * tab recombining gives wrong window icon
 * help menu -- about and forum
-* new sound on CEASE and BEGIN?
 * Chat rooms/browser
+* profile switch should say current profile
+* Transparent background?
 -- release alpha
 * User commands/stop user from sending commands accidentally
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * System tray menu
+* new sound on CEASE and BEGIN?
 * tab right-click menu on tabbed convos
 * comment history (up button)
 * page up/down scrolling
