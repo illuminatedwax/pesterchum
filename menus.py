@@ -376,7 +376,6 @@ class PesterUserlist(QtGui.QDialog):
         self.userarea.setStyleSheet(theme["main/chums/style"])
         self.addChumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         for item in [self.userarea.item(i) for i in range(0, self.userarea.count())]:
-            print item.text()
             item.setTextColor(QtGui.QColor(theme["main/chums/userlistcolor"]))
 
     @QtCore.pyqtSlot()
@@ -388,3 +387,66 @@ class PesterUserlist(QtGui.QDialog):
 
     addChum = QtCore.pyqtSignal(QtCore.QString)
 
+class PesterMemoList(QtGui.QDialog):
+    def __init__(self, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setModal(False)
+        self.theme = parent.theme
+        self.mainwindow = parent
+        self.setStyleSheet(self.theme["main/defaultwindow/style"])
+        self.resize(200, 300)
+
+        self.label = QtGui.QLabel("MEMOS")
+        self.channelarea = RightClickList(self)
+        self.channelarea.setStyleSheet(self.theme["main/chums/style"])
+        self.channelarea.optionsMenu = QtGui.QMenu(self)
+        self.connect(self.channelarea, 
+                     QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
+                     self, QtCore.SLOT('joinActivatedMemo(QListWidgetItem *)'))
+
+        self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
+        self.newmemo = QtGui.QLineEdit(self)
+
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        self.join = QtGui.QPushButton("JOIN", self)
+        self.join.setDefault(True)
+        self.connect(self.join, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        layout_ok = QtGui.QHBoxLayout()
+        layout_ok.addWidget(self.cancel)
+        layout_ok.addWidget(self.join)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.label)
+        layout_0.addWidget(self.channelarea)
+        layout_0.addWidget(self.orjoinlabel)
+        layout_0.addWidget(self.newmemo)
+        layout_0.addLayout(layout_ok)
+        
+        self.setLayout(layout_0)
+
+    def newmemoname(self):
+        return self.newmemo.text()
+    def selectedmemo(self):
+        return self.channelarea.currentItem()
+
+    def updateChannels(self, channels):
+        for c in channels:
+            item = QtGui.QListWidgetItem(c[1:])
+            item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
+            item.setIcon(QtGui.QIcon(self.theme["memos/memoicon"]))
+            self.channelarea.addItem(item)
+
+    def updateTheme(self, theme):
+        self.theme = theme
+        self.setStyleSheet(theme["main/defaultwindow/style"])
+        for item in [self.userarea.item(i) for i in range(0, self.channelarea.count())]:
+            item.setTextColor(QtGui.QColor(theme["main/chums/userlistcolor"]))
+            item.setIcon(QtGui.QIcon(theme["memos/memoicon"]))
+    
+    @QtCore.pyqtSlot(QtGui.QListWidgetItem)
+    def joinActivatedMemo(self, item):
+        self.channelarea.setCurrentItem(item)
+        self.accept()

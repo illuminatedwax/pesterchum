@@ -1,5 +1,7 @@
 Features:
 * Chat rooms/browser
+* PESTERLOG: in convo window
+* help button on quirks menu?
 * tab recombining gives wrong window icon
 * help menu -- about and forum
 * profile switch should say current profile
@@ -13,6 +15,7 @@ Features:
 * tab right-click menu on tabbed convos
 * comment history (up button)
 * page up/down scrolling
+* get rid of border on chat window?
 * ctrl-tab should prefer new convos
 * More complex quirks: random, spelling, by-sound
 * Implement TC options
@@ -28,7 +31,7 @@ Features:
 * Theme checking
 * don't clear new message when clicking away from tab?
 * Spy mode
-
+* Animated
 * put code into separate files
 * hide offline chums
 * chum list groups

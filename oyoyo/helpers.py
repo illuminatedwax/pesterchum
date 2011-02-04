@@ -35,6 +35,9 @@ def names(cli, *channels):
     if len(msglist) > 0:
         cli.send("NAMES %s" % (",".join(msglist)))
 
+def channel_list(cli):
+    cli.send("LIST")
+
 def msgrandom(cli, choices, dest, user=None):
     o = "%s: " % user if user else ""
     o += random.choice(choices)

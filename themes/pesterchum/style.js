@@ -17,6 +17,7 @@
   "sounds": { "alertsound": "$path/alarm.wav" },
   "menus": {"client": {"_name": "CLIENT",
                        "options": "OPTIONS",
+                       "memos": "MEMOS",
                        "userlist": "USERLIST",
                        "exit": "EXIT"},
             "profile": {"_name": "PROFILE",
@@ -183,6 +184,7 @@
  },
  "convo":
  {"style": "background: #fdb302; border:2px solid yellow; font-family: 'Courier'",
+  "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
   "size": [295, 191],
   "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px;",
                  "align": { "h": "center", "v": "center" },
@@ -209,6 +211,25 @@
       "unblocked": "unblocked"
   },
   "systemMsgColor": "#646464"
+ },
+ "memos":
+ {"memoicon": "$path/memo.png",
+  "style": "background: #fdb302; font-family:'Courier';font:bold;selection-background-color:#919191; ",
+  "size": [600,300],
+  "label": { "text": "$channel",
+             "style": "background: rgb(196, 138, 0); color: white; border:0px;",
+             "align": { "h": "center", "v": "center" },
+             "minheight": 30,
+             "maxheight": 50
+           },
+  "input": { "style": "background: white; border:2px solid #c48a00;margin-top:5px;" },
+  "textarea": { "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center;" },
+  "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
+  "userlist": { "width": 150 },
+  "time": { "text": { "width": 75, "style": "" },
+            "slider": { "style": "",
+                        "groove": "",
+                        "handle": "" }
+          }
  }
- 
 }

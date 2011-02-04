@@ -6,9 +6,10 @@ from generic import PesterIcon
 
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
-             "unruly", "smooth", "ecstatic", "relaxed", "discontent", 
+             "pranky", "smooth", "ecstatic", "relaxed", "discontent", 
              "devious", "sleek", "detestful", "mirthful", "manipulative",
-             "vigorous", "perky", "acceptant", "protective"]
+             "vigorous", "perky", "acceptant", "protective", "mystified",
+             "amazed", "insolent", "bemused" ]
     def __init__(self, mood):
         if type(mood) is int:
             self.mood = mood
@@ -66,14 +67,23 @@ class pesterQuirks(object):
     def plainList(self):
         return [q.quirk for q in self.quirklist]
     def apply(self, string):
+        # don't quirk /me commands
+        if string[0:3] == "/me":
+            space = string.find(" ")
+            cmd = string[0:space]
+            string = string[space:]
+        else:
+            cmd = ""
         presuffix = [q for q in self.quirklist if 
                      q.type=='prefix' or q.type=='suffix']
         replace = [q for q in self.quirklist if
                    q.type=='replace' or q.type=='regexp']
         for r in replace:
             string = r.apply(string)
-        for ps in presuffix:
-            string = ps.apply(string)
+        if not cmd:
+            for ps in presuffix:
+                string = ps.apply(string)
+        string = cmd+string
         return string
 
     def __iter__(self):
