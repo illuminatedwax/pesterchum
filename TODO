@@ -6,6 +6,7 @@ Features:
 * help menu -- about and forum
 * profile switch should say current profile
 * Transparent background?
+* X closes to tray
 -- release alpha
 * User commands/stop user from sending commands accidentally
 * shared buddy lists - changes to the buddy list should refresh it? 

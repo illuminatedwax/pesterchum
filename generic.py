@@ -1,5 +1,9 @@
 from PyQt4 import QtGui, QtCore
 
+class PesterList(list):
+    def __init__(self, l):
+        self.extend(l)
+
 class PesterIcon(QtGui.QIcon):
     def __init__(self, *x, **y):
         QtGui.QIcon.__init__(self, *x, **y)

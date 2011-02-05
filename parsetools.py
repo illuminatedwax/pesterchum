@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 from PyQt4 import QtGui
 
 _ctag_begin = re.compile(r'<c=(.*?)>')
@@ -87,3 +88,23 @@ def escapeBrackets(string):
         for i in range(0, btlen-etlen):
             retval += "</c>"
     return retval
+
+def addTimeInitial(string, grammar):
+    endofi = string.find(":")
+    endoftag = string.find(">")
+    if endoftag < 0 or endoftag > 16 or endofi > 17:
+        return string
+    return string[0:endoftag+1]+grammar.pcf+string[endoftag+1:endofi]+grammar.number+string[endofi:]
+
+def timeProtocol(cmd):
+    dir = cmd[0]
+    cmd = cmd[1:]
+    cmd = re.sub("[^0-9:]", "", cmd)
+    try:
+        l = [int(x) for x in cmd.split(":")]
+    except ValueError:
+        l = [0,0]
+    timed = timedelta(0, l[0]*3600+l[1]*60)
+    if dir == "P":
+        timed = timed*-1
+    return timed

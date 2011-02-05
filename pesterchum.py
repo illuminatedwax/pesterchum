@@ -1,7 +1,4 @@
 # pesterchum
-from oyoyo.client import IRCClient
-from oyoyo.cmdhandler import DefaultCommandHandler
-from oyoyo import helpers
 import logging
 import os, sys
 import os.path
@@ -17,12 +14,11 @@ from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
     LoadingScreen
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
-from generic import PesterIcon, RightClickList, MultiTextDialog
+from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags
 from memos import PesterMemo, MemoTabWindow
-
-logging.basicConfig(level=logging.INFO)
+from irc import PesterIRC
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -109,10 +105,6 @@ class PesterProfileDB(dict):
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
         self.save()
-
-class PesterList(list):
-    def __init__(self, l):
-        self.extend(l)
 
 class pesterTheme(dict):
     def __init__(self, name):
@@ -708,6 +700,8 @@ class PesterWindow(MovingWindow):
         if not self.config.defaultprofile():
             self.changeProfile()
         self.loadingscreen = LoadingScreen(self)
+        self.connect(self.loadingscreen, QtCore.SIGNAL('rejected()'),
+                     self, QtCore.SLOT('close()'))
 
     def profile(self):
         return self.userprofile.chat
@@ -756,6 +750,7 @@ class PesterWindow(MovingWindow):
             return
         memo = self.memos[chan]
         memo.addMessage(msg, handle)
+        self.alarm.play()
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
@@ -798,28 +793,34 @@ class PesterWindow(MovingWindow):
         self.connect(self.tabmemo, QtCore.SIGNAL('windowClosed()'),
                      self, QtCore.SLOT('memoTabsClosed()'))
 
-    def newMemo(self, channel):
+    def newMemo(self, channel, timestr):
         if channel == "#pesterchum":
             return
         if self.memos.has_key(channel):
-            # load memo
+            self.memos[channel].showChat()
             return
         # do slider dialog then set 
         if self.config.tabs():
             if not self.tabmemo:
                 self.createMemoTabWindow()
-            memoWindow = PesterMemo(channel, self, self.tabmemo)
+            memoWindow = PesterMemo(channel, timestr, self, self.tabmemo)
             self.tabmemo.show()
         else:
-            memoWindow = PesterMemo(channel, self, None)
+            memoWindow = PesterMemo(channel, timestr, self, None)
         # connect signals
         self.connect(memoWindow, QtCore.SIGNAL('messageSent(QString, QString)'),
                      self, QtCore.SIGNAL('sendMessage(QString, QString)'))
-#        self.connect(memoWindow, QtCore.SIGNAL('windowClosed(QString)'),
-#                     self, QtCore.SLOT('closeConvo(QString)'))
+        self.connect(memoWindow, QtCore.SIGNAL('windowClosed(QString)'),
+                     self, QtCore.SLOT('closeMemo(QString)'))
+        self.connect(self, QtCore.SIGNAL('namesUpdated()'),
+                     memoWindow, QtCore.SLOT('namesUpdated()'))
+        self.connect(self, 
+                     QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
+                     memoWindow, QtCore.SLOT('userPresentChange(QString, QString, QString)'))
         # chat client send memo open
         self.memos[channel] = memoWindow
-        self.joinChannel.emit(channel)
+        self.joinChannel.emit(channel) # race condition?
+        memoWindow.sendTimeInfo()
         memoWindow.show()
 
     def addChum(self, chum):
@@ -859,6 +860,7 @@ class PesterWindow(MovingWindow):
         self.opts.setText(theme["main/menus/client/options"])
         self.exitaction.setText(theme["main/menus/client/exit"])
         self.userlistaction.setText(theme["main/menus/client/userlist"])
+        self.memoaction.setText(theme["main/menus/client/memos"])
         self.filemenu.setTitle(theme["main/menus/client/_name"])
         self.changetheme.setText(theme["main/menus/profile/theme"])
         self.changequirks.setText(theme["main/menus/profile/quirks"])
@@ -949,7 +951,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def connected(self):
         if self.loadingscreen:
-            self.loadingscreen.close()
+            self.loadingscreen.accept()
         self.loadingscreen = None
     @QtCore.pyqtSlot()
     def blockSelectedChum(self):
@@ -977,9 +979,15 @@ class PesterWindow(MovingWindow):
         chumopen = self.convos[h].chumopen
         if chumopen:
             self.chatlog.log(chum.handle, convertTags(self.profile().pestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]), "bbcode"))
-            self.chatlog.finish(h)
             self.convoClosed.emit(handle)
+        self.chatlog.finish(h)
         del self.convos[h]
+    @QtCore.pyqtSlot(QtCore.QString)
+    def closeMemo(self, channel):
+        c = unicode(channel)
+        self.chatlog.finish(c)
+        self.leftChannel.emit(channel)
+        del self.memos[c]
     @QtCore.pyqtSlot()
     def tabsClosed(self):
         del self.tabconvo
@@ -1008,6 +1016,11 @@ class PesterWindow(MovingWindow):
     def deliverMemo(self, chan, handle, msg):
         (c, h, m) = (unicode(chan), unicode(handle), unicode(msg))
         self.newMemoMsg(c,h,m)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
+    def timeCommand(self, chan, handle, command):
+        (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
+        if self.memos[c]:
+            self.memos[c].timeUpdate(h, cmd)
 
     @QtCore.pyqtSlot(QtCore.QString, PesterList)
     def updateNames(self, channel, names):
@@ -1121,12 +1134,13 @@ class PesterWindow(MovingWindow):
     def joinSelectedMemo(self):
         newmemo = self.memochooser.newmemoname()
         selectedmemo = self.memochooser.selectedmemo()
+        time = unicode(self.memochooser.timeinput.text())
         if newmemo:
             channel = "#"+unicode(newmemo)
-            self.newMemo(channel)
+            self.newMemo(channel, time)
         elif selectedmemo:
             channel = "#"+unicode(selectedmemo.text())
-            self.newMemo(channel)
+            self.newMemo(channel, time)
         self.memochooser = None
     @QtCore.pyqtSlot()
     def memoChooserClose(self):
@@ -1208,13 +1222,20 @@ class PesterWindow(MovingWindow):
         tabsetting = self.optionmenu.tabcheck.isChecked()
         if curtab and not tabsetting:
             # split tabs into windows
+            windows = []
             if self.tabconvo:
                 windows = list(self.tabconvo.convos.values())
-                for w in windows:
-                    w.setParent(None)
-                    w.show()
-                    w.raiseChat()
+            if self.tabmemo:
+                windows += list(self.tabmemo.convos.values())
+                
+            for w in windows:
+                w.setParent(None)
+                w.show()
+                w.raiseChat()
+            if self.tabconvo:
                 self.tabconvo.closeSoft()
+            if self.tabmemo:
+                self.tabmemo.closeSoft()
             # save options
             self.config.set("tabs", tabsetting)
         elif tabsetting and not curtab:
@@ -1227,6 +1248,14 @@ class PesterWindow(MovingWindow):
                 self.tabconvo.show()
                 newconvos[h] = c
             self.convos = newconvos
+            newmemos = {}
+            self.createMemoTabWindow()
+            for (h,m) in self.memos.iteritems():
+                m.setParent(self.tabmemo)
+                self.tabmemo.addChat(m)
+                self.tabmemo.show()
+                newmemos[h] = m
+            self.memos = newmemos
             # save options
             self.config.set("tabs", tabsetting)
         self.optionmenu = None
@@ -1366,203 +1395,7 @@ class PesterWindow(MovingWindow):
     blockedChum = QtCore.pyqtSignal(QtCore.QString)
     unblockedChum = QtCore.pyqtSignal(QtCore.QString)
     joinChannel = QtCore.pyqtSignal(QtCore.QString)
-
-class PesterIRC(QtCore.QObject):
-    def __init__(self, window):
-        QtCore.QObject.__init__(self)
-        self.mainwindow = window
-    def IRCConnect(self):
-        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.mainwindow.profile().handle, blocking=True)
-        self.cli.command_handler.parent = self
-        self.cli.command_handler.mainwindow = self.mainwindow
-        self.conn = self.cli.connect()
-
-    @QtCore.pyqtSlot(PesterProfile)
-    def getMood(self, *chums):
-        self.cli.command_handler.getMood(*chums)
-    @QtCore.pyqtSlot(PesterList)
-    def getMoods(self, chums):
-        self.cli.command_handler.getMood(*chums)
-        
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
-    def sendMessage(self, text, handle):
-        h = unicode(handle)
-        helpers.msg(self.cli, h, text)
-
-    @QtCore.pyqtSlot(QtCore.QString, bool)
-    def startConvo(self, handle, initiated):
-        h = unicode(handle)
-        if initiated:
-            helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
-    @QtCore.pyqtSlot(QtCore.QString)
-    def endConvo(self, handle):
-        h = unicode(handle)
-        helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
-    @QtCore.pyqtSlot()
-    def updateProfile(self):
-        me = self.mainwindow.profile()
-        handle = me.handle
-        helpers.nick(self.cli, handle)
-        self.updateMood()
-    @QtCore.pyqtSlot()
-    def updateMood(self):
-        me = self.mainwindow.profile()
-        helpers.msg(self.cli, "#pesterchum", "MOOD >%d" % (me.mood.value()))
-    @QtCore.pyqtSlot()
-    def updateColor(self):
-        me = self.mainwindow.profile()
-        for h in self.mainwindow.convos.keys():
-            helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
-    @QtCore.pyqtSlot(QtCore.QString)
-    def blockedChum(self, handle):
-        h = unicode(handle)
-        helpers.msg(self.cli, h, "PESTERCHUM:BLOCK")
-    @QtCore.pyqtSlot(QtCore.QString)
-    def unblockedChum(self, handle):
-        h = unicode(handle)
-        helpers.msg(self.cli, h, "PESTERCHUM:UNBLOCK")
-    @QtCore.pyqtSlot(QtCore.QString)
-    def requestNames(self, channel):
-        c = unicode(channel)
-        helpers.names(self.cli, c)
-    @QtCore.pyqtSlot()
-    def requestChannelList(self):
-        helpers.channel_list(self.cli)
-    @QtCore.pyqtSlot(QtCore.QString)
-    def joinChannel(self, channel):
-        c = unicode(channel)
-        helpers.join(self.cli, c)
-    def updateIRC(self):
-        self.conn.next()
-
-    moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
-    colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
-    messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    memoReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
-    namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
-    channelListReceived = QtCore.pyqtSignal(PesterList)
-    nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    connected = QtCore.pyqtSignal()
-    userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
-                                   QtCore.QString)
-
-class PesterHandler(DefaultCommandHandler):
-    def privmsg(self, nick, chan, msg):
-        # display msg, do other stuff
-        # silently ignore CTCP
-        if msg[0] == '\x01':
-            return
-        handle = nick[0:nick.find("!")]
-        logging.info("---> recv \"PRIVMSG %s :%s\"" % (handle, msg))
-        if chan == "#pesterchum":
-            # follow instructions
-            if msg[0:6] == "MOOD >":
-                try:
-                    mood = Mood(int(msg[6:]))
-                except ValueError:
-                    mood = Mood(0)
-                self.parent.moodUpdated.emit(handle, mood)
-            elif msg[0:7] == "GETMOOD":
-                mychumhandle = self.mainwindow.profile().handle
-                mymood = self.mainwindow.profile().mood.value()
-                if msg.find(mychumhandle, 8) != -1:
-                    helpers.msg(self.client, "#pesterchum", 
-                                "MOOD >%d" % (mymood))
-        elif chan[0] == '#':
-            if msg[0:16] == "PESTERCHUM:TIME>":
-                # send time msg
-                pass
-            else:
-                self.parent.memoReceived.emit(chan, handle, msg)
-        else:
-            # private message
-            # silently ignore messages to yourself.
-            if handle == self.mainwindow.profile().handle:
-                return
-            if msg[0:7] == "COLOR >":
-                colors = msg[7:].split(",")
-                try:
-                    colors = [int(d) for d in colors]
-                except ValueError:
-                    colors = [0,0,0]
-                color = QtGui.QColor(*colors)
-                self.parent.colorUpdated.emit(handle, color)
-            else:
-                self.parent.messageReceived.emit(handle, msg)
-
-
-    def welcome(self, server, nick, msg):
-        self.parent.connected.emit()
-        helpers.join(self.client, "#pesterchum")
-        mychumhandle = self.mainwindow.profile().handle
-        mymood = self.mainwindow.profile().mood.value()
-        helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
-
-        chums = self.mainwindow.chumList.chums
-        self.getMood(*chums)
-
-    def nicknameinuse(self, server, cmd, nick, msg):
-        newnick = "pesterClient%d" % (random.randint(100,999))
-        helpers.nick(self.client, newnick)
-        self.parent.nickCollision.emit(nick, newnick)
-    def quit(self, nick, reason):
-        handle = nick[0:nick.find("!")]
-        self.parent.userPresentUpdate.emit(handle, "", "quit")
-        self.parent.moodUpdated.emit(handle, Mood("offline"))        
-    def part(self, nick, channel, reason="nanchos"):
-        handle = nick[0:nick.find("!")]
-        self.parent.userPresentUpdate.emit(handle, channel, "left")
-        if channel == "#pesterchum":
-            self.parent.moodUpdated.emit(handle, Mood("offline"))
-    def join(self, nick, channel):
-        handle = nick[0:nick.find("!")]
-        self.parent.userPresentUpdate.emit(handle, channel, "join")
-        if channel == "#pesterchum":
-            self.parent.moodUpdated.emit(handle, Mood("chummy"))
-    def nick(self, oldnick, newnick):
-        oldhandle = oldnick[0:oldnick.find("!")]
-        newchum = PesterProfile(newnick, chumdb=self.mainwindow.chumdb)
-        self.parent.moodUpdated.emit(oldhandle, Mood("offline"))        
-        if newnick in self.mainwindow.chumList.chums:
-            self.getMood(newchum)
-    def namreply(self, server, nick, op, channel, names):
-        namelist = names.split(" ")
-        logging.info("---> recv \"NAMES %s: %d names\"" % (channel, len(namelist)))
-        if not hasattr(self, 'channelnames'):
-            self.channelnames = {}
-        if not self.channelnames.has_key(channel):
-            self.channelnames[channel] = []
-        self.channelnames[channel].extend(namelist)
-    def endofnames(self, server, nick, channel, msg):
-        namelist = self.channelnames[channel]
-        pl = PesterList(namelist)
-        del self.channelnames[channel]
-        self.parent.namesReceived.emit(channel, pl)
-
-    def liststart(self, server, handle, *info):
-        self.channel_list = []
-        info = list(info)
-        self.channel_field = info.index("Channel") # dunno if this is protocol
-    def list(self, server, handle, *info):
-        channel = info[self.channel_field]
-        if channel not in self.channel_list and channel != "#pesterchum":
-            self.channel_list.append(channel)
-    def listend(self, server, handle, msg):
-        pl = PesterList(self.channel_list)
-        self.parent.channelListReceived.emit(pl)
-        self.channel_list = []
-    
-    def getMood(self, *chums):
-        chumglub = "GETMOOD "
-        for c in chums:
-            chandle = c.handle
-            if len(chumglub+chandle) >= 350:
-                helpers.msg(self.client, "#pesterchum", chumglub)
-                chumglub = "GETMOOD "
-            chumglub += chandle
-        if chumglub != "GETMOOD ":
-            helpers.msg(self.client, "#pesterchum", chumglub)
+    leftChannel = QtCore.pyqtSignal(QtCore.QString)
 
 class IRCThread(QtCore.QThread):
     def __init__(self, ircobj):
@@ -1662,6 +1495,11 @@ def main():
                 QtCore.SIGNAL('joinChannel(QString)'),
                 irc,
                 QtCore.SLOT('joinChannel(QString)'))
+    irc.connect(widget,
+                QtCore.SIGNAL('leftChannel(QString)'),
+                irc,
+                QtCore.SLOT('leftChannel(QString)'))
+    
 
 # IRC --> Main window
     irc.connect(irc, QtCore.SIGNAL('connected()'),
@@ -1698,10 +1536,16 @@ def main():
                 QtCore.SIGNAL('channelListReceived(PyQt_PyObject)'),
                 widget,
                 QtCore.SLOT('updateChannelList(PyQt_PyObject)'))
+    irc.connect(irc,
+                QtCore.SIGNAL('timeCommand(QString, QString, QString)'),
+                widget,
+                QtCore.SLOT('timeCommand(QString, QString, QString)'))
 
     ircapp = IRCThread(irc)
     ircapp.start()
-    widget.loadingscreen.exec_()
+    status = widget.loadingscreen.exec_()
+    if status == QtGui.QDialog.Rejected:
+        sys.exit(0)
     sys.exit(app.exec_())
 
 main()

@@ -208,7 +208,10 @@
       "beganpester": "began pestering",
       "ceasepester": "ceased pestering",
       "blocked": "blocked",
-      "unblocked": "unblocked"
+      "unblocked": "unblocked",
+      "openmemo": "opened memo on board",
+      "joinmemo": "responded to memo",
+      "closememo": "ceased responding to memo"
   },
   "systemMsgColor": "#646464"
  },
@@ -231,11 +234,14 @@
   "input": { "style": "background: white; border:2px solid #c48a00;margin-top:5px;" },
   "textarea": { "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center;" },
   "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
-  "userlist": { "width": 150 },
+  "userlist": { "width": 150,
+                "style": "border:2px solid yellow; background: white;font: bold;font-family: 'Courier';selection-background-color:#646464; "
+              },
   "time": { "text": { "width": 75, "style": "" },
             "slider": { "style": "",
                         "groove": "",
-                        "handle": "" }
+                        "handle": "" 
+                      }
           },
   "systemMsgColor": "#646464"
  }

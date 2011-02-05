@@ -256,13 +256,45 @@
       "beganpester": "began trolling",
       "ceasepester": "gave up trolling",
       "blocked": "blocked",
-      "unblocked": "mercifully forgave"
+      "unblocked": "mercifully forgave",
+      "openmemo": "opened memo on board",
+      "joinmemo": "responded to memo",
+      "closememo": "ceased responding to memo"
   },
   "systemMsgColor": "#646464"
  },
  "memos":
- {"memoicon": "$path/memo.png"
-
- }     
-
+ {"memoicon": "$path/memo.png",
+  "style": "background:  rgb(190, 19, 4); font-family: 'Arial';",
+  "size": [600,300],
+  "tabs": {
+      "style": "",
+      "selectedstyle": "",
+      "newmsgcolor": "red",
+      "tabstyle": 0
+  },
+  "label": { "text": "$channel",
+             "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2;",
+             "align": { "h": "center", "v": "center" },
+             "minheight": 30,
+             "maxheight": 50
+           },
+  "textarea": {
+      "style": "background: white; border:2px solid #c2c2c2; font-size: 12px; margin-top: 4px;"
+  },
+  "input": {
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px;"
+  },
+  "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
+  "userlist": { "width": 150,
+                "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
+              },
+  "time": { "text": { "width": 75, "style": "" },
+            "slider": { "style": "",
+                        "groove": "",
+                        "handle": "" 
+                      }
+          },
+  "systemMsgColor": "#646464"
+ }
 }

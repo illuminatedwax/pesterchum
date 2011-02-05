@@ -100,12 +100,21 @@ class PesterProfile(object):
                 color = QtGui.QColor("black")
         self.color = color
         self.mood = mood
-    def initials(self):
+    def initials(self, time=None):
         handle = self.handle
         caps = [l for l in handle if l.isupper()]
         if not caps:
             caps = [""]
-        return (handle[0]+caps[0]).upper() 
+        initials = (handle[0]+caps[0]).upper()
+        if hasattr(self, 'time') and time:
+            if self.time > time:
+                return "F"+initials
+            elif self.time < time:
+                return "P"+initials
+            else:
+                return "C"+initials
+        else:
+            return (handle[0]+caps[0]).upper() 
     def colorhtml(self):
         return self.color.name()
     def colorcmd(self):
@@ -118,11 +127,37 @@ class PesterProfile(object):
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 
-    def memsg(self, syscolor, suffix, msg):
+    def memsg(self, syscolor, suffix, msg, time=None):
         uppersuffix = suffix.upper()
-        return "<c=%s>-- %s%s <c=%s>[%s%s]</c> %s --</c>" % (syscolor.name(), self.handle, suffix, self.colorhtml(), self.initials(), uppersuffix, msg)
+        if time is not None:
+            handle = "%s %s" % (time.temporal, self.handle)
+            initials = time.pcf+self.initials()+uppersuffix
+        else:
+            handle = self.handle
+            initials = self.initials()+uppersuffix
+        return "<c=%s>-- %s%s <c=%s>[%s]</c> %s --</c>" % (syscolor.name(), handle, suffix, self.colorhtml(), initials, msg)
     def pestermsg(self, otherchum, syscolor, verb):
         return "<c=%s>-- %s <c=%s>[%s]</c> %s %s <c=%s>[%s]</c> at %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
+    def memoclosemsg(self, syscolor, timeGrammar, verb):
+        return "<c=%s><c=%s>%s%s%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), timeGrammar.pcf, self.initials(), timeGrammar.number, verb)
+    def memojoinmsg(self, syscolor, td, timeGrammar, verb):
+        (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
+        atd = abs(td)
+        minutes = (atd.days*86400 + atd.seconds) // 60
+        hours = minutes // 60
+        leftoverminutes = minutes % 60
+        if atd == timedelta(0):
+            timetext = when
+        elif atd < timedelta(0,3600):
+            timetext = "%d MINUTES %s" % (minutes, when)
+        elif atd < timedelta(0,3600*100):
+            timetext = "%d:%02d HOURS %s" % (hours, leftoverminutes, when)
+        else:
+            timetext = "%d HOURS %s" % (hours, when)
+        initials = pcf+self.initials()+timeGrammar.number
+        return "<c=%s><c=%s>%s %s [%s]</c> %s %s." % \
+            (syscolor.name(), self.colorhtml(), temporal, self.handle,
+             initials, timetext, verb)
 
     @staticmethod
     def checkLength(handle):

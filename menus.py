@@ -3,6 +3,7 @@ import re
 
 from generic import RightClickList, MultiTextDialog
 from dataobjs import pesterQuirk, PesterProfile
+from memos import TimeSlider, TimeInput
 
 class PesterQuirkItem(QtGui.QListWidgetItem):
     def __init__(self, quirk, parent):
@@ -407,13 +408,17 @@ class PesterMemoList(QtGui.QDialog):
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(self)
 
+        self.timelabel = QtGui.QLabel("TIMEFRAME:")
+        self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
+        self.timeinput = TimeInput(self.timeslider, self)
+
         self.cancel = QtGui.QPushButton("CANCEL", self)
         self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('reject()'))
         self.join = QtGui.QPushButton("JOIN", self)
         self.join.setDefault(True)
         self.connect(self.join, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('accept()'))
+                     self, QtCore.SLOT('checkEmpty()'))
         layout_ok = QtGui.QHBoxLayout()
         layout_ok.addWidget(self.cancel)
         layout_ok.addWidget(self.join)
@@ -423,6 +428,9 @@ class PesterMemoList(QtGui.QDialog):
         layout_0.addWidget(self.channelarea)
         layout_0.addWidget(self.orjoinlabel)
         layout_0.addWidget(self.newmemo)
+        layout_0.addWidget(self.timelabel)
+        layout_0.addWidget(self.timeslider)
+        layout_0.addWidget(self.timeinput)
         layout_0.addLayout(layout_ok)
         
         self.setLayout(layout_0)
@@ -446,6 +454,12 @@ class PesterMemoList(QtGui.QDialog):
             item.setTextColor(QtGui.QColor(theme["main/chums/userlistcolor"]))
             item.setIcon(QtGui.QIcon(theme["memos/memoicon"]))
     
+    @QtCore.pyqtSlot()
+    def checkEmpty(self):
+        newmemo = self.newmemoname()
+        selectedmemo = self.selectedmemo()
+        if newmemo or selectedmemo:
+            self.accept()
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def joinActivatedMemo(self, item):
         self.channelarea.setCurrentItem(item)
@@ -460,16 +474,11 @@ class LoadingScreen(QtGui.QDialog):
         self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
 
         self.loadinglabel = QtGui.QLabel("LO4D1NG")
+        self.cancel = QtGui.QPushButton("QU1T >:?")
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
 
         self.layout = QtGui.QVBoxLayout()
         self.layout.addWidget(self.loadinglabel)
+        self.layout.addWidget(self.cancel)
         self.setLayout(self.layout)
-        QtCore.QTimer.singleShot(25000, self, QtCore.SLOT('connectTimeout()'))
-    @QtCore.pyqtSlot()
-    def connectTimeout(self):
-        if hasattr(self, 'failed'):
-            self.accept()
-        else:
-            self.failed = True
-            self.loadinglabel.setText("F41L3D")
-            QtCore.QTimer.singleShot(1000, self, QtCore.SLOT('connectTimeout()'))
