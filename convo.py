@@ -7,12 +7,10 @@ from generic import PesterIcon
 from parsetools import escapeBrackets, convertTags
 
 class PesterTabWindow(QtGui.QFrame):
-    def __init__(self, mainwindow, parent=None):
+    def __init__(self, mainwindow, parent=None, convo="convo"):
         QtGui.QFrame.__init__(self, parent)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.mainwindow = mainwindow
-        self.resize(*self.mainwindow.theme["convo/size"])
-        self.setStyleSheet(self.mainwindow.theme["convo/style"])
 
         self.tabs = QtGui.QTabBar(self)
         self.tabs.setTabsClosable(True)
@@ -20,9 +18,8 @@ class PesterTabWindow(QtGui.QFrame):
                      self, QtCore.SLOT('changeTab(int)'))
         self.connect(self.tabs, QtCore.SIGNAL('tabCloseRequested(int)'),
                      self, QtCore.SLOT('tabClose(int)'))
-        self.tabs.setShape(self.mainwindow.theme["convo/tabs/tabstyle"])
-        self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (self.mainwindow.theme["convo/tabs/style"], self.mainwindow.theme["convo/tabs/selectedstyle"]))
 
+        self.initTheme(self.mainwindow.theme[convo])
         self.layout = QtGui.QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.addWidget(self.tabs)
@@ -33,8 +30,11 @@ class PesterTabWindow(QtGui.QFrame):
         self.changedTab = False
         self.softclose = False
 
+        self.type = convo
+
         # get default tab color i guess
         self.defaultTabTextColor = self.getTabTextColor()
+
     def getTabTextColor(self):
         # ugly, ugly hack
         self.changedTab = True
@@ -44,12 +44,12 @@ class PesterTabWindow(QtGui.QFrame):
         self.changedTab = False
         return c
     def addChat(self, convo):
-        self.convos[convo.chum.handle] = convo
+        self.convos[convo.title()] = convo
         # either addTab or setCurrentIndex will trigger changed()
-        newindex = self.tabs.addTab(convo.chum.handle)
-        self.tabIndices[convo.chum.handle] = newindex
+        newindex = self.tabs.addTab(convo.title())
+        self.tabIndices[convo.title()] = newindex
         self.tabs.setCurrentIndex(newindex)
-        self.tabs.setTabIcon(newindex, convo.chum.mood.icon(self.mainwindow.theme))
+        self.tabs.setTabIcon(newindex, convo.icon())
     def showChat(self, handle):
         tabi = self.tabIndices[handle]
         if self.tabs.currentIndex() == tabi:
@@ -61,7 +61,7 @@ class PesterTabWindow(QtGui.QFrame):
 
     def convoHasFocus(self, convo):
         if ((self.hasFocus() or self.tabs.hasFocus()) and 
-            self.tabs.tabText(self.tabs.currentIndex()) == convo.chum.handle):
+            self.tabs.tabText(self.tabs.currentIndex()) == convo.title()):
             return True
         
     def keyPressEvent(self, event):
@@ -69,7 +69,7 @@ class PesterTabWindow(QtGui.QFrame):
         mods = event.modifiers()
         if ((mods & QtCore.Qt.ControlModifier) and 
             keypress == QtCore.Qt.Key_Tab):
-            nexti = (self.tabIndices[self.currentConvo.chum.handle] + 1) % self.tabs.count()
+            nexti = (self.tabIndices[self.currentConvo.title()] + 1) % self.tabs.count()
             self.tabs.setCurrentIndex(nexti)
 
     def closeSoft(self):
@@ -112,7 +112,7 @@ class PesterTabWindow(QtGui.QFrame):
     
     def notifyNewMessage(self, handle):
         i = self.tabIndices[handle]
-        self.tabs.setTabTextColor(i, QtGui.QColor(self.mainwindow.theme["convo/tabs/newmsgcolor"]))
+        self.tabs.setTabTextColor(i, QtGui.QColor(self.mainwindow.theme["%s/tabs/newmsgcolor" % (self.type)]))
         convo = self.convos[handle]
         def func():
             convo.showChat()
@@ -125,11 +125,14 @@ class PesterTabWindow(QtGui.QFrame):
         except KeyError:
             pass
         self.mainwindow.waitingMessages.messageAnswered(handle)
+    def initTheme(self, convo):
+        self.resize(*convo["size"])
+        self.setStyleSheet(convo["style"])
+        self.tabs.setShape(convo["tabs"]["tabstyle"])
+        self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (convo["tabs"]["style"], convo["tabs"]["selectedstyle"]))
+
     def changeTheme(self, theme):
-        self.resize(*theme["convo/size"])
-        self.setStyleSheet(theme["convo/style"])
-        self.tabs.setShape(theme["convo/tabs/tabstyle"])
-        self.tabs.setStyleSheet("QTabBar::tabs{ %s }" % (theme["convo/tabs/style"]))
+        self.initTheme(theme["convo"])
         for c in self.convos.values():
             tabi = self.tabIndices[c.chum.handle]
             self.tabs.setTabIcon(tabi, c.chum.mood.icon(theme))
@@ -174,8 +177,8 @@ class PesterTabWindow(QtGui.QFrame):
             self.layout.removeWidget(self.currentConvo)
         self.currentConvo = convo
         self.layout.addWidget(convo)
-        self.setWindowIcon(convo.chum.mood.icon(self.mainwindow.theme))
-        self.setWindowTitle(convo.chum.handle)
+        self.setWindowIcon(convo.icon())
+        self.setWindowTitle(convo.title())
         self.activateWindow()
         self.raise_()
         convo.raiseChat()
@@ -281,8 +284,8 @@ class PesterConvo(QtGui.QFrame):
         convo = self.mainwindow.theme["convo"]
         self.resize(*convo["size"])
         self.setStyleSheet(convo["style"])
-        self.setWindowIcon(chum.mood.icon(self.mainwindow.theme))
-        self.setWindowTitle(chum.handle)
+        self.setWindowIcon(self.icon())
+        self.setWindowTitle(self.title())
 
         t = Template(self.mainwindow.theme["convo/chumlabel/text"])
         
@@ -318,17 +321,22 @@ class PesterConvo(QtGui.QFrame):
             msg = self.mainwindow.profile().pestermsg(self.chum, QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/beganpester"])
             self.setChumOpen(True)
             self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.chum.handle, convertTags(msg, "bbcode"))
+            self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
         self.newmessage = False
+
+    def title(self):
+        return self.chum.handle
+    def icon(self):
+        return self.chum.mood.icon(self.mainwindow.theme)
 
     def updateMood(self, mood, unblocked=False):
         if mood.name() == "offline" and self.chumopen == True and not unblocked:
             msg = self.chum.pestermsg(self.mainwindow.profile(), QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/ceasepester"])
             self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.chum.handle, convertTags(msg, "bbcode"))
+            self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
             self.chumopen = False
         if self.parent():
-            self.parent().updateMood(self.chum.handle, mood, unblocked)
+            self.parent().updateMood(self.title(), mood, unblocked)
         else:
             if self.chum.blocked(self.mainwindow.config) and not unblocked:
                 self.setWindowIcon(QtGui.QIcon(self.mainwindow.theme["main/chums/moods/blocked/icon"]))
@@ -337,7 +345,7 @@ class PesterConvo(QtGui.QFrame):
         # print mood update?
     def updateBlocked(self):
         if self.parent():
-            self.parent().updateBlocked(self.chum.handle)
+            self.parent().updateBlocked(self.title())
         else:
             self.setWindowIcon(QtGui.QIcon(self.mainwindow.theme["main/chums/moods/blocked/icon"]))
     def updateColor(self, color):
@@ -354,25 +362,25 @@ class PesterConvo(QtGui.QFrame):
         # first see if this conversation HASS the focus
         if not (self.hasFocus() or self.textArea.hasFocus() or 
                 self.textInput.hasFocus() or 
-                (self.parent() and self.parent().convoHasFocus(self.chum.handle))):
+                (self.parent() and self.parent().convoHasFocus(self.title()))):
             # ok if it has a tabconvo parent, send that the notify.
             if self.parent():
-                self.parent().notifyNewMessage(self.chum.handle)
+                self.parent().notifyNewMessage(self.title())
             # if not change the window title and update system tray
             else:
                 self.newmessage = True
-                self.setWindowTitle(self.chum.handle+"*")
+                self.setWindowTitle(self.title()+"*")
                 def func():
                     self.showChat()
-                self.mainwindow.waitingMessages.addMessage(self.chum.handle, func)
+                self.mainwindow.waitingMessages.addMessage(self.title(), func)
                 
     def clearNewMessage(self):
         if self.parent():
-            self.parent().clearNewMessage(self.chum.handle)
+            self.parent().clearNewMessage(self.title())
         elif self.newmessage:
             self.newmessage = False
-            self.setWindowTitle(self.chum.handle)
-            self.mainwindow.waitingMessages.messageAnswered(self.chum.handle)
+            self.setWindowTitle(self.title())
+            self.mainwindow.waitingMessages.messageAnswered(self.title())
             # reset system tray
     def focusInEvent(self, event):
         self.clearNewMessage()
@@ -384,12 +392,12 @@ class PesterConvo(QtGui.QFrame):
 
     def showChat(self):
         if self.parent():
-            self.parent().showChat(self.chum.handle)
+            self.parent().showChat(self.title())
         self.raiseChat()
 
     def closeEvent(self, event):
-        self.mainwindow.waitingMessages.messageAnswered(self.chum.handle)
-        self.windowClosed.emit(self.chum.handle)
+        self.mainwindow.waitingMessages.messageAnswered(self.title())
+        self.windowClosed.emit(self.title())
     def setChumOpen(self, o):
         self.chumopen = o
     def changeTheme(self, theme):
@@ -399,9 +407,9 @@ class PesterConvo(QtGui.QFrame):
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                        margins["right"], margins["bottom"])
 
-        self.setWindowIcon(self.chum.mood.icon(theme))
+        self.setWindowIcon(self.icon())
         t = Template(self.mainwindow.theme["convo/chumlabel/text"])
-        self.chumLabel.setText(t.safe_substitute(handle=self.chum.handle))
+        self.chumLabel.setText(t.safe_substitute(handle=self.title()))
         self.chumLabel.setStyleSheet(theme["convo/chumlabel/style"])
         self.chumLabel.setAlignment(self.aligndict["h"][self.mainwindow.theme["convo/chumlabel/align/h"]] | self.aligndict["v"][self.mainwindow.theme["convo/chumlabel/align/v"]])
         self.chumLabel.setMaximumHeight(self.mainwindow.theme["convo/chumlabel/maxheight"])
@@ -421,13 +429,13 @@ class PesterConvo(QtGui.QFrame):
         self.textInput.setText("")
         self.addMessage(text, True)
         # if ceased, rebegin
-        if not self.chumopen:
-            self.mainwindow.newConvoStarted.emit(QtCore.QString(self.chum.handle), True)
+        if hasattr(self, 'chumopen') and not self.chumopen:
+            self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
         # convert color tags
         text = convertTags(unicode(text), "ctag")
-        self.messageSent.emit(text, self.chum)
+        self.messageSent.emit(text, self.title())
 
-    messageSent = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
+    messageSent = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     windowClosed = QtCore.pyqtSignal(QtCore.QString)
 
     aligndict = {"h": {"center": QtCore.Qt.AlignHCenter,

@@ -4,7 +4,24 @@ from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood
 from generic import PesterIcon
-from convo import PesterConvo, PesterInput, PesterText
+from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
+
+class MemoTabWindow(PesterTabWindow):
+    def __init__(self, mainwindow, parent=None):
+        PesterTabWindow.__init__(self, mainwindow, parent, "memos")
+    def addChat(self, convo):
+        self.convos[convo.channel] = convo
+        # either addTab or setCurrentIndex will trigger changed()
+        newindex = self.tabs.addTab(convo.channel)
+        self.tabIndices[convo.channel] = newindex
+        self.tabs.setCurrentIndex(newindex)
+        self.tabs.setTabIcon(newindex, PesterIcon(self.mainwindow.theme["memos/memoicon"]))
+    def updateBlocked(self):
+        pass
+    def updateMood(self):
+        pass
+
+_ctag_begin = re.compile(r'<c=(.*?)>')
 
 class MemoText(PesterText):
     def __init__(self, theme, parent=None):
@@ -13,7 +30,11 @@ class MemoText(PesterText):
         self.setReadOnly(True)
         self.setMouseTracking(True)
     def addMessage(self, text, chum):
-        pass
+        # get chum color from c tag
+        mobj = _ctag_begin.match(text)
+        # tinychum sends straight /me with no color. go to chumdb!
+        systemColor = QtGui.QColor(self.parent().mainwindow.theme["memo/systemMsgColor"])
+        
     def changeTheme(self):
         pass
 
@@ -46,6 +67,9 @@ class PesterMemo(PesterConvo):
         self.initTheme(self.mainwindow.theme)
 
         # connect
+        self.connect(self.textInput, QtCore.SIGNAL('returnPressed()'),
+                     self, QtCore.SLOT('sentMessage()'))
+
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.channelLabel)
         layout_0.addWidget(self.textArea)
@@ -66,9 +90,14 @@ class PesterMemo(PesterConvo):
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                   margins["right"], margins["bottom"])
         
-        #if parent:
-        #    parent.addChat(self)
+        if parent:
+            parent.addChat(self)
         self.newmessage = False
+
+    def title(self):
+        return self.channel
+    def icon(self):
+        return PesterIcon(self.mainwindow.theme["memos/memoicon"])
 
     def updateMood(self):
         pass
@@ -76,12 +105,12 @@ class PesterMemo(PesterConvo):
         pass
     def updateColor(self):
         pass
-    def addMessage(self):
-        pass
-    def notifyNewMessage(self):
-        pass
-    def clearNewMessage(self):
-        pass
+    def addMessage(self, text, handle):
+        if type(handle) is bool:
+            chum = self.mainwindow.profile()
+        else:
+            chum = PesterProfile(handle)
+        self.textArea.addMessage(text, chum)
 
     def initTheme(self, theme):
         memo = theme["memos"]
@@ -104,14 +133,19 @@ class PesterMemo(PesterConvo):
         slidercss = "QSlider { %s } QSlider::groove { %s } QSlider::handle { %s }" % (theme["memos/time/slider/style"], theme["memos/time/slider/groove"], theme["memos/time/slider/handle"])
         self.timeslider.setStyleSheet(slidercss) 
 
-
     def changeTheme(self, theme):
         self.initTheme(theme)
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
 
+    @QtCore.pyqtSlot()
     def sentMessage(self):
-        pass
+        text = self.textInput.text()
+        if text == "":
+            return
+        text = "<c=%s>%s</c>" % (self.mainwindow.profile().colorcmd(), text)
+        self.textInput.setText(text)
+        PesterConvo.sentMessage(self)
 
     def closeEvent(self, event):
         self.mainwindow.waitingMessages.messageAnswered(self.channel)

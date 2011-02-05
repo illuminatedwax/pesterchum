@@ -216,6 +216,12 @@
  {"memoicon": "$path/memo.png",
   "style": "background: #fdb302; font-family:'Courier';font:bold;selection-background-color:#919191; ",
   "size": [600,300],
+  "tabs": {
+      "style": "",
+      "selectedstyle": "",
+      "newmsgcolor": "#fdb302",
+      "tabstyle": 0
+  },
   "label": { "text": "$channel",
              "style": "background: rgb(196, 138, 0); color: white; border:0px;",
              "align": { "h": "center", "v": "center" },
@@ -230,6 +236,7 @@
             "slider": { "style": "",
                         "groove": "",
                         "handle": "" }
-          }
+          },
+  "systemMsgColor": "#646464"
  }
 }

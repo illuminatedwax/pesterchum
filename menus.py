@@ -2,7 +2,7 @@ from PyQt4 import QtGui, QtCore
 import re
 
 from generic import RightClickList, MultiTextDialog
-from pesterdata import pesterQuirk, PesterProfile
+from dataobjs import pesterQuirk, PesterProfile
 
 class PesterQuirkItem(QtGui.QListWidgetItem):
     def __init__(self, quirk, parent):
@@ -450,3 +450,26 @@ class PesterMemoList(QtGui.QDialog):
     def joinActivatedMemo(self, item):
         self.channelarea.setCurrentItem(item)
         self.accept()
+
+
+class LoadingScreen(QtGui.QDialog):
+    def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent, flags=(QtCore.Qt.CustomizeWindowHint | 
+                                                    QtCore.Qt.FramelessWindowHint))
+        self.mainwindow = parent
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+
+        self.loadinglabel = QtGui.QLabel("LO4D1NG")
+
+        self.layout = QtGui.QVBoxLayout()
+        self.layout.addWidget(self.loadinglabel)
+        self.setLayout(self.layout)
+        QtCore.QTimer.singleShot(25000, self, QtCore.SLOT('connectTimeout()'))
+    @QtCore.pyqtSlot()
+    def connectTimeout(self):
+        if hasattr(self, 'failed'):
+            self.accept()
+        else:
+            self.failed = True
+            self.loadinglabel.setText("F41L3D")
+            QtCore.QTimer.singleShot(1000, self, QtCore.SLOT('connectTimeout()'))

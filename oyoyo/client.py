@@ -170,7 +170,7 @@ class IRCClient:
                         try:
                             self.command_handler.run(command, prefix, *args)
                         except CommandError:
-                            # error will of already been loggingged by the handler
+                            # error will have already been loggingged by the handler
                             pass 
 
                 yield True

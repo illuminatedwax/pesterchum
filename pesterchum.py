@@ -14,15 +14,15 @@ from PyQt4 import QtGui, QtCore
 import pygame
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
-    PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList
+    PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
+    LoadingScreen
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
 from generic import PesterIcon, RightClickList, MultiTextDialog
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags
-from memos import PesterMemo
+from memos import PesterMemo, MemoTabWindow
 
 logging.basicConfig(level=logging.INFO)
-
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -583,6 +583,7 @@ class PesterWindow(MovingWindow):
         self.convos = {}
         self.memos = {}
         self.tabconvo = None
+        self.tabmemo = None
 
         self.setObjectName("main")
         self.config = userConfig()
@@ -706,6 +707,7 @@ class PesterWindow(MovingWindow):
 
         if not self.config.defaultprofile():
             self.changeProfile()
+        self.loadingscreen = LoadingScreen(self)
 
     def profile(self):
         return self.userprofile.chat
@@ -717,6 +719,12 @@ class PesterWindow(MovingWindow):
         else:
             for c in self.convos.values():
                 c.close()
+        if self.tabmemo:
+            self.tabmemo.close()
+        else:
+            for m in self.memos.values():
+                m.close()
+
     def closeEvent(self, event):
         self.closeConversations()
         if hasattr(self, 'trollslum') and self.trollslum:
@@ -742,6 +750,12 @@ class PesterWindow(MovingWindow):
         convo.addMessage(msg, False)
         # play sound here
         self.alarm.play()
+    def newMemoMsg(self, chan, handle, msg):
+        if not self.memos.has_key(chan):
+            # silently ignore in case we forgot to /part
+            return
+        memo = self.memos[chan]
+        memo.addMessage(msg, handle)
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
@@ -767,33 +781,46 @@ class PesterWindow(MovingWindow):
             self.tabconvo.show()
         else:
             convoWindow = PesterConvo(chum, initiated, self)
-        self.connect(convoWindow, QtCore.SIGNAL('messageSent(QString, PyQt_PyObject)'),
-                     self, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'))
+        self.connect(convoWindow, QtCore.SIGNAL('messageSent(QString, QString)'),
+                     self, QtCore.SIGNAL('sendMessage(QString, QString)'))
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
         self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
+
     def createTabWindow(self):
         self.tabconvo = PesterTabWindow(self)
         self.connect(self.tabconvo, QtCore.SIGNAL('windowClosed()'),
                      self, QtCore.SLOT('tabsClosed()'))
-
+    def createMemoTabWindow(self):
+        self.tabmemo = MemoTabWindow(self)
+        self.connect(self.tabmemo, QtCore.SIGNAL('windowClosed()'),
+                     self, QtCore.SLOT('memoTabsClosed()'))
 
     def newMemo(self, channel):
+        if channel == "#pesterchum":
+            return
         if self.memos.has_key(channel):
             # load memo
             return
+        # do slider dialog then set 
+        if self.config.tabs():
+            if not self.tabmemo:
+                self.createMemoTabWindow()
+            memoWindow = PesterMemo(channel, self, self.tabmemo)
+            self.tabmemo.show()
         else:
-            # do slider dialog then set 
-            if self.config.tabs():
-                # create new tabbed memo window
-                pass
-            else:
-                self.memoWindow = PesterMemo(channel, self, None)
+            memoWindow = PesterMemo(channel, self, None)
         # connect signals
+        self.connect(memoWindow, QtCore.SIGNAL('messageSent(QString, QString)'),
+                     self, QtCore.SIGNAL('sendMessage(QString, QString)'))
+#        self.connect(memoWindow, QtCore.SIGNAL('windowClosed(QString)'),
+#                     self, QtCore.SLOT('closeConvo(QString)'))
         # chat client send memo open
-        self.memoWindow.show()
+        self.memos[channel] = memoWindow
+        self.joinChannel.emit(channel)
+        memoWindow.show()
 
     def addChum(self, chum):
         self.chumList.addChum(chum)
@@ -919,7 +946,11 @@ class PesterWindow(MovingWindow):
         else:
             self.waitingMessages.answerMessage()
 
-
+    @QtCore.pyqtSlot()
+    def connected(self):
+        if self.loadingscreen:
+            self.loadingscreen.close()
+        self.loadingscreen = None
     @QtCore.pyqtSlot()
     def blockSelectedChum(self):
         curChumListing = self.chumList.currentItem()
@@ -953,6 +984,10 @@ class PesterWindow(MovingWindow):
     def tabsClosed(self):
         del self.tabconvo
         self.tabconvo = None
+    @QtCore.pyqtSlot()
+    def memoTabsClosed(self):
+        del self.tabmemo
+        self.tabmemo = None
                  
     @QtCore.pyqtSlot(QtCore.QString, Mood)
     def updateMoodSlot(self, handle, mood):
@@ -969,6 +1004,10 @@ class PesterWindow(MovingWindow):
         h = unicode(handle)
         m = unicode(msg)
         self.newMessage(h, m)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
+    def deliverMemo(self, chan, handle, msg):
+        (c, h, m) = (unicode(chan), unicode(handle), unicode(msg))
+        self.newMemoMsg(c,h,m)
 
     @QtCore.pyqtSlot(QtCore.QString, PesterList)
     def updateNames(self, channel, names):
@@ -1083,9 +1122,11 @@ class PesterWindow(MovingWindow):
         newmemo = self.memochooser.newmemoname()
         selectedmemo = self.memochooser.selectedmemo()
         if newmemo:
-            self.newMemo('#'+newmemo)
-        else:
-            self.newMemo('#'+selectedmemo.text())
+            channel = "#"+unicode(newmemo)
+            self.newMemo(channel)
+        elif selectedmemo:
+            channel = "#"+unicode(selectedmemo.text())
+            self.newMemo(channel)
         self.memochooser = None
     @QtCore.pyqtSlot()
     def memoChooserClose(self):
@@ -1310,7 +1351,7 @@ class PesterWindow(MovingWindow):
             pass
 
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
-    sendMessage = QtCore.pyqtSignal(QtCore.QString, PesterProfile)
+    sendMessage = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
     profileChanged = QtCore.pyqtSignal()
     moodRequest = QtCore.pyqtSignal(PesterProfile)
@@ -1324,6 +1365,7 @@ class PesterWindow(MovingWindow):
     trayIconSignal = QtCore.pyqtSignal(int)
     blockedChum = QtCore.pyqtSignal(QtCore.QString)
     unblockedChum = QtCore.pyqtSignal(QtCore.QString)
+    joinChannel = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
@@ -1342,10 +1384,10 @@ class PesterIRC(QtCore.QObject):
     def getMoods(self, chums):
         self.cli.command_handler.getMood(*chums)
         
-    @QtCore.pyqtSlot(QtCore.QString, PesterProfile)
-    def sendMessage(self, text, chum):
-        handle = chum.handle
-        helpers.msg(self.cli, handle, text)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def sendMessage(self, text, handle):
+        h = unicode(handle)
+        helpers.msg(self.cli, h, text)
 
     @QtCore.pyqtSlot(QtCore.QString, bool)
     def startConvo(self, handle, initiated):
@@ -1387,16 +1429,21 @@ class PesterIRC(QtCore.QObject):
     @QtCore.pyqtSlot()
     def requestChannelList(self):
         helpers.channel_list(self.cli)
-
+    @QtCore.pyqtSlot(QtCore.QString)
+    def joinChannel(self, channel):
+        c = unicode(channel)
+        helpers.join(self.cli, c)
     def updateIRC(self):
         self.conn.next()
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    memoReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
     channelListReceived = QtCore.pyqtSignal(PesterList)
     nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    connected = QtCore.pyqtSignal()
     userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
                                    QtCore.QString)
 
@@ -1422,7 +1469,12 @@ class PesterHandler(DefaultCommandHandler):
                 if msg.find(mychumhandle, 8) != -1:
                     helpers.msg(self.client, "#pesterchum", 
                                 "MOOD >%d" % (mymood))
-                    
+        elif chan[0] == '#':
+            if msg[0:16] == "PESTERCHUM:TIME>":
+                # send time msg
+                pass
+            else:
+                self.parent.memoReceived.emit(chan, handle, msg)
         else:
             # private message
             # silently ignore messages to yourself.
@@ -1441,6 +1493,7 @@ class PesterHandler(DefaultCommandHandler):
 
 
     def welcome(self, server, nick, msg):
+        self.parent.connected.emit()
         helpers.join(self.client, "#pesterchum")
         mychumhandle = self.mainwindow.profile().handle
         mymood = self.mainwindow.profile().mood.value()
@@ -1561,8 +1614,8 @@ def main():
     
     irc = PesterIRC(widget)
     irc.IRCConnect()
-    irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, PyQt_PyObject)'),
-                irc, QtCore.SLOT('sendMessage(QString, PyQt_PyObject)'))
+    irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, QString)'),
+                irc, QtCore.SLOT('sendMessage(QString, QString)'))
     irc.connect(widget, 
                 QtCore.SIGNAL('newConvoStarted(QString, bool)'),
                 irc, QtCore.SLOT('startConvo(QString, bool)'))
@@ -1605,8 +1658,14 @@ def main():
                 QtCore.SIGNAL('requestChannelList()'),
                 irc,
                 QtCore.SLOT('requestChannelList()'))
+    irc.connect(widget,
+                QtCore.SIGNAL('joinChannel(QString)'),
+                irc,
+                QtCore.SLOT('joinChannel(QString)'))
 
 # IRC --> Main window
+    irc.connect(irc, QtCore.SIGNAL('connected()'),
+                widget, QtCore.SLOT('connected()'))
     irc.connect(irc, 
                 QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
                 widget, 
@@ -1619,6 +1678,10 @@ def main():
                 QtCore.SIGNAL('messageReceived(QString, QString)'),
                 widget,
                 QtCore.SLOT('deliverMessage(QString, QString)'))
+    irc.connect(irc,
+                QtCore.SIGNAL('memoReceived(QString, QString, QString)'),
+                widget,
+                QtCore.SLOT('deliverMemo(QString, QString, QString)'))
     irc.connect(irc,
                 QtCore.SIGNAL('nickCollision(QString, QString)'),
                 widget,
@@ -1638,6 +1701,7 @@ def main():
 
     ircapp = IRCThread(irc)
     ircapp.start()
+    widget.loadingscreen.exec_()
     sys.exit(app.exec_())
 
 main()

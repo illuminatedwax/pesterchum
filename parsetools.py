@@ -12,7 +12,7 @@ def convertTags(string, format="html"):
         color = matchobj.group(1)
         if _ctag_rgb.match(color) is not None:
             if format=='ctag':
-                return "<c=%s,%s,%s>"
+                return "<c=%s>" % (color)
             try:
                 qc = QtGui.QColor(*[int(c) for c in color.split(",")])
             except ValueError:
