@@ -237,10 +237,17 @@
   "userlist": { "width": 150,
                 "style": "border:2px solid yellow; background: white;font: bold;font-family: 'Courier';selection-background-color:#646464; "
               },
-  "time": { "text": { "width": 75, "style": "" },
+  "time": { "text": { "width": 75, 
+                      "style": "" 
+                    },
             "slider": { "style": "",
                         "groove": "",
-                        "handle": "" 
+                        "handle": ""
+                      },
+            "buttons": { "style": "color:white;font:bold;" }, 
+            "arrows": { "left": "$path/leftarrow.png", 
+                        "right": "$path/rightarrow.png",
+                        "style": "" 
                       }
           },
   "systemMsgColor": "#646464"

@@ -13,7 +13,7 @@ def delta2txt(d, format="pc"):
         sign = "+" if d >= timedelta(0) else "-"
     else:
         if d == timedelta(0):
-            return ""
+            return "i"
         sign = "F" if d >= timedelta(0) else "P"
     d = abs(d)
     totalminutes = (d.days*86400 + d.seconds) // 60
@@ -86,10 +86,20 @@ class TimeTracker(list):
         try:
             i = self.index(timed)
             self.current = i
+            return True
         except ValueError:
             self.current = len(self)
             self.append(timed)
             self.addRecord(timed)
+            return False
+    def prevTime(self):
+        i = self.current
+        i = (i - 1) % len(self)
+        return self[i]
+    def nextTime(self):
+        i = self.current
+        i = (i + 1) % len(self)
+        return self[i]
     def setCurrent(self, timed):
         self.current = self.index(timed)
     def addRecord(self, timed):
@@ -111,8 +121,9 @@ class TimeTracker(list):
         try:
             self.pop(self.index(timed))
             self.current = len(self)-1
+            return True
         except ValueError:
-            pass
+            return None
     def getTime(self):
         if self.current >= 0: 
             return self[self.current]
@@ -120,6 +131,8 @@ class TimeTracker(list):
             return None
     def getGrammar(self):
         timed = self.getTime()
+        return self.getGrammarTime(timed)
+    def getGrammarTime(self, timed):
         mytime = timedelta(0)
         (temporal, pcf, when) = pcfGrammar(timed - mytime)
         if timed == mytime:
@@ -165,6 +178,8 @@ class TimeSlider(QtGui.QSlider):
         time = timelist[abs(self.value())]
         sign = "+" if self.value() >= 0 else "-"
         return sign+time
+    def mouseDoubleClickEvent(self, event):
+        self.setValue(0)
 
 class MemoTabWindow(PesterTabWindow):
     def __init__(self, mainwindow, parent=None):
@@ -231,7 +246,7 @@ class MemoText(PesterText):
             else:
                 start = 13
             space = msg.find(" ")
-            msg = chum.memsg(systemColor, msg[start:space], msg[space:], timegrammar=time.getGrammar())
+            msg = chum.memsg(systemColor, msg[start:space], msg[space:], time=time.getGrammar())
             window.chatlog.log(parent.channel, convertTags(msg, "bbcode"))
             self.append(convertTags(msg))
         else:
@@ -274,6 +289,18 @@ class PesterMemo(PesterConvo):
         self.timeinput.setText(timestr)
         self.timeinput.setSlider()
         self.timetravel = QtGui.QPushButton("GO", self)
+        self.timeclose = QtGui.QPushButton("CLOSE", self)
+        self.timeswitchl = QtGui.QPushButton(self)
+        self.timeswitchr = QtGui.QPushButton(self)
+
+        self.connect(self.timetravel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('sendtime()'))
+        self.connect(self.timeclose, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('smashclock()'))
+        self.connect(self.timeswitchl, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('prevtime()'))
+        self.connect(self.timeswitchr, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('nexttime()'))
 
         self.times = {}
 
@@ -298,7 +325,9 @@ class PesterMemo(PesterConvo):
         layout_2.addWidget(self.timeslider)
         layout_2.addWidget(self.timeinput)
         layout_2.addWidget(self.timetravel)
-
+        layout_2.addWidget(self.timeclose)
+        layout_2.addWidget(self.timeswitchl)
+        layout_2.addWidget(self.timeswitchr)
         self.layout = QtGui.QVBoxLayout()
 
         self.layout.addWidget(self.channelLabel)
@@ -313,6 +342,11 @@ class PesterMemo(PesterConvo):
 
         if parent:
             parent.addChat(self)
+
+        p = self.mainwindow.profile()
+        timeGrammar = self.time.getGrammar()
+        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+        self.textArea.append(convertTags(p.memoopenmsg(systemColor, self.time.getTime(), timeGrammar, self.mainwindow.theme["convo/text/openmemo"], self.channel)))
 
         self.newmessage = False
 
@@ -366,6 +400,19 @@ class PesterMemo(PesterConvo):
         slidercss = "QSlider { %s } QSlider::groove { %s } QSlider::handle { %s }" % (theme["memos/time/slider/style"], theme["memos/time/slider/groove"], theme["memos/time/slider/handle"])
         self.timeslider.setStyleSheet(slidercss) 
 
+        larrow = PesterIcon(self.mainwindow.theme["memos/time/arrows/left"])
+        self.timeswitchl.setIcon(larrow)
+        self.timeswitchl.setIconSize(larrow.realsize())
+        self.timeswitchl.setStyleSheet(self.mainwindow.theme["memos/time/arrows/style"])
+        self.timetravel.setStyleSheet(self.mainwindow.theme["memos/time/buttons/style"])
+        self.timeclose.setStyleSheet(self.mainwindow.theme["memos/time/buttons/style"])
+
+        rarrow = PesterIcon(self.mainwindow.theme["memos/time/arrows/right"])
+        self.timeswitchr.setIcon(rarrow)
+        self.timeswitchr.setIconSize(rarrow.realsize())
+        self.timeswitchr.setStyleSheet(self.mainwindow.theme["memos/time/arrows/style"])
+
+
     def changeTheme(self, theme):
         self.initTheme(theme)
         self.textArea.changeTheme(theme)
@@ -399,7 +446,7 @@ class PesterMemo(PesterConvo):
             secs = int(cmd)
             time = datetime.fromtimestamp(secs)
             timed = time - datetime.now()
-            s = (timed // 60)*60
+            s = (timed.seconds // 60)*60
             timed = timedelta(timed.days, s)
         except ValueError:
             if cmd == "i":
@@ -483,6 +530,50 @@ class PesterMemo(PesterConvo):
                     self.times[h].removeTime(t.getTime())
         elif update == "join":
             self.addUser(h)
+            time = self.time.getTime()
+            serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
+            self.messageSent.emit(serverText, self.title())
+
+    def resetSlider(self, time):
+        self.timeinput.setText(delta2txt(time))
+        self.timeinput.setSlider()
+        self.sendtime()
+
+    @QtCore.pyqtSlot()
+    def sendtime(self):
+        me = self.mainwindow.profile()
+        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+        time = txt2delta(self.timeinput.text())
+        present = self.time.addTime(time)
+        if not present:
+            self.textArea.append(convertTags(me.memojoinmsg(systemColor, time, self.time.getGrammar(), self.mainwindow.theme["convo/text/joinmemo"])))
+
+        serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
+        self.messageSent.emit(serverText, self.title())
+    @QtCore.pyqtSlot()
+    def smashclock(self):
+        me = self.mainwindow.profile()
+        time = txt2delta(self.timeinput.text())
+        removed = self.time.removeTime(time)
+        if removed:
+            grammar = self.time.getGrammarTime(time)
+            systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+            self.textArea.append(convertTags(me.memoclosemsg(systemColor, grammar, self.mainwindow.theme["convo/text/closememo"])))
+
+        newtime = self.time.getTime()
+        if newtime is None:
+            newtime = timedelta(0)
+        self.resetSlider(newtime)
+    @QtCore.pyqtSlot()
+    def prevtime(self):
+        time = self.time.prevTime()
+        self.time.setCurrent(time)
+        self.resetSlider(time)
+    @QtCore.pyqtSlot()
+    def nexttime(self):
+        time = self.time.nextTime()
+        self.time.setCurrent(time)
+        self.resetSlider(time)
 
     def closeEvent(self, event):
         self.mainwindow.waitingMessages.messageAnswered(self.channel)

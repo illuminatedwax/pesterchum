@@ -108,3 +108,22 @@ def timeProtocol(cmd):
     if dir == "P":
         timed = timed*-1
     return timed
+
+def timeDifference(td):
+    if td < timedelta(0):
+        when = "AGO"
+    else:
+        when = "FROM NOW"
+    atd = abs(td)
+    minutes = (atd.days*86400 + atd.seconds) // 60
+    hours = minutes // 60
+    leftoverminutes = minutes % 60
+    if atd == timedelta(0):
+        timetext = "RIGHT NOW"
+    elif atd < timedelta(0,3600):
+        timetext = "%d MINUTES %s" % (minutes, when)
+    elif atd < timedelta(0,3600*100):
+        timetext = "%d:%02d HOURS %s" % (hours, leftoverminutes, when)
+    else:
+        timetext = "%d HOURS %s" % (hours, when)
+    return timetext

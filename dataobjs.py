@@ -3,6 +3,7 @@ from datetime import *
 import re
 
 from generic import PesterIcon
+from parsetools import timeDifference
 
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
@@ -140,20 +141,16 @@ class PesterProfile(object):
         return "<c=%s>-- %s <c=%s>[%s]</c> %s %s <c=%s>[%s]</c> at %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
     def memoclosemsg(self, syscolor, timeGrammar, verb):
         return "<c=%s><c=%s>%s%s%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), timeGrammar.pcf, self.initials(), timeGrammar.number, verb)
+    def memoopenmsg(self, syscolor, td, timeGrammar, verb, channel):
+        (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
+        timetext = timeDifference(td)
+        initials = pcf+self.initials()
+        return "<c=%s><c=%s>%s</c> %s %s %s.</c>" % \
+            (syscolor.name(), self.colorhtml(), initials, timetext, verb, channel[1:].upper().replace("_", " "))
+
     def memojoinmsg(self, syscolor, td, timeGrammar, verb):
         (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
-        atd = abs(td)
-        minutes = (atd.days*86400 + atd.seconds) // 60
-        hours = minutes // 60
-        leftoverminutes = minutes % 60
-        if atd == timedelta(0):
-            timetext = when
-        elif atd < timedelta(0,3600):
-            timetext = "%d MINUTES %s" % (minutes, when)
-        elif atd < timedelta(0,3600*100):
-            timetext = "%d:%02d HOURS %s" % (hours, leftoverminutes, when)
-        else:
-            timetext = "%d HOURS %s" % (hours, when)
+        timetext = timeDifference(td)
         initials = pcf+self.initials()+timeGrammar.number
         return "<c=%s><c=%s>%s %s [%s]</c> %s %s." % \
             (syscolor.name(), self.colorhtml(), temporal, self.handle,

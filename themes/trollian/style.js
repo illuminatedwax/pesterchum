@@ -289,10 +289,17 @@
   "userlist": { "width": 150,
                 "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
-  "time": { "text": { "width": 75, "style": "" },
+  "time": { "text": { "width": 75, 
+                      "style": "color:white;font:bold" 
+                    },
             "slider": { "style": "",
-                        "groove": "",
-                        "handle": "" 
+                        "groove": "border-image:url($path/timeslider.png);",
+                        "handle": "image:url($path/acceptant.png);"
+                      },
+            "buttons": { "style": "color:white;font:bold;" }, 
+            "arrows": { "left": "$path/leftarrow.png", 
+                        "right": "$path/rightarrow.png",
+                        "style": ""
                       }
           },
   "systemMsgColor": "#646464"

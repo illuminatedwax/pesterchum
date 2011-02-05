@@ -1136,7 +1136,7 @@ class PesterWindow(MovingWindow):
         selectedmemo = self.memochooser.selectedmemo()
         time = unicode(self.memochooser.timeinput.text())
         if newmemo:
-            channel = "#"+unicode(newmemo)
+            channel = "#"+unicode(newmemo).replace(" ", "_")
             self.newMemo(channel, time)
         elif selectedmemo:
             channel = "#"+unicode(selectedmemo.text())

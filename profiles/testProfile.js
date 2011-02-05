@@ -1,1 +1,1 @@
-{"color": "#aa00ff", "theme": "pesterchum", "quirks": [], "handle": "testProfile"}
+{"color": "#aa00ff", "theme": "trollian", "quirks": [], "handle": "testProfile"}
