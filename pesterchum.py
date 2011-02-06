@@ -920,6 +920,8 @@ class PesterWindow(MovingWindow):
         # do open windows
         if self.tabconvo:
             self.tabconvo.changeTheme(theme)
+        if self.tabmemo:
+            self.tabmemo.changeTheme(theme)
         for c in self.convos.values():
             c.changeTheme(theme)
         if hasattr(self, 'trollslum') and self.trollslum:
