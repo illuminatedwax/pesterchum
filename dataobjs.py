@@ -132,7 +132,7 @@ class PesterProfile(object):
         uppersuffix = suffix.upper()
         if time is not None:
             handle = "%s %s" % (time.temporal, self.handle)
-            initials = time.pcf+self.initials()+uppersuffix
+            initials = time.pcf+self.initials()+time.number+uppersuffix
         else:
             handle = self.handle
             initials = self.initials()+uppersuffix

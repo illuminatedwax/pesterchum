@@ -1,5 +1,5 @@
 {"main":
- {"style": "background-image:url($path/tnbg.png);background-color:rgba(255,255,255,0);",
+ {"style": "background-image:url($path/tnbg2.png);background-color:rgba(255,255,255,0);",
   "size": [650, 450],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
@@ -276,18 +276,18 @@
   "label": { "text": "$channel",
              "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2;",
              "align": { "h": "center", "v": "center" },
-             "minheight": 30,
-             "maxheight": 50
+             "minheight": 18,
+             "maxheight": 18
            },
   "textarea": {
       "style": "background: white; border:2px solid #c2c2c2; font-size: 12px; margin-top: 4px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px;"
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px;"
   },
-  "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
-  "userlist": { "width": 150,
-                "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
+  "margins": {"top": 22, "bottom": 10, "left": 9, "right": 4 },
+  "userlist": { "width": 100,
+                "style": "font-size: 12px; background: white; margin-top: 4px; margin-left: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
   "time": { "text": { "width": 75, 
                       "style": "color:white;font:bold" 

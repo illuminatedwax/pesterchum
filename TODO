@@ -1,12 +1,18 @@
 Features:
-* What if someone switches nick in memo?
 * memo change theme
+* 1 MINUTES FROM NOW
+* memo kicking
+* user import
+* Transparent background?
+* tab right-click menu on tabbed convos, chat window
+* link to memos
+* color text is not being translated to server?
+* convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
 * PESTERLOG: in convo window
 * help button on quirks menu?
 * tab recombining gives wrong window icon
 * help menu -- about and forum
 * profile switch should say current profile
-* Transparent background?
 * X closes to tray
 -- release alpha
 * User commands/stop user from sending commands accidentally
@@ -14,7 +20,6 @@ Features:
   multiple clients share buddy list???
 * System tray menu
 * new sound on CEASE and BEGIN?
-* tab right-click menu on tabbed convos
 * comment history (up button)
 * page up/down scrolling
 * get rid of border on chat window?

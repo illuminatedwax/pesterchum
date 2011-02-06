@@ -196,6 +196,7 @@ class MemoTabWindow(PesterTabWindow):
     def updateMood(self):
         pass
 
+
 _ctag_begin = re.compile(r'<c=(.*?)>')
 
 class MemoText(PesterText):
@@ -257,8 +258,9 @@ class MemoText(PesterText):
             window.chatlog.log(parent.channel, convertTags(msg, "bbcode"))
             
         
-    def changeTheme(self):
-        pass
+    def changeTheme(self, theme):
+        self.setStyleSheet(theme["memos/textarea/style"])
+
 
 class MemoInput(PesterInput):
     def __init__(self, theme, parent=None):
@@ -348,6 +350,7 @@ class PesterMemo(PesterConvo):
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         self.textArea.append(convertTags(p.memoopenmsg(systemColor, self.time.getTime(), timeGrammar, self.mainwindow.theme["convo/text/openmemo"], self.channel)))
 
+        self.op = False
         self.newmessage = False
 
     def title(self):
@@ -428,6 +431,8 @@ class PesterMemo(PesterConvo):
         if handle[0] == '@':
             op = True
             handle = handle[1:]
+            if handle == self.mainwindow.profile().handle:
+                self.op = True
         item = QtGui.QListWidgetItem(handle)
         if handle == self.mainwindow.profile().handle:
             color = self.mainwindow.profile().color
@@ -512,17 +517,19 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
-        if channel != self.channel:
+        if (update in ["join","left"]) and channel != self.channel:
             return
         chums = self.userlist.findItems(handle, QtCore.Qt.MatchFlags(0))
         h = unicode(handle)
         c = unicode(channel)
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         # print exit
-        if update == "quit" or update == "left":
+        if update == "quit" or update == "left" or update == "oldnick":
             for c in chums:
                 chum = PesterProfile(h)
                 self.userlist.takeItem(self.userlist.row(c))
+                if not self.times.has_key(h):
+                    return
                 while self.times[h].getTime() is not None:
                     t = self.times[h]
                     grammar = t.getGrammar()
@@ -533,6 +540,8 @@ class PesterMemo(PesterConvo):
             time = self.time.getTime()
             serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
             self.messageSent.emit(serverText, self.title())
+        elif update == "newnick":
+            self.addUser(h)            
 
     def resetSlider(self, time):
         self.timeinput.setText(delta2txt(time))

@@ -1033,7 +1033,7 @@ class PesterWindow(MovingWindow):
     def userPresentUpdate(self, handle, channel, update):
         c = unicode(channel)
         n = unicode(handle)
-        if update == "quit":
+        if update == "quit" or update == "oldnick":
             for c in self.namesdb.keys():
                 try:
                     i = self.namesdb[c].index(n)
@@ -1050,6 +1050,14 @@ class PesterWindow(MovingWindow):
                 pass
             except KeyError:
                 self.namesdb[c] = []
+        elif update == "newnick":
+            for c in self.namesdb.keys():
+                try:
+                    i = self.namesdb[c].index(n)
+                except ValueError:
+                    self.namesdb[c].append(n)
+                except KeyError:
+                    self.namesdb[c] = [n]
         elif update == "join":
             try:
                 i = self.namesdb[c].index(n)

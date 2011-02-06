@@ -169,7 +169,9 @@ class PesterHandler(DefaultCommandHandler):
     def nick(self, oldnick, newnick):
         oldhandle = oldnick[0:oldnick.find("!")]
         newchum = PesterProfile(newnick, chumdb=self.mainwindow.chumdb)
-        self.parent.moodUpdated.emit(oldhandle, Mood("offline"))        
+        self.parent.moodUpdated.emit(oldhandle, Mood("offline"))
+        self.parent.userPresentUpdate.emit(oldhandle, "", "oldnick")
+        self.parent.userPresentUpdate.emit(newnick, "", "newnick")
         if newnick in self.mainwindow.chumList.chums:
             self.getMood(newchum)
     def namreply(self, server, nick, op, channel, names):

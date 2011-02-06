@@ -183,20 +183,20 @@
   ]
  },
  "convo":
- {"style": "background: #fdb302; border:2px solid yellow; font-family: 'Courier'",
-  "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
-  "size": [295, 191],
-  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px;",
+ {"style": "background-color: #fdb302; background-image:url($path/convobg.png); background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'",
+  "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
+  "size": [400, 250],
+  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px; font-size: 12px;",
                  "align": { "h": "center", "v": "center" },
-                 "minheight": 30,
-                 "maxheight": 50,
+                 "minheight": 26,
+                 "maxheight": 26,
                  "text" : ":: $handle ::"
                },
   "textarea": {
-      "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center;"
+      "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center; margin-top:21px; margin-right:10px; margin-left:10px; font-size: 12px;"
   },
   "input": {
-      "style": "background: white; border:2px solid #c48a00;margin-top:5px;"
+      "style": "background: white; border:2px solid #c48a00;margin-top:3px; margin-right:10px; margin-left:10px; font-size: 12px;"
   },
   "tabs": {
       "style": "",

@@ -132,14 +132,14 @@ class PesterTabWindow(QtGui.QFrame):
         self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (convo["tabs"]["style"], convo["tabs"]["selectedstyle"]))
 
     def changeTheme(self, theme):
-        self.initTheme(theme["convo"])
+        self.initTheme(theme["memos"])
         for c in self.convos.values():
-            tabi = self.tabIndices[c.chum.handle]
-            self.tabs.setTabIcon(tabi, c.chum.mood.icon(theme))
+            tabi = self.tabIndices[c.title()]
+            self.tabs.setTabIcon(tabi, c.icon())
         currenttabi = self.tabs.currentIndex()
         if currenttabi >= 0:
             currentHandle = unicode(self.tabs.tabText(self.tabs.currentIndex()))
-            self.setWindowIcon(self.convos[currentHandle].chum.mood.icon(theme))
+            self.setWindowIcon(self.convos[currentHandle].icon())
         self.defaultTabTextColor = self.getTabTextColor()
 
     @QtCore.pyqtSlot(int)
