@@ -1,5 +1,5 @@
 {"main":
- {"style": "background-image:url($path/pcbg.png);",
+ {"style": "background-image:url($path/pcbg.png); background-repeat: no-repeat;",
   "size": [232, 380],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
@@ -7,7 +7,7 @@
   "close": { "image": "$path/x.gif",
              "loc": [210, 2]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [190, 2]},
+                "loc": [194, 8]},
   "menubar": { "style": "font-family: 'Courier'; font:bold; font-size: 12px;" },
   "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
              "menuitem": "margin-right:10px;",
@@ -217,37 +217,37 @@
  },
  "memos":
  {"memoicon": "$path/memo.png",
-  "style": "background: #fdb302; font-family:'Courier';font:bold;selection-background-color:#919191; ",
-  "size": [600,300],
+  "style": "background-color: #fdb302; background-image:url($path/convobg.png); background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'; font: bold; selection-background-color:#919191; ",
+  "size": [450,300],
   "tabs": {
       "style": "",
       "selectedstyle": "",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
   },
-  "label": { "text": "$channel",
-             "style": "background: rgb(196, 138, 0); color: white; border:0px;",
+  "label": { "text": "Bulletin Board: $channel",
+             "style": "background: rgb(196, 138, 0); color: white; border:0px; font-size: 12px;",
              "align": { "h": "center", "v": "center" },
-             "minheight": 30,
-             "maxheight": 50
+             "minheight": 26,
+             "maxheight": 26
            },
-  "input": { "style": "background: white; border:2px solid #c48a00;margin-top:5px;" },
-  "textarea": { "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center;" },
-  "margins": {"top": 0, "bottom": 0, "left": 0, "right": 0 },
+  "input": { "style": "background: white; border:2px solid #c48a00;margin-top:5px; font-size: 12px; margin-left:10px;" },
+  "textarea": { "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center; font-size: 12px; margin-top: 21px; margin-left:10px;" },
+  "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
   "userlist": { "width": 150,
-                "style": "border:2px solid yellow; background: white;font: bold;font-family: 'Courier';selection-background-color:#646464; "
+                "style": "border:2px solid #c48a00; background: white;font: bold;font-family: 'Courier';selection-background-color:#646464; font-size: 12px;  margin-left:10px; margin-right:10px; margin-top: 21px;"
               },
   "time": { "text": { "width": 75, 
-                      "style": "" 
+                      "style": " border: 2px solid yellow; background: white; font-size: 12px; margin-top: 5px; margin-right: 5px; margin-left: 5px;" 
                     },
-            "slider": { "style": "",
+            "slider": { "style": "border: 0px;",
                         "groove": "",
                         "handle": ""
                       },
-            "buttons": { "style": "color:white;font:bold;" }, 
+            "buttons": { "style": "color: black; font: bold; border: 2px solid #c48a00; font: bold; font-size: 12px; background: yellow; margin-top: 5px; margin-right: 5px; margin-left: 5px; padding: 2px; width: 50px;" }, 
             "arrows": { "left": "$path/leftarrow.png", 
                         "right": "$path/rightarrow.png",
-                        "style": "" 
+                        "style": " border:0px; margin-top: 5px; margin-right:10px;" 
                       }
           },
   "systemMsgColor": "#646464"

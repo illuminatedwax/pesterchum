@@ -924,6 +924,8 @@ class PesterWindow(MovingWindow):
             self.tabmemo.changeTheme(theme)
         for c in self.convos.values():
             c.changeTheme(theme)
+        for m in self.memos.values():
+            m.changeTheme(theme)
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.changeTheme(theme)
         if hasattr(self, 'allusers') and self.allusers:

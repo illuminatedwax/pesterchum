@@ -196,7 +196,6 @@ class MemoTabWindow(PesterTabWindow):
     def updateMood(self):
         pass
 
-
 _ctag_begin = re.compile(r'<c=(.*?)>')
 
 class MemoText(PesterText):

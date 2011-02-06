@@ -1,5 +1,5 @@
 {"main":
- {"style": "background-image:url($path/tnbg2.png);background-color:rgba(255,255,255,0);",
+ {"style": "background-image:url($path/tnbg2.png);background-color:rgba(0,0,0,0); background-repeat: no-repeat;",
   "size": [650, 450],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
@@ -7,7 +7,7 @@
   "close": { "image": "$path/x.gif",
              "loc": [635, 2]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [621, 8]},
+                "loc": [618, 4]},
   "menubar": { "style": "font-family: 'Arial'; font-size: 11px; color: rgba(0,0,0,0);" },
   "menu" : { "style": "font-family: 'Arial'; font-size: 11px; background-color: #c2c2c2; border:1px solid #545454;",
              "selected": "background-color: #545454",
@@ -91,7 +91,7 @@
       "chumroll": {"style": "border: 0px; background-color: white; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); " }
   },
   "mychumhandle": { "label": { "text": "",
-                               "loc": [85,410],
+                               "loc": [0,0],
                                "style": "color:rgba(0,0,0,0);" },
                     "handle": { "style": "background: rgba(0,0,0,0); color:rgba(0,0,0,0);",
                                 "loc": [0,0],
@@ -244,7 +244,7 @@
       "style": "background: white; border:2px solid #c2c2c2; font-size: 12px; margin-top: 4px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px;"
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px; height: 19px;"
   },
   "tabs": {
       "style": "",
@@ -266,16 +266,16 @@
  "memos":
  {"memoicon": "$path/memo.png",
   "style": "background:  rgb(190, 19, 4); font-family: 'Arial';",
-  "size": [600,300],
+  "size": [450,300],
   "tabs": {
       "style": "",
       "selectedstyle": "",
       "newmsgcolor": "red",
       "tabstyle": 0
   },
-  "label": { "text": "$channel",
-             "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2;",
-             "align": { "h": "center", "v": "center" },
+  "label": { "text": "Bulletin Board: $channel",
+             "style": "background-image:url($path/chumlabelbg.png);background-color:rgb(255,38,18); background-repeat: no-repeat; color: white; padding: 2px; border:1px solid #c2c2c2;",
+             "align": { "h": "left", "v": "center" },
              "minheight": 18,
              "maxheight": 18
            },
@@ -283,23 +283,23 @@
       "style": "background: white; border:2px solid #c2c2c2; font-size: 12px; margin-top: 4px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px;"
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px; height: 19px; margin-bottom: 5px; "
   },
   "margins": {"top": 22, "bottom": 10, "left": 9, "right": 4 },
-  "userlist": { "width": 100,
-                "style": "font-size: 12px; background: white; margin-top: 4px; margin-left: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
+  "userlist": { "width": 125,
+                "style": "font-size: 12px; background: white; margin-top: 4px; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
   "time": { "text": { "width": 75, 
-                      "style": "color:white;font:bold" 
+                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;" 
                     },
-            "slider": { "style": "",
-                        "groove": "border-image:url($path/timeslider.png);",
-                        "handle": "image:url($path/acceptant.png);"
+            "slider": { "style": " border:1px solid #c2c2c2;",
+                        "groove": "border-image:url($path/timeslideraqua.png);",
+                        "handle": "image:url($path/aquaicon.png);"
                       },
-            "buttons": { "style": "color:white;font:bold;" }, 
+            "buttons": { "style": "border:1px solid #a68168; height: 17px; width: 50px; color: #cd8f9d; font-family: 'Arial'; background: rgb(190, 19, 4); margin-left: 2px;" }, 
             "arrows": { "left": "$path/leftarrow.png", 
                         "right": "$path/rightarrow.png",
-                        "style": ""
+                        "style": "width: 19px; height: 19px; border:0px; margin-left: 2px;"
                       }
           },
   "systemMsgColor": "#646464"
