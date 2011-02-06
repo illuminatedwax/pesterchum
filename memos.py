@@ -4,7 +4,7 @@ from PyQt4 import QtGui, QtCore
 from datetime import time, timedelta, datetime
 
 from dataobjs import PesterProfile, Mood
-from generic import PesterIcon
+from generic import PesterIcon, RightClickList
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, escapeBrackets, addTimeInitial, timeProtocol
 
@@ -282,8 +282,17 @@ class PesterMemo(PesterConvo):
         self.textInput = MemoInput(self.mainwindow.theme, self)
         self.textInput.setFocus()
 
-        self.userlist = QtGui.QListWidget(self)
+        self.userlist = RightClickList(self)
         self.userlist.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding))
+        self.userlist.optionsMenu = QtGui.QMenu(self)
+        self.addchumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/addchum"], self)
+        self.connect(self.addchumAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('addChumSlot()'))
+        self.banuserAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/banuser"], self)
+        self.connect(self.banuserAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('banSelectedUser()'))
+        self.userlist.optionsMenu.addAction(self.addchumAction)
+        # ban list added if we are op
 
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
@@ -396,6 +405,8 @@ class PesterMemo(PesterConvo):
 
         self.userlist.setStyleSheet(theme["memos/userlist/style"])
         self.userlist.setFixedWidth(theme["memos/userlist/width"])
+        self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])
+        self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
 
         self.timeinput.setFixedWidth(theme["memos/time/text/width"])
         self.timeinput.setStyleSheet(theme["memos/time/text/style"])
@@ -431,6 +442,7 @@ class PesterMemo(PesterConvo):
             op = True
             handle = handle[1:]
             if handle == self.mainwindow.profile().handle:
+                self.userlist.optionsMenu.addAction(self.banuserAction)
                 self.op = True
         item = QtGui.QListWidgetItem(handle)
         if handle == self.mainwindow.profile().handle:
@@ -439,6 +451,8 @@ class PesterMemo(PesterConvo):
             color = chumdb.getColor(handle, defaultcolor)
         item.setTextColor(color)
         self.userlist.addItem(item)
+        self.userlist
+
 
     def timeUpdate(self, handle, cmd):
         window = self.mainwindow
@@ -516,32 +530,103 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
-        if (update in ["join","left"]) and channel != self.channel:
-            return
-        chums = self.userlist.findItems(handle, QtCore.Qt.MatchFlags(0))
         h = unicode(handle)
         c = unicode(channel)
+        update = unicode(update)
+        if update[0:4] == "kick": # yeah, i'm lazy.
+            l = update.split(":")
+            update = l[0]
+            op = l[1]
+        if update == "nick":
+            l = h.split(":")
+            oldnick = l[0]
+            newnick = l[1]
+            h = oldnick
+        if (update in ["join","left", "kick"]) and channel != self.channel:
+            return
+        chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         # print exit
-        if update == "quit" or update == "left" or update == "oldnick":
+        if update == "quit" or update == "left" or update == "nick":
             for c in chums:
                 chum = PesterProfile(h)
                 self.userlist.takeItem(self.userlist.row(c))
                 if not self.times.has_key(h):
-                    return
+                    self.times[h] = TimeTracker(timedelta(0))
                 while self.times[h].getTime() is not None:
                     t = self.times[h]
                     grammar = t.getGrammar()
                     self.textArea.append(convertTags(chum.memoclosemsg(systemColor, grammar, self.mainwindow.theme["convo/text/closememo"])))
                     self.times[h].removeTime(t.getTime())
+                if update == "nick":
+                    self.addUser(newnick)
+        elif update == "kick":
+            print "KICKING"
+            if len(chums) == 0:
+                return
+            c = chums[0]
+            chum = PesterProfile(h)
+            if h == self.mainwindow.profile().handle:
+                chum = self.mainwindow.profile()
+                ttracker = self.time
+                curtime = self.time.getTime()
+            elif self.times.has_key(h):
+                ttracker = self.times[h]
+            else:
+                ttracker = TimeTracker(timedelta(0))
+            while ttracker.getTime() is not None:
+                grammar = ttracker.getGrammar()
+                opchum = PesterProfile(op)
+                if self.times.has_key(op):
+                    opgrammar = self.times[op].getGrammar()
+                elif op == self.mainwindow.profile().handle:
+                    opgrammar = self.time.getGrammar()
+                else:
+                    opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
+                self.textArea.append(convertTags(chum.memobanmsg(opchum, opgrammar, systemColor, grammar)))
+                ttracker.removeTime(ttracker.getTime())
+
+            if chum is self.mainwindow.profile():
+                # are you next?
+                msgbox = QtGui.QMessageBox()
+                msgbox.setText(self.mainwindow.theme["convo/text/kickedmemo"])
+                msgbox.setInformativeText("press 0k to rec0nnect or cancel to absc0nd")
+                msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                ret = msgbox.exec_()
+                if ret == QtGui.QMessageBox.Ok:
+                    self.userlist.clear()
+                    self.time = TimeTracker(curtime)
+                    self.resetSlider(curtime)
+                    self.mainwindow.joinChannel.emit(self.channel)
+                    me = self.mainwindow.profile()
+                    self.textArea.append(convertTags(me.memoopenmsg(systemColor, self.time.getTime(), self.time.getGrammar(), self.mainwindow.theme["convo/text/openmemo"], self.channel)))
+                elif ret == QtGui.QMessageBox.Cancel:
+                    if self.parent():
+                        i = self.parent().tabIndices[self.channel]
+                        self.parent().tabClose(i)
+                    else:
+                        self.close()
+            else:
+                # i warned you about those stairs bro
+                self.userlist.takeItem(self.userlist.row(c))
         elif update == "join":
             self.addUser(h)
             time = self.time.getTime()
             serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
             self.messageSent.emit(serverText, self.title())
-        elif update == "newnick":
-            self.addUser(h)            
 
+    @QtCore.pyqtSlot()
+    def addChumSlot(self):
+        if not self.userlist.currentItem():
+            return
+        currentChum = PesterProfile(unicode(self.userlist.currentItem().text()))
+        self.mainwindow.addChum(currentChum)
+    @QtCore.pyqtSlot()
+    def banSelectedUser(self):
+        if not self.userlist.currentItem():
+            return
+        currentHandle = unicode(self.userlist.currentItem().text())
+        self.mainwindow.kickUser.emit(currentHandle, self.channel)
     def resetSlider(self, time):
         self.timeinput.setText(delta2txt(time))
         self.timeinput.setSlider()

@@ -30,7 +30,8 @@
                                "removechum": "REMOVE CHUM",
                                "blockchum": "BLOCK",
                                "addchum": "ADD CHUM",
-                               "unblockchum": "UNBLOCK"
+                               "unblockchum": "UNBLOCK",
+                               "banuser": "BAN USER"
                               }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
@@ -211,7 +212,8 @@
       "unblocked": "unblocked",
       "openmemo": "opened memo on board",
       "joinmemo": "responded to memo",
-      "closememo": "ceased responding to memo"
+      "closememo": "ceased responding to memo",
+      "kickedmemo": "You have been banned from this memo!"
   },
   "systemMsgColor": "#646464"
  },

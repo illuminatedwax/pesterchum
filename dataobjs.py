@@ -147,7 +147,11 @@ class PesterProfile(object):
         initials = pcf+self.initials()
         return "<c=%s><c=%s>%s</c> %s %s %s.</c>" % \
             (syscolor.name(), self.colorhtml(), initials, timetext, verb, channel[1:].upper().replace("_", " "))
-
+    def memobanmsg(self, opchum, opgrammar, syscolor, timeGrammar):
+        initials = timeGrammar.pcf+self.initials()+timeGrammar.number
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), initials)
     def memojoinmsg(self, syscolor, td, timeGrammar, verb):
         (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
         timetext = timeDifference(td)

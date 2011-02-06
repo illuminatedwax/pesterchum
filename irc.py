@@ -3,11 +3,12 @@ from oyoyo.client import IRCClient
 from oyoyo.cmdhandler import DefaultCommandHandler
 from oyoyo import helpers
 import logging
+import random
 
 from dataobjs import Mood, PesterProfile
 from generic import PesterList
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
@@ -79,6 +80,11 @@ class PesterIRC(QtCore.QObject):
     def leftChannel(self, channel):
         c = unicode(channel)
         helpers.part(self.cli, c)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def kickUser(self, handle, channel):
+        c = unicode(channel)
+        h = unicode(handle)
+        helpers.kick(self.cli, h, c)
     def updateIRC(self):
         self.conn.next()
 
@@ -155,7 +161,10 @@ class PesterHandler(DefaultCommandHandler):
     def quit(self, nick, reason):
         handle = nick[0:nick.find("!")]
         self.parent.userPresentUpdate.emit(handle, "", "quit")
-        self.parent.moodUpdated.emit(handle, Mood("offline"))        
+        self.parent.moodUpdated.emit(handle, Mood("offline"))
+    def kick(self, opnick, channel, handle, op):
+        self.parent.userPresentUpdate.emit(handle, channel, "kick:%s" % (op))
+        # ok i shouldnt be overloading that but am lazy
     def part(self, nick, channel, reason="nanchos"):
         handle = nick[0:nick.find("!")]
         self.parent.userPresentUpdate.emit(handle, channel, "left")
@@ -170,8 +179,7 @@ class PesterHandler(DefaultCommandHandler):
         oldhandle = oldnick[0:oldnick.find("!")]
         newchum = PesterProfile(newnick, chumdb=self.mainwindow.chumdb)
         self.parent.moodUpdated.emit(oldhandle, Mood("offline"))
-        self.parent.userPresentUpdate.emit(oldhandle, "", "oldnick")
-        self.parent.userPresentUpdate.emit(newnick, "", "newnick")
+        self.parent.userPresentUpdate.emit("%s:%s" % (oldhandle, newnick), "", "nick")
         if newnick in self.mainwindow.chumList.chums:
             self.getMood(newchum)
     def namreply(self, server, nick, op, channel, names):

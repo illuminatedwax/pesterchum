@@ -30,7 +30,8 @@
                                "removechum": "Trash",
                                "blockchum": "Block",
                                "addchum": "Add Chump",
-                               "unblockchum": "Mercy"}
+                               "unblockchum": "Mercy",
+                               "banuser": "BAN USER" }
            },
   "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [475, 89],
@@ -259,7 +260,8 @@
       "unblocked": "mercifully forgave",
       "openmemo": "opened memo on board",
       "joinmemo": "responded to memo",
-      "closememo": "ceased responding to memo"
+      "closememo": "ceased responding to memo",
+      "kickedmemo": "You have been banned from this memo!"
   },
   "systemMsgColor": "#646464"
  },
@@ -293,8 +295,8 @@
                       "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;" 
                     },
             "slider": { "style": " border:1px solid #c2c2c2;",
-                        "groove": "border-image:url($path/timeslideraqua.png);",
-                        "handle": "image:url($path/aquaicon.png);"
+                        "groove": "border-image:url($path/timeslider.png);",
+                        "handle": "image:url($path/acceptant.png);"
                       },
             "buttons": { "style": "border:1px solid #a68168; height: 17px; width: 50px; color: #cd8f9d; font-family: 'Arial'; background: rgb(190, 19, 4); margin-left: 2px;" }, 
             "arrows": { "left": "$path/leftarrow.png", 

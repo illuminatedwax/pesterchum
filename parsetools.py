@@ -121,9 +121,15 @@ def timeDifference(td):
     if atd == timedelta(0):
         timetext = "RIGHT NOW"
     elif atd < timedelta(0,3600):
-        timetext = "%d MINUTES %s" % (minutes, when)
+        if minutes == 1:
+            timetext = "%d MINUTE %s" % (minutes, when)
+        else: 
+            timetext = "%d MINUTES %s" % (minutes, when)
     elif atd < timedelta(0,3600*100):
-        timetext = "%d:%02d HOURS %s" % (hours, leftoverminutes, when)
+        if hours == 1 and leftoverminutes == 0:
+            timetext = "%d:%02d HOUR %s" % (hours, leftoverminutes, when)
+        else:
+            timetext = "%d:%02d HOURS %s" % (hours, leftoverminutes, when)
     else:
         timetext = "%d HOURS %s" % (hours, when)
     return timetext

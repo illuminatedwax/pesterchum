@@ -1037,7 +1037,11 @@ class PesterWindow(MovingWindow):
     def userPresentUpdate(self, handle, channel, update):
         c = unicode(channel)
         n = unicode(handle)
-        if update == "quit" or update == "oldnick":
+        if update == "nick":
+            l = n.split(":")
+            oldnick = l[0]
+            newnick = l[1]
+        if update == "quit":
             for c in self.namesdb.keys():
                 try:
                     i = self.namesdb[c].index(n)
@@ -1054,14 +1058,16 @@ class PesterWindow(MovingWindow):
                 pass
             except KeyError:
                 self.namesdb[c] = []
-        elif update == "newnick":
+        elif update == "nick":
             for c in self.namesdb.keys():
                 try:
-                    i = self.namesdb[c].index(n)
+                    i = self.namesdb[c].index(oldnick)
+                    self.namesdb[c].pop(i)
+                    self.namesdb[c].append(newnick)
                 except ValueError:
-                    self.namesdb[c].append(n)
+                    pass
                 except KeyError:
-                    self.namesdb[c] = [n]
+                    pass
         elif update == "join":
             try:
                 i = self.namesdb[c].index(n)
@@ -1406,6 +1412,7 @@ class PesterWindow(MovingWindow):
     trayIconSignal = QtCore.pyqtSignal(int)
     blockedChum = QtCore.pyqtSignal(QtCore.QString)
     unblockedChum = QtCore.pyqtSignal(QtCore.QString)
+    kickUser = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     joinChannel = QtCore.pyqtSignal(QtCore.QString)
     leftChannel = QtCore.pyqtSignal(QtCore.QString)
 
@@ -1511,7 +1518,10 @@ def main():
                 QtCore.SIGNAL('leftChannel(QString)'),
                 irc,
                 QtCore.SLOT('leftChannel(QString)'))
-    
+    irc.connect(widget,
+                QtCore.SIGNAL('kickUser(QString, QString)'),
+                irc,
+                QtCore.SLOT('kickUser(QString, QString)'))
 
 # IRC --> Main window
     irc.connect(irc, QtCore.SIGNAL('connected()'),

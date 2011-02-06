@@ -38,6 +38,9 @@ def names(cli, *channels):
 def channel_list(cli):
     cli.send("LIST")
 
+def kick(cli, handle, channel):
+    cli.send("KICK %s %s" % (channel, handle))
+
 def msgrandom(cli, choices, dest, user=None):
     o = "%s: " % user if user else ""
     o += random.choice(choices)
