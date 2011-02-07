@@ -425,7 +425,7 @@ class PesterConvo(QtGui.QFrame):
         self.chumopen = o
     def changeTheme(self, theme):
         self.resize(*theme["convo/size"])
-        self.setStyleSheet("QFrame { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s }" % (convo["style"], convo["scrollbar"]["style"], convo["scrollbar"]["handle"]))
+        self.setStyleSheet("QFrame { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s }" % (theme["convo/style"], theme["convo/scrollbar"]["style"], theme["convo/scrollbar"]["handle"]))
         margins = theme["convo/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                        margins["right"], margins["bottom"])

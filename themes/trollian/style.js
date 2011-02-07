@@ -27,14 +27,14 @@
                         "theme": "Theme",
                         "color": "Hemospectrum",
                         "block": "Chumpdump",
-                        "quirks": "Annoying"},
+                        "quirks": "Annoying" },
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
                                "blockchum": "Block",
                                "addchum": "Add Chump",
                                "unblockchum": "Mercy",
                                "banuser": "Ban",
-                               "quirksoff": "Quirks Off"
+                               "quirksoff": "Quirks Off" }
            },
   "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [475, 89],
@@ -246,7 +246,7 @@
                  "text" : "trolling: $handle"
                },
   "textarea": {
-      "style": "background: white; border:2px solid #c2c2c2; font-size: 12px; margin-top: 4px;"
+      "style": "background: white; border:2px solid #c2c2c2; font-size: 14px; margin-top: 4px;"
   },
   "input": {
       "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px; height: 19px;"
