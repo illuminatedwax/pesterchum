@@ -41,6 +41,12 @@ def channel_list(cli):
 def kick(cli, handle, channel):
     cli.send("KICK %s %s" % (channel, handle))
 
+def mode(cli, channel, mode, options=None):
+    cmd = "MODE %s %s" % (channel, mode)
+    if options:
+        cmd += " %s" % (options)
+    cli.send(cmd)
+
 def msgrandom(cli, choices, dest, user=None):
     o = "%s: " % user if user else ""
     o += random.choice(choices)

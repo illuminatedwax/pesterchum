@@ -5,6 +5,7 @@ from PyQt4 import QtGui
 _ctag_begin = re.compile(r'<c=(.*?)>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)(http://[^\s<]+)")
+_memore = re.compile(r" (#[A-Za-z0-9_]+)")
 
 def convertTags(string, format="html"):
     if format not in ["html", "bbcode", "ctag"]:
@@ -40,6 +41,10 @@ def convertTags(string, format="html"):
         elif format=="ctag":
             return matchobj.group(1)
     string = _urlre.sub(urlrep, string)
+    if format == "html":
+        print string
+        string = _memore.sub(r" <a href='\1'>\1</a>", string)
+        print string
     return string
 
 def escapeBrackets(string):

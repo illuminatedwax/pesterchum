@@ -187,6 +187,7 @@ class PesterChooseProfile(QtGui.QDialog):
         self.parent = parent
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
 
+        self.currentHandle = QtGui.QLabel("CHANGING FROM %s" % userprofile.chat.handle)
         self.chumHandle = QtGui.QLineEdit(self)
         self.chumHandle.setMinimumWidth(200)
         self.chumHandleLabel = QtGui.QLabel(self.theme["main/mychumhandle/label/text"], self)
@@ -232,6 +233,8 @@ class PesterChooseProfile(QtGui.QDialog):
         if collision:
             collision_warning = QtGui.QLabel("%s is taken already! Pick a new profile." % (collision))
             layout_0.addWidget(collision_warning)
+        else:
+            layout_0.addWidget(self.currentHandle, alignment=QtCore.Qt.AlignHCenter)
         layout_0.addLayout(layout_1)
         if avail_profiles:
             profileLabel = QtGui.QLabel("Or choose an existing profile:", self)
@@ -389,7 +392,7 @@ class PesterUserlist(QtGui.QDialog):
     addChum = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterMemoList(QtGui.QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, channel=""):
         QtGui.QDialog.__init__(self, parent)
         self.setModal(False)
         self.theme = parent.theme
@@ -406,7 +409,8 @@ class PesterMemoList(QtGui.QDialog):
                      self, QtCore.SLOT('joinActivatedMemo(QListWidgetItem *)'))
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
-        self.newmemo = QtGui.QLineEdit(self)
+        self.newmemo = QtGui.QLineEdit(channel, self)
+        self.secretChannel = QtGui.QCheckBox("HIDDEN?", self)
 
         self.timelabel = QtGui.QLabel("TIMEFRAME:")
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
@@ -428,6 +432,7 @@ class PesterMemoList(QtGui.QDialog):
         layout_0.addWidget(self.channelarea)
         layout_0.addWidget(self.orjoinlabel)
         layout_0.addWidget(self.newmemo)
+        layout_0.addWidget(self.secretChannel)
         layout_0.addWidget(self.timelabel)
         layout_0.addWidget(self.timeslider)
         layout_0.addWidget(self.timeinput)

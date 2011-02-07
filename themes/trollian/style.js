@@ -1,5 +1,6 @@
 {"main":
- {"style": "background-image:url($path/tnbg2.png);background-color:rgba(0,0,0,0); background-repeat: no-repeat;",
+ {"style": "background-color:rgba(0,0,0,0); background-repeat: no-repeat;",
+  "background-image": "$path/tnbg2.png",
   "size": [650, 450],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
@@ -19,6 +20,7 @@
                        "options": "Options",
                        "memos": "Memos",
                        "userlist": "Fresh Targets",
+                       "import": "import U2;",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
@@ -31,7 +33,8 @@
                                "blockchum": "Block",
                                "addchum": "Add Chump",
                                "unblockchum": "Mercy",
-                               "banuser": "BAN USER" }
+                               "banuser": "Ban",
+                               "quirksoff": "Quirks Off"
            },
   "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "loc": [475, 89],
@@ -233,6 +236,7 @@
  },
  "convo":
  {"style": "background:  rgb(190, 19, 4); font-family: 'Arial';",
+  "scrollbar": { "style" : "", "handle": "" },
   "margins": {"top": 22, "bottom": 9, "left": 10, "right": 4 },
   "size": [400, 250],
   "chumlabel": { "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2;",

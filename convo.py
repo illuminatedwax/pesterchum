@@ -3,7 +3,7 @@ import re
 from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood
-from generic import PesterIcon
+from generic import PesterIcon, RightClickList
 from parsetools import escapeBrackets, convertTags
 
 class PesterTabWindow(QtGui.QFrame):
@@ -255,7 +255,10 @@ class PesterText(QtGui.QTextEdit):
     def mousePressEvent(self, event):
         url = self.anchorAt(event.pos())
         if url != "":
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
+            if url[0] == "#" and url != "#pesterchum":
+                self.parent().mainwindow.showMemos(url[1:])
+            else:
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
     def mouseMoveEvent(self, event):
         QtGui.QTextEdit.mouseMoveEvent(self, event)
@@ -283,7 +286,7 @@ class PesterConvo(QtGui.QFrame):
         self.mainwindow = mainwindow
         convo = self.mainwindow.theme["convo"]
         self.resize(*convo["size"])
-        self.setStyleSheet(convo["style"])
+        self.setStyleSheet("QFrame { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s }" % (convo["style"], convo["scrollbar"]["style"], convo["scrollbar"]["handle"]))
         self.setWindowIcon(self.icon())
         self.setWindowTitle(self.title())
 
@@ -313,7 +316,24 @@ class PesterConvo(QtGui.QFrame):
         
         self.setLayout(self.layout)
 
+        self.optionsMenu = QtGui.QMenu(self)
+        self.optionsMenu.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+        self.addChumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/addchum"], self)
+        self.connect(self.addChumAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('addThisChum()'))
+        self.blockAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"], self)
+        self.connect(self.blockAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('blockThisChum()'))
+        self.quirksOff = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/quirksoff"], self)
+        self.quirksOff.setCheckable(True)
+        self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('toggleQuirks(bool)'))
+        self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.addChumAction)
+        self.optionsMenu.addAction(self.blockAction)
+
         self.chumopen = False
+        self.applyquirks = True
 
         if parent:
             parent.addChat(self)
@@ -394,15 +414,18 @@ class PesterConvo(QtGui.QFrame):
         if self.parent():
             self.parent().showChat(self.title())
         self.raiseChat()
-
+    def contextMenuEvent(self, event):
+        if event.reason() == QtGui.QContextMenuEvent.Mouse:
+            self.optionsMenu.popup(event.globalPos())
     def closeEvent(self, event):
         self.mainwindow.waitingMessages.messageAnswered(self.title())
         self.windowClosed.emit(self.title())
+
     def setChumOpen(self, o):
         self.chumopen = o
     def changeTheme(self, theme):
         self.resize(*theme["convo/size"])
-        self.setStyleSheet(theme["convo/style"])
+        self.setStyleSheet("QFrame { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s }" % (convo["style"], convo["scrollbar"]["style"], convo["scrollbar"]["handle"]))
         margins = theme["convo/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                        margins["right"], margins["bottom"])
@@ -415,8 +438,13 @@ class PesterConvo(QtGui.QFrame):
         self.chumLabel.setMaximumHeight(self.mainwindow.theme["convo/chumlabel/maxheight"])
         self.chumLabel.setMinimumHeight(self.mainwindow.theme["convo/chumlabel/minheight"])
         self.chumLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding))
+        self.quirksOff.setText(self.mainwindow.theme["main/menus/rclickchumlist/quirksoff"])
+        self.addChumAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/addchum"])
+        self.blockAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"])
+
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
+
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
@@ -424,8 +452,9 @@ class PesterConvo(QtGui.QFrame):
         if text == "":
             return
         # deal with quirks here
-        qtext = self.mainwindow.userprofile.quirks.apply(unicode(text))
-        text = QtCore.QString(qtext)
+        if self.applyquirks:
+            qtext = self.mainwindow.userprofile.quirks.apply(unicode(text))
+            text = QtCore.QString(qtext)
         self.textInput.setText("")
         self.addMessage(text, True)
         # if ceased, rebegin
@@ -434,6 +463,17 @@ class PesterConvo(QtGui.QFrame):
         # convert color tags
         text = convertTags(unicode(text), "ctag")
         self.messageSent.emit(text, self.title())
+
+    @QtCore.pyqtSlot()
+    def addThisChum(self):
+        self.mainwindow.addChum(self.chum)
+    @QtCore.pyqtSlot()
+    def blockThisChum(self):
+        self.mainwindow.blockChum(self.chum.handle)
+    @QtCore.pyqtSlot(bool)
+    def toggleQuirks(self, toggled):
+        self.applyquirks = not toggled
+
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     windowClosed = QtCore.pyqtSignal(QtCore.QString)

@@ -1,19 +1,19 @@
 {"main":
- {"style": "background-repeat: no-repeat;",
-  "background-image": "$path/pcbg.png",
-  "size": [232, 380],
+ {"style": "background-repeat: no-repeat;background-color:transparent;",
+  "background-image": "$path/gbgbig.png",
+  "size": [400, 348],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "PESTERCHUM",
   "close": { "image": "$path/x.gif",
-             "loc": [210, 2]},
+             "loc": [378, 30]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [194, 8]},
+                "loc": [358, 25]},
   "menubar": { "style": "font-family: 'Courier'; font:bold; font-size: 12px;" },
   "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
              "menuitem": "margin-right:10px;",
              "selected": "background-color: #ffff00",
-             "loc": [10,0]
+             "loc": [120,25]
            },
   "sounds": { "alertsound": "$path/alarm.wav" },
   "menus": {"client": {"_name": "CLIENT",
@@ -33,8 +33,7 @@
                                "blockchum": "BLOCK",
                                "addchum": "ADD CHUM",
                                "unblockchum": "UNBLOCK",
-                               "banuser": "BAN USER",
-                               "quirksoff": "QUIRKS OFF"
+                               "banuser": "BAN USER"
                               }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
@@ -97,14 +96,13 @@
   },
   "mychumhandle": { "label": { "text": "CHUMHANDLE:",
                                "loc": [19,232],
-                               "style": "color: rgba(255, 255, 0, 0%) ;font:bold; font-family: 'Courier';" },
+                 "style": "color: rgba(255, 255, 0, 0%) ;font:bold; font-family: 'Courier';" },
                     "handle": { "style": "background: black; padding: 3px; color:white; font-family:'Courier'; font:bold; text-align:left;",
-                             "loc": [36,246],
+                             "loc": [14,246],
                                 "size": [190, 21] },
                     "colorswatch": { "loc": [196,246],
                                      "size": [23,21],
-                                     "text": "" },
-                    "currentMood": [18, 249]
+                                     "text": "" }
                   },
   "defaultwindow": { "style": "background: #fdb302; font-family:'Courier';font:bold;selection-background-color:#919191; " 
                    },
@@ -114,7 +112,6 @@
                "text": ""
              },
   "pester": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",
-              "pressed" : "background: rgb(255, 255, 255, 30%);",
                "loc": [150,202],
                "size": [71, 22],
                "text": ""
@@ -190,17 +187,16 @@
  },
  "convo":
  {"style": "background-color: #fdb302; background-image:url($path/convobg.png); background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'",
-  "scrollbar": { "style" : "", "handle": "" },
   "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
-  "size": [520, 325],
-  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px; font-size: 14px;",
+  "size": [400, 250],
+  "chumlabel": { "style": "background: rgb(196, 138, 0); color: white; border:0px; font-size: 12px;",
                  "align": { "h": "center", "v": "center" },
                  "minheight": 26,
                  "maxheight": 26,
                  "text" : ":: $handle ::"
                },
   "textarea": {
-      "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center; margin-top:21px; margin-right:10px; margin-left:10px; font-size: 14px;"
+      "style": "background: white; font:bold; border:2px solid #c48a00;text-align:center; margin-top:21px; margin-right:10px; margin-left:10px; font-size: 12px;"
   },
   "input": {
       "style": "background: white; border:2px solid #c48a00;margin-top:3px; margin-right:10px; margin-left:10px; font-size: 12px;"

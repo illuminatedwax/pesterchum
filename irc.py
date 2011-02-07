@@ -8,7 +8,7 @@ import random
 from dataobjs import Mood, PesterProfile
 from generic import PesterList
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 class PesterIRC(QtCore.QObject):
     def __init__(self, window):
@@ -85,6 +85,15 @@ class PesterIRC(QtCore.QObject):
         c = unicode(channel)
         h = unicode(handle)
         helpers.kick(self.cli, h, c)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
+    def setChannelMode(self, channel, mode, command):
+        c = unicode(channel)
+        m = unicode(mode)
+        cmd = unicode(command)
+        if cmd == "":
+            cmd = None
+        helpers.mode(self.cli, c, m, cmd)
+
     def updateIRC(self):
         self.conn.next()
 
