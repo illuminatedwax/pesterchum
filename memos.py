@@ -76,10 +76,12 @@ class TimeGrammar(object):
 class TimeTracker(list):
     def __init__(self, time=None):
         self.timerecord = {"P": [], "F": []}
+        self.open = {}
         if time is not None:
             self.append(time)
             self.current=0
             self.addRecord(time)
+            self.open[time] = False
         else:
             self.current=-1
     def addTime(self, timed):
@@ -90,6 +92,7 @@ class TimeTracker(list):
         except ValueError:
             self.current = len(self)
             self.append(timed)
+            self.open[timed] = False
             self.addRecord(timed)
             return False
     def prevTime(self):
@@ -121,9 +124,19 @@ class TimeTracker(list):
         try:
             self.pop(self.index(timed))
             self.current = len(self)-1
+            del self.open[timed]
             return True
         except ValueError:
             return None
+    def openTime(self, time):
+        if self.open.has_key(time):
+            self.open[time] = True
+    def openCurrentTime(self):
+        timed = self.getTime()
+        self.openTime(timed)
+    def isFirstTime(self):
+        timed = self.getTime()
+        return not self.open[timed]
     def getTime(self):
         if self.current >= 0: 
             return self[self.current]
@@ -235,12 +248,15 @@ class MemoText(PesterText):
                 newtime = timedelta(0)
                 time = TimeTracker(newtime)
                 parent.times[chum.handle] = time
-                timeGrammar = time.getGrammar()
-                msg = chum.memojoinmsg(systemColor, time.getTime(), timeGrammar, window.theme["convo/text/joinmemo"])
-                self.append(convertTags(msg))
-                window.chatlog.log(parent.channel, convertTags(msg, "bbcode"))
         else:
             time = parent.time
+
+        if time.isFirstTime():
+            grammar = time.getGrammar()
+            joinmsg = chum.memojoinmsg(systemColor, time.getTime(), grammar, window.theme["convo/text/joinmemo"])
+            self.append(convertTags(joinmsg))
+            parent.mainwindow.chatlog.log(parent.channel, convertTags(msg, "bbcode"))
+            time.openCurrentTime()
 
         if msg[0:3] == "/me" or msg[0:13] == "PESTERCHUM:ME":
             if msg[0:3] == "/me":
@@ -248,9 +264,9 @@ class MemoText(PesterText):
             else:
                 start = 13
             space = msg.find(" ")
-            msg = chum.memsg(systemColor, msg[start:space], msg[space:], time=time.getGrammar())
+            memsg = chum.memsg(systemColor, msg[start:space], msg[space:], time=time.getGrammar())
             window.chatlog.log(parent.channel, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
+            self.append(convertTags(memsg))
         else:
             if chum is not me:
                 msg = addTimeInitial(msg, parent.times[chum.handle].getGrammar())
@@ -359,6 +375,7 @@ class PesterMemo(PesterConvo):
         timeGrammar = self.time.getGrammar()
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         msg = p.memoopenmsg(systemColor, self.time.getTime(), timeGrammar, self.mainwindow.theme["convo/text/openmemo"], self.channel)
+        self.time.openCurrentTime()
         self.textArea.append(convertTags(msg))
         self.mainwindow.chatlog.log(self.channel, convertTags(msg, "bbcode"))
 
@@ -455,8 +472,6 @@ class PesterMemo(PesterConvo):
             color = chumdb.getColor(handle, defaultcolor)
         item.setTextColor(color)
         self.userlist.addItem(item)
-        self.userlist
-
 
     def timeUpdate(self, handle, cmd):
         window = self.mainwindow
@@ -491,19 +506,11 @@ class PesterMemo(PesterConvo):
                     self.mainwindow.chatlog.log(self.channel, convertTags(msg, "bbcode"))
             elif timed not in self.times[handle]:
                 self.times[handle].addTime(timed)
-                grammar = self.times[handle].getGrammar()
-                msg = chum.memojoinmsg(systemColor, timed, grammar, window.theme["convo/text/joinmemo"])
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, convertTags(msg, "bbcode"))
             else:
                 self.times[handle].setCurrent(timed)
         else:
             if timed is not None:
                 ttracker = TimeTracker(timed)
-                grammar = ttracker.getGrammar()
-                msg = chum.memojoinmsg(systemColor, timed, grammar, window.theme["convo/text/joinmemo"])
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, convertTags(msg, "bbcode"))
                 self.times[handle] = ttracker
 
     @QtCore.pyqtSlot()
@@ -511,6 +518,8 @@ class PesterMemo(PesterConvo):
         text = self.textInput.text()
         if text == "":
             return
+        if self.time.getTime() == None:
+            self.sendtime()
         grammar = self.time.getGrammar()
         # deal with quirks here
         qtext = self.mainwindow.userprofile.quirks.apply(unicode(text))
@@ -573,7 +582,6 @@ class PesterMemo(PesterConvo):
                 if update == "nick":
                     self.addUser(newnick)
         elif update == "kick":
-            print "KICKING"
             if len(chums) == 0:
                 return
             c = chums[0]
@@ -613,6 +621,7 @@ class PesterMemo(PesterConvo):
                     self.resetSlider(curtime)
                     self.mainwindow.joinChannel.emit(self.channel)
                     me = self.mainwindow.profile()
+                    self.time.openCurrentTime()
                     msg = me.memoopenmsg(systemColor, self.time.getTime(), self.time.getGrammar(), self.mainwindow.theme["convo/text/openmemo"], self.channel)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, convertTags(msg, "bbcode"))
@@ -643,10 +652,11 @@ class PesterMemo(PesterConvo):
             return
         currentHandle = unicode(self.userlist.currentItem().text())
         self.mainwindow.kickUser.emit(currentHandle, self.channel)
-    def resetSlider(self, time):
+    def resetSlider(self, time, send=True):
         self.timeinput.setText(delta2txt(time))
         self.timeinput.setSlider()
-        self.sendtime()
+        if send:
+            self.sendtime()
 
     @QtCore.pyqtSlot()
     def sendtime(self):
@@ -654,10 +664,6 @@ class PesterMemo(PesterConvo):
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         time = txt2delta(self.timeinput.text())
         present = self.time.addTime(time)
-        if not present:
-            msg = me.memojoinmsg(systemColor, time, self.time.getGrammar(), self.mainwindow.theme["convo/text/joinmemo"])
-            self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.channel, convertTags(msg, "bbcode"))
 
         serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
         self.messageSent.emit(serverText, self.title())
@@ -676,7 +682,9 @@ class PesterMemo(PesterConvo):
         newtime = self.time.getTime()
         if newtime is None:
             newtime = timedelta(0)
-        self.resetSlider(newtime)
+            self.resetSlider(newtime, send=False)
+        else:
+            self.resetSlider(newtime)
     @QtCore.pyqtSlot()
     def prevtime(self):
         time = self.time.prevTime()

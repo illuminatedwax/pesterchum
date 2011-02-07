@@ -4,6 +4,7 @@ from oyoyo.cmdhandler import DefaultCommandHandler
 from oyoyo import helpers
 import logging
 import random
+import socket
 
 from dataobjs import Mood, PesterProfile
 from generic import PesterList
@@ -19,72 +20,111 @@ class PesterIRC(QtCore.QObject):
         self.cli.command_handler.parent = self
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
-
+        self.brokenConnection = False
+    def setConnectionBroken(self):
+        self.brokenConnection = True
     @QtCore.pyqtSlot(PesterProfile)
     def getMood(self, *chums):
         self.cli.command_handler.getMood(*chums)
     @QtCore.pyqtSlot(PesterList)
     def getMoods(self, chums):
-        self.cli.command_handler.getMood(*chums)
-        
+        self.cli.command_handler.getMood(*chums)        
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def sendMessage(self, text, handle):
         h = unicode(handle)
-        helpers.msg(self.cli, h, text)
-
+        try:
+            helpers.msg(self.cli, h, text)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, bool)
     def startConvo(self, handle, initiated):
         h = unicode(handle)
-        if initiated:
-            helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
-        helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
+        try:
+            if initiated:
+                helpers.msg(self.cli, h, "PESTERCHUM:BEGIN")
+            helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
     def endConvo(self, handle):
         h = unicode(handle)
-        helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
+        try:
+            helpers.msg(self.cli, h, "PESTERCHUM:CEASE")
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot()
     def updateProfile(self):
         me = self.mainwindow.profile()
         handle = me.handle
-        helpers.nick(self.cli, handle)
+        try:
+            helpers.nick(self.cli, handle)
+        except socket.error:
+            self.setConnectionBroken()
         self.updateMood()
     @QtCore.pyqtSlot()
     def updateMood(self):
         me = self.mainwindow.profile()
-        helpers.msg(self.cli, "#pesterchum", "MOOD >%d" % (me.mood.value()))
+        try:
+            helpers.msg(self.cli, "#pesterchum", "MOOD >%d" % (me.mood.value()))
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot()
     def updateColor(self):
         me = self.mainwindow.profile()
         for h in self.mainwindow.convos.keys():
-            helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
+            try:
+                helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
+            except socket.error:
+                self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
     def blockedChum(self, handle):
         h = unicode(handle)
-        helpers.msg(self.cli, h, "PESTERCHUM:BLOCK")
+        try:
+            helpers.msg(self.cli, h, "PESTERCHUM:BLOCK")
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
     def unblockedChum(self, handle):
         h = unicode(handle)
-        helpers.msg(self.cli, h, "PESTERCHUM:UNBLOCK")
+        try:
+            helpers.msg(self.cli, h, "PESTERCHUM:UNBLOCK")
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
     def requestNames(self, channel):
         c = unicode(channel)
-        helpers.names(self.cli, c)
+        try:
+            helpers.names(self.cli, c)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot()
     def requestChannelList(self):
-        helpers.channel_list(self.cli)
+        try:
+            helpers.channel_list(self.cli)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
     def joinChannel(self, channel):
         c = unicode(channel)
-        helpers.join(self.cli, c)
+        try:
+            helpers.join(self.cli, c)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
     def leftChannel(self, channel):
         c = unicode(channel)
-        helpers.part(self.cli, c)
+        try:
+            helpers.part(self.cli, c)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def kickUser(self, handle, channel):
         c = unicode(channel)
         h = unicode(handle)
-        helpers.kick(self.cli, h, c)
+        try:
+            helpers.kick(self.cli, h, c)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def setChannelMode(self, channel, mode, command):
         c = unicode(channel)
@@ -92,7 +132,10 @@ class PesterIRC(QtCore.QObject):
         cmd = unicode(command)
         if cmd == "":
             cmd = None
-        helpers.mode(self.cli, c, m, cmd)
+        try:
+            helpers.mode(self.cli, c, m, cmd)
+        except socket.error:
+            self.setConnectionBroken()
 
     def updateIRC(self):
         self.conn.next()
@@ -112,6 +155,8 @@ class PesterIRC(QtCore.QObject):
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
         # display msg, do other stuff
+        if len(msg) == 0:
+            return
         # silently ignore CTCP
         if msg[0] == '\x01':
             return
@@ -223,8 +268,15 @@ class PesterHandler(DefaultCommandHandler):
         for c in chums:
             chandle = c.handle
             if len(chumglub+chandle) >= 350:
-                helpers.msg(self.client, "#pesterchum", chumglub)
+                try:
+                    helpers.msg(self.client, "#pesterchum", chumglub)
+                except socket.error:
+                    self.parent.setConnectionBroken()
                 chumglub = "GETMOOD "
             chumglub += chandle
         if chumglub != "GETMOOD ":
-            helpers.msg(self.client, "#pesterchum", chumglub)
+            try:
+                helpers.msg(self.client, "#pesterchum", chumglub)
+            except socket.error:
+                self.parent.setConnectionBroken()
+            

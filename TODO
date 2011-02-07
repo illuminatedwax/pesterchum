@@ -1,14 +1,14 @@
 Features:
+* dropped messages when chatting
 * X closes to tray
 * color text is not being translated to server?
 * convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
-* PESTERLOG: in convo window
 * make other ppl ops
+* turn off sound option!!
 * help button on quirks menu?
-* tab recombining gives wrong window icon
 * help menu -- about and forum
 -- release alpha
-* scroll bar style
+* scroll bar style?
 * User commands/stop user from sending commands accidentally
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???

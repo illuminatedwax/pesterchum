@@ -42,9 +42,7 @@ def convertTags(string, format="html"):
             return matchobj.group(1)
     string = _urlre.sub(urlrep, string)
     if format == "html":
-        print string
         string = _memore.sub(r" <a href='\1'>\1</a>", string)
-        print string
     return string
 
 def escapeBrackets(string):

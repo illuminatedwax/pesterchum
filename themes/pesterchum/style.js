@@ -190,6 +190,7 @@
  },
  "convo":
  {"style": "background-color: #fdb302; background-image:url($path/convobg.png); background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'",
+  "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
   "scrollbar": { "style" : "", "handle": "" },
   "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
   "size": [520, 325],

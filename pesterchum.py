@@ -1495,6 +1495,8 @@ class IRCThread(QtCore.QThread):
         irc = self.irc
         irc.IRCConnect()
         while 1:
+            if irc.brokenConnection:
+                self.exit(1)
             try:
                 irc.updateIRC()
             except socket.error:
