@@ -318,6 +318,13 @@ class PesterMemo(PesterConvo):
         self.userlist.optionsMenu.addAction(self.addchumAction)
         # ban & op list added if we are op
 
+        self.optionsMenu = QtGui.QMenu(self)
+        self.quirksOff = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/quirksoff"], self)
+        self.quirksOff.setCheckable(True)
+        self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('toggleQuirks(bool)'))
+        self.optionsMenu.addAction(self.quirksOff)
+
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
         self.timeinput.setText(timestr)
@@ -387,6 +394,7 @@ class PesterMemo(PesterConvo):
 
         self.op = False
         self.newmessage = False
+        self.applyquirks = True
 
     def title(self):
         return self.channel
@@ -532,14 +540,17 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
-        text = self.textInput.text()
+        text = unicode(self.textInput.text())
         if text == "":
             return
         if self.time.getTime() == None:
             self.sendtime()
         grammar = self.time.getGrammar()
         # deal with quirks here
-        qtext = self.mainwindow.userprofile.quirks.apply(unicode(text))
+        if self.applyquirks:
+            qtext = self.mainwindow.userprofile.quirks.apply(text)
+        else:
+            qtext = text
         if qtext[0:3] != "/me":
             initials = self.mainwindow.profile().initials()
             colorcmd = self.mainwindow.profile().colorcmd()
@@ -549,12 +560,11 @@ class PesterMemo(PesterConvo):
         else:
             clientText = qtext
             serverText = clientText
-        self.textInput.setText("")
         self.addMessage(clientText, True)
         # convert color tags
-        text = convertTags(unicode(serverText), "ctag")
+        serverText = convertTags(unicode(serverText), "ctag")
         self.messageSent.emit(serverText, self.title())
-
+        self.textInput.setText("")
     @QtCore.pyqtSlot()
     def namesUpdated(self):
         # get namesdb

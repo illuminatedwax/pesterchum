@@ -364,8 +364,11 @@ class chumArea(RightClickList):
         return chums
     def updateMood(self, handle, mood):
         chums = self.getChums(handle)
+        oldmood = None
         for c in chums:
+            oldmood = c.mood
             c.setMood(mood)
+        return oldmood
     def updateColor(self, handle, color):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
         for c in chums:
@@ -804,9 +807,9 @@ class PesterWindow(MovingWindow):
         self.chumdb.setColor(handle, color)
 
     def updateMood(self, handle, mood):
-        self.chumList.updateMood(handle, mood)
+        oldmood = self.chumList.updateMood(handle, mood)
         if self.convos.has_key(handle):
-            self.convos[handle].updateMood(mood)
+            self.convos[handle].updateMood(mood, old=oldmood)
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.updateMood(handle, mood)
     def newConversation(self, chum, initiated=True):

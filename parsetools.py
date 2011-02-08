@@ -43,11 +43,8 @@ def convertTags(string, format="html"):
     string = _urlre.sub(urlrep, string)
     if format == "html":
         string = _memore.sub(r" <a href='\1'>\1</a>", string)
-        string = string.replace(" :trollcool:", " <img src='%s' />" % ("themes/pesterchum/trollcool.gif")) # ugh hardcoded, gross i know. but its just 2 smilies
-        string = string.replace(" :cool:", " <img src='%s' />" % ("themes/pesterchum/pccool.gif")) 
-    elif format == "bbcode":
-        string = string.replace(" :trollcool:", " [img]http://www.mspaintadventures.com/storyfiles/hs2/scraps/trollcool.gif[/img]")
-        string = string.replace(" :cool:", " [img]http://www.mspaintadventures.com/storyfiles/hs2/scraps/pccool.gif[/img]")
+        for (code, f) in smiledict.iteritems():
+            string = string.replace(" %s" % (code), " <img src='smilies/%s' />" % (f))
     return string
 
 def escapeBrackets(string):
@@ -141,3 +138,40 @@ def timeDifference(td):
     else:
         timetext = "%d HOURS %s" % (hours, when)
     return timetext
+
+
+smiledict = {
+    ":rancorous:": "pc_rancorous.gif",  
+    ":apple:": "apple.gif",
+    ":bathearst:" "bathearst.gif"
+    ":pleasant:": "pc_pleasant.gif",
+    ":blueghost:": "blueslimer.gif",
+    ":candycorn:": "candycorn.gif",
+    ":cheer:": "cheer.gif", 
+    ":duhjohn:": "confusedjohn.gif",
+    ":datrump:": "datrump.gif",
+    ":facepalm:": "facepalm.gif",
+    ":bonk:": "headbonk.gif",
+    ":mspa:": "mspa_face.gif",
+    ":gun:": "mspa_reader.gif",
+    ":cal:": "lilcal.png",
+    ":amazedfirman:": "pc_amazedfirman.gif",
+    ":amazed:": "pc_amazed.gif",
+    ":chummy:": "pc_chummy.gif",
+    ":cool:": "pccool.gif",
+    ":smooth:": "pccool.gif",
+    ":distraughtfirman": "pc_distraughtfirman.gif",
+    ":distraught:": "pc_distraught.gif",
+    ":insolent:": "pc_insolent.gif",
+    ":3:": "pckitty.gif",
+    ":mystified:": "pc_mystified.gif",
+    ":pranky:": "pc_pranky.gif",
+    ":tense:": "pc_tense.gif",
+    ":record:": "record.gif",
+    ":squiddle:": "squiddle.gif",
+    ":tab:": "tab.gif",
+    ":beetip:": "theprofessor.gif",
+    ":flipout:": "weasel.gif",
+    ":befuddled:": "what.gif",
+    ":pumpkin:": "whatpumpkin.gif",
+    ":trollcool:": "trollcool.gif"}

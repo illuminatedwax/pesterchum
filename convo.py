@@ -350,12 +350,17 @@ class PesterConvo(QtGui.QFrame):
     def icon(self):
         return self.chum.mood.icon(self.mainwindow.theme)
 
-    def updateMood(self, mood, unblocked=False):
+    def updateMood(self, mood, unblocked=False, old=None):
+        syscolor = QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"])
         if mood.name() == "offline" and self.chumopen == True and not unblocked:
-            msg = self.chum.pestermsg(self.mainwindow.profile(), QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/ceasepester"])
+            msg = self.chum.pestermsg(self.mainwindow.profile(), syscolor, self.mainwindow.theme["convo/text/ceasepester"])
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
             self.chumopen = False
+        elif old and old.name() != mood.name():
+            msg = self.chum.moodmsg(syscolor, self.mainwindow.theme)
+            self.textArea.append(convertTags(msg))
+            self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
         if self.parent():
             self.parent().updateMood(self.title(), mood, unblocked)
         else:
