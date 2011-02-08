@@ -173,3 +173,24 @@ class PesterProfile(object):
             return False
         return True
 
+class PesterHistory(object):
+    def __init__(self):
+        self.history = []
+        self.current = -1
+    def next(self):
+        if self.current == -1:
+            return ""
+        text = self.history[self.current]
+        if self.current > 0:
+            self.current -= 1
+        return text
+    def prev(self):
+        if self.current == -1 or self.current == len(self.history) - 1:
+            return ""
+        self.current += 1
+        return self.history[self.current]
+    def reset(self):
+        self.current = len(self.history) - 1
+    def add(self, text):
+        self.history.append(text)
+        self.current = len(self.history) - 1
