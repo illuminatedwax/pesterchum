@@ -4,7 +4,7 @@ from PyQt4 import QtGui
 
 _ctag_begin = re.compile(r'<c=(.*?)>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
-_urlre = re.compile(r"(?i)(http://[^\s<]+)")
+_urlre = re.compile(r"(?i)(http://[^\s<[]+)")
 _memore = re.compile(r" (#[A-Za-z0-9_]+)")
 
 def convertTags(string, format="html"):
@@ -43,9 +43,11 @@ def convertTags(string, format="html"):
     string = _urlre.sub(urlrep, string)
     if format == "html":
         string = _memore.sub(r" <a href='\1'>\1</a>", string)
-        string = string.replace(" :trollcool:", " <img src='%s' />" % ("themes/pesterchum/trollcool.gif")) # ugh hardcoded, gross i know. but its just 1 smiley
+        string = string.replace(" :trollcool:", " <img src='%s' />" % ("themes/pesterchum/trollcool.gif")) # ugh hardcoded, gross i know. but its just 2 smilies
+        string = string.replace(" :cool:", " <img src='%s' />" % ("themes/pesterchum/pccool.gif")) 
     elif format == "bbcode":
         string = string.replace(" :trollcool:", " [img]http://www.mspaintadventures.com/storyfiles/hs2/scraps/trollcool.gif[/img]")
+        string = string.replace(" :cool:", " [img]http://www.mspaintadventures.com/storyfiles/hs2/scraps/pccool.gif[/img]")
     return string
 
 def escapeBrackets(string):

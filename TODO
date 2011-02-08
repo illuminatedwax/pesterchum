@@ -1,10 +1,15 @@
 Features:
+* Tray doesn't disappear on windows after close
+* memo quirk toggle
+* mood change system msg
 * comment history (up button)
 * page up/down scrolling
 * System tray menu
 * troll colors
 * ctrl-tab should prefer new convos
 * Idling
+* new sound on CEASE and BEGIN?
+* User commands/stop user from sending commands accidentally
 * More complex quirks: random, spelling, by-sound
 * change profile only once we have confirmation from server
 * convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
@@ -13,13 +18,10 @@ Features:
 * dropped messages when chatting ?
 -- release alpha
 * scroll bar style?
-* User commands/stop user from sending commands accidentally
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
-* new sound on CEASE and BEGIN?
 * chumList not scaling -- QListView + delegate?
 * spell check?
-* Help menu
 -- release beta
 * log viewer
 * pick your own icon
