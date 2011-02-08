@@ -34,6 +34,7 @@
                                "addchum": "Add Chump",
                                "unblockchum": "Mercy",
                                "banuser": "Ban",
+                               "opuser": "Promote",
                                "quirksoff": "Quirks Off" }
            },
   "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
@@ -309,6 +310,7 @@
                         "style": "width: 19px; height: 19px; border:0px; margin-left: 2px;"
                       }
           },
-  "systemMsgColor": "#646464"
+  "systemMsgColor": "#646464",
+  "op": { "icon": "$path/op.gif" }
  }
 }

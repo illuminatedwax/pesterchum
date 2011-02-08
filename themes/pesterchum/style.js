@@ -34,6 +34,7 @@
                                "addchum": "ADD CHUM",
                                "unblockchum": "UNBLOCK",
                                "banuser": "BAN USER",
+                               "opuser": "MAKE OP",
                                "quirksoff": "QUIRKS OFF"
                               }
            },
@@ -84,7 +85,7 @@
 
 "protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
 
-"blocked": { "icon": "$path/blocked.gif", "color": "black" }
+                 "blocked": { "icon": "$path/blocked.gif", "color": "black" }
 
                       }
            },
@@ -259,6 +260,7 @@
                         "style": " border:0px; margin-top: 5px; margin-right:10px;" 
                       }
           },
-  "systemMsgColor": "#646464"
+  "systemMsgColor": "#646464",
+  "op": { "icon": "$path/op.gif" }
  }
 }

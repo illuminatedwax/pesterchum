@@ -243,6 +243,9 @@ class MemoText(PesterText):
         if chum is not me:
             if parent.times.has_key(chum.handle):
                 time = parent.times[chum.handle]
+                if not time.getTime():
+                    # MY WAY OR THE HIGHWAY
+                    time.addTime(timedelta(0))
             else:
                 # new chum! time current
                 newtime = timedelta(0)
@@ -309,8 +312,11 @@ class PesterMemo(PesterConvo):
         self.banuserAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/banuser"], self)
         self.connect(self.banuserAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('banSelectedUser()'))
+        self.opAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/opuser"], self)
+        self.connect(self.opAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('opSelectedUser()'))
         self.userlist.optionsMenu.addAction(self.addchumAction)
-        # ban list added if we are op
+        # ban & op list added if we are op
 
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
@@ -424,10 +430,12 @@ class PesterMemo(PesterConvo):
         self.channelLabel.setMaximumHeight(theme["memos/label/maxheight"])
         self.channelLabel.setMinimumHeight(theme["memos/label/minheight"])
 
+        self.userlist.optionsMenu.setStyleSheet(theme["main/defaultwindow/style"])
         self.userlist.setStyleSheet(theme["memos/userlist/style"])
         self.userlist.setFixedWidth(theme["memos/userlist/width"])
         self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
+        self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])
 
         self.timeinput.setFixedWidth(theme["memos/time/text/width"])
         self.timeinput.setStyleSheet(theme["memos/time/text/style"])
@@ -454,6 +462,10 @@ class PesterMemo(PesterConvo):
         margins = theme["memos/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                   margins["right"], margins["bottom"])
+        for item in [self.userlist.row(i) for i in range(0,self.userlist.count())]:
+            if item.op:
+                icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+                item.setIcon(icon)
 
     def addUser(self, handle):
         chumdb = self.mainwindow.chumdb
@@ -463,6 +475,7 @@ class PesterMemo(PesterConvo):
             op = True
             handle = handle[1:]
             if handle == self.mainwindow.profile().handle:
+                self.userlist.optionsMenu.addAction(self.opAction)
                 self.userlist.optionsMenu.addAction(self.banuserAction)
                 self.op = True
         item = QtGui.QListWidgetItem(handle)
@@ -471,6 +484,10 @@ class PesterMemo(PesterConvo):
         else:
             color = chumdb.getColor(handle, defaultcolor)
         item.setTextColor(color)
+        item.op = op
+        if op:
+            icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+            item.setIcon(icon)
         self.userlist.addItem(item)
 
     def timeUpdate(self, handle, cmd):
@@ -561,7 +578,8 @@ class PesterMemo(PesterConvo):
             oldnick = l[0]
             newnick = l[1]
             h = oldnick
-        if (update in ["join","left", "kick"]) and channel != self.channel:
+        if (update in ["join","left", "kick", "+o"]) \
+                and channel != self.channel:
             return
         chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
@@ -639,6 +657,14 @@ class PesterMemo(PesterConvo):
             time = self.time.getTime()
             serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
             self.messageSent.emit(serverText, self.title())
+        elif update == "+o":
+            chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
+            for c in chums:
+                icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+                c.setIcon(icon)
+                if unicode(c.text()) == self.mainwindow.profile().handle:
+                    self.userlist.optionsMenu.addAction(self.opAction)
+                    self.userlist.optionsMenu.addAction(self.banuserAction)
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):
@@ -652,6 +678,12 @@ class PesterMemo(PesterConvo):
             return
         currentHandle = unicode(self.userlist.currentItem().text())
         self.mainwindow.kickUser.emit(currentHandle, self.channel)
+    @QtCore.pyqtSlot()
+    def opSelectedUser(self):
+        if not self.userlist.currentItem():
+            return
+        currentHandle = unicode(self.userlist.currentItem().text())
+        self.mainwindow.setChannelMode.emit(self.channel, "+o", currentHandle)
     def resetSlider(self, time, send=True):
         self.timeinput.setText(delta2txt(time))
         self.timeinput.setSlider()

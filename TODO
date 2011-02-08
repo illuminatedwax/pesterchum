@@ -1,35 +1,29 @@
 Features:
-* dropped messages when chatting
-* X closes to tray
-* color text is not being translated to server?
+* comment history (up button)
+* page up/down scrolling
+* System tray menu
+* troll colors
+* ctrl-tab should prefer new convos
+* Idling
+* More complex quirks: random, spelling, by-sound
+* change profile only once we have confirmation from server
 * convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
-* make other ppl ops
-* turn off sound option!!
 * help button on quirks menu?
 * help menu -- about and forum
+* dropped messages when chatting ?
 -- release alpha
 * scroll bar style?
 * User commands/stop user from sending commands accidentally
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
-* System tray menu
 * new sound on CEASE and BEGIN?
-* comment history (up button)
-* page up/down scrolling
-* get rid of border on chat window?
-* Idling
-* ctrl-tab should prefer new convos
-* More complex quirks: random, spelling, by-sound
-* Implement TC options
 * chumList not scaling -- QListView + delegate?
 * spell check?
 * Help menu
-* change profile only once we have confirmation from server
 -- release beta
 * log viewer
 * pick your own icon
 * time codes
-* theme elements define, implement
 * Theme checking
 * don't clear new message when clicking away from tab?
 * Spy mode
@@ -37,10 +31,3 @@ Features:
 * put code into separate files
 * hide offline chums
 * chum list groups
-
-
-
--- MEMOS:
-list has "CREATE" CACNCEL JOIN buttons
-no "--" for sys mesg
-

@@ -229,6 +229,8 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.userPresentUpdate.emit(handle, channel, "join")
         if channel == "#pesterchum":
             self.parent.moodUpdated.emit(handle, Mood("chummy"))
+    def mode(self, op, channel, mode, handle=""):
+        self.parent.userPresentUpdate.emit(handle, channel, mode)
     def nick(self, oldnick, newnick):
         oldhandle = oldnick[0:oldnick.find("!")]
         newchum = PesterProfile(newnick, chumdb=self.mainwindow.chumdb)

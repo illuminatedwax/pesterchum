@@ -43,6 +43,9 @@ def convertTags(string, format="html"):
     string = _urlre.sub(urlrep, string)
     if format == "html":
         string = _memore.sub(r" <a href='\1'>\1</a>", string)
+        string = string.replace(" :trollcool:", " <img src='%s' />" % ("themes/pesterchum/trollcool.gif")) # ugh hardcoded, gross i know. but its just 1 smiley
+    elif format == "bbcode":
+        string = string.replace(" :trollcool:", " [img]http://www.mspaintadventures.com/storyfiles/hs2/scraps/trollcool.gif[/img]")
     return string
 
 def escapeBrackets(string):

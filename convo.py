@@ -343,6 +343,7 @@ class PesterConvo(QtGui.QFrame):
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
         self.newmessage = False
+        self.history = []
 
     def title(self):
         return self.chum.handle
@@ -448,21 +449,21 @@ class PesterConvo(QtGui.QFrame):
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
-        text = self.textInput.text()
+        text = unicode(self.textInput.text())
         if text == "":
             return
         # deal with quirks here
         if self.applyquirks:
-            qtext = self.mainwindow.userprofile.quirks.apply(unicode(text))
-            text = QtCore.QString(qtext)
-        self.textInput.setText("")
+            qtext = self.mainwindow.userprofile.quirks.apply(text)
+            text = qtext
         self.addMessage(text, True)
         # if ceased, rebegin
         if hasattr(self, 'chumopen') and not self.chumopen:
             self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
         # convert color tags
-        text = convertTags(unicode(text), "ctag")
+        text = convertTags(text, "ctag")
         self.messageSent.emit(text, self.title())
+        self.textInput.setText("")
 
     @QtCore.pyqtSlot()
     def addThisChum(self):

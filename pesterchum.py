@@ -6,6 +6,7 @@ from datetime import *
 from string import Template
 import random
 import json
+import codecs
 import re
 import socket
 from PyQt4 import QtGui, QtCore
@@ -61,7 +62,7 @@ class PesterLog(object):
             time = datetime.now().strftime("%Y-%m-%d.%H.%M.txt")
             if not os.path.exists("logs/%s/%s" % (self.handle, handle)):
                 os.mkdir("logs/%s/%s" % (self.handle, handle))
-            fp = open("logs/%s/%s/%s.%s" % (self.handle, handle, handle, time), 'a')
+            fp = codecs.open("logs/%s/%s/%s.%s" % (self.handle, handle, handle, time), encoding='utf-8', mode='a')
             self.convos[handle] = fp
         self.convos[handle].write(msg+"\n")
         self.convos[handle].flush()
@@ -115,11 +116,18 @@ class pesterTheme(dict):
         theme = json.load(fp, object_hook=self.pathHook)
         self.update(theme)
         fp.close()
+        defaultfp = open("themes/pesterchum/style.js") # set default
+        defaultTheme = json.load(defaultfp, object_hook=self.pathHook)
+        self.defaultTheme = defaultTheme
+        defaultfp.close()
     def __getitem__(self, key):
         keys = key.split("/")
         v = dict.__getitem__(self, keys.pop(0))
         for k in keys:
-            v = v[k]
+            try:
+                v = v[k]
+            except KeyError:
+                v = self.defaultTheme[k]
         return v
     def pathHook(self, d):
         for (k, v) in d.iteritems():
@@ -184,6 +192,10 @@ class userConfig(object):
         l = self.getBlocklist()
         l.pop(l.index(handle))
         self.set('block', l)
+    def soundOn(self):
+        if not self.config.has_key('soundon'):
+            self.set('soundon', True)
+        return self.config['soundon']
     def set(self, item, setting):
         self.config[item] = setting
         try:
@@ -671,7 +683,7 @@ class PesterWindow(MovingWindow):
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('close()'))
+                     self, QtCore.SLOT('closeToTray()'))
         self.miniButton = WMButton(PesterIcon(self.theme["main/minimize/image"]), self)
         self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('showMinimized()'))
@@ -746,6 +758,10 @@ class PesterWindow(MovingWindow):
         palette.setBrush(QtGui.QPalette.Window, QtGui.QBrush(self.backgroundImage))
         self.setPalette(palette)
 
+    @QtCore.pyqtSlot()
+    def closeToTray(self):
+        self.hide()
+        self.closeToTraySignal.emit()
     def closeEvent(self, event):
         self.closeConversations()
         if hasattr(self, 'trollslum') and self.trollslum:
@@ -770,7 +786,8 @@ class PesterWindow(MovingWindow):
         convo = self.convos[handle]
         convo.addMessage(msg, False)
         # play sound here
-        self.alarm.play()
+        if self.config.soundOn():
+            self.alarm.play()
     def newMemoMsg(self, chan, handle, msg):
         if not self.memos.has_key(chan):
             # silently ignore in case we forgot to /part
@@ -1001,9 +1018,11 @@ class PesterWindow(MovingWindow):
         if len(self.waitingMessages) == 0:
             if self.isMinimized():
                 self.showNormal()
+            elif self.isHidden():
+                self.show()
             else:
                 if self.isActiveWindow():
-                    self.showMinimized()
+                    self.hide()
                 else:
                     self.raise_()
                     self.activateWindow()
@@ -1346,6 +1365,9 @@ class PesterWindow(MovingWindow):
             self.memos = newmemos
             # save options
             self.config.set("tabs", tabsetting)
+        # sound
+        soundsetting = self.optionmenu.soundcheck.isChecked()
+        self.config.set("soundon", soundsetting)
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
@@ -1467,6 +1489,7 @@ class PesterWindow(MovingWindow):
             # show context menu i guess
             pass
 
+    closeToTraySignal = QtCore.pyqtSignal()
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
@@ -1542,6 +1565,10 @@ class MainProgram(QtCore.QObject):
                               QtCore.SIGNAL('trayIconSignal(int)'),
                               self.trayicon,
                               QtCore.SLOT('changeTrayIcon(int)'))
+        self.trayicon.connect(self.widget,
+                              QtCore.SIGNAL('closeToTraySignal()'),
+                              self.trayicon,
+                              QtCore.SLOT('show()'))
 
         self.irc = PesterIRC(self.widget)
         self.connectWidgets(self.irc, self.widget)

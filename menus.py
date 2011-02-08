@@ -280,14 +280,13 @@ class PesterOptions(QtGui.QDialog):
         self.theme = theme
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
 
-        self.tabcheck = QtGui.QCheckBox(self)
+        self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
-        self.tablabel = QtGui.QLabel("Tabbed Conversations", self)
-        layout_1 = QtGui.QHBoxLayout()
-        layout_1.addWidget(self.tablabel)
-        layout_1.addWidget(self.tabcheck)
-        
+
+        self.soundcheck = QtGui.QCheckBox("Sounds On", self)
+        if self.config.soundOn():
+            self.soundcheck.setChecked(True)
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -300,7 +299,8 @@ class PesterOptions(QtGui.QDialog):
         layout_2.addWidget(self.ok)
 
         layout_0 = QtGui.QVBoxLayout()
-        layout_0.addLayout(layout_1)
+        layout_0.addWidget(self.tabcheck)
+        layout_0.addWidget(self.soundcheck)
         layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)
@@ -410,7 +410,7 @@ class PesterMemoList(QtGui.QDialog):
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
-        self.secretChannel = QtGui.QCheckBox("HIDDEN?", self)
+        self.secretChannel = QtGui.QCheckBox("HIDDEN CHANNEL?", self)
 
         self.timelabel = QtGui.QLabel("TIMEFRAME:")
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
