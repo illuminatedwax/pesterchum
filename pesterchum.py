@@ -965,12 +965,17 @@ class PesterWindow(MovingWindow):
         self.mychumcolor.setStyleSheet("background: %s" % (self.profile().colorhtml()))
         if self.theme.has_key("main/mychumhandle/currentMood"):
             moodicon = self.profile().mood.icon(theme)
+            if hasattr(self, 'currentMoodIcon') and self.currentMoodIcon:
+                self.currentMoodIcon.hide()
+                self.currentMoodIcon = None
             self.currentMoodIcon = QtGui.QLabel(self)
             self.currentMoodIcon.setPixmap(moodicon.pixmap(moodicon.realsize()))
             self.currentMoodIcon.move(*theme["main/mychumhandle/currentMood"])
             self.currentMoodIcon.show()
         else:
+            print "no mood :("
             if hasattr(self, 'currentMoodIcon') and self.currentMoodIcon:
+                print "hiding..."
                 self.currentMoodIcon.hide()
             self.currentMoodIcon = None
 
