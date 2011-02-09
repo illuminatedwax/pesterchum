@@ -1514,8 +1514,9 @@ class PesterWindow(MovingWindow):
         if reason == QtGui.QSystemTrayIcon.Trigger:
             self.systemTrayFunction()
         elif reason == QtGui.QSystemTrayIcon.Context:
-            # show context menu i guess
             pass
+            # show context menu i guess
+            #self.showTrayContext.emit()
 
     closeToTraySignal = QtCore.pyqtSignal()
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
@@ -1557,9 +1558,6 @@ class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
         QtGui.QSystemTrayIcon.__init__(self, icon, parent)
         self.mainwindow = mainwindow
-        traymenu = QtGui.QMenu()
-        traymenu.addAction("Hi!! HI!!")
-        self.setContextMenu(traymenu)
 
     @QtCore.pyqtSlot(int)
     def changeTrayIcon(self, i):
@@ -1584,6 +1582,12 @@ class MainProgram(QtCore.QObject):
         self.widget.show()
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
+        self.traymenu = QtGui.QMenu()
+        exitAction = QtGui.QAction("EXIT", self)
+        self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
+                              self.widget, QtCore.SLOT('close()'))
+        self.traymenu.addAction(exitAction)
+        self.trayicon.setContextMenu(self.traymenu)
         self.trayicon.show()
         self.trayicon.connect(self.trayicon, 
                               QtCore.SIGNAL('activated(QSystemTrayIcon::ActivationReason)'),
@@ -1597,6 +1601,7 @@ class MainProgram(QtCore.QObject):
                               QtCore.SIGNAL('closeToTraySignal()'),
                               self.trayicon,
                               QtCore.SLOT('show()'))
+        print self.trayicon.contextMenu()
 
         self.irc = PesterIRC(self.widget)
         self.connectWidgets(self.irc, self.widget)
@@ -1726,7 +1731,7 @@ class MainProgram(QtCore.QObject):
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)
-        sys.exit(self.app.exec_())
+        os._exit(self.app.exec_())
 
 pesterchum = MainProgram()
 pesterchum.run()
