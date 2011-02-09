@@ -28,6 +28,8 @@
                         "theme": "THEME",
                         "block": "TROLLSLUM",
                         "quirks": "QUIRKS"},
+            "help": { "_name": "HELP",
+                      "about": "ABOUT" },
             "rclickchumlist": {"pester": "PESTER",
                                "removechum": "REMOVE CHUM",
                                "blockchum": "BLOCK",

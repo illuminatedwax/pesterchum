@@ -14,7 +14,7 @@ import pygame
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
-    LoadingScreen
+    LoadingScreen, AboutPesterchum
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
 from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
@@ -109,25 +109,26 @@ class PesterProfileDB(dict):
         self.save()
 
 class pesterTheme(dict):
-    def __init__(self, name):
+    def __init__(self, name, default=False):
         self.path = "themes/%s" % (name)
         self.name = name
         fp = open(self.path+"/style.js")
         theme = json.load(fp, object_hook=self.pathHook)
         self.update(theme)
         fp.close()
-        defaultfp = open("themes/pesterchum/style.js") # set default
-        defaultTheme = json.load(defaultfp, object_hook=self.pathHook)
-        self.defaultTheme = defaultTheme
-        defaultfp.close()
+        if not default:
+            self.defaultTheme = pesterTheme("pesterchum", default=True)
     def __getitem__(self, key):
         keys = key.split("/")
         v = dict.__getitem__(self, keys.pop(0))
         for k in keys:
             try:
                 v = v[k]
-            except KeyError:
-                v = self.defaultTheme[k]
+            except KeyError, e:
+                if hasattr(self, 'defaultTheme'):
+                    return self.defaultTheme[key]
+                else:
+                    raise e
         return v
     def pathHook(self, d):
         for (k, v) in d.iteritems():
@@ -136,19 +137,23 @@ class pesterTheme(dict):
                 d[k] = s.safe_substitute(path=self.path)
         return d
     def get(self, key, default):
-        try:
-            ret = self[key]
-        except KeyError:
-            return default
-        else:
-            return ret
+        keys = key.split("/")
+        v = dict.__getitem__(self, keys.pop(0))
+        for k in keys:
+            try:
+                v = v[k]
+            except KeyError:
+                return default
+        return v
     def has_key(self, key):
-        try:
-            self[key]
-        except KeyError:
-            return False
-        else:
-            return True
+        keys = key.split("/")
+        v = dict.__getitem__(self, keys.pop(0))
+        for k in keys:
+            try:
+                v = v[k]
+            except KeyError:
+                return False
+        return True
 
 class userConfig(object):
     def __init__(self):
@@ -684,6 +689,14 @@ class PesterWindow(MovingWindow):
         profilemenu.addAction(changecoloraction)
         profilemenu.addAction(switch)
 
+        self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
+        self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('aboutPesterchum()'))
+        helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
+        self.helpmenu = helpmenu
+        self.helpmenu.addAction(self.aboutAction)
+        
+
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('closeToTray()'))
@@ -923,6 +936,8 @@ class PesterWindow(MovingWindow):
         self.changecoloraction.setText(theme["main/menus/profile/color"])
         self.switch.setText(theme["main/menus/profile/switch"])
         self.profilemenu.setTitle(theme["main/menus/profile/_name"])
+        self.aboutAction.setText(self.theme["main/menus/help/about"])
+        self.helpmenu.setTitle(self.theme["main/menus/help/_name"])
 
         # moods
         self.moodsLabel.setText(theme["main/moodlabel/text"])
@@ -976,9 +991,7 @@ class PesterWindow(MovingWindow):
             self.currentMoodIcon.move(*theme["main/mychumhandle/currentMood"])
             self.currentMoodIcon.show()
         else:
-            print "no mood :("
             if hasattr(self, 'currentMoodIcon') and self.currentMoodIcon:
-                print "hiding..."
                 self.currentMoodIcon.hide()
             self.currentMoodIcon = None
 
@@ -1475,6 +1488,13 @@ class PesterWindow(MovingWindow):
             if ret == QtGui.QMessageBox.Cancel:
                 return
         self.changeProfile()
+    @QtCore.pyqtSlot()
+    def aboutPesterchum(self):
+        if hasattr(self, 'aboutwindow') and self.aboutwindow:
+            return
+        self.aboutwindow = AboutPesterchum(self)
+        self.aboutwindow.exec_()
+        self.aboutwindow = None
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def nickCollision(self, handle, tmphandle):

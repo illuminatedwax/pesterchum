@@ -2,7 +2,7 @@ from string import Template
 import re
 from PyQt4 import QtGui, QtCore
 
-from dataobjs import PesterProfile, Mood
+from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
 from parsetools import escapeBrackets, convertTags
 
@@ -277,6 +277,20 @@ class PesterInput(QtGui.QLineEdit):
     def focusInEvent(self, event):
         self.parent().clearNewMessage()
         QtGui.QLineEdit.focusInEvent(self, event)
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Up:
+            text = unicode(self.text())
+            next = self.parent().history.next(text)
+            if next is not None:
+                self.setText(next)
+        elif event.key() == QtCore.Qt.Key_Down:
+            prev = self.parent().history.prev()
+            if prev is not None:
+                self.setText(prev)
+        elif event.key() in [QtCore.Qt.Key_PageUp, QtCore.Qt.Key_PageDown]:
+            self.parent().textArea.keyPressEvent(event)
+        QtGui.QLineEdit.keyPressEvent(self, event)
+
 
 class PesterConvo(QtGui.QFrame):
     def __init__(self, chum, initiated, mainwindow, parent=None):
@@ -343,7 +357,7 @@ class PesterConvo(QtGui.QFrame):
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
         self.newmessage = False
-        self.history = []
+        self.history = PesterHistory()
 
     def title(self):
         return self.chum.handle
@@ -411,6 +425,7 @@ class PesterConvo(QtGui.QFrame):
     def focusInEvent(self, event):
         self.clearNewMessage()
         self.textInput.setFocus()
+
     def raiseChat(self):
         self.activateWindow()
         self.raise_()
@@ -457,6 +472,7 @@ class PesterConvo(QtGui.QFrame):
         text = unicode(self.textInput.text())
         if text == "":
             return
+        self.history.add(text)
         # deal with quirks here
         if self.applyquirks:
             qtext = self.mainwindow.userprofile.quirks.apply(text)

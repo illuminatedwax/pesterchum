@@ -543,6 +543,7 @@ class PesterMemo(PesterConvo):
         text = unicode(self.textInput.text())
         if text == "":
             return
+        self.history.add(text)
         if self.time.getTime() == None:
             self.sendtime()
         grammar = self.time.getGrammar()

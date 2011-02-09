@@ -1,7 +1,5 @@
 Features:
 * Tray doesn't disappear on windows after close
-* comment history (up button)
-* page up/down scrolling
 * System tray menu
 * troll colors
 * ctrl-tab should prefer new convos

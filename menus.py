@@ -487,3 +487,10 @@ class LoadingScreen(QtGui.QDialog):
         self.layout.addWidget(self.loadinglabel)
         self.layout.addWidget(self.cancel)
         self.setLayout(self.layout)
+
+class AboutPesterchum(QtGui.QMessageBox):
+    def __init__(self, parent=None):
+        QtGui.QMessageBox.__init__(self, parent)
+        self.setText("P3ST3RCHUM V. 0.1.2")
+        self.setInformativeText("Programming by illuminatedwax (ghostDunk), art by Grimlive (aquaMarinist)")
+        self.mainwindow = parent
