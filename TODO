@@ -1,10 +1,9 @@
 Features:
 * Tray doesn't disappear on windows after close
-* Mood switching shows wrong mood!
-* ctrl-tab should prefer new convos
 * Idling
+* PESTERCHUM:BLOCKED
 * new sound on CEASE and BEGIN?
-* User commands/stop user from sending commands accidentally
+* scroll bar style?
 * More complex quirks: random, spelling, by-sound
 * change profile only once we have confirmation from server
 * convert hex tags (<GFFFFFF> or <GFF0000>)
@@ -13,7 +12,6 @@ Features:
 * help menu -- about and forum
 * dropped messages when chatting ?
 -- release alpha
-* scroll bar style?
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * chumList not scaling -- QListView + delegate?

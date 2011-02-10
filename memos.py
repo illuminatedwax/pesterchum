@@ -541,7 +541,7 @@ class PesterMemo(PesterConvo):
     @QtCore.pyqtSlot()
     def sentMessage(self):
         text = unicode(self.textInput.text())
-        if text == "":
+        if text == "" or text[0:11] == "PESTERCHUM:":
             return
         self.history.add(text)
         if self.time.getTime() == None:

@@ -29,6 +29,8 @@ class waitingMessageHolder(object):
         self.queue = msgfuncs.keys()
         if len(self.queue) > 0:
             self.mainwindow.updateSystemTray()
+    def waitingHandles(self):
+        return self.queue
     def answerMessage(self):
         func = self.funcs[self.queue[0]]
         func()
@@ -1595,10 +1597,6 @@ class MainProgram(QtCore.QObject):
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
         self.traymenu = QtGui.QMenu()
-        exitAction = QtGui.QAction("EXIT", self)
-        self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
-                              self.widget, QtCore.SLOT('close()'))
-        self.traymenu.addAction(exitAction)
         moodMenu = self.traymenu.addMenu("SET MOOD")
         self.moodactions = {}
         for (i,m) in enumerate(Mood.moods):
@@ -1608,6 +1606,10 @@ class MainProgram(QtCore.QObject):
                                   mobj, QtCore.SLOT('updateMood()'))
             self.moodactions[i] = mobj
             moodMenu.addAction(maction)
+        exitAction = QtGui.QAction("EXIT", self)
+        self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
+                              self.widget, QtCore.SLOT('close()'))
+        self.traymenu.addAction(exitAction)
 
         self.trayicon.setContextMenu(self.traymenu)
         self.trayicon.show()

@@ -54,7 +54,7 @@
                  
                  "distraught": { "icon": "$path/distraught.png", "color": "#706eba" },
                  
-                 "unruly": { "icon": "$path/unruly.png", "color": "blue" },
+                 "pranky": { "icon": "$path/pranky.png", "color": "blue" },
                  
                  
                  "smooth": { "icon": "$path/smooth.png", "color": "red" },

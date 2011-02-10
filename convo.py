@@ -69,7 +69,13 @@ class PesterTabWindow(QtGui.QFrame):
         mods = event.modifiers()
         if ((mods & QtCore.Qt.ControlModifier) and 
             keypress == QtCore.Qt.Key_Tab):
-            nexti = (self.tabIndices[self.currentConvo.title()] + 1) % self.tabs.count()
+            handles = self.convos.keys()
+            waiting = self.mainwindow.waitingMessages.waitingHandles()
+            waitinghandles = list(set(handles) & set(waiting))
+            if len(waitinghandles) > 0:
+                nexti = self.tabIndices[waitinghandles[0]]
+            else:
+                nexti = (self.tabIndices[self.currentConvo.title()] + 1) % self.tabs.count()
             self.tabs.setCurrentIndex(nexti)
 
     def closeSoft(self):
@@ -372,7 +378,7 @@ class PesterConvo(QtGui.QFrame):
             self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
             self.chumopen = False
         elif old and old.name() != mood.name():
-            msg = self.chum.moodmsg(syscolor, self.mainwindow.theme)
+            msg = self.chum.moodmsg(mood, syscolor, self.mainwindow.theme)
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
         if self.parent():
@@ -470,7 +476,7 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot()
     def sentMessage(self):
         text = unicode(self.textInput.text())
-        if text == "":
+        if text == "" or text[0:11] == "PESTERCHUM:":
             return
         self.history.add(text)
         # deal with quirks here
