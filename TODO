@@ -1,13 +1,13 @@
 Features:
 * Tray doesn't disappear on windows after close
-* System tray menu - Moods
-* troll colors
+* Mood switching shows wrong mood!
 * ctrl-tab should prefer new convos
 * Idling
 * new sound on CEASE and BEGIN?
 * User commands/stop user from sending commands accidentally
 * More complex quirks: random, spelling, by-sound
 * change profile only once we have confirmation from server
+* convert hex tags (<GFFFFFF> or <GFF0000>)
 * convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
 * help button on quirks menu?
 * help menu -- about and forum

@@ -236,8 +236,8 @@ class PesterText(QtGui.QTextEdit):
                 window.chatlog.log(chum.handle, convertTags(beginmsg, "bbcode"))
                 self.append(convertTags(beginmsg))
 
-            msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
             msg = escapeBrackets(msg)
+            msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
             self.append(convertTags(msg))
             if chum is me:
                 window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode"))

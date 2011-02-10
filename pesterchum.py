@@ -521,6 +521,15 @@ class TrollSlumWindow(QtGui.QFrame):
     blockChumSignal = QtCore.pyqtSignal(QtCore.QString)
     unblockChumSignal = QtCore.pyqtSignal(QtCore.QString)
 
+class PesterMoodAction(QtCore.QObject):
+    def __init__(self, m, func):
+        QtCore.QObject.__init__(self)
+        self.mood = m
+        self.func = func
+    @QtCore.pyqtSlot()
+    def updateMood(self):
+        self.func(self.mood)
+
 class PesterMoodHandler(QtCore.QObject):
     def __init__(self, parent, *buttons):
         QtCore.QObject.__init__(self)
@@ -549,8 +558,11 @@ class PesterMoodHandler(QtCore.QObject):
             oldbutton.setSelected(False)
         except KeyError:
             pass
-        newbutton = self.buttons[m]
-        newbutton.setSelected(True)
+        try:
+            newbutton = self.buttons[m]
+            newbutton.setSelected(True)
+        except KeyError:
+            pass
         newmood = Mood(m)
         self.mainwindow.userprofile.chat.mood = newmood
         if self.mainwindow.currentMoodIcon:
@@ -1587,6 +1599,16 @@ class MainProgram(QtCore.QObject):
         self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
                               self.widget, QtCore.SLOT('close()'))
         self.traymenu.addAction(exitAction)
+        moodMenu = self.traymenu.addMenu("SET MOOD")
+        self.moodactions = {}
+        for (i,m) in enumerate(Mood.moods):
+            maction = QtGui.QAction(m.upper(), self)
+            mobj = PesterMoodAction(i, self.widget.moods.updateMood)
+            self.trayicon.connect(maction, QtCore.SIGNAL('triggered()'),
+                                  mobj, QtCore.SLOT('updateMood()'))
+            self.moodactions[i] = mobj
+            moodMenu.addAction(maction)
+
         self.trayicon.setContextMenu(self.traymenu)
         self.trayicon.show()
         self.trayicon.connect(self.trayicon, 
