@@ -6,7 +6,7 @@ from datetime import time, timedelta, datetime
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
-from parsetools import convertTags, escapeBrackets, addTimeInitial, timeProtocol
+from parsetools import convertTags, addTimeInitial, timeProtocol
 
 def delta2txt(d, format="pc"):
     if format == "pc":
@@ -227,6 +227,7 @@ class MemoText(PesterText):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        quirks = window.userprofile.quirks if parent.applyquirks else None
         msg = unicode(text)
         chumdb = window.chumdb
         if chum is not me: # SO MUCH WH1T3SP4C3 >:]
@@ -268,6 +269,8 @@ class MemoText(PesterText):
             time.openCurrentTime()
 
         if msg[0:3] == "/me" or msg[0:13] == "PESTERCHUM:ME":
+            if quirks:
+                msg = quirks.apply(msg)
             if msg[0:3] == "/me":
                 start = 3
             else:
@@ -279,9 +282,8 @@ class MemoText(PesterText):
         else:
             if chum is not me:
                 msg = addTimeInitial(msg, parent.times[chum.handle].getGrammar())
-            msg = escapeBrackets(msg)
-            self.append(convertTags(msg))
-            window.chatlog.log(parent.channel, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg, quirksobj=quirks))
+            window.chatlog.log(parent.channel, convertTags(msg, "bbcode", quirks))
             
         
     def changeTheme(self, theme):
@@ -554,23 +556,19 @@ class PesterMemo(PesterConvo):
         if self.time.getTime() == None:
             self.sendtime()
         grammar = self.time.getGrammar()
-        # deal with quirks here
-        if self.applyquirks:
-            qtext = self.mainwindow.userprofile.quirks.apply(text)
-        else:
-            qtext = text
-        if qtext[0:3] != "/me":
+        if text[0:3] != "/me":
             initials = self.mainwindow.profile().initials()
             colorcmd = self.mainwindow.profile().colorcmd()
-            clientText = "<c=%s>%s%s%s: %s</c>" % (colorcmd, grammar.pcf, initials, grammar.number, qtext)
+            clientText = "<c=%s>%s%s%s: %s</c>" % (colorcmd, grammar.pcf, initials, grammar.number, text)
             # account for TC's parsing error
-            serverText = "<c=%s>%s: %s</c> " % (colorcmd, initials, qtext)
+            serverText = "<c=%s>%s: %s</c> " % (colorcmd, initials, text)
         else:
-            clientText = qtext
+            clientText = text
             serverText = clientText
         self.addMessage(clientText, True)
         # convert color tags
-        serverText = convertTags(unicode(serverText), "ctag")
+        quirks = self.mainwindow.userprofile.quirks if self.applyquirks else None
+        serverText = convertTags(unicode(serverText), "ctag", quirks)
         self.messageSent.emit(serverText, self.title())
         self.textInput.setText("")
     @QtCore.pyqtSlot()

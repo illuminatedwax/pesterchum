@@ -4,35 +4,40 @@ from datetime import timedelta
 from PyQt4 import QtGui
 
 _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
+_ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
-_urlre = re.compile(r"(?i)(http://[^\s<[]+)")
+_urlre = re.compile(r"(?i)http://[^\s]+")
 _memore = re.compile(r" (#[A-Za-z0-9_]+)")
 
 def lexer(string, objlist):
     """objlist is a list: [(objecttype, re),...] list is in order of preference"""
     stringlist = [string]
     for (oType, regexp) in objlist:
-        newstringlist = copy(stringlist)
+        newstringlist = []
         for (stri, s) in enumerate(stringlist):
-            tmp = []
+            if type(s) not in [str, unicode]:
+                newstringlist.append(s)
+                continue
             lasti = 0
-            for m in regexp.finditer(string):
+            for m in regexp.finditer(s):
                 start = m.start()
                 end = m.end()
-                tag = oType(group(0), *groups())
-                tmp.append(string[lasti:start])
-                tmp.append(tag)
+                tag = oType(m.group(0), *m.groups())
+                if lasti != start:
+                    newstringlist.append(s[lasti:start])
+                newstringlist.append(tag)
+                lasti = end
             if lasti < len(string):
-                tmp.append(string[lasti:])
-            stringlist = stringlist[0:stri]+tmp+stringlist[stri+1:]
+                newstringlist.append(s[lasti:])
         stringlist = copy(newstringlist)
     return stringlist
 
-def convertTags(string, format="html"):
-    if format not in ["html", "bbcode", "ctag"]:
-        raise ValueError("Color format not recognized")
-    def colorrepfunc(matchobj):
-        color = matchobj.group(1)
+class colorBegin(object):
+    def __init__(self, string, color):
+        self.string = string
+        self.color = color
+    def convert(self, format):
+        color = self.color
         if _ctag_rgb.match(color) is not None:
             if format=='ctag':
                 return "<c=%s>" % (color)
@@ -51,69 +56,75 @@ def convertTags(string, format="html"):
         elif format == "ctag":
             (r,g,b,a) = qc.getRgb()
             return '<c=%s,%s,%s>' % (r,g,b)
-    string = _ctag_begin.sub(colorrepfunc, string)
-    endtag = {"html": "</span>", "bbcode": "[/color]", "ctag": "</c>"}
-    string = string.replace("</c>", endtag[format])
-    def urlrep(matchobj):
-        if format=="html":
-            return "<a href='%s'>%s</a>" % (matchobj.group(1).replace("&amp;", "&"), matchobj.group(1))
-        elif format=="bbcode":
-            return "[url]%s[/url]" % (matchobj.group(1).replace("&amp;", "&"))
-        elif format=="ctag":
-            return matchobj.group(1)
-    string = _urlre.sub(urlrep, string)
-    if format == "html":
-        string = _memore.sub(r" <a href='\1'>\1</a>", string)
-        for (code, f) in smiledict.iteritems():
-            string = string.replace(" %s" % (code), " <img src='smilies/%s' />" % (f))
-    return string
+class colorEnd(object):
+    def __init__(self, string):
+        self.string = string
+    def convert(self, format):
+        if format == "html":
+            return "</span>"
+        elif format == "bbcode":
+            return "[/color]"
+        else:
+            return self.string
+class hyperlink(object):
+    def __init__(self, string):
+        self.string = string
+    def convert(self, format):
+        if format == "html":
+            return "<a href='%s'>%s</a>" % (self.string, self.string)
+        elif format == "bbcode":
+            return "[url]%s[/url]" % (self.string)
+        else:
+            return self.string
+class smiley(object):
+    def __init__(self, string):
+        self.string = string
+    def convert(self, format):
+        if format == "html":
+            return "<img src='smilies/%s' />" % (smiledict[self.string])
+        else:
+            return self.string
 
-def escapeBrackets(string):
-    class beginTag(object):
-        def __init__(self, tag):
-            self.tag = tag
-    class endTag(object):
-        pass
-    newlist = []
-    begintagpos = [(m.start(), m.end()) for m in _ctag_begin.finditer(string)]
-    lasti = 0
-    for (s, e) in begintagpos:
-        newlist.append(string[lasti:s])
-        newlist.append(beginTag(string[s:e]))
-        lasti = e
-    if lasti < len(string):
-        newlist.append(string[lasti:])
-    tmp = []
-    for o in newlist:
-        if type(o) is not beginTag:
-            l = o.split("</c>")
-            tmp.append(l[0])
-            l = l[1:]
-            for item in l:
-                tmp.append(endTag())
-                tmp.append(item)
-        else:
-            tmp.append(o)
-    btlen = 0
-    etlen = 0
-    retval = ""
-    newlist = tmp
-    for o in newlist:
-        if type(o) is beginTag:
-            retval += o.tag.replace("&", "&amp;")
-            btlen +=1
-        elif type(o) is endTag:
-            if etlen >= btlen:
-                continue
+def convertTags(string, format="html", quirkobj=None):
+    if format not in ["html", "bbcode", "ctag"]:
+        raise ValueError("Color format not recognized")
+    lexlist = [(colorBegin, _ctag_begin), (colorEnd, _ctag_end),
+               (hyperlink, _urlre), (hyperlink, _memore),
+               (smiley, _smilere)]
+
+    lexed = lexer(string, lexlist)
+    balanced = []
+    beginc = 0
+    endc = 0
+    for o in lexed:
+        if type(o) is colorBegin:
+            beginc += 1
+            balanced.append(o)
+        elif type(o) is colorEnd:
+            if beginc >= endc:
+                endc += 1
+                balanced.append(o)
             else:
-                retval += "</c>"
-                etlen += 1
+                balanced.append(o.string)
         else:
-            retval += o.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    if btlen > etlen:
-        for i in range(0, btlen-etlen):
-            retval += "</c>"
-    return retval
+            balanced.append(o)
+    if beginc > endc:
+        for i in range(0, beginc-endc):
+            balanced.append(colorEnd("</c>"))
+
+    escaped = ""
+    for o in balanced:
+        if type(o) in [str, unicode]:
+            if quirkobj:
+                o = quirkobj.apply(o)
+            if format == "html":
+                escaped += o.replace("&", "&amp;").replace(">", "&gt;").replace("<","&lt;")
+            else:
+                escaped += o
+        else:
+            escaped += o.convert(format)
+    return escaped
+
 
 def addTimeInitial(string, grammar):
     endofi = string.find(":")
@@ -196,3 +207,5 @@ smiledict = {
     ":befuddled:": "what.gif",
     ":pumpkin:": "whatpumpkin.gif",
     ":trollcool:": "trollcool.gif"}
+
+_smilere = re.compile("|".join(smiledict.keys()))

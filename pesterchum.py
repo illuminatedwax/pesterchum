@@ -9,6 +9,7 @@ import json
 import codecs
 import re
 import socket
+import platform
 from PyQt4 import QtGui, QtCore
 import pygame
 
@@ -66,7 +67,10 @@ class PesterLog(object):
                 os.mkdir("logs/%s/%s" % (self.handle, handle))
             fp = codecs.open("logs/%s/%s/%s.%s" % (self.handle, handle, handle, time), encoding='utf-8', mode='a')
             self.convos[handle] = fp
-        self.convos[handle].write(msg+"\n")
+        if platform.system() == "Windows":
+            self.convos[handle].write(msg+"\r\n")
+        else:
+            self.convos[handle].write(msg+"\n")
         self.convos[handle].flush()
     def finish(self, handle):
         if not self.convos.has_key(handle):

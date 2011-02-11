@@ -5,7 +5,7 @@ from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
-from parsetools import escapeBrackets, convertTags
+from parsetools import convertTags
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -211,6 +211,7 @@ class PesterText(QtGui.QTextEdit):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        quirks = window.userprofile.quirks if parent.applyquirks else None
         if msg == "PESTERCHUM:BEGIN":
             parent.setChumOpen(True)
             msg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
@@ -238,6 +239,8 @@ class PesterText(QtGui.QTextEdit):
             window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
             self.append(convertTags(msg))
         elif msg[0:3] == "/me" or msg[0:13] == "PESTERCHUM:ME":
+            if quirks:
+                msg = quirks.apply(msg)
             if msg[0:3] == "/me":
                 start = 3
             else:
@@ -256,11 +259,10 @@ class PesterText(QtGui.QTextEdit):
                 window.chatlog.log(chum.handle, convertTags(beginmsg, "bbcode"))
                 self.append(convertTags(beginmsg))
 
-            msg = escapeBrackets(msg)
             msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
-            self.append(convertTags(msg))
+            self.append(convertTags(msg, quirkobj=quirks))
             if chum is me:
-                window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode"))
+                window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode", quirkobj=quirks))
             else:
                 if window.idle:
                     idlethreshhold = 60
@@ -514,16 +516,13 @@ class PesterConvo(QtGui.QFrame):
         if text == "" or text[0:11] == "PESTERCHUM:":
             return
         self.history.add(text)
-        # deal with quirks here
-        if self.applyquirks:
-            qtext = self.mainwindow.userprofile.quirks.apply(text)
-            text = qtext
         self.addMessage(text, True)
         # if ceased, rebegin
         if hasattr(self, 'chumopen') and not self.chumopen:
             self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
         # convert color tags
-        text = convertTags(text, "ctag")
+        quirkobj = self.mainwindow.userprofile.quirks if self.applyquirks else None
+        text = convertTags(text, "ctag", quirkobj)
         self.messageSent.emit(text, self.title())
         self.textInput.setText("")
 
