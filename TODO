@@ -1,7 +1,6 @@
 Features:
 * Tray doesn't disappear on windows after close
-* scroll bar style?
-* flashing??
+* smilies processed before quirks
 * More complex quirks: random, spelling, by-sound
 * convert hex tags (<GFFFFFF> or <GFF0000>)
 * help menu -- about and forum
@@ -13,6 +12,7 @@ Features:
 * convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
 * help button on quirks menu?
 -- release beta
+* flashing??
 * change profile only once we have confirmation from server
 * log viewer
 * pick your own icon

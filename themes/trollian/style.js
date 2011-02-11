@@ -21,7 +21,7 @@
                        "memos": "Memos",
                        "userlist": "Fresh Targets",
                        "import": "import U2;",
-					   "idle":, "Idle",
+					   "idle": "Idle",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
@@ -38,7 +38,14 @@
                                "opuser": "Promote",
                                "quirksoff": "Quirks Off" }
            },
-  "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
+  "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);",
+             "scrollbar": { "style" : "background-color:#c2c2c2;",
+                            "handle": "background-color:#e02413;height:20px;border:2px solid #ff2612;",
+                            "downarrow": "",
+                            "darrowstyle": "",
+                            "uparrow": "",
+                            "uarrowstyle": ""
+                          },
              "loc": [475, 89],
              "size": [175, 361],
              "userlistcolor": "black",
@@ -242,14 +249,14 @@
   "scrollbar": { "style" : "", "handle": "" },
   "margins": {"top": 22, "bottom": 9, "left": 10, "right": 4 },
   "size": [400, 250],
-  "chumlabel": { "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2;",
+  "chumlabel": { "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2; margin-bottom: 4px;",
                  "align": { "h": "left", "v": "center" },
-                 "minheight": 18,
-                 "maxheight": 18,
+                 "minheight": 29,
+                 "maxheight": 40,
                  "text" : "trolling: $handle"
                },
   "textarea": {
-      "style": "background: white; border:2px solid #c2c2c2; font-size: 14px; margin-top: 4px;"
+      "style": "background: white; border:2px solid #c2c2c2; font-size: 14px;"
   },
   "input": {
       "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px; height: 19px;"
@@ -283,20 +290,20 @@
       "tabstyle": 0
   },
   "label": { "text": "Bulletin Board: $channel",
-             "style": "background-image:url($path/chumlabelbg.png);background-color:rgb(255,38,18); background-repeat: no-repeat; color: white; padding: 2px; border:1px solid #c2c2c2;",
+             "style": "background-image:url($path/chumlabelbg.png);background-color:rgb(255,38,18); background-repeat: no-repeat; color: white; padding: 2px; border:1px solid #c2c2c2; margin-bottom:4px;",
              "align": { "h": "left", "v": "center" },
-             "minheight": 18,
-             "maxheight": 18
+             "minheight": 29,
+             "maxheight": 40
            },
   "textarea": {
-      "style": "background: white; border:2px solid #c2c2c2; font-size: 12px; margin-top: 4px;"
+      "style": "background: white; border:2px solid #c2c2c2; font-size: 12px;"
   },
   "input": {
       "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px; height: 19px; margin-bottom: 5px; "
   },
   "margins": {"top": 22, "bottom": 10, "left": 9, "right": 4 },
   "userlist": { "width": 125,
-                "style": "font-size: 12px; background: white; margin-top: 4px; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
+                "style": "font-size: 12px; background: white; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
   "time": { "text": { "width": 75, 
                       "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;" 

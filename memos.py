@@ -3,7 +3,7 @@ import re
 from PyQt4 import QtGui, QtCore
 from datetime import time, timedelta, datetime
 
-from dataobjs import PesterProfile, Mood
+from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, escapeBrackets, addTimeInitial, timeProtocol
@@ -214,9 +214,15 @@ _ctag_begin = re.compile(r'<c=(.*?)>')
 class MemoText(PesterText):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
-        self.setStyleSheet(theme["memos/textarea/style"])
+        self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
+    def initTheme(self, theme):
+        if theme.has_key("memos/scrollbar"):
+            self.setStyleSheet("QTextEdit { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["memos/textarea/style"], theme["memos/scrollbar/style"], theme["memos/scrollbar/handle"], theme["memos/scrollbar/downarrow"], theme["memos/scrollbar/uparrow"], theme["memos/scrollbar/uarrowstyle"], theme["memos/scrollbar/darrowstyle"] ))
+        else:
+            self.setStyleSheet("QTextEdit { %s }" % theme["memos/textarea/style"])
+
     def addMessage(self, text, chum):
         parent = self.parent()
         window = parent.mainwindow
@@ -279,7 +285,7 @@ class MemoText(PesterText):
             
         
     def changeTheme(self, theme):
-        self.setStyleSheet(theme["memos/textarea/style"])
+        self.initTheme(theme)
 
 
 class MemoInput(PesterInput):
@@ -394,6 +400,7 @@ class PesterMemo(PesterConvo):
 
         self.op = False
         self.newmessage = False
+        self.history = PesterHistory()
         self.applyquirks = True
 
     def title(self):
@@ -428,7 +435,7 @@ class PesterMemo(PesterConvo):
     def initTheme(self, theme):
         memo = theme["memos"]
         self.resize(*memo["size"])
-        self.setStyleSheet(memo["style"])
+        self.setStyleSheet("QFrame { %s }" % (memo["style"]))
         self.setWindowIcon(PesterIcon(theme["memos/memoicon"]))
 
         t = Template(theme["memos/label/text"])
@@ -470,7 +477,7 @@ class PesterMemo(PesterConvo):
         margins = theme["memos/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                   margins["right"], margins["bottom"])
-        for item in [self.userlist.row(i) for i in range(0,self.userlist.count())]:
+        for item in [self.userlist.item(i) for i in range(0,self.userlist.count())]:
             if item.op:
                 icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
                 item.setIcon(icon)

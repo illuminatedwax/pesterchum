@@ -333,9 +333,6 @@ class chumArea(RightClickList):
         QtGui.QListWidget.__init__(self, parent)
         self.mainwindow = parent
         theme = self.mainwindow.theme
-        geometry = theme["main/chums/loc"] + theme["main/chums/size"]
-        self.setGeometry(*geometry)
-        self.setStyleSheet(theme["main/chums/style"])
         self.chums = chums
         for c in self.chums:
             chandle = c.handle
@@ -357,6 +354,7 @@ class chumArea(RightClickList):
         self.optionsMenu.addAction(self.blockchum)
         self.optionsMenu.addAction(self.removechum)
 
+        self.initTheme(theme)
         self.sortItems()
     def addChum(self, chum):
         if len([c for c in self.chums if c.handle == chum.handle]) != 0:
@@ -380,13 +378,17 @@ class chumArea(RightClickList):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
         for c in chums:
             c.setColor(color)
-    def changeTheme(self, theme):
+    def initTheme(self, theme):
         self.setGeometry(*(theme["main/chums/loc"]+theme["main/chums/size"]))
-        self.setStyleSheet(theme["main/chums/style"])
+        if theme.has_key("main/chums/scrollbar"):
+            self.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["main/chums/style"], theme["main/chums/scrollbar/style"], theme["main/chums/scrollbar/handle"], theme["main/chums/scrollbar/downarrow"], theme["main/chums/scrollbar/uparrow"], theme["main/chums/scrollbar/uarrowstyle"], theme["main/chums/scrollbar/darrowstyle"] ))
+        else:
+            self.setStyleSheet(theme["main/chums/style"])
         self.pester.setText(theme["main/menus/rclickchumlist/pester"])
         self.removechum.setText(theme["main/menus/rclickchumlist/removechum"])
         self.blockchum.setText(theme["main/menus/rclickchumlist/blockchum"])
-
+    def changeTheme(self, theme):
+        self.initTheme(theme)
         chumlistings = [self.item(i) for i in range(0, self.count())]
         for c in chumlistings:
             c.changeTheme(theme)
@@ -1667,7 +1669,6 @@ class MainProgram(QtCore.QObject):
                               QtCore.SIGNAL('closeToTraySignal()'),
                               self.trayicon,
                               QtCore.SLOT('show()'))
-        print self.trayicon.contextMenu()
 
         self.irc = PesterIRC(self.widget)
         self.connectWidgets(self.irc, self.widget)
@@ -1796,9 +1797,10 @@ class MainProgram(QtCore.QObject):
         self.widget.loadingscreen = LoadingScreen(self.widget)
         self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                      self.widget, QtCore.SLOT('close()'))
-        status = self.widget.loadingscreen.exec_()
-        if status == QtGui.QDialog.Rejected:
-            sys.exit(0)
+        self.widget.loadingscreen = None
+        #status = self.widget.loadingscreen.exec_()
+        #if status == QtGui.QDialog.Rejected:
+        #    sys.exit(0)
         os._exit(self.app.exec_())
 
 pesterchum = MainProgram()

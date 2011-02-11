@@ -1,4 +1,5 @@
 import re
+from copy import copy
 from datetime import timedelta
 from PyQt4 import QtGui
 
@@ -6,6 +7,26 @@ _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)(http://[^\s<[]+)")
 _memore = re.compile(r" (#[A-Za-z0-9_]+)")
+
+def lexer(string, objlist):
+    """objlist is a list: [(objecttype, re),...] list is in order of preference"""
+    stringlist = [string]
+    for (oType, regexp) in objlist:
+        newstringlist = copy(stringlist)
+        for (stri, s) in enumerate(stringlist):
+            tmp = []
+            lasti = 0
+            for m in regexp.finditer(string):
+                start = m.start()
+                end = m.end()
+                tag = oType(group(0), *groups())
+                tmp.append(string[lasti:start])
+                tmp.append(tag)
+            if lasti < len(string):
+                tmp.append(string[lasti:])
+            stringlist = stringlist[0:stri]+tmp+stringlist[stri+1:]
+        stringlist = copy(newstringlist)
+    return stringlist
 
 def convertTags(string, format="html"):
     if format not in ["html", "bbcode", "ctag"]:

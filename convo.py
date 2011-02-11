@@ -195,9 +195,14 @@ class PesterTabWindow(QtGui.QFrame):
 class PesterText(QtGui.QTextEdit):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
-        self.setStyleSheet(theme["convo/textarea/style"])
+        self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
+    def initTheme(self, theme):
+        if theme.has_key("convo/scrollbar"):
+            self.setStyleSheet("QTextEdit { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["convo/textarea/style"], theme["convo/scrollbar/style"], theme["convo/scrollbar/handle"], theme["convo/scrollbar/downarrow"], theme["convo/scrollbar/uparrow"], theme["convo/scrollbar/uarrowstyle"], theme["convo/scrollbar/darrowstyle"] ))
+        else:
+            self.setStyleSheet("QTextEdit { %s }" % (theme["convo/textarea/style"]))
     def addMessage(self, text, chum):
         color = chum.colorhtml()
         systemColor = QtGui.QColor(self.parent().mainwindow.theme["convo/systemMsgColor"])
@@ -265,9 +270,8 @@ class PesterText(QtGui.QTextEdit):
                 self.lastmsg = datetime.now()
                 window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
     def changeTheme(self, theme):
-        self.setStyleSheet(theme["convo/textarea/style"])
+        self.initTheme(theme)
         sb = self.verticalScrollBar()
-        sb.setMaximum(sb.maximum()+1000) # ugly hack but whatcha gonna do
         sb.setValue(sb.maximum())
     def focusInEvent(self, event):
         self.parent().clearNewMessage()
@@ -317,12 +321,13 @@ class PesterInput(QtGui.QLineEdit):
 class PesterConvo(QtGui.QFrame):
     def __init__(self, chum, initiated, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
+        self.setObjectName(chum.handle)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.chum = chum
         self.mainwindow = mainwindow
         convo = self.mainwindow.theme["convo"]
         self.resize(*convo["size"])
-        self.setStyleSheet("QFrame { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s }" % (convo["style"], convo["scrollbar"]["style"], convo["scrollbar"]["handle"]))
+        self.setStyleSheet("QFrame { %s }" % convo["style"])
         self.setWindowIcon(self.icon())
         self.setWindowTitle(self.title())
 
@@ -480,7 +485,8 @@ class PesterConvo(QtGui.QFrame):
         self.chumopen = o
     def changeTheme(self, theme):
         self.resize(*theme["convo/size"])
-        self.setStyleSheet("QFrame { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s }" % (theme["convo/style"], theme["convo/scrollbar"]["style"], theme["convo/scrollbar"]["handle"]))
+        self.setStyleSheet("QFrame { %s }" % (theme["convo/style"]))
+            
         margins = theme["convo/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                        margins["right"], margins["bottom"])
@@ -496,7 +502,7 @@ class PesterConvo(QtGui.QFrame):
         self.quirksOff.setText(self.mainwindow.theme["main/menus/rclickchumlist/quirksoff"])
         self.addChumAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/addchum"])
         self.blockAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"])
-        self.unblockchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
+        self.unblockchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"])
 
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
