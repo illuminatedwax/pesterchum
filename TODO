@@ -1,7 +1,9 @@
 Features:
 * Tray doesn't disappear on windows after close
+* memo sending from unknown color breaks -- over IRC
 * smilies processed before quirks
 * More complex quirks: random, spelling, by-sound
+* ? time option???
 * convert hex tags (<GFFFFFF> or <GFF0000>)
 * help menu -- about and forum
 -- release alpha

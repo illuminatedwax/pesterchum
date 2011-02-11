@@ -164,7 +164,7 @@ def timeDifference(td):
 smiledict = {
     ":rancorous:": "pc_rancorous.gif",  
     ":apple:": "apple.gif",
-    ":bathearst:" "bathearst.gif"
+    ":bathearst:": "bathearst.gif",
     ":pleasant:": "pc_pleasant.gif",
     ":blueghost:": "blueslimer.gif",
     ":candycorn:": "candycorn.gif",
