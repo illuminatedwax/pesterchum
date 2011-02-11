@@ -196,7 +196,7 @@
  "convo":
  {"style": "background-color: #fdb302;background-image:url($path/convobg.png);background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'",
   "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
-  "scrollbar": { "style" : "margin-right: 10px; padding-top:17px; padding-bottom:17px;width: 27px; background:white; border:2px solid #c48a00;",
+  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:white; border:2px solid #c48a00;",
                  "handle": "background-color:#c48a00;min-height:20px;",
                  "downarrow": "height:17px;border:2px solid #c48a00;", 
                  "darrowstyle": "image:url($path/downarrow.png);",
@@ -247,7 +247,7 @@
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
   },
-  "scrollbar": { "style" : "margin-right: 10px; padding-top:17px; padding-bottom:17px;width: 27px; background:white; border:2px solid #c48a00;",
+  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:white; border:2px solid #c48a00;",
                  "handle": "background-color:#c48a00;min-height:20px;",
                  "downarrow": "height:17px;border:2px solid #c48a00;", 
                  "darrowstyle": "image:url($path/downarrow.png);",
