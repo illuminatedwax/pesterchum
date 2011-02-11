@@ -21,6 +21,7 @@
                        "memos": "Memos",
                        "userlist": "Fresh Targets",
                        "import": "import U2;",
+					   "idle":, "Idle",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",

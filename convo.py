@@ -1,5 +1,6 @@
 from string import Template
 import re
+from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
@@ -223,6 +224,14 @@ class PesterText(QtGui.QTextEdit):
             msg = chum.pestermsg(me, systemColor, window.theme['convo/text/unblocked'])
             window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
             self.append(convertTags(msg))
+        elif msg == "PESTERCHUM:BLOCKED":
+            msg = chum.pestermsg(me, systemColor, window.theme['convo/text/blockedmsg'])
+            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
+        elif msg == "PESTERCHUM:IDLE":
+            msg = chum.idlemsg(systemColor, window.theme['convo/text/idle'])
+            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+            self.append(convertTags(msg))
         elif msg[0:3] == "/me" or msg[0:13] == "PESTERCHUM:ME":
             if msg[0:3] == "/me":
                 start = 3
@@ -248,6 +257,12 @@ class PesterText(QtGui.QTextEdit):
             if chum is me:
                 window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode"))
             else:
+                if window.idle:
+                    idlethreshhold = 60
+                    if (not hasattr(self, 'lastmsg')) or \
+                            datetime.now() - self.lastmsg > timedelta(0,60):
+                        parent.messageSent.emit("PESTERCHUM:IDLE", parent.title())
+                self.lastmsg = datetime.now()
                 window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
     def changeTheme(self, theme):
         self.setStyleSheet(theme["convo/textarea/style"])
@@ -295,6 +310,7 @@ class PesterInput(QtGui.QLineEdit):
                 self.setText(prev)
         elif event.key() in [QtCore.Qt.Key_PageUp, QtCore.Qt.Key_PageDown]:
             self.parent().textArea.keyPressEvent(event)
+        self.parent().mainwindow.idletime = 0
         QtGui.QLineEdit.keyPressEvent(self, event)
 
 
@@ -348,6 +364,10 @@ class PesterConvo(QtGui.QFrame):
         self.quirksOff.setCheckable(True)
         self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('toggleQuirks(bool)'))
+        self.unblockchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
+        self.connect(self.unblockchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('unblockChumSlot()'))
+
         self.optionsMenu.addAction(self.quirksOff)
         self.optionsMenu.addAction(self.addChumAction)
         self.optionsMenu.addAction(self.blockAction)
@@ -373,6 +393,7 @@ class PesterConvo(QtGui.QFrame):
     def updateMood(self, mood, unblocked=False, old=None):
         syscolor = QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"])
         if mood.name() == "offline" and self.chumopen == True and not unblocked:
+            self.mainwindow.ceasesound.play()
             msg = self.chum.pestermsg(self.mainwindow.profile(), syscolor, self.mainwindow.theme["convo/text/ceasepester"])
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
@@ -386,14 +407,21 @@ class PesterConvo(QtGui.QFrame):
         else:
             if self.chum.blocked(self.mainwindow.config) and not unblocked:
                 self.setWindowIcon(QtGui.QIcon(self.mainwindow.theme["main/chums/moods/blocked/icon"]))
+                self.optionsMenu.addAction(self.unblockchum)
+                self.optionsMenu.removeAction(self.blockAction)
             else:
                 self.setWindowIcon(mood.icon(self.mainwindow.theme))
+                self.optionsMenu.removeAction(self.unblockchum)
+                self.optionsMenu.addAction(self.blockAction)
         # print mood update?
     def updateBlocked(self):
         if self.parent():
             self.parent().updateBlocked(self.title())
         else:
             self.setWindowIcon(QtGui.QIcon(self.mainwindow.theme["main/chums/moods/blocked/icon"]))
+        self.optionsMenu.addAction(self.unblockchum)
+        self.optionsMenu.removeAction(self.blockAction)
+
     def updateColor(self, color):
         self.chum.color = color
     def addMessage(self, text, me=True):
@@ -468,6 +496,7 @@ class PesterConvo(QtGui.QFrame):
         self.quirksOff.setText(self.mainwindow.theme["main/menus/rclickchumlist/quirksoff"])
         self.addChumAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/addchum"])
         self.blockAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"])
+        self.unblockchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
 
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
@@ -498,10 +527,12 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot()
     def blockThisChum(self):
         self.mainwindow.blockChum(self.chum.handle)
+    @QtCore.pyqtSlot()
+    def unblockChumSlot(self):
+        self.mainwindow.unblockChum(self.chum.handle)
     @QtCore.pyqtSlot(bool)
     def toggleQuirks(self, toggled):
         self.applyquirks = not toggled
-
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     windowClosed = QtCore.pyqtSignal(QtCore.QString)

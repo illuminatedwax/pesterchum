@@ -15,12 +15,14 @@
              "selected": "background-color: #ffff00",
              "loc": [10,0]
            },
-  "sounds": { "alertsound": "$path/alarm.wav" },
+  "sounds": { "alertsound": "$path/alarm.wav",
+			  "ceasesound": "$path/cease.wav" },
   "menus": {"client": {"_name": "CLIENT",
                        "options": "OPTIONS",
                        "memos": "MEMOS",
                        "userlist": "USERLIST",
                        "import": "IMPORT",
+					   "idle": "IDLE",
                        "exit": "EXIT"},
             "profile": {"_name": "PROFILE",
                         "switch": "SWITCH",
@@ -220,10 +222,12 @@
       "ceasepester": "ceased pestering",
       "blocked": "blocked",
       "unblocked": "unblocked",
+	  "blockedmsg": "did not receive message from",
       "openmemo": "opened memo on board",
       "joinmemo": "responded to memo",
       "closememo": "ceased responding to memo",
-      "kickedmemo": "You have been banned from this memo!"
+      "kickedmemo": "You have been banned from this memo!",
+	  "idle": "is now an idle chum!"
   },
   "systemMsgColor": "#646464"
  },

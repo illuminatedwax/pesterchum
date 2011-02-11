@@ -662,6 +662,7 @@ class PesterWindow(MovingWindow):
         self.importaction = QtGui.QAction(self.theme["main/menus/client/import"], self)
         self.connect(self.importaction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('importExternalConfig()'))
+
         self.menu = QtGui.QMenuBar(self)
         
         filemenu = self.menu.addMenu(self.theme["main/menus/client/_name"])
@@ -762,6 +763,15 @@ class PesterWindow(MovingWindow):
 
         self.waitingMessages = waitingMessageHolder(self)
 
+        self.idle = False
+        self.idlethreshold = 600
+        self.idletimer = QtCore.QTimer(self)
+        self.idleposition = QtGui.QCursor.pos()
+        self.idletime = 0
+        self.connect(self.idletimer, QtCore.SIGNAL('timeout()'),
+                self, QtCore.SLOT('checkIdle()'))
+        self.idletimer.start(1000)
+
         if not self.config.defaultprofile():
             self.changeProfile()
         self.loadingscreen = LoadingScreen(self)
@@ -800,6 +810,7 @@ class PesterWindow(MovingWindow):
     def newMessage(self, handle, msg):
         if handle in self.config.getBlocklist():
             #yeah suck on this
+            self.sendMessage.emit("PESTERCHUM:BLOCKED", handle)
             return
         if not self.convos.has_key(handle):
             if msg == "PESTERCHUM:CEASE": # ignore cease after we hang up
@@ -817,7 +828,10 @@ class PesterWindow(MovingWindow):
         convo.addMessage(msg, False)
         # play sound here
         if self.config.soundOn():
-            self.alarm.play()
+            if msg in ["PESTERCHUM:CEASE", "PESTERCHUM:BLOCK"]:
+                self.ceasesound.play()
+            else:
+                self.alarm.play()
     def newMemoMsg(self, chan, handle, msg):
         if not self.memos.has_key(chan):
             # silently ignore in case we forgot to /part
@@ -1016,8 +1030,10 @@ class PesterWindow(MovingWindow):
         # sounds
         if not pygame.mixer:
             self.alarm = NoneSound()
+            self.ceasesound = NoneSound()
         else:
             self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
+            self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
         
     def changeTheme(self, theme):
         self.theme = theme
@@ -1247,6 +1263,32 @@ class PesterWindow(MovingWindow):
         self.moodRequest.emit(chum)
         self.unblockedChum.emit(handle)
 
+    @QtCore.pyqtSlot(bool)
+    def toggleIdle(self, idle):
+        if self.idle and not idle:
+            self.idle = False
+        elif idle and not self.idle:
+            self.idle = True
+            sysColor = QtGui.QColor(self.theme["convo/systemMsgColor"])
+            verb = self.theme["convo/text/idle"]
+            for (h, convo) in self.convos.iteritems():
+                msg = self.profile().idlemsg(sysColor, verb)
+                convo.textArea.append(convertTags(msg))
+                self.chatlog.log(h, convertTags(msg, "bbcode"))
+                self.sendMessage.emit("PESTERCHUM:IDLE", h)
+
+    @QtCore.pyqtSlot()
+    def checkIdle(self):
+        newpos = QtGui.QCursor.pos()
+        if newpos == self.idleposition:
+            self.idletime += 1
+        else:
+            self.idletime = 0
+        if self.idletime >= self.idlethreshold:
+            self.toggleIdle(True)
+        else:
+            self.toggleIdle(False)
+        self.idleposition = newpos
     @QtCore.pyqtSlot()
     def importExternalConfig(self):
         f = QtGui.QFileDialog.getOpenFileName(self)
@@ -1695,7 +1737,6 @@ class MainProgram(QtCore.QObject):
                     irc,
                     QtCore.SLOT('setChannelMode(QString, QString, QString)'))
 
-
     # IRC --> Main window
         irc.connect(irc, QtCore.SIGNAL('connected()'),
                     widget, QtCore.SLOT('connected()'))
@@ -1752,6 +1793,9 @@ class MainProgram(QtCore.QObject):
 
     def run(self):
         self.ircapp.start()
+        self.widget.loadingscreen = LoadingScreen(self.widget)
+        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
+                     self.widget, QtCore.SLOT('close()'))
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)

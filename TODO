@@ -1,22 +1,19 @@
 Features:
 * Tray doesn't disappear on windows after close
-* Idling
-* PESTERCHUM:BLOCKED
-* new sound on CEASE and BEGIN?
 * scroll bar style?
+* flashing??
 * More complex quirks: random, spelling, by-sound
-* change profile only once we have confirmation from server
 * convert hex tags (<GFFFFFF> or <GFF0000>)
-* convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
-* help button on quirks menu?
 * help menu -- about and forum
-* dropped messages when chatting ?
 -- release alpha
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * chumList not scaling -- QListView + delegate?
 * spell check?
+* convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
+* help button on quirks menu?
 -- release beta
+* change profile only once we have confirmation from server
 * log viewer
 * pick your own icon
 * time codes
