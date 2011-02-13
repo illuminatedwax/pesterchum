@@ -1,9 +1,10 @@
 from PyQt4 import QtGui, QtCore
 from datetime import *
 import re
+import random
 
 from generic import PesterIcon
-from parsetools import timeDifference
+from parsetools import timeDifference, convertTags
 
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
@@ -37,15 +38,31 @@ class pesterQuirk(object):
             raise ValueError("Quirks must be given a dictionary")
         self.quirk = quirk
         self.type = self.quirk["type"]
-    def apply(self, string):
+    def apply(self, string, first=False, last=False):
         if self.type == "prefix":
             return self.quirk["value"] + string
-        if self.type == "suffix":
+        elif self.type == "suffix":
             return string + self.quirk["value"]
-        if self.type == "replace":
+        elif self.type == "replace":
             return string.replace(self.quirk["from"], self.quirk["to"])
-        if self.type == "regexp":
-            return re.sub(self.quirk["from"], self.quirk["to"], string)
+        elif self.type == "regexp":
+            fr = self.quirk["from"]
+            if not first and len(fr) > 0 and fr[0] == "^":
+                return string
+            if not last and len(fr) > 0 and fr[len(fr)-1] == "$":
+                return string
+            return re.sub(fr, self.quirk["to"], string)
+        elif self.type == "random":
+            fr = self.quirk["from"]
+            if not first and len(fr) > 0 and fr[0] == "^":
+                return string
+            if not last and len(fr) > 0 and fr[len(fr)-1] == "$":
+                return string
+            def randomrep(mo):
+                choice = random.choice(self.quirk["randomlist"])
+                return mo.expand(choice)
+            return re.sub(self.quirk["from"], randomrep, string)
+
     def __str__(self):
         if self.type == "prefix":
             return "BEGIN WITH: %s" % (self.quirk["value"])
@@ -55,6 +72,8 @@ class pesterQuirk(object):
             return "REPLACE %s WITH %s" % (self.quirk["from"], self.quirk["to"])
         elif self.type == "regexp":
             return "REGEXP: %s REPLACED WITH %s" % (self.quirk["from"], self.quirk["to"])
+        elif self.type == "random":
+            return "REGEXP: %s RANDOMLY REPLACED WITH %s" % (self.quirk["from"], [str(r) for r in self.quirk["randomlist"]])
 
 class pesterQuirks(object):
     def __init__(self, quirklist):
@@ -66,25 +85,35 @@ class pesterQuirks(object):
                 self.quirklist.append(q)
     def plainList(self):
         return [q.quirk for q in self.quirklist]
-    def apply(self, string):
-        # don't quirk /me commands
-        if string[0:3] == "/me":
-            space = string.find(" ")
-            cmd = string[0:space]
-            string = string[space:]
-        else:
-            cmd = ""
-        presuffix = [q for q in self.quirklist if 
-                     q.type=='prefix' or q.type=='suffix']
+    def apply(self, lexed, first=False, last=False):
+        prefix = [q for q in self.quirklist if q.type=='prefix']
+        suffix = [q for q in self.quirklist if q.type=='suffix']
         replace = [q for q in self.quirklist if
                    q.type=='replace' or q.type=='regexp']
-        for r in replace:
-            string = r.apply(string)
-        if not cmd:
-            for ps in presuffix:
-                string = ps.apply(string)
-        string = cmd+string
-        return string
+        random = [q for q in self.quirklist if q.type=='random']
+        
+        firstStr = True
+        newlist = []
+        for (i, o) in enumerate(lexed):
+            if type(o) not in [str, unicode]:
+                newlist.append(o)
+                continue
+            lastStr = (i == len(lexed)-1)
+            string = o
+            for r in random:
+                string = r.apply(string, first=firstStr, last=lastStr)
+            for r in replace:
+                string = r.apply(string, first=firstStr, last=lastStr)
+            if firstStr:
+                for p in prefix:
+                    string = p.apply(string)
+            if lastStr:
+                for s in suffix:
+                    string = s.apply(string)
+            newlist.append(string)
+            firstStr = False
+
+        return newlist
 
     def __iter__(self):
         for q in self.quirklist:
@@ -127,7 +156,9 @@ class PesterProfile(object):
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 
-    def memsg(self, syscolor, suffix, msg, time=None):
+    def memsg(self, syscolor, lexmsg, time=None):
+        suffix = lexmsg[0].suffix
+        msg = convertTags(lexmsg[1:], "text")
         uppersuffix = suffix.upper()
         if time is not None:
             handle = "%s %s" % (time.temporal, self.handle)

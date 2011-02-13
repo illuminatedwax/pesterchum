@@ -19,8 +19,8 @@ from menus import PesterChooseQuirks, PesterChooseTheme, \
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
 from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
-from parsetools import convertTags
-from memos import PesterMemo, MemoTabWindow
+from parsetools import convertTags, addTimeInitial
+from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 
 class waitingMessageHolder(object):
@@ -59,27 +59,35 @@ class PesterLog(object):
         self.handle = handle
         self.convos = {}
     def log(self, handle, msg):
+        bbcodemsg = convertTags(msg, "bbcode")
+        html = convertTags(msg, "html")
+        msg = convertTags(msg, "text")
+        modes = {"bbcode": bbcodemsg, "html": html, "text": msg}
         if not self.convos.has_key(handle):
-            if not os.path.exists("logs/%s" % (self.handle)):
-                os.mkdir("logs/%s" % (self.handle))
-            time = datetime.now().strftime("%Y-%m-%d.%H.%M.txt")
-            if not os.path.exists("logs/%s/%s" % (self.handle, handle)):
-                os.mkdir("logs/%s/%s" % (self.handle, handle))
-            fp = codecs.open("logs/%s/%s/%s.%s" % (self.handle, handle, handle, time), encoding='utf-8', mode='a')
-            self.convos[handle] = fp
-        if platform.system() == "Windows":
-            self.convos[handle].write(msg+"\r\n")
-        else:
-            self.convos[handle].write(msg+"\n")
-        self.convos[handle].flush()
+            time = datetime.now().strftime("%Y-%m-%d.%H.%M")
+            self.convos[handle] = {}
+            for (format, t) in modes.iteritems():
+                if not os.path.exists("logs/%s/%s/%s" % (self.handle, handle, format)):
+                    os.makedirs("logs/%s/%s/%s" % (self.handle, handle, format))
+                fp = codecs.open("logs/%s/%s/%s/%s.%s.txt" % (self.handle, handle, format, handle, time), encoding='utf-8', mode='a')
+                self.convos[handle][format] = fp
+        for (format, t) in modes.iteritems():
+            f = self.convos[handle][format]
+            if platform.system() == "Windows":
+                f.write(t+"\r\n")
+            else:
+                f.write(t+"\r\n")
+            f.flush()
     def finish(self, handle):
         if not self.convos.has_key(handle):
             return
-        self.convos[handle].close()
+        for f in self.convos[handle].values():
+            f.close()
         del self.convos[handle]
     def close(self):
         for h in self.convos.keys():
-            self.convos[h].close()
+            for f in self.convos[h].values():
+                f.close()
 
 class PesterProfileDB(dict):
     def __init__(self):
@@ -668,6 +676,10 @@ class PesterWindow(MovingWindow):
         self.importaction = QtGui.QAction(self.theme["main/menus/client/import"], self)
         self.connect(self.importaction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('importExternalConfig()'))
+        self.idleaction = QtGui.QAction(self.theme["main/menus/client/idle"], self)
+        self.idleaction.setCheckable(True)
+        self.connect(self.idleaction, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('toggleIdle(bool)'))
 
         self.menu = QtGui.QMenuBar(self)
         
@@ -676,6 +688,7 @@ class PesterWindow(MovingWindow):
         filemenu.addAction(opts)
         filemenu.addAction(memoaction)
         filemenu.addAction(userlistaction)
+        filemenu.addAction(self.idleaction)
         filemenu.addAction(self.importaction)
         filemenu.addAction(exitaction)
 
@@ -769,7 +782,7 @@ class PesterWindow(MovingWindow):
 
         self.waitingMessages = waitingMessageHolder(self)
 
-        self.idle = False
+        self.autoidle = False
         self.idlethreshold = 600
         self.idletimer = QtCore.QTimer(self)
         self.idleposition = QtGui.QCursor.pos()
@@ -843,6 +856,14 @@ class PesterWindow(MovingWindow):
             # silently ignore in case we forgot to /part
             return
         memo = self.memos[chan]
+        msg = unicode(msg)
+        if not memo.times.has_key(handle):
+            # new chum! time current
+            newtime = timedelta(0)
+            time = TimeTracker(newtime)
+            memo.times[handle] = time
+        if msg[0:3] != "/me" and msg[0:13] != "PESTERCHUM:ME":
+            msg = addTimeInitial(msg, memo.times[handle].getGrammar())
         memo.addMessage(msg, handle)
         self.alarm.play()
 
@@ -963,6 +984,7 @@ class PesterWindow(MovingWindow):
         self.userlistaction.setText(theme["main/menus/client/userlist"])
         self.memoaction.setText(theme["main/menus/client/memos"])
         self.importaction.setText(theme["main/menus/client/import"])
+        self.idleaction.setText(theme["main/menus/client/idle"])
         self.filemenu.setTitle(theme["main/menus/client/_name"])
         self.changetheme.setText(theme["main/menus/profile/theme"])
         self.changequirks.setText(theme["main/menus/profile/quirks"])
@@ -1116,7 +1138,7 @@ class PesterWindow(MovingWindow):
         chum = self.convos[h].chum
         chumopen = self.convos[h].chumopen
         if chumopen:
-            self.chatlog.log(chum.handle, convertTags(self.profile().pestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]), "bbcode"))
+            self.chatlog.log(chum.handle, self.profile().pestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]))
             self.convoClosed.emit(handle)
         self.chatlog.finish(h)
         del self.convos[h]
@@ -1242,7 +1264,7 @@ class PesterWindow(MovingWindow):
             convo = self.convos[h]
             msg = self.profile().pestermsg(convo.chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/blocked"])
             convo.textArea.append(convertTags(msg))
-            self.chatlog.log(convo.chum.handle, convertTags(msg, "bbcode"))
+            self.chatlog.log(convo.chum.handle, msg)
             convo.updateBlocked()
         self.chumList.removeChum(h)
         if hasattr(self, 'trollslum') and self.trollslum:
@@ -1259,7 +1281,7 @@ class PesterWindow(MovingWindow):
             convo = self.convos[h]
             msg = self.profile().pestermsg(convo.chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/unblocked"])
             convo.textArea.append(convertTags(msg))
-            self.chatlog.log(convo.chum.handle, convertTags(msg, "bbcode"))
+            self.chatlog.log(convo.chum.handle, msg)
             convo.updateMood(convo.chum.mood, unblocked=True)
         chum = PesterProfile(h, chumdb=self.chumdb)
         if hasattr(self, 'trollslum') and self.trollslum:
@@ -1271,18 +1293,16 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot(bool)
     def toggleIdle(self, idle):
-        if self.idle and not idle:
-            self.idle = False
-        elif idle and not self.idle:
-            self.idle = True
+        if idle:
             sysColor = QtGui.QColor(self.theme["convo/systemMsgColor"])
             verb = self.theme["convo/text/idle"]
             for (h, convo) in self.convos.iteritems():
                 msg = self.profile().idlemsg(sysColor, verb)
                 convo.textArea.append(convertTags(msg))
-                self.chatlog.log(h, convertTags(msg, "bbcode"))
+                self.chatlog.log(h, msg)
                 self.sendMessage.emit("PESTERCHUM:IDLE", h)
-
+        else:
+            self.idletime = 0
     @QtCore.pyqtSlot()
     def checkIdle(self):
         newpos = QtGui.QCursor.pos()
@@ -1291,9 +1311,14 @@ class PesterWindow(MovingWindow):
         else:
             self.idletime = 0
         if self.idletime >= self.idlethreshold:
-            self.toggleIdle(True)
+            if not self.idleaction.isChecked():
+                self.idleaction.toggle()
+            self.autoidle = True
         else:
-            self.toggleIdle(False)
+            if self.autoidle:
+                if self.idleaction.isChecked():
+                    self.idleaction.toggle()
+                self.autoidle = False
         self.idleposition = newpos
     @QtCore.pyqtSlot()
     def importExternalConfig(self):
@@ -1801,10 +1826,9 @@ class MainProgram(QtCore.QObject):
         self.widget.loadingscreen = LoadingScreen(self.widget)
         self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                      self.widget, QtCore.SLOT('close()'))
-        self.widget.loadingscreen = None
-        #status = self.widget.loadingscreen.exec_()
-        #if status == QtGui.QDialog.Rejected:
-        #    sys.exit(0)
+        status = self.widget.loadingscreen.exec_()
+        if status == QtGui.QDialog.Rejected:
+            sys.exit(0)
         os._exit(self.app.exec_())
 
 pesterchum = MainProgram()

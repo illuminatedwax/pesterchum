@@ -4,10 +4,13 @@ from datetime import timedelta
 from PyQt4 import QtGui
 
 _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
+_gtag_begin = re.compile(r'(?i)<g[a-f]>')
 _ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)http://[^\s]+")
-_memore = re.compile(r" (#[A-Za-z0-9_]+)")
+_memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
+_imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
+_mecmdre = re.compile(r"^/me(\S*)")
 
 def lexer(string, objlist):
     """objlist is a list: [(objecttype, re),...] list is in order of preference"""
@@ -38,6 +41,8 @@ class colorBegin(object):
         self.color = color
     def convert(self, format):
         color = self.color
+        if format == "text":
+            return ""
         if _ctag_rgb.match(color) is not None:
             if format=='ctag':
                 return "<c=%s>" % (color)
@@ -64,6 +69,8 @@ class colorEnd(object):
             return "</span>"
         elif format == "bbcode":
             return "[/color]"
+        elif format == "text":
+            return ""
         else:
             return self.string
 class hyperlink(object):
@@ -76,6 +83,30 @@ class hyperlink(object):
             return "[url]%s[/url]" % (self.string)
         else:
             return self.string
+class imagelink(object):
+    def __init__(self, string, img):
+        self.string = string
+        self.img = img
+    def convert(self, format):
+        if format == "html":
+            return self.string
+        elif format == "bbcode":
+            if self.img[0:7] == "http://":
+                return "[img]%s[/img]" % (img)
+            else:
+                return ""
+        else:
+            return ""
+class memolex(object):
+    def __init__(self, string, space, channel):
+        self.string = string
+        self.space = space
+        self.channel = channel
+    def convert(self, format):
+        if format == "html":
+            return "%s<a href='%s'>%s</a>" % (self.space, self.channel, self.channel)
+        else:
+            return self.string
 class smiley(object):
     def __init__(self, string):
         self.string = string
@@ -84,15 +115,22 @@ class smiley(object):
             return "<img src='smilies/%s' />" % (smiledict[self.string])
         else:
             return self.string
+class mecmd(object):
+    def __init__(self, string, suffix):
+        self.string = string
+        self.suffix = suffix
+    def convert(self, format):
+        return self.string
 
-def convertTags(string, format="html", quirkobj=None):
-    if format not in ["html", "bbcode", "ctag"]:
-        raise ValueError("Color format not recognized")
-    lexlist = [(colorBegin, _ctag_begin), (colorEnd, _ctag_end),
-               (hyperlink, _urlre), (hyperlink, _memore),
+def lexMessage(string):
+    lexlist = [(mecmd, _mecmdre),
+               (colorBegin, _ctag_begin), (colorBegin, _gtag_begin),
+               (colorEnd, _ctag_end), (imagelink, _imgre),
+               (hyperlink, _urlre), (memolex, _memore),
                (smiley, _smilere)]
 
-    lexed = lexer(string, lexlist)
+    lexed = lexer(unicode(string), lexlist)
+
     balanced = []
     beginc = 0
     endc = 0
@@ -111,25 +149,35 @@ def convertTags(string, format="html", quirkobj=None):
     if beginc > endc:
         for i in range(0, beginc-endc):
             balanced.append(colorEnd("</c>"))
+    if type(balanced[len(balanced)-1]) not in [str, unicode]:
+        balanced.append("")
+    return balanced
 
+def convertTags(lexed, format="html"):
+    if format not in ["html", "bbcode", "ctag", "text"]:
+        raise ValueError("Color format not recognized")
+
+    if type(lexed) in [str, unicode]:
+        lexed = lexMessage(lexed)
     escaped = ""
-    for o in balanced:
+    firststr = True
+    for (i, o) in enumerate(lexed):
         if type(o) in [str, unicode]:
-            if quirkobj:
-                o = quirkobj.apply(o)
             if format == "html":
                 escaped += o.replace("&", "&amp;").replace(">", "&gt;").replace("<","&lt;")
             else:
                 escaped += o
         else:
             escaped += o.convert(format)
+
     return escaped
 
 
 def addTimeInitial(string, grammar):
     endofi = string.find(":")
     endoftag = string.find(">")
-    if endoftag < 0 or endoftag > 16 or endofi > 17:
+    # support Doc Scratch mode
+    if (endoftag < 0 or endoftag > 16) or (endofi < 0 or endofi > 17):
         return string
     return string[0:endoftag+1]+grammar.pcf+string[endoftag+1:endofi]+grammar.number+string[endofi:]
 

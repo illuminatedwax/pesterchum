@@ -1,11 +1,12 @@
 from string import Template
 import re
+from copy import copy
 from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
-from parsetools import convertTags
+from parsetools import convertTags, lexMessage, mecmd, colorBegin, colorEnd
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -203,74 +204,72 @@ class PesterText(QtGui.QTextEdit):
             self.setStyleSheet("QTextEdit { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["convo/textarea/style"], theme["convo/scrollbar/style"], theme["convo/scrollbar/handle"], theme["convo/scrollbar/downarrow"], theme["convo/scrollbar/uparrow"], theme["convo/scrollbar/uarrowstyle"], theme["convo/scrollbar/darrowstyle"] ))
         else:
             self.setStyleSheet("QTextEdit { %s }" % (theme["convo/textarea/style"]))
-    def addMessage(self, text, chum):
-        color = chum.colorhtml()
+    def addMessage(self, lexmsg, chum):
+        if len(lexmsg) == 0:
+            return
+        color = chum.colorcmd()
         systemColor = QtGui.QColor(self.parent().mainwindow.theme["convo/systemMsgColor"])
         initials = chum.initials()
-        msg = unicode(text)
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
-        quirks = window.userprofile.quirks if parent.applyquirks else None
-        if msg == "PESTERCHUM:BEGIN":
+        if lexmsg[0] == "PESTERCHUM:BEGIN":
             parent.setChumOpen(True)
-            msg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
-            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
-        elif msg == "PESTERCHUM:CEASE":
+            pmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
+            window.chatlog.log(chum.handle, pmsg)
+            self.append(convertTags(pmsg))
+        elif lexmsg[0] == "PESTERCHUM:CEASE":
             parent.setChumOpen(False)
-            msg = chum.pestermsg(me, systemColor, window.theme["convo/text/ceasepester"])
-            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
-        elif msg == "PESTERCHUM:BLOCK":
-            msg = chum.pestermsg(me, systemColor, window.theme['convo/text/blocked'])
-            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
-        elif msg == "PESTERCHUM:UNBLOCK":
-            msg = chum.pestermsg(me, systemColor, window.theme['convo/text/unblocked'])
-            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
-        elif msg == "PESTERCHUM:BLOCKED":
-            msg = chum.pestermsg(me, systemColor, window.theme['convo/text/blockedmsg'])
-            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
-        elif msg == "PESTERCHUM:IDLE":
-            msg = chum.idlemsg(systemColor, window.theme['convo/text/idle'])
-            window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
-        elif msg[0:3] == "/me" or msg[0:13] == "PESTERCHUM:ME":
-            if quirks:
-                msg = quirks.apply(msg)
-            if msg[0:3] == "/me":
-                start = 3
-            else:
-                start = 13
-            space = msg.find(" ")
-            msg = chum.memsg(systemColor, msg[start:space], msg[space:])
+            pmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/ceasepester"])
+            window.chatlog.log(chum.handle, pmsg)
+            self.append(convertTags(pmsg))
+        elif lexmsg[0] == "PESTERCHUM:BLOCK":
+            pmsg = chum.pestermsg(me, systemColor, window.theme['convo/text/blocked'])
+            window.chatlog.log(chum.handle, pmsg)
+            self.append(convertTags(pmsg))
+        elif lexmsg[0] == "PESTERCHUM:UNBLOCK":
+            pmsg = chum.pestermsg(me, systemColor, window.theme['convo/text/unblocked'])
+            window.chatlog.log(chum.handle, pmsg)
+            self.append(convertTags(pmsg))
+        elif lexmsg[0] == "PESTERCHUM:BLOCKED":
+            pmsg = chum.pestermsg(me, systemColor, window.theme['convo/text/blockedmsg'])
+            window.chatlog.log(chum.handle, pmsg)
+            self.append(convertTags(pmsg))
+        elif lexmsg[0] == "PESTERCHUM:IDLE":
+            imsg = chum.idlemsg(systemColor, window.theme['convo/text/idle'])
+            window.chatlog.log(chum.handle, imsg)
+            self.append(convertTags(imsg))
+        elif type(lexmsg[0]) is mecmd:
+            memsg = chum.memsg(systemColor, lexmsg)
             if chum is me:
-                window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode"))
+                window.chatlog.log(parent.chum.handle, memsg)
             else:
-                window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
-            self.append(convertTags(msg))
+                window.chatlog.log(chum.handle, memsg)
+            self.append(convertTags(memsg))
         else:
             if not parent.chumopen and chum is not me:
                 beginmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
                 parent.setChumOpen(True)
-                window.chatlog.log(chum.handle, convertTags(beginmsg, "bbcode"))
+                window.chatlog.log(chum.handle, beginmsg)
                 self.append(convertTags(beginmsg))
 
-            msg = "<c=%s>%s: %s</c>" % (color, initials, msg)
-            self.append(convertTags(msg, quirkobj=quirks))
+            lexmsg[0:0] = [colorBegin("<c=%s>" % (color), color), 
+                           "%s: " % (initials)]
+            lexmsg.append(colorEnd("</c>"))
+            self.append(convertTags(lexmsg))
             if chum is me:
-                window.chatlog.log(parent.chum.handle, convertTags(msg, "bbcode", quirkobj=quirks))
+                window.chatlog.log(parent.chum.handle, lexmsg)
             else:
-                if window.idle:
+                if window.idleaction.isChecked():
                     idlethreshhold = 60
                     if (not hasattr(self, 'lastmsg')) or \
-                            datetime.now() - self.lastmsg > timedelta(0,60):
+                            datetime.now() - self.lastmsg > timedelta(0,idlethreshhold):
+                        idlemsg = me.idlemsg(systemColor, verb)
+                        self.textArea.append(convertTags(idlemsg))
+                        window.chatlog.log(self.title(), idlemsg)
                         parent.messageSent.emit("PESTERCHUM:IDLE", parent.title())
                 self.lastmsg = datetime.now()
-                window.chatlog.log(chum.handle, convertTags(msg, "bbcode"))
+                window.chatlog.log(chum.handle, lexmsg)
     def changeTheme(self, theme):
         self.initTheme(theme)
         sb = self.verticalScrollBar()
@@ -303,6 +302,7 @@ class PesterInput(QtGui.QLineEdit):
         self.setStyleSheet(theme["convo/input/style"])
     def focusInEvent(self, event):
         self.parent().clearNewMessage()
+        self.parent().textArea.textCursor().clearSelection()
         QtGui.QLineEdit.focusInEvent(self, event)
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Up:
@@ -388,7 +388,7 @@ class PesterConvo(QtGui.QFrame):
             msg = self.mainwindow.profile().pestermsg(self.chum, QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"]), self.mainwindow.theme["convo/text/beganpester"])
             self.setChumOpen(True)
             self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
+            self.mainwindow.chatlog.log(self.title(), msg)
         self.newmessage = False
         self.history = PesterHistory()
 
@@ -403,12 +403,12 @@ class PesterConvo(QtGui.QFrame):
             self.mainwindow.ceasesound.play()
             msg = self.chum.pestermsg(self.mainwindow.profile(), syscolor, self.mainwindow.theme["convo/text/ceasepester"])
             self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
+            self.mainwindow.chatlog.log(self.title(), msg)
             self.chumopen = False
         elif old and old.name() != mood.name():
             msg = self.chum.moodmsg(mood, syscolor, self.mainwindow.theme)
             self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.title(), convertTags(msg, "bbcode"))
+            self.mainwindow.chatlog.log(self.title(), msg)
         if self.parent():
             self.parent().updateMood(self.title(), mood, unblocked)
         else:
@@ -431,13 +431,17 @@ class PesterConvo(QtGui.QFrame):
 
     def updateColor(self, color):
         self.chum.color = color
-    def addMessage(self, text, me=True):
+    def addMessage(self, msg, me=True):
+        if type(msg) in [str, unicode]:
+            lexmsg = lexMessage(msg)
+        else:
+            lexmsg = msg
         if me:
             chum = self.mainwindow.profile()
         else:
             chum = self.chum
             self.notifyNewMessage()
-        self.textArea.addMessage(text, chum)
+        self.textArea.addMessage(lexmsg, chum)
 
     def notifyNewMessage(self):
         # first see if this conversation HASS the focus
@@ -516,13 +520,16 @@ class PesterConvo(QtGui.QFrame):
         if text == "" or text[0:11] == "PESTERCHUM:":
             return
         self.history.add(text)
-        self.addMessage(text, True)
+        quirks = self.mainwindow.userprofile.quirks
+        lexmsg = lexMessage(text)
+        if type(lexmsg[0]) is not mecmd and self.applyquirks:
+            lexmsg = quirks.apply(lexmsg)
+        serverMsg = copy(lexmsg)
+        self.addMessage(lexmsg, True)
         # if ceased, rebegin
         if hasattr(self, 'chumopen') and not self.chumopen:
             self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
-        # convert color tags
-        quirkobj = self.mainwindow.userprofile.quirks if self.applyquirks else None
-        text = convertTags(text, "ctag", quirkobj)
+        text = convertTags(serverMsg, "ctag")
         self.messageSent.emit(text, self.title())
         self.textInput.setText("")
 

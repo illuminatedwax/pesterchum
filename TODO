@@ -1,17 +1,17 @@
 Features:
-* Tray doesn't disappear on windows after close
-* memo sending from unknown color breaks -- over IRC
-* smilies processed before quirks
-* More complex quirks: random, spelling, by-sound
+* More complex quirks: spelling, by-sound
+* random quirk string enter must clear text box and focus input on add
+* IRC message limit!!!
+* on ban, redirect to memo chooser
 * ? time option???
-* convert hex tags (<GFFFFFF> or <GFF0000>)
 * help menu -- about and forum
+* Tray doesn't disappear on windows after close
+* memo sending from unknown color breaks -- over IRC??
 -- release alpha
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * chumList not scaling -- QListView + delegate?
 * spell check?
-* convo backgrounds -- make them more like http://www.mspaintadventures.com/storyfiles/hs2/02546_2.gif
 * help button on quirks menu?
 -- release beta
 * flashing??
