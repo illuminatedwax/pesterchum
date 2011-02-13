@@ -1,12 +1,10 @@
 Features:
 * More complex quirks: spelling, by-sound
-* random quirk string enter must clear text box and focus input on add
 * IRC message limit!!!
 * on ban, redirect to memo chooser
 * ? time option???
 * help menu -- about and forum
 * Tray doesn't disappear on windows after close
-* memo sending from unknown color breaks -- over IRC??
 -- release alpha
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???

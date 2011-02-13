@@ -101,12 +101,13 @@ class RandomQuirkDialog(MultiTextDialog):
         text = unicode(self.replaceinput.text())
         item = QtGui.QListWidgetItem(text, self.replacelist)
         self.replaceinput.setText("")
+        self.replaceinput.setFocus()
     @QtCore.pyqtSlot()
     def removeRandomString(self):
         if not self.replacelist.currentItem():
             return
         else:
-            self.replacelist.takeItem(self.currentRow())
+            self.replacelist.takeItem(self.replacelist.currentRow())
         self.replaceinput.setFocus()
 
 class PesterChooseQuirks(QtGui.QDialog):
@@ -175,6 +176,8 @@ class PesterChooseQuirks(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def addPrefixDialog(self):
         pdict = MultiTextDialog("ENTER PREFIX", self, {"label": "Value:", "inputname": "value"}).getText()
+        if pdict is None:
+            return
         pdict["type"] = "prefix"
         prefix = pesterQuirk(pdict)
         pitem = PesterQuirkItem(prefix, self.quirkList)
@@ -183,6 +186,8 @@ class PesterChooseQuirks(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def addSuffixDialog(self):
         vdict = MultiTextDialog("ENTER SUFFIX", self, {"label": "Value:", "inputname": "value"}).getText()
+        if vdict is None:
+            return
         vdict["type"] = "suffix"
         quirk = pesterQuirk(vdict)
         item = PesterQuirkItem(quirk, self.quirkList)
@@ -191,6 +196,8 @@ class PesterChooseQuirks(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def addSimpleReplaceDialog(self):
         vdict = MultiTextDialog("REPLACE", self, {"label": "Replace:", "inputname": "from"}, {"label": "With:", "inputname": "to"}).getText()
+        if vdict is None:
+            return
         vdict["type"] = "replace"
         quirk = pesterQuirk(vdict)
         item = PesterQuirkItem(quirk, self.quirkList)
@@ -199,6 +206,8 @@ class PesterChooseQuirks(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def addRegexpDialog(self):
         vdict = MultiTextDialog("REGEXP REPLACE", self, {"label": "Regexp:", "inputname": "from"}, {"label": "Replace With:", "inputname": "to"}).getText()
+        if vdict is None:
+            return
         vdict["type"] = "regexp"
         try:
             re.compile(vdict["from"])
@@ -216,6 +225,8 @@ class PesterChooseQuirks(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def addRandomDialog(self):
         vdict = RandomQuirkDialog(self).getText()
+        if vdict is None:
+            return
         vdict["type"] = "random"
         try:
             re.compile(vdict["from"])

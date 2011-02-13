@@ -92,26 +92,29 @@ class pesterQuirks(object):
                    q.type=='replace' or q.type=='regexp']
         random = [q for q in self.quirklist if q.type=='random']
         
-        firstStr = True
         newlist = []
         for (i, o) in enumerate(lexed):
             if type(o) not in [str, unicode]:
+                if i == 0:
+                    string = " "
+                    for p in prefix:
+                        string += p.apply(string)
+                    newlist.append(string)
                 newlist.append(o)
                 continue
             lastStr = (i == len(lexed)-1)
             string = o
             for r in random:
-                string = r.apply(string, first=firstStr, last=lastStr)
+                string = r.apply(string, first=(i==0), last=lastStr)
             for r in replace:
-                string = r.apply(string, first=firstStr, last=lastStr)
-            if firstStr:
+                string = r.apply(string, first=(i==0), last=lastStr)
+            if i == 0:
                 for p in prefix:
                     string = p.apply(string)
             if lastStr:
                 for s in suffix:
                     string = s.apply(string)
             newlist.append(string)
-            firstStr = False
 
         return newlist
 
