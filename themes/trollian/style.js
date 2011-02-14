@@ -8,7 +8,7 @@
   "close": { "image": "$path/x.gif",
              "loc": [635, 2]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [618, 4]},
+                "loc": [621, 8]},
   "menubar": { "style": "font-family: 'Arial'; font-size: 11px; color: rgba(0,0,0,0);" },
   "menu" : { "style": "font-family: 'Arial'; font-size: 11px; background-color: #c2c2c2; border:1px solid #545454;",
              "selected": "background-color: #545454",
@@ -21,7 +21,7 @@
                        "memos": "Memos",
                        "userlist": "Fresh Targets",
                        "import": "import U2;",
-					   "idle": "Idle",
+	     "idle": "Idle",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
@@ -29,6 +29,8 @@
                         "color": "Hemospectrum",
                         "block": "Chumpdump",
                         "quirks": "Annoying" },
+            "help": { "_name": "Help",
+                      "about": "About" },
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
                                "blockchum": "Block",
@@ -38,7 +40,7 @@
                                "opuser": "Promote",
                                "quirksoff": "Quirks Off" }
            },
-  "chums": { "style": "font-size: 12px; background: white; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);",
+  "chums": { "style": "font-size: 12px; background: white; border:0px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "scrollbar": { "style" : "background-color:#c2c2c2;",
                             "handle": "background-color:#e02413;height:20px;border:2px solid #ff2612;",
                             "downarrow": "",
@@ -249,10 +251,11 @@
   "scrollbar": { "style" : "", "handle": "" },
   "margins": {"top": 22, "bottom": 9, "left": 10, "right": 4 },
   "size": [400, 250],
-  "chumlabel": { "style": "background: rgb(255, 38, 18); color: white; padding: 2px; border:1px solid #c2c2c2; margin-bottom: 4px;",
+  "size": [400, 250],
+  "chumlabel": { "style": "background-image:url($path/chumlabelbg.png);background-color:rgb(255,38,18); background-repeat: no-repeat; color: white; padding: 2px; border:1px solid #c2c2c2; margin-bottom: 4px;",
                  "align": { "h": "left", "v": "center" },
-                 "minheight": 29,
-                 "maxheight": 40,
+                 "minheight": 22,
+                 "maxheight": 36,
                  "text" : "trolling: $handle"
                },
   "textarea": {
@@ -290,10 +293,10 @@
       "tabstyle": 0
   },
   "label": { "text": "Bulletin Board: $channel",
-             "style": "background-image:url($path/chumlabelbg.png);background-color:rgb(255,38,18); background-repeat: no-repeat; color: white; padding: 2px; border:1px solid #c2c2c2; margin-bottom:4px;",
+             "style": "background-image:url($path/chumlabelbg.png);background-color:rgb(255,38,18); background-repeat: no-repeat; color: white; padding: 2px; border:1px solid #c2c2c2; margin-bottom: 4px;",
              "align": { "h": "left", "v": "center" },
-             "minheight": 29,
-             "maxheight": 40
+             "minheight": 18,
+             "maxheight": 36
            },
   "textarea": {
       "style": "background: white; border:2px solid #c2c2c2; font-size: 12px;"
