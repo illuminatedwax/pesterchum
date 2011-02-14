@@ -137,7 +137,6 @@ class IRCClient:
         ...     g.next()
 
         """
-        from datetime import *
         #logfile = open('irctest.log', 'a')
 
         try:
