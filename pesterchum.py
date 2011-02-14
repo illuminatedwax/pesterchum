@@ -1302,10 +1302,11 @@ class PesterWindow(MovingWindow):
             sysColor = QtGui.QColor(self.theme["convo/systemMsgColor"])
             verb = self.theme["convo/text/idle"]
             for (h, convo) in self.convos.iteritems():
-                msg = self.profile().idlemsg(sysColor, verb)
-                convo.textArea.append(convertTags(msg))
-                self.chatlog.log(h, msg)
-                self.sendMessage.emit("PESTERCHUM:IDLE", h)
+                if convo.chumopen:
+                    msg = self.profile().idlemsg(sysColor, verb)
+                    convo.textArea.append(convertTags(msg))
+                    self.chatlog.log(h, msg)
+                    self.sendMessage.emit("PESTERCHUM:IDLE", h)
         else:
             self.idletime = 0
     @QtCore.pyqtSlot()

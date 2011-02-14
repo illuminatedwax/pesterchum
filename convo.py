@@ -260,7 +260,7 @@ class PesterText(QtGui.QTextEdit):
             if chum is me:
                 window.chatlog.log(parent.chum.handle, lexmsg)
             else:
-                if window.idleaction.isChecked():
+                if window.idleaction.isChecked() and parent.chumopen:
                     idlethreshhold = 60
                     if (not hasattr(self, 'lastmsg')) or \
                             datetime.now() - self.lastmsg > timedelta(0,idlethreshhold):
@@ -480,9 +480,6 @@ class PesterConvo(QtGui.QFrame):
         if self.parent():
             self.parent().showChat(self.title())
         self.raiseChat()
-    def activateChat(self):
-        if platform.system() == "Windows":
-            self.activateWindow()
     def contextMenuEvent(self, event):
         if event.reason() == QtGui.QContextMenuEvent.Mouse:
             self.optionsMenu.popup(event.globalPos())
