@@ -26,7 +26,7 @@ class PesterIRC(QtCore.QObject):
         self.brokenConnection = False
     def closeConnection(self):
         self.cli.close()
-    def setConnectionBroken(self):
+    def setConnectionBroken(self, broken=True):
         self.brokenConnection = True
     @QtCore.pyqtSlot(PesterProfile)
     def getMood(self, *chums):

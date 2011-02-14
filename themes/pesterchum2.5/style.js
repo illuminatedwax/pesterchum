@@ -6,24 +6,29 @@
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "PESTERCHUM",
+  "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 14px; background-color: #fdb302;border:2px solid #ffff00",
+			 "menuitem": "font-size:14px;" },
   "close": { "image": "$path/x.gif",
              "loc": [280, 2]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [260, 2]},
-  "chums": { "loc": [15, 70],
-             "size": [270, 300]
+                "loc": [260, 8]},
+  "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Courier';selection-background-color:#646464; ",
+			 "loc": [15, 70],
+			 "size": [270, 300]
            },
   "mychumhandle": { "label": 
                     { "text": "CHUMHANDLE:",
-                      "loc": [12,430],
+                      "loc": [12,415],
                       "style": "color: black ;font:bold; font-family: 'Courier';" 
                     },
-                    "handle": { "loc": [35,440],
-                                "size": [240, 21] },
-                    "colorswatch": { "loc": [260,440],
+                    "handle": { "loc": [15,435],
+                                "size": [240, 21],
+								"style": "background-color: black; padding: 3px; padding-left: 20px; color:white; font-family:'Courier'; font:bold; text-align:left;"
+							  },
+                    "colorswatch": { "loc": [260,435],
                                      "size": [30,30],
                                      "text": "C" },
-                    "currentMood": [15, 440]
+                    "currentMood": [15, 435]
                   },
   "addchum":  { "style": "background: rgba(255, 255, 0, 100%); border:2px solid #c48a00; font: bold; color: black; font-family:'Courier';",
                 "loc": [15,380],

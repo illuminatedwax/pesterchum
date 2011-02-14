@@ -136,7 +136,15 @@ class pesterTheme(dict):
             self.defaultTheme = pesterTheme("pesterchum", default=True)
     def __getitem__(self, key):
         keys = key.split("/")
-        v = dict.__getitem__(self, keys.pop(0))
+        try:
+            v = dict.__getitem__(self, keys.pop(0))
+        except KeyError, e:
+                if hasattr(self, 'inheritedTheme'):
+                    return self.inheritedTheme[key]
+                if hasattr(self, 'defaultTheme'):
+                    return self.defaultTheme[key]
+                else:
+                    raise e            
         for k in keys:
             try:
                 v = v[k]
@@ -1658,13 +1666,16 @@ class IRCThread(QtCore.QThread):
         irc.IRCConnect()
         while 1:
             if irc.brokenConnection:
-                self.finished.emit()
+                irc.brokenConnection = False
+                self.restartIRC.emit()
                 irc.closeConnection()
-                self.terminate()
+                irc.IRCConnect()
             try:
                 irc.updateIRC()
             except socket.error:
                 irc.setConnectionBroken()
+
+    restartIRC = QtCore.pyqtSignal()
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -1734,7 +1745,7 @@ class MainProgram(QtCore.QObject):
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
         self.ircapp = IRCThread(self.irc)
-        self.connect(self.ircapp, QtCore.SIGNAL('finished()'),
+        self.connect(self.ircapp, QtCore.SIGNAL('restartIRC()'),
                      self, QtCore.SLOT('restartIRC()'))
 
     def connectWidgets(self, irc, widget):
@@ -1847,12 +1858,6 @@ class MainProgram(QtCore.QObject):
     def restartIRC(self):
         self.widget.show()
         self.widget.activateWindow()
-        self.irc = PesterIRC(self.widget.config, self.widget)
-        self.connectWidgets(self.irc, self.widget)
-        self.ircapp = IRCThread(self.irc)
-        self.connect(self.ircapp, QtCore.SIGNAL('finished()'),
-                     self, QtCore.SLOT('restartIRC()'))
-        self.ircapp.start()
         self.widget.loadingscreen = LoadingScreen(self.widget)
         self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                      self.widget, QtCore.SLOT('close()'))
