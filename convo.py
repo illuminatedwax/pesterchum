@@ -1,5 +1,6 @@
 from string import Template
 import re
+import platform
 from copy import copy
 from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
@@ -117,16 +118,12 @@ class PesterTabWindow(QtGui.QFrame):
             return True
         else:
             return False
-    def activateChat(self):
-        if platform.system() == "Windows":
-            self.activateWindow()
     def notifyNewMessage(self, handle):
         i = self.tabIndices[handle]
         self.tabs.setTabTextColor(i, QtGui.QColor(self.mainwindow.theme["%s/tabs/newmsgcolor" % (self.type)]))
         convo = self.convos[handle]
         def func():
             convo.showChat()
-        self.activateChat()
         self.mainwindow.waitingMessages.addMessage(handle, func)
         # set system tray
     def clearNewMessage(self, handle):
@@ -484,8 +481,6 @@ class PesterConvo(QtGui.QFrame):
             self.parent().showChat(self.title())
         self.raiseChat()
     def activateChat(self):
-        if self.parent():
-            self.parent().activateChat()
         if platform.system() == "Windows":
             self.activateWindow()
     def contextMenuEvent(self, event):

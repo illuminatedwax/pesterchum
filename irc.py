@@ -12,11 +12,14 @@ from generic import PesterList
 logging.basicConfig(level=logging.INFO)
 
 class PesterIRC(QtCore.QObject):
-    def __init__(self, window):
+    def __init__(self, config, window):
         QtCore.QObject.__init__(self)
         self.mainwindow = window
+        self.config = config
     def IRCConnect(self):
-        self.cli = IRCClient(PesterHandler, host="irc.tymoon.eu", port=6667, nick=self.mainwindow.profile().handle, blocking=True)
+        server = self.config.server()
+        port = self.config.port()
+        self.cli = IRCClient(PesterHandler, host=server, port=int(port), nick=self.mainwindow.profile().handle, blocking=True)
         self.cli.command_handler.parent = self
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()

@@ -211,6 +211,10 @@ class userConfig(object):
         l = self.getBlocklist()
         l.pop(l.index(handle))
         self.set('block', l)
+    def server(self):
+        return self.config.get('server', 'irc.tymoon.eu')
+    def port(self):
+        return self.config.get('port', '6667')
     def soundOn(self):
         if not self.config.has_key('soundon'):
             self.set('soundon', True)
@@ -1708,7 +1712,7 @@ class MainProgram(QtCore.QObject):
                               self.trayicon,
                               QtCore.SLOT('mainWindowClosed()'))
 
-        self.irc = PesterIRC(self.widget)
+        self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
         self.ircapp = IRCThread(self.irc)
         self.connect(self.ircapp, QtCore.SIGNAL('finished()'),
@@ -1820,7 +1824,7 @@ class MainProgram(QtCore.QObject):
     def restartIRC(self):
         self.widget.show()
         self.widget.activateWindow()
-        self.irc = PesterIRC(self.widget)
+        self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
         self.ircapp = IRCThread(self.irc)
         self.connect(self.ircapp, QtCore.SIGNAL('finished()'),
