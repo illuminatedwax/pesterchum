@@ -185,7 +185,8 @@ class IRCClient:
             if self.socket: 
                 logging.info('closing socket')
                 self.socket.close()
-                    
+    def close(self):
+        self.socket.close()
 
 class IRCApp:
     """ This class manages several IRCClient instances without the use of threads.

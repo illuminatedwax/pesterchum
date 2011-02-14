@@ -24,6 +24,8 @@ class PesterIRC(QtCore.QObject):
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
         self.brokenConnection = False
+    def closeConnection(self):
+        self.cli.close()
     def setConnectionBroken(self):
         self.brokenConnection = True
     @QtCore.pyqtSlot(PesterProfile)
@@ -155,6 +157,9 @@ class PesterIRC(QtCore.QObject):
             helpers.mode(self.cli, c, m, cmd)
         except socket.error:
             self.setConnectionBroken()
+    @QtCore.pyqtSlot()
+    def reconnectIRC(self):
+        self.setConnectionBroken()
 
     def updateIRC(self):
         self.conn.next()

@@ -60,7 +60,7 @@ class PesterLog(object):
         self.convos = {}
     def log(self, handle, msg):
         bbcodemsg = convertTags(msg, "bbcode")
-        html = convertTags(msg, "html")
+        html = convertTags(msg, "html")+"<br />"
         msg = convertTags(msg, "text")
         modes = {"bbcode": bbcodemsg, "html": html, "text": msg}
         if not self.convos.has_key(handle):
@@ -694,6 +694,9 @@ class PesterWindow(MovingWindow):
         self.idleaction.setCheckable(True)
         self.connect(self.idleaction, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('toggleIdle(bool)'))
+        self.reconnectAction = QtGui.QAction(self.theme["main/menus/client/reconnect"], self)
+        self.connect(self.reconnectAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SIGNAL('reconnectIRC()'))
 
         self.menu = QtGui.QMenuBar(self)
         
@@ -704,6 +707,7 @@ class PesterWindow(MovingWindow):
         filemenu.addAction(userlistaction)
         filemenu.addAction(self.idleaction)
         filemenu.addAction(self.importaction)
+        filemenu.addAction(self.reconnectAction)
         filemenu.addAction(exitaction)
 
         changetheme = QtGui.QAction(self.theme["main/menus/profile/theme"], self)
@@ -1000,6 +1004,7 @@ class PesterWindow(MovingWindow):
         self.memoaction.setText(theme["main/menus/client/memos"])
         self.importaction.setText(theme["main/menus/client/import"])
         self.idleaction.setText(theme["main/menus/client/idle"])
+        self.reconnectAction.setText(theme["main/menus/client/reconnect"])
         self.filemenu.setTitle(theme["main/menus/client/_name"])
         self.changetheme.setText(theme["main/menus/profile/theme"])
         self.changequirks.setText(theme["main/menus/profile/quirks"])
@@ -1642,6 +1647,7 @@ class PesterWindow(MovingWindow):
     leftChannel = QtCore.pyqtSignal(QtCore.QString)
     setChannelMode = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     closeSignal = QtCore.pyqtSignal()
+    reconnectIRC = QtCore.pyqtSignal()
 
 class IRCThread(QtCore.QThread):
     def __init__(self, ircobj):
@@ -1652,11 +1658,13 @@ class IRCThread(QtCore.QThread):
         irc.IRCConnect()
         while 1:
             if irc.brokenConnection:
-                self.exit(1)
+                self.finished.emit()
+                irc.closeConnection()
+                self.terminate()
             try:
                 irc.updateIRC()
             except socket.error:
-                self.exit(1)
+                irc.setConnectionBroken()
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -1790,6 +1798,10 @@ class MainProgram(QtCore.QObject):
                     QtCore.SIGNAL('setChannelMode(QString, QString, QString)'),
                     irc,
                     QtCore.SLOT('setChannelMode(QString, QString, QString)'))
+        irc.connect(widget,
+                    QtCore.SIGNAL('reconnectIRC()'),
+                    irc,
+                    QtCore.SLOT('reconnectIRC()'))
 
     # IRC --> Main window
         irc.connect(irc, QtCore.SIGNAL('connected()'),

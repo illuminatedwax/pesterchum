@@ -23,6 +23,7 @@
                        "userlist": "USERLIST",
                        "import": "IMPORT",
 					   "idle": "IDLE",
+					   "reconnect": "RECONNECT",
                        "exit": "EXIT"},
             "profile": {"_name": "PROFILE",
                         "switch": "SWITCH",
