@@ -825,6 +825,7 @@ class PesterWindow(MovingWindow):
         self.closeConversations()
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.close()
+        self.closeSignal.emit()
         event.accept()
     def newMessage(self, handle, msg):
         if handle in self.config.getBlocklist():
@@ -1625,6 +1626,7 @@ class PesterWindow(MovingWindow):
     joinChannel = QtCore.pyqtSignal(QtCore.QString)
     leftChannel = QtCore.pyqtSignal(QtCore.QString)
     setChannelMode = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
+    closeSignal = QtCore.pyqtSignal()
 
 class IRCThread(QtCore.QThread):
     def __init__(self, ircobj):
@@ -1652,6 +1654,9 @@ class PesterTray(QtGui.QSystemTrayIcon):
             self.setIcon(PesterIcon(self.mainwindow.theme["main/icon"]))
         else:
             self.setIcon(PesterIcon(self.mainwindow.theme["main/newmsgicon"]))
+    @QtCore.pyqtSlot()
+    def mainWindowClosed(self):
+        self.hide()
 
 class MainProgram(QtCore.QObject):
     def __init__(self):
@@ -1698,6 +1703,10 @@ class MainProgram(QtCore.QObject):
                               QtCore.SIGNAL('closeToTraySignal()'),
                               self.trayicon,
                               QtCore.SLOT('show()'))
+        self.trayicon.connect(self.widget,
+                              QtCore.SIGNAL('closeSignal()'),
+                              self.trayicon,
+                              QtCore.SLOT('mainWindowClosed()'))
 
         self.irc = PesterIRC(self.widget)
         self.connectWidgets(self.irc, self.widget)
@@ -1829,7 +1838,7 @@ class MainProgram(QtCore.QObject):
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)
-        os._exit(self.app.exec_())
+        sys.exit(self.app.exec_())
 
 pesterchum = MainProgram()
 pesterchum.run()

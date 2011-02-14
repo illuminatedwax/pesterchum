@@ -32,8 +32,24 @@ class PesterIRC(QtCore.QObject):
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def sendMessage(self, text, handle):
         h = unicode(handle)
+        textl = [unicode(text)]
+        def splittext(l):
+            if len(l[0]) > 400:
+                space = l[0].rfind(" ", 0,400)
+                if space == -1:
+                    space = 400
+                a = l[0][0:space]
+                b = l[0][space:]
+                if len(b) > 0:
+                    return [a] + splittext([b])
+                else:
+                    return [a]
+            else:
+                return l
+        textl = splittext(textl)
         try:
-            helpers.msg(self.cli, h, text)
+            for t in textl:
+                helpers.msg(self.cli, h, t)
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, bool)

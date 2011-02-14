@@ -5,12 +5,15 @@ from PyQt4 import QtGui, QtCore
 from datetime import time, timedelta, datetime
 
 from dataobjs import PesterProfile, Mood, PesterHistory
-from generic import PesterIcon, RightClickList
+from generic import PesterIcon, RightClickList, mysteryTime
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, addTimeInitial, timeProtocol, \
     lexMessage, colorBegin, colorEnd, mecmd
 
+
 def delta2txt(d, format="pc"):
+    if type(d) is mysteryTime:
+        return "?"
     if format == "pc":
         sign = "+" if d >= timedelta(0) else "-"
     else:
@@ -34,6 +37,8 @@ def delta2txt(d, format="pc"):
 
 def txt2delta(txt):
     sign = 1
+    if txt[0] == '?':
+        return mysteryTime()
     if txt[0] == '+':
         txt = txt[1:]
     elif txt[0] == '-':
@@ -51,7 +56,11 @@ def txt2delta(txt):
     return sign*timed
 
 def pcfGrammar(td):
-    if td > timedelta(0):
+    if type(td) is mysteryTime:
+        when = "???"
+        temporal = "???"
+        pcf = "?"
+    elif td > timedelta(0):
         when = "FROM NOW"
         temporal = "FUTURE"
         pcf = "F"
@@ -109,14 +118,14 @@ class TimeTracker(list):
         self.current = self.index(timed)
     def addRecord(self, timed):
         (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
-        if pcf == "C":
+        if pcf == "C" or pcf == "?":
             return
         if timed in self.timerecord[pcf]:
             return
         self.timerecord[pcf].append(timed)
     def getRecord(self, timed):
         (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
-        if pcf == "C":
+        if pcf == "C" or pcf == "?":
             return 0
         if len(self.timerecord[pcf]) > 1:
             return self.timerecord[pcf].index(timed)+1
@@ -170,6 +179,10 @@ class TimeInput(QtGui.QLineEdit):
     def setSlider(self):
         value = unicode(self.text())
         timed = txt2delta(value)
+        if type(timed) is mysteryTime:
+            self.timeslider.setValue(0)
+            self.setText("?")
+            return
         sign = 1 if timed >= timedelta(0) else -1
         abstimed = abs(txt2delta(value))
         index = 50
@@ -254,7 +267,7 @@ class MemoText(PesterText):
         if chum is not me:
             if parent.times.has_key(chum.handle):
                 time = parent.times[chum.handle]
-                if not time.getTime():
+                if time.getTime() is None:
                     # MY WAY OR THE HIGHWAY
                     time.addTime(timedelta(0))
             else:

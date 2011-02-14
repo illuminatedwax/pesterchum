@@ -38,6 +38,45 @@ class PesterQuirkList(QtGui.QListWidget):
         if i >= 0:
             self.takeItem(i)
 
+class MispellQuirkDialog(QtGui.QDialog):
+    def __init__(self, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setWindowTitle("MISPELLER")
+        layout_1 = QtGui.QHBoxLayout()
+        zero = QtGui.QLabel("1%", self)
+        hund = QtGui.QLabel("100%", self)
+        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.slider.setMinimum(1)
+        self.slider.setMaximum(100)
+        self.slider.setValue(50)
+        layout_1.addWidget(zero)
+        layout_1.addWidget(self.slider)
+        layout_1.addWidget(hund)
+
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_ok = QtGui.QHBoxLayout()
+        layout_ok.addWidget(self.cancel)
+        layout_ok.addWidget(self.ok)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addLayout(layout_1)
+        layout_0.addLayout(layout_ok)
+
+        self.setLayout(layout_0)
+    def getPercentage(self):
+        r = self.exec_()
+        if r == QtGui.QDialog.Accepted:
+            retval = {"percentage": self.slider.value()}
+            return retval
+        else:
+            return None
+
 class RandomQuirkDialog(MultiTextDialog):
     def __init__(self, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -138,6 +177,10 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.connect(self.addRandomReplaceButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addRandomDialog()'))
 
+        self.addMispellingButton = QtGui.QPushButton("MISPELLER", self)
+        self.connect(self.addMispellingButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addSpellDialog()'))
+
         layout_1 = QtGui.QHBoxLayout()
         layout_1.addWidget(self.addPrefixButton)
         layout_1.addWidget(self.addSuffixButton)
@@ -145,6 +188,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_2 = QtGui.QHBoxLayout()
         layout_2.addWidget(self.addRegexpReplaceButton)
         layout_2.addWidget(self.addRandomReplaceButton)
+        layout_2.addWidget(self.addMispellingButton)
 
         self.removeSelectedButton = QtGui.QPushButton("REMOVE", self)
         self.connect(self.removeSelectedButton, QtCore.SIGNAL('clicked()'),
@@ -236,6 +280,16 @@ class PesterChooseQuirks(QtGui.QDialog):
             quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
             quirkWarning.exec_()
             return
+        quirk = pesterQuirk(vdict)
+        item = PesterQuirkItem(quirk, self.quirkList)
+        self.quirkList.addItem(item)
+        #self.quirkList.sortItems()
+    @QtCore.pyqtSlot()
+    def addSpellDialog(self):
+        vdict = MispellQuirkDialog(self).getPercentage()
+        if vdict is None:
+            return
+        vdict["type"] = "spelling"
         quirk = pesterQuirk(vdict)
         item = PesterQuirkItem(quirk, self.quirkList)
         self.quirkList.addItem(item)

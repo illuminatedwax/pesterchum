@@ -1,8 +1,4 @@
 Features:
-* More complex quirks: spelling, by-sound
-* IRC message limit!!!
-* on ban, redirect to memo chooser
-* ? time option???
 * help menu -- about and forum
 * Tray doesn't disappear on windows after close
 -- release alpha
@@ -12,7 +8,9 @@ Features:
 * spell check?
 * help button on quirks menu?
 -- release beta
-* flashing??
+* hide offline chums
+* chum list groups
+* More complex quirks: by-sound
 * change profile only once we have confirmation from server
 * log viewer
 * pick your own icon
@@ -22,5 +20,3 @@ Features:
 * Spy mode
 * Animated
 * put code into separate files
-* hide offline chums
-* chum list groups

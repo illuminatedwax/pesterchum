@@ -1,4 +1,13 @@
 from PyQt4 import QtGui, QtCore
+from datetime import timedelta
+
+class mysteryTime(timedelta):
+    def __sub__(self, other):
+        return self
+    def __eq__(self, other):
+        return (type(other) is mysteryTime)
+    def __neq__(self, other):
+        return (type(other) is not mysteryTime)
 
 class PesterList(list):
     def __init__(self, l):

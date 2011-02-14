@@ -3,6 +3,8 @@ from copy import copy
 from datetime import timedelta
 from PyQt4 import QtGui
 
+from generic import mysteryTime
+
 _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _gtag_begin = re.compile(r'(?i)<g[a-f]>')
 _ctag_end = re.compile(r'(?i)</c>')
@@ -183,6 +185,8 @@ def addTimeInitial(string, grammar):
 
 def timeProtocol(cmd):
     dir = cmd[0]
+    if dir == "?":
+        return mysteryTime(0)
     cmd = cmd[1:]
     cmd = re.sub("[^0-9:]", "", cmd)
     try:
@@ -195,6 +199,8 @@ def timeProtocol(cmd):
     return timed
 
 def timeDifference(td):
+    if type(td) is mysteryTime:
+        return "??:?? FROM ????"
     if td < timedelta(0):
         when = "AGO"
     else:

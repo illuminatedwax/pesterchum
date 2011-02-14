@@ -5,6 +5,9 @@ import random
 
 from generic import PesterIcon
 from parsetools import timeDifference, convertTags
+from mispeller import mispeller
+
+_upperre = re.compile(r"upper\(([\w\\]+)\)")
 
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
@@ -32,6 +35,7 @@ class Mood(object):
             return PesterIcon(theme["main/chums/moods/chummy/icon"])
         return PesterIcon(f)
 
+
 class pesterQuirk(object):
     def __init__(self, quirk):
         if type(quirk) != dict:
@@ -51,7 +55,13 @@ class pesterQuirk(object):
                 return string
             if not last and len(fr) > 0 and fr[len(fr)-1] == "$":
                 return string
-            return re.sub(fr, self.quirk["to"], string)
+            def regexprep(mo):
+                to = self.quirk["to"]
+                def upperrep(m):
+                    return mo.expand(m.group(1)).upper()
+                to = _upperre.sub(upperrep, to)
+                return mo.expand(to)
+            return re.sub(fr, regexprep, string)
         elif self.type == "random":
             fr = self.quirk["from"]
             if not first and len(fr) > 0 and fr[0] == "^":
@@ -62,6 +72,17 @@ class pesterQuirk(object):
                 choice = random.choice(self.quirk["randomlist"])
                 return mo.expand(choice)
             return re.sub(self.quirk["from"], randomrep, string)
+        elif self.type == "spelling":
+            percentage = self.quirk["percentage"]/100.0
+            words = string.split(" ")
+            newl = []
+            for w in words:
+                p = random.random()
+                if p < percentage:
+                    newl.append(mispeller(w))
+                else:
+                    newl.append(w)
+            return " ".join(newl)
 
     def __str__(self):
         if self.type == "prefix":
@@ -74,6 +95,8 @@ class pesterQuirk(object):
             return "REGEXP: %s REPLACED WITH %s" % (self.quirk["from"], self.quirk["to"])
         elif self.type == "random":
             return "REGEXP: %s RANDOMLY REPLACED WITH %s" % (self.quirk["from"], [str(r) for r in self.quirk["randomlist"]])
+        elif self.type == "spelling":
+            return "MISPELLER: %d%%" % (self.quirk["percentage"])
 
 class pesterQuirks(object):
     def __init__(self, quirklist):
@@ -91,6 +114,7 @@ class pesterQuirks(object):
         replace = [q for q in self.quirklist if
                    q.type=='replace' or q.type=='regexp']
         random = [q for q in self.quirklist if q.type=='random']
+        spelling = [q for q in self.quirklist if q.type=='spelling']
         
         newlist = []
         for (i, o) in enumerate(lexed):
@@ -104,6 +128,8 @@ class pesterQuirks(object):
                 continue
             lastStr = (i == len(lexed)-1)
             string = o
+            for s in spelling:
+                string = s.apply(string)
             for r in random:
                 string = r.apply(string, first=(i==0), last=lastStr)
             for r in replace:
