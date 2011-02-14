@@ -1,7 +1,13 @@
+Bugs:
+* color swatch text doesnt disappear
+* X and _ buttons move around all crazy like
+* default install to different location
+* desktop shortcut
+* random doesn't recognize upper
+
 Features:
 * help menu -- about and forum
-* Tray doesn't disappear on windows after close
--- release alpha
+* copy quirks between profiles?
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * chumList not scaling -- QListView + delegate?

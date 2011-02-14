@@ -130,6 +130,8 @@ class pesterTheme(dict):
         theme = json.load(fp, object_hook=self.pathHook)
         self.update(theme)
         fp.close()
+        if self.has_key("inherits"):
+            self.inheritedTheme = pesterTheme(self["inherits"])
         if not default:
             self.defaultTheme = pesterTheme("pesterchum", default=True)
     def __getitem__(self, key):
@@ -139,6 +141,8 @@ class pesterTheme(dict):
             try:
                 v = v[k]
             except KeyError, e:
+                if hasattr(self, 'inheritedTheme'):
+                    return self.inheritedTheme[key]
                 if hasattr(self, 'defaultTheme'):
                     return self.defaultTheme[key]
                 else:
@@ -152,7 +156,10 @@ class pesterTheme(dict):
         return d
     def get(self, key, default):
         keys = key.split("/")
-        v = dict.__getitem__(self, keys.pop(0))
+        try:
+            v = dict.__getitem__(self, keys.pop(0))
+        except KeyError:
+            return default
         for k in keys:
             try:
                 v = v[k]
@@ -161,7 +168,10 @@ class pesterTheme(dict):
         return v
     def has_key(self, key):
         keys = key.split("/")
-        v = dict.__getitem__(self, keys.pop(0))
+        try:
+            v = dict.__getitem__(self, keys.pop(0))
+        except KeyError:
+            return False
         for k in keys:
             try:
                 v = v[k]

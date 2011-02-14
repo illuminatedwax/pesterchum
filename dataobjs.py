@@ -70,6 +70,9 @@ class pesterQuirk(object):
                 return string
             def randomrep(mo):
                 choice = random.choice(self.quirk["randomlist"])
+                def upperrep(m):
+                    return mo.expand(m.group(1)).upper()
+                choice = _upperre.sub(upperrep, choice)
                 return mo.expand(choice)
             return re.sub(self.quirk["from"], randomrep, string)
         elif self.type == "spelling":
