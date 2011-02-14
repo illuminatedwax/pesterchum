@@ -76,7 +76,7 @@ def quit(cli, msg='gone'):
     cli._end = 1
 
 def user(cli, username, realname=None):
-    cli.send("USER", username, cli.host, cli.host, 
+    cli.send("USER", realname or username, cli.host, cli.host, 
         realname or username)
 
 _simple = (

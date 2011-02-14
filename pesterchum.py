@@ -1841,6 +1841,9 @@ class MainProgram(QtCore.QObject):
         self.connect(self.ircapp, QtCore.SIGNAL('finished()'),
                      self, QtCore.SLOT('restartIRC()'))
         self.ircapp.start()
+        self.widget.loadingscreen = LoadingScreen(self.widget)
+        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
+                     self.widget, QtCore.SLOT('close()'))
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)

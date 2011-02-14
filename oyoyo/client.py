@@ -88,6 +88,7 @@ class IRCClient:
         self.port = None
         self.connect_cb = None
         self.blocking = False
+        self.timeout = None
 
         self.__dict__.update(kwargs)
         self.command_handler = cmd_handler(self)
@@ -136,12 +137,16 @@ class IRCClient:
         ...     g.next()
 
         """
+        from datetime import *
+        #logfile = open('irctest.log', 'a')
+
         try:
             logging.info('connecting to %s:%s' % (self.host, self.port))
             self.socket.connect(("%s" % self.host, self.port))
             if not self.blocking:
                 self.socket.setblocking(0)
-            
+            #if self.timeout:
+            #    self.socket.settimeout(self.timeout)
             helpers.nick(self, self.nick)
             helpers.user(self, self.nick, self.real_name)
 
@@ -151,7 +156,10 @@ class IRCClient:
             buffer = bytes()
             while not self._end:
                 try:
+                    #logfile.write("recv at %s\n" % datetime.now().strftime("%Y-%m-%d.%H.%M %S"))
                     buffer += self.socket.recv(1024)
+                    #logfile.write("recvd %s at %s\n" % (buffer, datetime.now().strftime("%Y-%m-%d.%H.%M %S")))
+                    #logfile.flush()
                 except socket.error, e:
                     try:  # a little dance of compatibility to get the errno
                         errno = e.errno

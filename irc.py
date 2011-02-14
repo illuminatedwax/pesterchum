@@ -19,7 +19,7 @@ class PesterIRC(QtCore.QObject):
     def IRCConnect(self):
         server = self.config.server()
         port = self.config.port()
-        self.cli = IRCClient(PesterHandler, host=server, port=int(port), nick=self.mainwindow.profile().handle, blocking=True)
+        self.cli = IRCClient(PesterHandler, host=server, port=int(port), nick=self.mainwindow.profile().handle, real_name='pcc30', blocking=True)
         self.cli.command_handler.parent = self
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
