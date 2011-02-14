@@ -3,7 +3,7 @@
 Name "PESTERCHUM3.14a"
 
 ; The file to write
-OutFile "pesterchum3.14a0.2update.exe"
+OutFile "pesterchum3.14a.2update.exe"
 
 RequestExecutionLevel admin
 

@@ -3,9 +3,9 @@
 Name "PESTERCHUM3.14a"
 
 ; The file to write
-OutFile "pesterchum3.14a.exe"
+OutFile "pesterchum3.14a.1.exe"
 
-InstallDir $PROGRAMFILES\Pesterchum
+InstallDir C:\Pesterchum
 
 InstallDirRegKey HKLM "Software\Pesterchum" "Install_Dir"
 RequestExecutionLevel admin
@@ -41,9 +41,11 @@ Section "Pesterchum"
 
   CreateDirectory "$SMPROGRAMS\Pesterchum"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
+  CreateShortcut "$DESKTOP\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-  
+  CreateShortcut "$SMPROGRAMS\Pesterchum\Logs.lnk" "$INSTDIR\logs"
+
 SectionEnd
 
 
