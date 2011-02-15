@@ -21,6 +21,7 @@ from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags, addTimeInitial
 from memos import PesterMemo, MemoTabWindow, TimeTracker
+from irc import PesterIRC
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -1656,6 +1657,26 @@ class PesterWindow(MovingWindow):
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
 
+class IRCThread(QtCore.QThread):
+    def __init__(self, ircobj):
+        QtCore.QThread.__init__(self)
+        self.irc = ircobj
+    def run(self):
+        irc = self.irc
+        irc.IRCConnect()
+        while 1:
+            if irc.brokenConnection:
+                irc.brokenConnection = False
+                self.restartIRC.emit()
+                irc.closeConnection()
+                irc.IRCConnect()
+            try:
+                irc.updateIRC()
+            except socket.error:
+                irc.setConnectionBroken()
+
+    restartIRC = QtCore.pyqtSignal()
+
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
         QtGui.QSystemTrayIcon.__init__(self, icon, parent)
@@ -1675,9 +1696,6 @@ class MainProgram(QtCore.QObject):
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
-        from qt4reactor import qt4reactor
-        qt4reactor.install()
-        from irc import PesterIRC
         if pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
             try:
@@ -1726,7 +1744,9 @@ class MainProgram(QtCore.QObject):
 
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
-        self.irc.IRCConnect()
+        self.ircapp = IRCThread(self.irc)
+        self.connect(self.ircapp, QtCore.SIGNAL('restartIRC()'),
+                     self, QtCore.SLOT('restartIRC()'))
 
     def connectWidgets(self, irc, widget):
         irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, QString)'),
@@ -1846,6 +1866,7 @@ class MainProgram(QtCore.QObject):
             sys.exit(0)
 
     def run(self):
+        self.ircapp.start()
         self.widget.loadingscreen = LoadingScreen(self.widget)
         self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                      self.widget, QtCore.SLOT('close()'))

@@ -29,8 +29,6 @@ from oyoyo.parse import *
 from oyoyo import helpers
 from oyoyo.cmdhandler import CommandError
 
-from datetime import *
-
 # Python < 3 compatibility
 if sys.version_info < (3,):
     class bytes(object):
@@ -127,7 +125,18 @@ class IRCClient:
 
         msg = bytes(" ", "ascii").join(bargs)
         logging.info('---> send "%s"' % msg)
-        self.socket.send(msg + bytes("\r\n", "ascii"))
+        try:
+            self.socket.send(msg + bytes("\r\n", "ascii"))
+        except socket.error, se:
+            try:  # a little dance of compatibility to get the errno
+                errno = e.errno
+            except AttributeError:
+                errno = e[0]                    
+            if not self.blocking and errno == 11:
+                print "O WELLS"
+                pass
+            else:
+                raise e
 
     def connect(self):
         """ initiates the connection to the server set in self.host:self.port 
@@ -157,16 +166,14 @@ class IRCClient:
             buffer = bytes()
             while not self._end:
                 try:
-                    #logfile.write("recv at %s\n" % datetime.now().strftime("%Y-%m-%d.%H.%M %S"))
                     buffer += self.socket.recv(1024)
-                    #logfile.write("recvd %s at %s\n" % (buffer, datetime.now().strftime("%Y-%m-%d.%H.%M %S")))
-                    #logfile.flush()
                 except socket.error, e:
                     try:  # a little dance of compatibility to get the errno
                         errno = e.errno
                     except AttributeError:
                         errno = e[0]                        
                     if not self.blocking and errno == 11:
+                        print "O WELLS"
                         pass
                     else:
                         raise e
