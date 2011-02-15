@@ -1,0 +1,55 @@
+Unpack this directory into your PYTHONPATH.
+
+test with:
+
+trial --reactor=qt4 twisted (or twisted.test or twisted.test.test_internet)
+
+= Contributors = 
+
+Many thanks to Darren Dale who provided the patch to fix the reactor for Qt4.4
+
+= Using the Qt4Reactor =
+
+In your own code, BEFORE you import the reactor...
+
+app = QApplication(sys.argv)
+import qt4reactor
+qt4reactor.install()
+
+= Gui =
+
+There is a way to run trial using a gui... in bin, there is a routine
+gtrial.  Put that in the same directory as trial and it pops up a
+trivial gui... hit the buton and it all runs the same... don't use the
+--reactor option when calling gtrial... but all the other options
+appear to work.  This was just to make sure there wasn't anything
+strange with guis which there doesn't appear to be
+
+If you're writing a conventional Qt application and just want twisted
+as an addon, you can get that by calling reactor.runReturn() instead
+of run().  This call needs to occur after your installation of of the
+reactor and after QApplication.exec_() (or QCoreApplication.exec_()
+whichever you are using.
+
+reactor.run() will also work as expected in a typical twisted application
+
+more docs in qt4reactor.py
+
+Note that if a QApplication or QCoreApplication instance isn't
+constructed prior to calling reactor run, an internally owned
+QCoreApplication is created and destroyed. This won't work if you call
+runReturn instead of run unless you take responsibility for wacking
+QCoreApplication yourself...
+
+However, most users want this reactor to do gui stuff so this
+shouldn't be an issue.
+
+Performance impact of Qt has been reduced by minimizing use of
+signaling which is expensive.  186s for qt4reactor vs 180s for select
+for entire twisted trial suite.
+
+-glenn
+
+--
+Glenn H. Tarbox, PhD
+glenn@tarbox.org

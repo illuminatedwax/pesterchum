@@ -29,6 +29,8 @@ from oyoyo.parse import *
 from oyoyo import helpers
 from oyoyo.cmdhandler import CommandError
 
+from datetime import *
+
 # Python < 3 compatibility
 if sys.version_info < (3,):
     class bytes(object):
