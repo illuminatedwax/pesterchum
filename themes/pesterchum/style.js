@@ -4,7 +4,7 @@
   "size": [232, 380],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
-  "windowtitle": "PESTERCHUM",
+  "windowtitle": "PESTERCHUM 6.0",
   "close": { "image": "$path/x.gif",
              "loc": [210, 2]},
   "minimize": { "image": "$path/m.gif",
@@ -22,8 +22,8 @@
                        "memos": "MEMOS",
                        "userlist": "USERLIST",
                        "import": "IMPORT",
+                       "reconnect": "RECONNECT",
 					   "idle": "IDLE",
-					   "reconnect": "RECONNECT",
                        "exit": "EXIT"},
             "profile": {"_name": "PROFILE",
                         "switch": "SWITCH",
@@ -65,6 +65,14 @@
 
                  "smooth": { "icon": "$path/smooth.gif", "color": "white" },
 
+                 "mystified": { "icon": "$path/mystified.gif", "color": "white" },
+
+                 "amazed": { "icon": "$path/amazed.gif", "color": "white" },
+
+                 "insolent": { "icon": "$path/insolent.gif", "color": "white" },
+
+                 "bemused": { "icon": "$path/bemused.gif", "color": "white" },
+
 
                  "ecstatic": { "icon": "$path/ecstatic.gif", "color": "red" },
 
@@ -104,9 +112,9 @@
   "mychumhandle": { "label": { "text": "CHUMHANDLE:",
                                "loc": [19,232],
                                "style": "color: rgba(255, 255, 0, 0%) ;font:bold; font-family: 'Courier';" },
-                    "handle": { "style": "background: black; padding: 3px; color:white; font-family:'Courier'; font:bold; text-align:left;",
+                    "handle": { "style": "background: rgba(0,0,0,0); padding: 3px; color:white; font-family:'Courier'; font:bold; text-align:left;",
                                 "loc": [36,246],
-                                "size": [190, 21] },
+                                "size": [180, 21] },
                     "colorswatch": { "loc": [196,246],
                                      "size": [23,21],
                                      "text": "" },
@@ -115,6 +123,7 @@
   "defaultwindow": { "style": "background: #fdb302; font-family:'Courier';font:bold;selection-background-color:#919191; " 
                    },
   "addchum":  { "style": "background: rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color: rgba(0, 0, 0, 0%); font-family:'Courier';",
+                "pressed" : "background: rgb(255, 255, 255, 30%);",
                 "loc": [12,202],
                 "size": [71, 22],
                 "text": ""
@@ -125,9 +134,10 @@
               "size": [71, 22],
               "text": ""
             },
-  "block": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",
-             "loc": [1500,202],
-             "size": [0, 0],
+  "block": { "style": "background:  rgba(255, 255, 0, 0%); border:2px solid #c48a00; font: bold; color:  rgba(255, 255, 0, 0%); font-family:'Courier';",          
+             "pressed" : "background: rgb(255, 255, 255, 30%);",
+             "loc": [81,202],
+             "size": [71, 22],
              "text": ""
            },
   "defaultmood": 0,
@@ -197,15 +207,15 @@
  "convo":
  {"style": "background-color: #fdb302;background-image:url($path/convobg.png);background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'",
   "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
-  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:white; border:2px solid #c48a00;",
+  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background: white; border:2px solid #c48a00;",
                  "handle": "background-color:#c48a00;min-height:20px;",
-                 "downarrow": "height:17px;border:2px solid #c48a00;", 
+                 "downarrow": "height:17px;border:0px solid #c48a00;", 
                  "darrowstyle": "image:url($path/downarrow.png);",
-                 "uparrow": "height:17px;border:2px solid #c48a00;",
+                 "uparrow": "height:17px;border:0px solid #c48a00;",
                  "uarrowstyle": "image:url($path/uparrow.png);"
                },
   "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
-  "size": [520, 325],
+  "size": [500, 325],
   "chumlabel": { "style": "margin-bottom: 21px;background: rgb(196, 138, 0); color: white; border:0px; font-size: 14px;",
                  "align": { "h": "center", "v": "center" },
                  "minheight": 47,
@@ -241,18 +251,18 @@
  "memos":
  {"memoicon": "$path/memo.png",
   "style": "background-color: #fdb302; background-image:url($path/convobg.png); background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'; font: bold; selection-background-color:#919191; ",
-  "size": [450,300],
+  "size": [500,325],
   "tabs": {
       "style": "",
       "selectedstyle": "",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
   },
-  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:white; border:2px solid #c48a00;",
+  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:  rgba(255, 255, 0, 0%); border:0px;",
                  "handle": "background-color:#c48a00;min-height:20px;",
-                 "downarrow": "height:17px;border:2px solid #c48a00;", 
+                 "downarrow": "height:17px;border:0px solid #c48a00;", 
                  "darrowstyle": "image:url($path/downarrow.png);",
-                 "uparrow": "height:17px;border:2px solid #c48a00;",
+                 "uparrow": "height:17px;border:0px solid #c48a00;",
                  "uarrowstyle": "image:url($path/uparrow.png);"
                },
   "label": { "text": "Bulletin Board: $channel",

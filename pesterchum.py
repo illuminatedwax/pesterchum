@@ -166,26 +166,27 @@ class pesterTheme(dict):
         keys = key.split("/")
         try:
             v = dict.__getitem__(self, keys.pop(0))
-        except KeyError:
-            return default
-        for k in keys:
-            try:
+            for k in keys:
                 v = v[k]
-            except KeyError:
+            return v
+        except KeyError:
+            if hasattr(self, 'inheritedTheme'):
+                return self.inheritedTheme.get(key, default)
+            else:
                 return default
-        return v
+
     def has_key(self, key):
         keys = key.split("/")
         try:
             v = dict.__getitem__(self, keys.pop(0))
-        except KeyError:
-            return False
-        for k in keys:
-            try:
+            for k in keys:
                 v = v[k]
-            except KeyError:
+            return True
+        except KeyError:
+            if hasattr(self, 'inheritedTheme'):
+                return self.inheritedTheme.has_key(key)
+            else:
                 return False
-        return True
 
 class userConfig(object):
     def __init__(self):
@@ -1082,6 +1083,8 @@ class PesterWindow(MovingWindow):
                                                                      
         if theme["main/mychumhandle/colorswatch/text"]:
             self.mychumcolor.setText(theme["main/mychumhandle/colorswatch/text"])
+        else:
+            self.mychumcolor.setText("")
 
         # sounds
         if not pygame.mixer:

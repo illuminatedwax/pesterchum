@@ -1,4 +1,6 @@
 Bugs:
+* heartbeat -- ping IRC occasionally so we pick up on send errors
+* need memo limit on time
 * color swatch text doesnt disappear
 * X and _ buttons move around all crazy like
 

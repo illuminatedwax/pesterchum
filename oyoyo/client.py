@@ -173,11 +173,13 @@ class IRCClient:
                     except AttributeError:
                         errno = e[0]                        
                     if not self.blocking and errno == 11:
-                        print "O WELLS"
                         pass
                     else:
                         raise e
                 else:
+                    if len(buffer) == 0 and self.blocking:
+                        raise socket.error("Connection closed")
+
                     data = buffer.split(bytes("\n", "ascii"))
                     buffer = data.pop()
 

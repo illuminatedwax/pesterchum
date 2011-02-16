@@ -22,7 +22,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.connect(self.tabs, QtCore.SIGNAL('tabCloseRequested(int)'),
                      self, QtCore.SLOT('tabClose(int)'))
 
-        self.initTheme(self.mainwindow.theme[convo])
+        self.initTheme(self.mainwindow.theme)
         self.layout = QtGui.QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.addWidget(self.tabs)
@@ -133,14 +133,14 @@ class PesterTabWindow(QtGui.QFrame):
         except KeyError:
             pass
         self.mainwindow.waitingMessages.messageAnswered(handle)
-    def initTheme(self, convo):
-        self.resize(*convo["size"])
-        self.setStyleSheet(convo["tabs"]["style"])
-        self.tabs.setShape(convo["tabs"]["tabstyle"])
-        self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (convo["tabs"]["style"], convo["tabs"]["selectedstyle"]))
+    def initTheme(self, theme):
+        self.resize(*theme["convo/size"])
+        self.setStyleSheet(theme["convo/tabs/style"])
+        self.tabs.setShape(theme["convo/tabs/tabstyle"])
+        self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (theme["convo/tabs/style"], theme["convo/tabs/selectedstyle"]))
 
     def changeTheme(self, theme):
-        self.initTheme(theme["convo"])
+        self.initTheme(theme)
         for c in self.convos.values():
             tabi = self.tabIndices[c.title()]
             self.tabs.setTabIcon(tabi, c.icon())
@@ -327,9 +327,9 @@ class PesterConvo(QtGui.QFrame):
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.chum = chum
         self.mainwindow = mainwindow
-        convo = self.mainwindow.theme["convo"]
-        self.resize(*convo["size"])
-        self.setStyleSheet("QFrame { %s }" % convo["style"])
+        theme = self.mainwindow.theme
+        self.resize(*theme["convo/size"])
+        self.setStyleSheet("QFrame { %s }" % theme["convo/style"])
         self.setWindowIcon(self.icon())
         self.setWindowTitle(self.title())
 
@@ -340,7 +340,7 @@ class PesterConvo(QtGui.QFrame):
         self.chumLabel.setAlignment(self.aligndict["h"][self.mainwindow.theme["convo/chumlabel/align/h"]] | self.aligndict["v"][self.mainwindow.theme["convo/chumlabel/align/v"]])
         self.chumLabel.setMaximumHeight(self.mainwindow.theme["convo/chumlabel/maxheight"])
         self.chumLabel.setMinimumHeight(self.mainwindow.theme["convo/chumlabel/minheight"])
-        self.chumLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding))
+        self.chumLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding))
         self.textArea = PesterText(self.mainwindow.theme, self)
         self.textInput = PesterInput(self.mainwindow.theme, self)
         self.textInput.setFocus()
