@@ -24,10 +24,14 @@ class PesterIRC(QtCore.QObject):
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
         self.brokenConnection = False
+        self.connectedIRC = False
     def closeConnection(self):
         self.cli.close()
     def setConnectionBroken(self, broken=True):
         self.brokenConnection = True
+    def setConnected(self):
+        self.connectedIRC = True
+        self.connected.emit()
     @QtCore.pyqtSlot(PesterProfile)
     def getMood(self, *chums):
         self.cli.command_handler.getMood(*chums)
@@ -178,6 +182,7 @@ class PesterIRC(QtCore.QObject):
 
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
+        msg = msg.decode("utf-8")
         # display msg, do other stuff
         if len(msg) == 0:
             return
@@ -223,7 +228,7 @@ class PesterHandler(DefaultCommandHandler):
 
 
     def welcome(self, server, nick, msg):
-        self.parent.connected.emit()
+        self.parent.setConnected()
         helpers.join(self.client, "#pesterchum")
         mychumhandle = self.mainwindow.profile().handle
         mymood = self.mainwindow.profile().mood.value()

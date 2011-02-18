@@ -129,14 +129,13 @@ class IRCClient:
             self.socket.send(msg + bytes("\r\n", "ascii"))
         except socket.error, se:
             try:  # a little dance of compatibility to get the errno
-                errno = e.errno
+                errno = se.errno
             except AttributeError:
-                errno = e[0]                    
+                errno = se[0]                    
             if not self.blocking and errno == 11:
-                print "O WELLS"
                 pass
             else:
-                raise e
+                raise se
 
     def connect(self):
         """ initiates the connection to the server set in self.host:self.port 
@@ -192,7 +191,13 @@ class IRCClient:
                             pass 
 
                 yield True
-        finally:
+        except socket.error, se:
+            if self.socket: 
+                logging.info('closing socket')
+                self.socket.close()
+            print se
+            raise se
+        else:
             if self.socket: 
                 logging.info('closing socket')
                 self.socket.close()

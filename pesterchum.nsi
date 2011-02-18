@@ -3,7 +3,7 @@
 Name "PESTERCHUM3.14a"
 
 ; The file to write
-OutFile "pesterchum3.14a.1.exe"
+OutFile "pesterchum3.14a.3.exe"
 
 InstallDir C:\Pesterchum
 

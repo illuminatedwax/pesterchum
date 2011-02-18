@@ -636,15 +636,23 @@ class LoadingScreen(QtGui.QDialog):
         self.mainwindow = parent
         self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
 
-        self.loadinglabel = QtGui.QLabel("LO4D1NG")
-        self.cancel = QtGui.QPushButton("QU1T >:?")
+        self.loadinglabel = QtGui.QLabel("CONN3CT1NG", self)
+        self.cancel = QtGui.QPushButton("QU1T >:?", self)
+        self.ok = QtGui.QPushButton("R3CONN3CT >:]", self)
         self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('reject()'))
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SIGNAL('tryAgain()'))
 
         self.layout = QtGui.QVBoxLayout()
         self.layout.addWidget(self.loadinglabel)
-        self.layout.addWidget(self.cancel)
+        layout_1 = QtGui.QHBoxLayout()
+        layout_1.addWidget(self.cancel)
+        layout_1.addWidget(self.ok)
+        self.layout.addLayout(layout_1)
         self.setLayout(self.layout)
+
+    tryAgain = QtCore.pyqtSignal()
 
 class AboutPesterchum(QtGui.QMessageBox):
     def __init__(self, parent=None):

@@ -1675,10 +1675,17 @@ class IRCThread(QtCore.QThread):
                 irc.IRCConnect()
             try:
                 irc.updateIRC()
-            except socket.error:
-                irc.setConnectionBroken()
+            except socket.error, se:
+                if irc.connectedIRC:
+                    irc.setConnectionBroken()
+                else:
+                    irc.closeConnection()
+                    self.failedIRC.emit()
+            except StopIteration:
+                pass
 
     restartIRC = QtCore.pyqtSignal()
+    failedIRC = QtCore.pyqtSignal()
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -1750,6 +1757,8 @@ class MainProgram(QtCore.QObject):
         self.ircapp = IRCThread(self.irc)
         self.connect(self.ircapp, QtCore.SIGNAL('restartIRC()'),
                      self, QtCore.SLOT('restartIRC()'))
+        self.connect(self.ircapp, QtCore.SIGNAL('failedIRC()'),
+                     self, QtCore.SLOT('failedIRC()'))
 
     def connectWidgets(self, irc, widget):
         irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, QString)'),
@@ -1858,21 +1867,53 @@ class MainProgram(QtCore.QObject):
                     QtCore.SLOT('timeCommand(QString, QString, QString)'))
 
     @QtCore.pyqtSlot()
+    def tryAgain(self):
+        self.ircapp.irc.closeConnection()
+        self.ircapp.irc.IRCConnect()
+        labeltxt = self.widget.loadingscreen.loadinglabel.text()
+        if labeltxt != "R3CONN3CT1NG":
+            self.widget.loadingscreen.loadinglabel.setText("R3CONN3CTING")
+        elif labeltxt[0:12] == "R3CONN3CT1NG":
+            i = int(labeltxt[13:])
+            self.widget.loadingscreen.loadinglabel.setText("R3CONN3CTING %d" (i+1))
+
+    @QtCore.pyqtSlot()
     def restartIRC(self):
+        # tell ppl that we're restarting
         self.widget.show()
         self.widget.activateWindow()
         self.widget.loadingscreen = LoadingScreen(self.widget)
         self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                      self.widget, QtCore.SLOT('close()'))
+        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
+                     self, QtCore.SLOT('tryAgain()'))                     
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)
+    @QtCore.pyqtSlot()
+    def failedIRC(self):
+        self.widget.show()
+        self.widget.activateWindow()
+        if not self.widget.loadingscreen:
+            self.widget.loadingscreen = LoadingScreen(self.widget)
+            self.widget.loadingscreen.loadinglabel.setText("F41L3D")
+            self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
+                         self.widget, QtCore.SLOT('close()'))
+            self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
+                         self, QtCore.SLOT('tryAgain()'))                     
+            status = self.widget.loadingscreen.exec_()
+            if status == QtGui.QDialog.Rejected:
+                sys.exit(0)
+        else:
+            self.widget.loadingscreen.loadinglabel.setText("F41L3D")
 
     def run(self):
         self.ircapp.start()
         self.widget.loadingscreen = LoadingScreen(self.widget)
         self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                      self.widget, QtCore.SLOT('close()'))
+        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
+                     self, QtCore.SLOT('tryAgain()'))                     
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)
