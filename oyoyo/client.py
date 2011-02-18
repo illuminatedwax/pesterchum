@@ -156,6 +156,7 @@ class IRCClient:
                 self.socket.setblocking(0)
             #if self.timeout:
             #    self.socket.settimeout(self.timeout)
+            self.socket.settimeout(10)
             helpers.nick(self, self.nick)
             helpers.user(self, self.nick, self.real_name)
 
@@ -166,6 +167,9 @@ class IRCClient:
             while not self._end:
                 try:
                     buffer += self.socket.recv(1024)
+                except socket.timeout, e:
+                    yield True
+                    continue
                 except socket.error, e:
                     try:  # a little dance of compatibility to get the errno
                         errno = e.errno
