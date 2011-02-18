@@ -53,6 +53,11 @@ def txt2delta(txt):
         timed = timedelta(0, h*3600+m*60)
     except ValueError:
         timed = timedelta(0)
+    except OverflowError:
+        if sign < 0:
+            return timedelta(min)
+        else:
+            return timedelta(max)
     return sign*timed
 
 def pcfGrammar(td):

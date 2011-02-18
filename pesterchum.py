@@ -1680,12 +1680,12 @@ class IRCThread(QtCore.QThread):
                     irc.setConnectionBroken()
                 else:
                     irc.closeConnection()
-                    self.failedIRC.emit()
+                    self.failedIRC.emit(str(se))
             except StopIteration:
                 pass
 
     restartIRC = QtCore.pyqtSignal()
-    failedIRC = QtCore.pyqtSignal()
+    failedIRC = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -1757,8 +1757,8 @@ class MainProgram(QtCore.QObject):
         self.ircapp = IRCThread(self.irc)
         self.connect(self.ircapp, QtCore.SIGNAL('restartIRC()'),
                      self, QtCore.SLOT('restartIRC()'))
-        self.connect(self.ircapp, QtCore.SIGNAL('failedIRC()'),
-                     self, QtCore.SLOT('failedIRC()'))
+        self.connect(self.ircapp, QtCore.SIGNAL('failedIRC(QString)'),
+                     self, QtCore.SLOT('failedIRC(QString)'))
 
     def connectWidgets(self, irc, widget):
         irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, QString)'),
@@ -1890,13 +1890,13 @@ class MainProgram(QtCore.QObject):
         status = self.widget.loadingscreen.exec_()
         if status == QtGui.QDialog.Rejected:
             sys.exit(0)
-    @QtCore.pyqtSlot()
-    def failedIRC(self):
+    @QtCore.pyqtSlot(QtCore.QString)
+    def failedIRC(self, reason):
         self.widget.show()
         self.widget.activateWindow()
         if not self.widget.loadingscreen:
             self.widget.loadingscreen = LoadingScreen(self.widget)
-            self.widget.loadingscreen.loadinglabel.setText("F41L3D")
+            self.widget.loadingscreen.loadinglabel.setText("F41L3D: %s" % (reason))
             self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
                          self.widget, QtCore.SLOT('close()'))
             self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
@@ -1905,7 +1905,7 @@ class MainProgram(QtCore.QObject):
             if status == QtGui.QDialog.Rejected:
                 sys.exit(0)
         else:
-            self.widget.loadingscreen.loadinglabel.setText("F41L3D")
+            self.widget.loadingscreen.loadinglabel.setText("F41L3D: %s" % (reason))
 
     def run(self):
         self.ircapp.start()
