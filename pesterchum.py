@@ -168,7 +168,7 @@ class pesterTheme(dict):
             v = dict.__getitem__(self, keys.pop(0))
             for k in keys:
                 v = v[k]
-            return v
+            return default if v is None else v
         except KeyError:
             if hasattr(self, 'inheritedTheme'):
                 return self.inheritedTheme.get(key, default)
@@ -181,7 +181,7 @@ class pesterTheme(dict):
             v = dict.__getitem__(self, keys.pop(0))
             for k in keys:
                 v = v[k]
-            return True
+            return False if v is None else True
         except KeyError:
             if hasattr(self, 'inheritedTheme'):
                 return self.inheritedTheme.has_key(key)
@@ -1667,22 +1667,33 @@ class IRCThread(QtCore.QThread):
     def run(self):
         irc = self.irc
         irc.IRCConnect()
-        while 1:
-            if irc.brokenConnection:
-                irc.brokenConnection = False
-                self.restartIRC.emit()
+        timer = QtCore.QTimer(self)
+        self.connect(timer, QtCore.SIGNAL('timeout()'),
+                     self, QtCore.SLOT('updateIRC()'))
+        timer.start()
+        self.exec_()
+    @QtCore.pyqtSlot()
+    def updateIRC(self):
+        irc = self.irc
+        if irc.brokenConnection:
+            irc.brokenConnection = False
+            self.restartIRC.emit()
+            irc.closeConnection()
+            irc.IRCConnect()
+        try:
+            res = irc.updateIRC()
+        except socket.timeout, se:
+            if not irc.registeredIRC:
                 irc.closeConnection()
-                irc.IRCConnect()
-            try:
-                irc.updateIRC()
-            except socket.error, se:
-                if irc.connectedIRC:
-                    irc.setConnectionBroken()
-                else:
-                    irc.closeConnection()
-                    self.failedIRC.emit(str(se))
-            except StopIteration:
-                pass
+                self.failedIRC.emit("Connection timed out")
+        except socket.error, se:
+            if irc.registeredIRC:
+                irc.setConnectionBroken()
+            else:
+                irc.closeConnection()
+                self.failedIRC.emit(str(se))
+        except StopIteration:
+            pass
 
     restartIRC = QtCore.pyqtSignal()
     failedIRC = QtCore.pyqtSignal(QtCore.QString)
@@ -1868,14 +1879,8 @@ class MainProgram(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def tryAgain(self):
-        self.ircapp.irc.closeConnection()
-        self.ircapp.irc.IRCConnect()
-        labeltxt = self.widget.loadingscreen.loadinglabel.text()
-        if labeltxt != "R3CONN3CT1NG":
-            self.widget.loadingscreen.loadinglabel.setText("R3CONN3CTING")
-        elif labeltxt[0:12] == "R3CONN3CT1NG":
-            i = int(labeltxt[13:])
-            self.widget.loadingscreen.loadinglabel.setText("R3CONN3CTING %d" (i+1))
+        self.ircapp.quit()
+        print "Quit?"
 
     @QtCore.pyqtSlot()
     def restartIRC(self):

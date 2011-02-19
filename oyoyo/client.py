@@ -168,8 +168,7 @@ class IRCClient:
                 try:
                     buffer += self.socket.recv(1024)
                 except socket.timeout, e:
-                    yield True
-                    continue
+                    raise e
                 except socket.error, e:
                     try:  # a little dance of compatibility to get the errno
                         errno = e.errno
@@ -195,6 +194,8 @@ class IRCClient:
                             pass 
 
                 yield True
+        except socket.timeout, se:
+            raise se
         except socket.error, se:
             if self.socket: 
                 logging.info('closing socket')
@@ -206,7 +207,9 @@ class IRCClient:
                 logging.info('closing socket')
                 self.socket.close()
     def close(self):
-        self.socket.close()
+        if self.socket:
+            logging.info('closing socket')
+            self.socket.close()
 
 class IRCApp:
     """ This class manages several IRCClient instances without the use of threads.

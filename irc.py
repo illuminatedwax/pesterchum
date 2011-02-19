@@ -24,13 +24,15 @@ class PesterIRC(QtCore.QObject):
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
         self.brokenConnection = False
-        self.connectedIRC = False
+        self.registeredIRC = False
     def closeConnection(self):
-        self.cli.close()
+        if self.cli:
+            self.cli.close()
+        self.cli = None
     def setConnectionBroken(self, broken=True):
         self.brokenConnection = True
     def setConnected(self):
-        self.connectedIRC = True
+        self.registeredIRC = True
         self.connected.emit()
     @QtCore.pyqtSlot(PesterProfile)
     def getMood(self, *chums):
@@ -166,7 +168,7 @@ class PesterIRC(QtCore.QObject):
         self.setConnectionBroken()
 
     def updateIRC(self):
-        self.conn.next()
+        return self.conn.next()
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)

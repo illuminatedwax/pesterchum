@@ -47,7 +47,7 @@
            },
   "moodlabel": { "style": "font:bold;font-family:'Courier';color:black;",
 				 "loc": [12, 466],
-				 "text": "MOODS:"
+				 "text": "MOOD:"
 			   },
   "moods": [
       { "style": "text-align:left; background:#ffff00;border:2px solid #c48a00;color: black; font-family:'Courier'; font:bold; padding-left:3px;", 
