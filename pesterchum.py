@@ -820,9 +820,6 @@ class PesterWindow(MovingWindow):
 
         if not self.config.defaultprofile():
             self.changeProfile()
-        self.loadingscreen = LoadingScreen(self)
-        self.connect(self.loadingscreen, QtCore.SIGNAL('rejected()'),
-                     self, QtCore.SLOT('close()'))
 
     def profile(self):
         return self.userprofile.chat
@@ -1618,6 +1615,9 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def nickCollision(self, handle, tmphandle):
         self.mychumhandle.setText(tmphandle)
+        self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
+        self.changeTheme(self.userprofile.getTheme())
+
         if not hasattr(self, 'chooseprofile'):
             self.chooseprofile = None
         if not self.chooseprofile:
@@ -1659,44 +1659,6 @@ class PesterWindow(MovingWindow):
     setChannelMode = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
-
-class IRCThread(QtCore.QThread):
-    def __init__(self, ircobj):
-        QtCore.QThread.__init__(self)
-        self.irc = ircobj
-    def run(self):
-        irc = self.irc
-        irc.IRCConnect()
-        timer = QtCore.QTimer(self)
-        self.connect(timer, QtCore.SIGNAL('timeout()'),
-                     self, QtCore.SLOT('updateIRC()'))
-        timer.start()
-        self.exec_()
-    @QtCore.pyqtSlot()
-    def updateIRC(self):
-        irc = self.irc
-        if irc.brokenConnection:
-            irc.brokenConnection = False
-            self.restartIRC.emit()
-            irc.closeConnection()
-            irc.IRCConnect()
-        try:
-            res = irc.updateIRC()
-        except socket.timeout, se:
-            if not irc.registeredIRC:
-                irc.closeConnection()
-                self.failedIRC.emit("Connection timed out")
-        except socket.error, se:
-            if irc.registeredIRC:
-                irc.setConnectionBroken()
-            else:
-                irc.closeConnection()
-                self.failedIRC.emit(str(se))
-        except StopIteration:
-            pass
-
-    restartIRC = QtCore.pyqtSignal()
-    failedIRC = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -1764,164 +1726,113 @@ class MainProgram(QtCore.QObject):
                               QtCore.SLOT('mainWindowClosed()'))
 
         self.irc = PesterIRC(self.widget.config, self.widget)
-        self.connectWidgets(self.irc, self.widget)
-        self.ircapp = IRCThread(self.irc)
-        self.connect(self.ircapp, QtCore.SIGNAL('restartIRC()'),
+        self.connect(self.irc, QtCore.SIGNAL('finished()'),
                      self, QtCore.SLOT('restartIRC()'))
-        self.connect(self.ircapp, QtCore.SIGNAL('failedIRC(QString)'),
-                     self, QtCore.SLOT('failedIRC(QString)'))
+        self.connectWidgets(self.irc, self.widget)
 
+    widget2irc = [('sendMessage(QString, QString)', 
+                   'sendMessage(QString, QString)'),
+                  ('newConvoStarted(QString, bool)',
+                   'startConvo(QString, bool)'),
+                  ('convoClosed(QString)',
+                   'endConvo(QString)'),
+                  ('profileChanged()',
+                   'updateProfile()'),
+                  ('moodRequest(PyQt_PyObject)',
+                   'getMood(PyQt_PyObject)'),
+                  ('moodsRequest(PyQt_PyObject)',
+                   'getMoods(PyQt_PyObject)'),
+                  ('moodUpdated()', 'updateMood()'),
+                  ('mycolorUpdated()','updateColor()'),
+                  ('blockedChum(QString)', 'blockedChum(QString)'),
+                  ('unblockedChum(QString)', 'unblockedChum(QString)'),
+                  ('requestNames(QString)','requestNames(QString)'),
+                  ('requestChannelList()', 'requestChannelList()'),
+                  ('joinChannel(QString)', 'joinChannel(QString)'),
+                  ('leftChannel(QString)', 'leftChannel(QString)'),
+                  ('kickUser(QString, QString)', 
+                   'kickUser(QString, QString)'),
+                  ('setChannelMode(QString, QString, QString)',
+                   'setChannelMode(QString, QString, QString)'),
+                  ('reconnectIRC()', 'reconnectIRC()')                    
+                  ]
+# IRC --> Main window
+    irc2widget = [('connected()', 'connected()'),
+                  ('moodUpdated(QString, PyQt_PyObject)', 
+                   'updateMoodSlot(QString, PyQt_PyObject)'),
+                  ('colorUpdated(QString, QColor)',
+                   'updateColorSlot(QString, QColor)'),
+                  ('messageReceived(QString, QString)',
+                   'deliverMessage(QString, QString)'),
+                  ('memoReceived(QString, QString, QString)',
+                   'deliverMemo(QString, QString, QString)'),
+                  ('nickCollision(QString, QString)',
+                   'nickCollision(QString, QString)'),
+                  ('namesReceived(QString, PyQt_PyObject)',
+                   'updateNames(QString, PyQt_PyObject)'),
+                  ('userPresentUpdate(QString, QString, QString)',
+                   'userPresentUpdate(QString, QString, QString)'),
+                  ('channelListReceived(PyQt_PyObject)',
+                   'updateChannelList(PyQt_PyObject)'),
+                  ('timeCommand(QString, QString, QString)',
+                   'timeCommand(QString, QString, QString)')
+                  ]
     def connectWidgets(self, irc, widget):
-        irc.connect(widget, QtCore.SIGNAL('sendMessage(QString, QString)'),
-                    irc, QtCore.SLOT('sendMessage(QString, QString)'))
-        irc.connect(widget, 
-                    QtCore.SIGNAL('newConvoStarted(QString, bool)'),
-                    irc, QtCore.SLOT('startConvo(QString, bool)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('convoClosed(QString)'),
-                    irc, QtCore.SLOT('endConvo(QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('profileChanged()'),
-                    irc,
-                    QtCore.SLOT('updateProfile()'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('moodRequest(PyQt_PyObject)'),
-                    irc,
-                    QtCore.SLOT('getMood(PyQt_PyObject)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('moodsRequest(PyQt_PyObject)'),
-                    irc,
-                    QtCore.SLOT('getMoods(PyQt_PyObject)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('moodUpdated()'),
-                    irc,
-                    QtCore.SLOT('updateMood()'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('mycolorUpdated()'),
-                    irc,
-                    QtCore.SLOT('updateColor()'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('blockedChum(QString)'),
-                    irc,
-                    QtCore.SLOT('blockedChum(QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('unblockedChum(QString)'),
-                    irc,
-                    QtCore.SLOT('unblockedChum(QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('requestNames(QString)'),
-                    irc,
-                    QtCore.SLOT('requestNames(QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('requestChannelList()'),
-                    irc,
-                    QtCore.SLOT('requestChannelList()'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('joinChannel(QString)'),
-                    irc,
-                    QtCore.SLOT('joinChannel(QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('leftChannel(QString)'),
-                    irc,
-                    QtCore.SLOT('leftChannel(QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('kickUser(QString, QString)'),
-                    irc,
-                    QtCore.SLOT('kickUser(QString, QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('setChannelMode(QString, QString, QString)'),
-                    irc,
-                    QtCore.SLOT('setChannelMode(QString, QString, QString)'))
-        irc.connect(widget,
-                    QtCore.SIGNAL('reconnectIRC()'),
-                    irc,
-                    QtCore.SLOT('reconnectIRC()'))
+        for c in self.widget2irc:
+            self.connect(widget, QtCore.SIGNAL(c[0]),
+                         irc, QtCore.SLOT(c[1]))
+        for c in self.irc2widget:
+            self.connect(irc, QtCore.SIGNAL(c[0]),
+                         widget, QtCore.SLOT(c[1]))
+    def disconnectWidgets(self, irc, widget):
+        for c in self.widget2irc:
+            self.disconnect(widget, QtCore.SIGNAL(c[0]),
+                            irc, QtCore.SLOT(c[1]))
+        for c in self.irc2widget:
+            self.disconnect(irc, QtCore.SIGNAL(c[0]),
+                            widget, QtCore.SLOT(c[1]))
 
-    # IRC --> Main window
-        irc.connect(irc, QtCore.SIGNAL('connected()'),
-                    widget, QtCore.SLOT('connected()'))
-        irc.connect(irc, 
-                    QtCore.SIGNAL('moodUpdated(QString, PyQt_PyObject)'),
-                    widget, 
-                    QtCore.SLOT('updateMoodSlot(QString, PyQt_PyObject)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('colorUpdated(QString, QColor)'),
-                    widget,
-                    QtCore.SLOT('updateColorSlot(QString, QColor)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('messageReceived(QString, QString)'),
-                    widget,
-                    QtCore.SLOT('deliverMessage(QString, QString)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('memoReceived(QString, QString, QString)'),
-                    widget,
-                    QtCore.SLOT('deliverMemo(QString, QString, QString)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('nickCollision(QString, QString)'),
-                    widget,
-                    QtCore.SLOT('nickCollision(QString, QString)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('namesReceived(QString, PyQt_PyObject)'),
-                    widget,
-                    QtCore.SLOT('updateNames(QString, PyQt_PyObject)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('userPresentUpdate(QString, QString, QString)'),
-                    widget,
-                    QtCore.SLOT('userPresentUpdate(QString, QString, QString)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('channelListReceived(PyQt_PyObject)'),
-                    widget,
-                    QtCore.SLOT('updateChannelList(PyQt_PyObject)'))
-        irc.connect(irc,
-                    QtCore.SIGNAL('timeCommand(QString, QString, QString)'),
-                    widget,
-                    QtCore.SLOT('timeCommand(QString, QString, QString)'))
+    def showLoading(self, widget, msg="CONN3CT1NG"):
+        self.widget.show()
+        self.widget.activateWindow()
+        widget.loadingscreen = LoadingScreen(widget)
+        widget.loadingscreen.loadinglabel.setText(msg)
+        self.connect(widget.loadingscreen, QtCore.SIGNAL('rejected()'),
+                     widget, QtCore.SLOT('close()'))
+        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
+                     self, QtCore.SLOT('tryAgain()'))
+        status = widget.loadingscreen.exec_()
+        if status == QtGui.QDialog.Rejected:
+            sys.exit(0)
 
     @QtCore.pyqtSlot()
     def tryAgain(self):
-        self.ircapp.quit()
-        print "Quit?"
-
+        if self.loadingscreen:
+            self.loadingscreen.accept()
+        self.restartIRC()
     @QtCore.pyqtSlot()
     def restartIRC(self):
-        # tell ppl that we're restarting
-        self.widget.show()
-        self.widget.activateWindow()
-        self.widget.loadingscreen = LoadingScreen(self.widget)
-        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
-                     self.widget, QtCore.SLOT('close()'))
-        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
-                     self, QtCore.SLOT('tryAgain()'))                     
-        status = self.widget.loadingscreen.exec_()
-        if status == QtGui.QDialog.Rejected:
-            sys.exit(0)
-    @QtCore.pyqtSlot(QtCore.QString)
-    def failedIRC(self, reason):
-        self.widget.show()
-        self.widget.activateWindow()
-        if not self.widget.loadingscreen:
-            self.widget.loadingscreen = LoadingScreen(self.widget)
-            self.widget.loadingscreen.loadinglabel.setText("F41L3D: %s" % (reason))
-            self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
-                         self.widget, QtCore.SLOT('close()'))
-            self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
-                         self, QtCore.SLOT('tryAgain()'))                     
-            status = self.widget.loadingscreen.exec_()
-            if status == QtGui.QDialog.Rejected:
-                sys.exit(0)
+        if self.irc:
+            self.disconnectWidgets(self.irc, self.widget)
+            self.disconnect(self.irc, QtCore.SIGNAL('finished()'),
+                            self, QtCore.SLOT('restartIRC()'))
+            stop = self.irc.stopIRC
+            del self.irc
         else:
-            self.widget.loadingscreen.loadinglabel.setText("F41L3D: %s" % (reason))
+            stop = None
+        if not stop:
+            self.irc = PesterIRC(self.widget.config, self.widget)
+            self.connect(self.irc, QtCore.SIGNAL('finished()'),
+                         self, QtCore.SLOT('restartIRC()'))
+            self.connectWidgets(self.irc, self.widget)
+            self.irc.start()
+            self.showLoading(self.widget)
+        else:
+            self.showLoading(self.widget, "F41L3D: %s" % stop)
 
     def run(self):
-        self.ircapp.start()
-        self.widget.loadingscreen = LoadingScreen(self.widget)
-        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('rejected()'),
-                     self.widget, QtCore.SLOT('close()'))
-        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
-                     self, QtCore.SLOT('tryAgain()'))                     
-        status = self.widget.loadingscreen.exec_()
-        if status == QtGui.QDialog.Rejected:
-            sys.exit(0)
+        self.irc.start()
+        self.showLoading(self.widget)
         sys.exit(self.app.exec_())
 
 pesterchum = MainProgram()

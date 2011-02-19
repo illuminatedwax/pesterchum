@@ -82,6 +82,7 @@ class IRCClient:
         ...
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print "initalizing socket %d" % (self.socket.fileno())
         self.nick = None
         self.real_name = None
         self.host = None
@@ -200,16 +201,16 @@ class IRCClient:
             if self.socket: 
                 logging.info('closing socket')
                 self.socket.close()
-            print se
             raise se
         else:
             if self.socket: 
                 logging.info('closing socket')
                 self.socket.close()
     def close(self):
+        # with extreme prejudice
         if self.socket:
-            logging.info('closing socket')
-            self.socket.close()
+            logging.info('shutdown socket')
+            self.socket.shutdown(socket.SHUT_RDWR)
 
 class IRCApp:
     """ This class manages several IRCClient instances without the use of threads.

@@ -1,5 +1,5 @@
 Bugs:
-* heartbeat -- ping IRC occasionally so we pick up on send errors
+* idle doesnt seem to work?
 * X and _ buttons move around all crazy like
 
 Features:

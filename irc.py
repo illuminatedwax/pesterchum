@@ -11,9 +11,9 @@ from generic import PesterList
 
 logging.basicConfig(level=logging.INFO)
 
-class PesterIRC(QtCore.QObject):
+class PesterIRC(QtCore.QThread):
     def __init__(self, config, window):
-        QtCore.QObject.__init__(self)
+        QtCore.QThread.__init__(self)
         self.mainwindow = window
         self.config = config
     def IRCConnect(self):
@@ -25,15 +25,41 @@ class PesterIRC(QtCore.QObject):
         self.conn = self.cli.connect()
         self.brokenConnection = False
         self.registeredIRC = False
-    def closeConnection(self):
-        if self.cli:
-            self.cli.close()
-        self.cli = None
-    def setConnectionBroken(self, broken=True):
-        self.brokenConnection = True
+    def run(self):
+        self.IRCConnect()
+        while 1:
+            try:
+                self.updateIRC()
+            except socket.error, se:
+                if self.registeredIRC:
+                    self.stopIRC = None
+                else:
+                    self.stopIRC = se
+                return
+                
     def setConnected(self):
         self.registeredIRC = True
         self.connected.emit()
+    def setConnectionBroken(self):
+        self.reconnectIRC()
+        #self.brokenConnection = True
+    @QtCore.pyqtSlot()
+    def updateIRC(self):
+        try:
+            res = self.conn.next()
+        except socket.timeout, se:
+            if self.registeredIRC:
+                return
+            else:
+                raise se
+        except socket.error, se:
+            raise se
+        except StopIteration:
+            pass
+    @QtCore.pyqtSlot()
+    def reconnectIRC(self):
+        self.cli.close()
+
     @QtCore.pyqtSlot(PesterProfile)
     def getMood(self, *chums):
         self.cli.command_handler.getMood(*chums)
@@ -163,12 +189,6 @@ class PesterIRC(QtCore.QObject):
             helpers.mode(self.cli, c, m, cmd)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot()
-    def reconnectIRC(self):
-        self.setConnectionBroken()
-
-    def updateIRC(self):
-        return self.conn.next()
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
