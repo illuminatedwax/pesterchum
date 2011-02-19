@@ -1,0 +1,162 @@
+#PESTERCHUM STYLE
+
+// The title will appear at the top of the window.
+// Instead of a space in the name or title, use an '_'. It will come out as a space.
+// The name and author will only be in the 'about' section.
+// The name you will enter in the 'options' is the name of the folder this is in.
+// The alarm only plays when a message is recieved.
+// The mode can be set to 'regular' or 'trollian'.
+
+name Pesterchum
+title Pesterchum
+author Grimlive95
+alarm alarm.wav
+mode regular
+
+// Colors are in the format of 'red/green/blue/alpha', alpha being transparency.
+// 255 is solid and 000 is invisible.
+
+// MAIN WINDOW
+
+// If you have a background image, set 'c 3' alpa to '000'.
+// If your background image has a header on it, do the same with the title text color.
+
+c 1 000 000 000 000 // title text
+c 2 000 000 000 255 // chumhandle/ mood label text
+c 3 000 000 000 255 // outside menu text
+c 4 000 000 000 255 // inside menu text
+c 5 255 181 000 000 // main background
+c 6 255 181 000 255 // menu background
+
+// BUTTONS
+
+// Main buttons are the moods that aren't 'rancorous', the 'pester' and 'add chum' buttons.
+// They are also the buttons on the Options, Quirks Manager, and Trollslum.
+// Block buttons are the 'rancorous' and 'block' buttons.
+
+c 7 196 135 000 255 // main button borders
+c 8 196 135 000 255 // block button borders
+c 9 196 135 000 255 // offline button border
+
+c 10 255 255 000 255 // main buttons
+c 11 240 000 000 255 // block buttons
+c 12 000 000 000 255 // offline button
+
+c 13 000 000 000 255 // main button text
+c 14 000 000 000 255 // block button text
+c 15 255 255 255 255 // offline button text
+
+// CHUMROLL & CHUMHANDLE
+
+c 16 255 255 000 255 // chumroll border
+c 17 000 000 000 255 // chumroll background
+c 18 150 150 150 255 // chumroll highlight
+
+c 19 100 100 100 255 // chumroll usertext
+c 20 255 255 255 255 // chumroll highlighted usertext
+
+c 21 255 255 000 255 // my chumhandle border
+c 22 000 000 000 255 // my chumhandle background
+c 23 255 255 255 255 // my chumhandle usertext
+
+// PESTER WINDOW
+
+c 24 255 181 000 255 // pester window background
+c 25 255 255 255 255 // pesterlog background
+c 26 255 255 255 255 // text field background
+c 27 000 000 000 255 // text field text color
+
+c 28 196 135 000 255 // pesterwindow topbar
+c 29 255 255 255 255 // pesterwindow top bar text
+
+c 30 196 135 000 255 // pesterlog border
+c 31 196 135 000 255 // text field border
+
+// PESTER WINDOW BUTTONS
+
+c 32 196 135 000 255 // main button borders
+c 33 196 135 000 255 // block button border
+
+c 34 255 255 000 255 // main buttons
+c 35 255 000 000 255 // block button
+
+c 36 000 000 000 255 // pesterwindow button text
+c 37 000 000 000 255 // pesterwindow block button text
+
+// OPTIONS WINDOW
+
+c 38 255 181 000 255 // background
+c 39 000 000 000 255 // text color
+c 40 196 135 000 255 // button borders
+c 41 255 255 000 255 // buttons
+c 42 000 000 000 255 // button text
+
+// QUIRKS MANAGER WINDOW
+
+c 43 255 181 000 255 // background
+c 44 000 000 000 255 // text color
+c 45 196 135 000 255 // button borders
+c 46 255 255 000 255 // buttons
+c 47 000 000 000 255 // button text
+
+// TROLLSLUM WINDOW
+
+c 48 255 181 000 255 // background
+c 49 000 000 000 255 // text color
+c 50 196 135 000 255 // button borders
+c 51 255 255 000 255 // buttons
+c 52 000 000 000 255 // button text
+
+// FONTS (In the format: Font_name MODE size)
+
+// menu is for the top menu.
+// tagandmood is for the CHUMHANDLE and MOOD labels.
+// message is for the text field in the pester window.
+// topbar is for the ::nameName:: text on the top of the pester window.
+// tray is for your tray popups.
+// debug is for the debug console.
+
+f title Courier BOLD 14
+f menu Courier BOLD 12
+f buttons Courier BOLD 14
+
+f tagandmood Courier BOLD 14
+f chumroll Courier BOLD 14
+f chumhandle Courier BOLD 14
+
+f message Courier BOLD 13 
+f topbar Courier BOLD 13 
+
+f tray Courier BOLD 12
+
+f debug Courier BOLD 13
+
+// PESTERCHUM MOOD ICONS
+
+i ichummy chummy.gif
+i ipleasant pleasant.gif
+i idistraught distraught.gif
+i iunruly unruly.gif
+i ismooth smooth.gif
+i irancorous rancorous.gif
+i ioffline offline.gif
+
+// TROLLIAN MOOD ICONS
+
+i iestatic estatic.gif
+i irelaxed relaxed.gif
+i idiscontent discontent.gif
+i idevious devious.gif
+i isleek sleek.gif
+i idetestful detestful.gif
+
+// ETC.
+
+// iicon only appears in the about section.
+// ticon will appear in both your tray and your pesterwindow.
+
+i ticon trayicon2.png
+i iicon abouticon.png
+i iclose x.gif
+i ihide m.gif
+i ibg pcbg.png
