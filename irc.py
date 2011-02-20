@@ -19,28 +19,37 @@ class PesterIRC(QtCore.QThread):
     def IRCConnect(self):
         server = self.config.server()
         port = self.config.port()
-        self.cli = IRCClient(PesterHandler, host=server, port=int(port), nick=self.mainwindow.profile().handle, real_name='pcc30', blocking=True)
+        self.cli = IRCClient(PesterHandler, host=server, port=int(port), nick=self.mainwindow.profile().handle, real_name='pcc30', blocking=True, timeout=5)
         self.cli.command_handler.parent = self
         self.cli.command_handler.mainwindow = self.mainwindow
         self.conn = self.cli.connect()
-        self.brokenConnection = False
+        self.stopIRC = None
         self.registeredIRC = False
     def run(self):
         self.IRCConnect()
         while 1:
             try:
-                self.updateIRC()
+                res = self.updateIRC()
+            except socket.timeout, se:
+                print "timeout in thread %s" % (self)
+                self.cli.close()
+                self.stopIRC = se
+                return
             except socket.error, se:
                 if self.registeredIRC:
                     self.stopIRC = None
                 else:
                     self.stopIRC = se
                 return
+            else:
+                if not res:
+                    return
                 
     def setConnected(self):
         self.registeredIRC = True
         self.connected.emit()
     def setConnectionBroken(self):
+        print "setconnection broken"
         self.reconnectIRC()
         #self.brokenConnection = True
     @QtCore.pyqtSlot()
@@ -49,15 +58,18 @@ class PesterIRC(QtCore.QThread):
             res = self.conn.next()
         except socket.timeout, se:
             if self.registeredIRC:
-                return
+                return True
             else:
                 raise se
         except socket.error, se:
             raise se
         except StopIteration:
-            pass
+            return True
+        else:
+            return res
     @QtCore.pyqtSlot()
     def reconnectIRC(self):
+        print "reconnectIRC() from thread %s" % (self)
         self.cli.close()
 
     @QtCore.pyqtSlot(PesterProfile)

@@ -82,7 +82,6 @@ class IRCClient:
         ...
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print "initalizing socket %d" % (self.socket.fileno())
         self.nick = None
         self.real_name = None
         self.host = None
@@ -155,9 +154,8 @@ class IRCClient:
             self.socket.connect(("%s" % self.host, self.port))
             if not self.blocking:
                 self.socket.setblocking(0)
-            #if self.timeout:
-            #    self.socket.settimeout(self.timeout)
-            self.socket.settimeout(10)
+            if self.timeout:
+                self.socket.settimeout(self.timeout)
             helpers.nick(self, self.nick)
             helpers.user(self, self.nick, self.real_name)
 
@@ -169,8 +167,14 @@ class IRCClient:
                 try:
                     buffer += self.socket.recv(1024)
                 except socket.timeout, e:
+                    if self._end:
+                        break
+                    print "timeout in client.py"
                     raise e
                 except socket.error, e:
+                    if self._end:
+                        break
+                    print "error %s" % e
                     try:  # a little dance of compatibility to get the errno
                         errno = e.errno
                     except AttributeError:
@@ -180,6 +184,8 @@ class IRCClient:
                     else:
                         raise e
                 else:
+                    if self._end:
+                        break
                     if len(buffer) == 0 and self.blocking:
                         raise socket.error("Connection closed")
 
@@ -198,18 +204,21 @@ class IRCClient:
         except socket.timeout, se:
             raise se
         except socket.error, se:
-            if self.socket: 
-                logging.info('closing socket')
+            print "problem: %s" % (se)
+            if self.socket:
+                logging.info('error: closing socket')
                 self.socket.close()
             raise se
         else:
             if self.socket: 
-                logging.info('closing socket')
+                logging.info('finished: closing socket')
                 self.socket.close()
+            yield False
     def close(self):
         # with extreme prejudice
         if self.socket:
             logging.info('shutdown socket')
+            self._end = True
             self.socket.shutdown(socket.SHUT_RDWR)
 
 class IRCApp:

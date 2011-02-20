@@ -1725,9 +1725,9 @@ class MainProgram(QtCore.QObject):
                               self.trayicon,
                               QtCore.SLOT('mainWindowClosed()'))
 
+        self.attempts = 0
+
         self.irc = PesterIRC(self.widget.config, self.widget)
-        self.connect(self.irc, QtCore.SIGNAL('finished()'),
-                     self, QtCore.SLOT('restartIRC()'))
         self.connectWidgets(self.irc, self.widget)
 
     widget2irc = [('sendMessage(QString, QString)', 
@@ -1778,6 +1778,10 @@ class MainProgram(QtCore.QObject):
                    'timeCommand(QString, QString, QString)')
                   ]
     def connectWidgets(self, irc, widget):
+        self.connect(irc, QtCore.SIGNAL('finished()'),
+                     self, QtCore.SLOT('restartIRC()'))
+        self.connect(irc, QtCore.SIGNAL('connected()'),
+                     self, QtCore.SLOT('connected()'))
         for c in self.widget2irc:
             self.connect(widget, QtCore.SIGNAL(c[0]),
                          irc, QtCore.SLOT(c[1]))
@@ -1791,6 +1795,10 @@ class MainProgram(QtCore.QObject):
         for c in self.irc2widget:
             self.disconnect(irc, QtCore.SIGNAL(c[0]),
                             widget, QtCore.SLOT(c[1]))
+        self.disconnect(irc, QtCore.SIGNAL('connected()'),
+                     self, QtCore.SLOT('connected()'))
+        self.disconnect(self.irc, QtCore.SIGNAL('finished()'),
+                        self, QtCore.SLOT('restartIRC()'))
 
     def showLoading(self, widget, msg="CONN3CT1NG"):
         self.widget.show()
@@ -1806,27 +1814,40 @@ class MainProgram(QtCore.QObject):
             sys.exit(0)
 
     @QtCore.pyqtSlot()
+    def connected(self):
+        self.attempts = 0
+    @QtCore.pyqtSlot()
     def tryAgain(self):
-        if self.loadingscreen:
-            self.loadingscreen.accept()
-        self.restartIRC()
+        if self.widget.loadingscreen:
+            self.widget.loadingscreen.accept()
+        self.attempts += 1
+        if hasattr(self, 'irc') and self.irc:
+            print "tryagain: reconnectIRC()"
+            self.irc.reconnectIRC()
+            print "finishing"
+            self.irc.quit()
+        else:
+            print "tryagain: restartIRC"
+            self.restartIRC()
     @QtCore.pyqtSlot()
     def restartIRC(self):
-        if self.irc:
+        if hasattr(self, 'irc') and self.irc:
             self.disconnectWidgets(self.irc, self.widget)
-            self.disconnect(self.irc, QtCore.SIGNAL('finished()'),
-                            self, QtCore.SLOT('restartIRC()'))
             stop = self.irc.stopIRC
             del self.irc
         else:
             stop = None
         if not stop:
             self.irc = PesterIRC(self.widget.config, self.widget)
-            self.connect(self.irc, QtCore.SIGNAL('finished()'),
-                         self, QtCore.SLOT('restartIRC()'))
             self.connectWidgets(self.irc, self.widget)
             self.irc.start()
-            self.showLoading(self.widget)
+            if self.attempts == 1:
+                msg = "R3CONN3CT1NG"
+            elif self.attempts > 1:
+                msg = "R3CONN3CT1NG %d" % (self.attempts)
+            else:
+                msg = "CONN3CT1NG"
+            self.showLoading(self.widget, msg)
         else:
             self.showLoading(self.widget, "F41L3D: %s" % stop)
 
