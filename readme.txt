@@ -43,6 +43,16 @@ link you can just click and follow. No more copy/paste.
 - Smilies. We've added about 30-40 smilies from the forums. There is a
 list later on in this readme.
 
+DOCUMENTATION
+-------------
+
+BASIC PESTERING
+---------------
+To begin pestering, first click the "ADD CHUM" button and type in
+their pester handle. The handle must be all lower case except for one
+capital letter. Once you've added that person, they will appear on
+your chumroll. You can double click to begin pestering them
+
 MEMOS
 -----
 One of the most interesting features to make was the memos, and make
@@ -319,6 +329,34 @@ one, you may not get what you expect because they will ALL be applied,
 one after the other! This is a bug in my opinion, that I plan to fix!
 
 Random replace:
+
+Just like the regexp replace, except that instead of just one thing to
+replace it with, you give it a list. PC will then choose from that
+list randomly. So let's say I want to randomly end my sentences with
+either "bro" or "dog":
+
+Regexp: "$" Replace with: "bro" and "dog"
+
+You can also imitate Araida's random "ribbits" in between words:
+
+Regexp: "\s" Replace with: " ribbit ", " ", " ", " ", " ", " ", etc....
+
+where " " is just a blank space added a bunch of times. (You can see
+how many blank spaces you've added by clicking on the list.) You have
+to add the spaces because each entry has the same chance of being
+selected. (Yes, I know this could be improved.) If you add " ribbit "
+and 9 spaces, " ribbit " will have a 1/10 chance of being picked.
+
+Also note that if you add more than one prefix or more than one
+suffix, it will pick randomly from them instead of adding them both!
+
+Mispeller:
+
+Be careful with thsi one. The mispeller will randomly mispell x% of
+the words you type -- where x is the percentage you set the slider
+to. I have attempted to mimic SBaHJ mispelling style but whoof knows
+what will happen oh god ive created a mosnter
+
 
 SMILIES
 -------

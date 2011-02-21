@@ -63,6 +63,8 @@ class pesterQuirk(object):
                 return mo.expand(to)
             return re.sub(fr, regexprep, string)
         elif self.type == "random":
+            if len(self.quirk["randomlist"]) == 0:
+                return string
             fr = self.quirk["from"]
             if not first and len(fr) > 0 and fr[0] == "^":
                 return string
