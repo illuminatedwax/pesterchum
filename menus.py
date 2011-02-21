@@ -652,11 +652,16 @@ class LoadingScreen(QtGui.QDialog):
         self.layout.addLayout(layout_1)
         self.setLayout(self.layout)
 
+    def hideReconnect(self):
+        self.ok.hide()
+    def showReconnect(self):
+        self.ok.show()
+
     tryAgain = QtCore.pyqtSignal()
 
 class AboutPesterchum(QtGui.QMessageBox):
     def __init__(self, parent=None):
         QtGui.QMessageBox.__init__(self, parent)
-        self.setText("P3ST3RCHUM V. 3.14 alpha 4")
+        self.setText("P3ST3RCHUM V. 3.14 alpha 6")
         self.setInformativeText("Programming by illuminatedwax (ghostDunk), art by Grimlive (aquaMarinist)")
         self.mainwindow = parent

@@ -1138,8 +1138,10 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def connected(self):
+        print "CONNECTED!"
+        print self.loadingscreen
         if self.loadingscreen:
-            self.loadingscreen.accept()
+            self.loadingscreen.done(QtGui.QDialog.Accepted)
         self.loadingscreen = None
     @QtCore.pyqtSlot()
     def blockSelectedChum(self):
@@ -1352,6 +1354,8 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def importExternalConfig(self):
         f = QtGui.QFileDialog.getOpenFileName(self)
+        if f == "":
+            return
         fp = open(f, 'r')
         for l in fp.xreadlines():
             # import chumlist
@@ -1802,24 +1806,42 @@ class MainProgram(QtCore.QObject):
 
     def showLoading(self, widget, msg="CONN3CT1NG"):
         self.widget.show()
-        self.widget.activateWindow()
-        widget.loadingscreen = LoadingScreen(widget)
-        widget.loadingscreen.loadinglabel.setText(msg)
-        self.connect(widget.loadingscreen, QtCore.SIGNAL('rejected()'),
-                     widget, QtCore.SLOT('close()'))
-        self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
-                     self, QtCore.SLOT('tryAgain()'))
-        status = widget.loadingscreen.exec_()
-        if status == QtGui.QDialog.Rejected:
-            sys.exit(0)
+        if hasattr(self.widget, 'loadingscreen') and widget.loadingscreen:
+            widget.loadingscreen.loadinglabel.setText(msg)
+            if self.reconnectok:
+                widget.loadingscreen.showReconnect()
+            else:
+                widget.loadingscreen.hideReconnect()
+        else:
+            widget.loadingscreen = LoadingScreen(widget)
+            widget.loadingscreen.loadinglabel.setText(msg)
+            self.connect(widget.loadingscreen, QtCore.SIGNAL('rejected()'),
+                         widget, QtCore.SLOT('close()'))
+            self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
+                         self, QtCore.SLOT('tryAgain()'))
+            if hasattr(self, 'irc') and self.irc.registeredIRC:
+                return
+            if self.reconnectok:
+                widget.loadingscreen.showReconnect()
+            else:
+                widget.loadingscreen.hideReconnect()
+            status = widget.loadingscreen.exec_()
+            print "exited with status %d" % status
+            if status == QtGui.QDialog.Rejected:
+                sys.exit(0)
+            else:
+                return True
 
     @QtCore.pyqtSlot()
     def connected(self):
         self.attempts = 0
     @QtCore.pyqtSlot()
     def tryAgain(self):
+        if not self.reconnectok:
+            return
         if self.widget.loadingscreen:
-            self.widget.loadingscreen.accept()
+            self.widget.loadingscreen.done(QtGui.QDialog.Accepted)
+            self.widget.loadingscreen = None
         self.attempts += 1
         if hasattr(self, 'irc') and self.irc:
             print "tryagain: reconnectIRC()"
@@ -1827,17 +1849,18 @@ class MainProgram(QtCore.QObject):
             print "finishing"
             self.irc.quit()
         else:
-            print "tryagain: restartIRC"
+            print "tryagain: restartIRC()"
             self.restartIRC()
     @QtCore.pyqtSlot()
     def restartIRC(self):
         if hasattr(self, 'irc') and self.irc:
+            print "deleting IRC"
             self.disconnectWidgets(self.irc, self.widget)
             stop = self.irc.stopIRC
             del self.irc
         else:
             stop = None
-        if not stop:
+        if stop is None:
             self.irc = PesterIRC(self.widget.config, self.widget)
             self.connectWidgets(self.irc, self.widget)
             self.irc.start()
@@ -1847,12 +1870,16 @@ class MainProgram(QtCore.QObject):
                 msg = "R3CONN3CT1NG %d" % (self.attempts)
             else:
                 msg = "CONN3CT1NG"
+            print "loadingscreen: auto reconnect"
+            self.reconnectok = False
             self.showLoading(self.widget, msg)
         else:
+            self.reconnectok = True
             self.showLoading(self.widget, "F41L3D: %s" % stop)
 
     def run(self):
         self.irc.start()
+        self.reconnectok = False
         self.showLoading(self.widget)
         sys.exit(self.app.exec_())
 

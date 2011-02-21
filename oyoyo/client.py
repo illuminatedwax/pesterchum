@@ -93,7 +93,7 @@ class IRCClient:
         self.__dict__.update(kwargs)
         self.command_handler = cmd_handler(self)
 
-        self._end = 0
+        self._end = False
 
     def send(self, *args, **kwargs):
         """ send a message to the connected server. all arguments are joined
@@ -139,29 +139,23 @@ class IRCClient:
 
     def connect(self):
         """ initiates the connection to the server set in self.host:self.port 
-        and returns a generator object. 
-
-        >>> cli = IRCClient(my_handler, host="irc.freenode.net", port=6667)
-        >>> g = cli.connect()
-        >>> while 1:
-        ...     g.next()
-
         """
-        #logfile = open('irctest.log', 'a')
 
-        try:
-            logging.info('connecting to %s:%s' % (self.host, self.port))
-            self.socket.connect(("%s" % self.host, self.port))
-            if not self.blocking:
-                self.socket.setblocking(0)
-            if self.timeout:
-                self.socket.settimeout(self.timeout)
-            helpers.nick(self, self.nick)
-            helpers.user(self, self.nick, self.real_name)
+        logging.info('connecting to %s:%s' % (self.host, self.port))
+        self.socket.connect(("%s" % self.host, self.port))
+        if not self.blocking:
+            self.socket.setblocking(0)
+        if self.timeout:
+            self.socket.settimeout(self.timeout)
+        helpers.nick(self, self.nick)
+        helpers.user(self, self.nick, self.real_name)
 
-            if self.connect_cb:
-                self.connect_cb(self)
+        if self.connect_cb:
+            self.connect_cb(self)
             
+    def conn(self):
+        """returns a generator object. """
+        try:
             buffer = bytes()
             while not self._end:
                 try:
@@ -169,12 +163,12 @@ class IRCClient:
                 except socket.timeout, e:
                     if self._end:
                         break
-                    print "timeout in client.py"
+                    logging.debug("timeout in client.py")
                     raise e
                 except socket.error, e:
                     if self._end:
                         break
-                    print "error %s" % e
+                    logging.debug("error %s" % e)
                     try:  # a little dance of compatibility to get the errno
                         errno = e.errno
                     except AttributeError:
@@ -202,14 +196,19 @@ class IRCClient:
 
                 yield True
         except socket.timeout, se:
+            logging.debug("passing timeout")
             raise se
         except socket.error, se:
-            print "problem: %s" % (se)
+            logging.debug("problem: %s" % (se))
             if self.socket:
                 logging.info('error: closing socket')
                 self.socket.close()
             raise se
+        except Exception, e:
+            logging.debug("other exception: %s" % e)
+            raise e
         else:
+            logging.debug("ending while, end is %s" % self._end)
             if self.socket: 
                 logging.info('finished: closing socket')
                 self.socket.close()

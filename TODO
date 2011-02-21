@@ -1,5 +1,7 @@
 Bugs:
-* idle doesnt seem to work?
+* import quirks from 2.5!
+* edit quirks?
+* begin and end regexps should only be applied once!
 * X and _ buttons move around all crazy like
 
 Features:
@@ -8,7 +10,6 @@ Features:
 * shared buddy lists - changes to the buddy list should refresh it? 
   multiple clients share buddy list???
 * chumList not scaling -- QListView + delegate?
-* spell check?
 * help button on quirks menu?
 -- release beta
 * hide offline chums
@@ -22,4 +23,3 @@ Features:
 * don't clear new message when clicking away from tab?
 * Spy mode
 * Animated
-* put code into separate files

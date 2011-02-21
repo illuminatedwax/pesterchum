@@ -264,9 +264,10 @@ class PesterText(QtGui.QTextEdit):
                     idlethreshhold = 60
                     if (not hasattr(self, 'lastmsg')) or \
                             datetime.now() - self.lastmsg > timedelta(0,idlethreshhold):
+                        verb = window.theme["convo/text/idle"]
                         idlemsg = me.idlemsg(systemColor, verb)
-                        self.textArea.append(convertTags(idlemsg))
-                        window.chatlog.log(self.title(), idlemsg)
+                        parent.textArea.append(convertTags(idlemsg))
+                        window.chatlog.log(parent.title(), idlemsg)
                         parent.messageSent.emit("PESTERCHUM:IDLE", parent.title())
                 self.lastmsg = datetime.now()
                 window.chatlog.log(chum.handle, lexmsg)

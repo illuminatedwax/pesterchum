@@ -98,6 +98,228 @@ CG: #FRUITYRUMPUSASSHOLEFACTORY
 and it will appear as a link that you can click, which will open the
 memo chooser window.
 
+QUIRKS
+------
+There are six kinds of quirks! I'll teach you how to use them all!
+(In this section, I will use quotes ("") around things so it's clearer
+to see exactly what to type! Don't include these quotes when using
+these examples!
+
+Prefix/Suffix: This will put text before or after everything you
+say. So for example, we can use prefixes to emulate part of Nepeta or
+Equius' quirks:
+
+PREFIX: ":33 < "
+You type: "*ac twitches her friendly whiskers at ct*"
+Result:
+AC: :33 < *ac twitches her friendly whiskers at ct* 
+
+PREFIX: "D --> "
+You type: "Hi"
+Result:
+CT: D --> Hi
+
+Suffixes work the same way, but at the end of the message:
+SUFFIX: "!!!"
+You type: hey there
+Result:
+GD: hey there!!!
+
+Remember that it doesn't automatically add a space! You'll need to add
+it in (see CT and AC examples again!)
+
+Simple Replace:
+This will simply take a set of characters and replace them with other
+characters. Let's add a quirk to our Nepeta:
+
+Replace: "ee" With: "33"
+You type: "*ac saunters from her dark cave a little bit sleepy from
+the recent kill*"
+Result: 
+AC: :33 < *ac saunters from her dark cave a little bit sl33py from the
+recent kill*
+
+Let's add two to Equius:
+Replace: "loo" With: "100"
+Replace: "x" With "%"
+You type: "look"
+Result:
+CT: D --> 100k 
+You type: "What are you expecting to accomplish with this"
+Result:
+CT: D --> What are you e%pecting to accomplish with this 
+
+Aradia:
+Replace: "o" With: "0"
+You type: "and the reward would be within our reach"
+Result:
+AA: and the reward w0uld be within 0ur reach
+
+Notice that it is CASE SENSITIVE. So in the above case, if you typed
+"ABSCOND", it would not replace the "O".
+
+Sollux:
+Replace: "i" With: "ii"
+Replace: "s" With: "2"
+
+Eridan:
+Replace: "v" With: "vv"
+Replace: "w" With: "ww"
+
+Feferi:
+Replace: "h" with: ")("
+Replace: "H" with: ")("
+Replace: "E" with: "-E"
+
+Regexp Replace:
+
+This is a more complex kind of replacement. Regexp stands for "regular
+expression", a kind of programming language (yes, it is a language)
+used to find and replace text. PC 3.14 also includes a function to
+handle capitalization (upper()). If you want to learn it on your own,
+I suggest you start with the Python tutorial
+(http://docs.python.org/howto/regex.html) since PC 3.14 uses Python's
+regexps. Check out V2.5's tutorial too, as that is a pretty good start
+as well.
+
+Let's start with Karkat. Regexps are just like your every day find and
+replace: they search for a string that matches what you want to
+replace, and replaces it with... the replacement.
+
+Regexp: "(.)" Replace with: "upper(\1)"
+
+Three concepts here. Let's look at the regexp. "(.)" has two things
+going on. The first is that ".". In regexp speak, "." is the wildcard:
+it will match *any* character -- and just one. 
+
+The parentheses tell the regexp to *save* what's inside them so you
+can put it back when you replace. That's what the "\1" is for -- it
+means, "put the match inside parentheses #1 here". You can have any
+number of parentheses.
+
+"upper()" is a function special to PC 3.14 -- it will uppercase
+anything inside the parentheses. So in this case, upper will uppercase
+"\1" -- which, as you recall is what we found inside the
+parentheses. Which was *every* character. So to sum up, it replaces
+every character with an uppercase version of that character. WHICH
+MAKES YOU TALK LIKE THIS.
+
+Let's look at Terezi next.
+
+Regexp: "[aA]" Replace with: "4"
+Regexp: "[iI]" Replace with: "1"
+Regexp: "[eE]" Replace with: "3"
+Regexp: "(.)" Replace with: "upper(\1)"
+
+We already know what the last line does. But what's up with those
+brackets? What's their deal? Basically, in regular expressions,
+brackets indicate a list of matching characters. So, basically any
+single character within the brackets will be matched. In this case,
+either "a" or "A" will be matched and replaced with "4," and likewise,
+"i" and "I" will be replaced with "1", and "e" and "E" will be
+replaced with "3."
+
+You should also know that "^" is a special character in brackets. If
+placed immediately after the opening bracket (like "[^"), then the
+brackets instead match every character *except* the ones in the
+brackets. So, for example, if you wanted to have a quirk where you
+capitalized all your letters *except* o, you'd do this:
+
+Regexp: "([^o])" Replace with: "upper(\1)"
+You type: "hello there"
+Result:
+GD: HELLo THERE
+
+You can also specify a *range* of characters inside the brackets, by
+using the "-" character. [a-z] will match any lowercase letter. You
+can combine them, too: [a-z0-9] will match any digit and lowercase letter.
+
+There are also different shortcuts for character types:
+
+\d matches any digit; same as [0-9]
+\D matches any non-digit; same as [^0-9]
+\s matches any spaces
+\S matches any non-space
+\w matches any alphanumeric character; same as [a-zA-Z0-9_]
+\W matches any non-alphanumeric character; same as [^a-zA-Z0-9_]
+
+You can include this inside brackets, too.
+
+There's also a special character, \b. What \b does is make sure that
+you are at the beginning or end of a word. So with that knowledge,
+let's try Kanaya:
+
+Regexp: \b(\w) Replace with: upper(\1)
+You type: "i suggest you come to terms with it"
+Result:
+GA: I Suggest You Come To Terms With It
+
+Another feature of regular expressions is the ability to match
+*repeated* characters. There are three repeat characters: the "*", the
+"+", "?", and "{m,n}". They work by playing them after the character,
+or character type you want to match. (So, you could say "\s+" or ".*")
+
+The "*" character matches ZERO or more of that character. So, for
+example, "f*" would match "f" and "ff" -- and any other character!
+That's right, every character counts as matching it zero times. Yeah,
+it's weird. I suggest you use...
+
+The "+" character matches ONE or more of that character. So, if we
+wanted to have a character that wanted to elongate their s's so that
+they used four 's's every time, like sssso, but didn't want to have
+eight s's when using words with double s's, like pass, we'd do this:
+
+Regexp: "s+" Replace with: "ssss"
+You type: "you shall not pass"
+Result:
+UU: you sssshall not passss
+
+As for the other two, I can't really think of any useful quirks to be
+made with them. But to let you know, "?" matches either 0 or 1 of that
+character, so "trolls?" would match "troll" and "trolls". "{m,n}"
+matches between m and n characters. (If you leave out 'n', any number
+of characters more than m will be matched.) So "s{2,4}" will match
+"ss", "sss", and "ssss" and that's it.
+
+Now with repeating expressions, we can do something like make EVERY
+other WORD capitalized:
+
+Regexp: "(\w+) (\w+)" Replace with: "upper(\1) \2"
+You type: "this is pretty annoying i bet"
+Result:
+GD: THIS is PRETTY annoying I bet
+
+The \1 matches the first word -- which has been matched because the
+word is alphanumeric characters, repeated once or more -- and \2
+matches the second word.
+
+Another operator to use is the "|", which will match more than one set
+of characters. For example, "black|red" will match "black" or
+"red". If you want to match something in the middle of words, you have
+to use parentheses: "(black|red) romance" will match "black romance"
+and "red romance".
+
+Finally, there are the "^" and "$" characters. Yes, we already did the
+"^" character, but this is OUTSIDE of brackets, not INSIDE. "^"
+matches the beginning of a message, and "$" matches the end of it. You
+can use this to make more sophisticated prefix and suffix
+behaviors. For example, if we have a quirk that adds "..." to the end
+of all our messages, we can set it up so it doesn't do that if we put
+punctuation [?!.] at the end. So:
+
+Regexp: "([^?!.])$" Replace with: "\1..."
+
+This will match the end of any message as long as it doesn't have
+"?", "!", or "." at the end. Then it will replace it with whatever the
+last character of the sentence was (remember we're replacing it, so we
+have to put it back!) and add "..." at the end.
+
+Careful with the beginning and ending replaces -- if you use more than
+one, you may not get what you expect because they will ALL be applied,
+one after the other! This is a bug in my opinion, that I plan to fix!
+
+Random replace:
+
 SMILIES
 -------
 Here's a list of smilies:

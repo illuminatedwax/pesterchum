@@ -4,7 +4,7 @@ import re
 import random
 
 from generic import PesterIcon
-from parsetools import timeDifference, convertTags
+from parsetools import timeDifference, convertTags, lexMessage
 from mispeller import mispeller
 
 _upperre = re.compile(r"upper\(([\w\\]+)\)")
@@ -116,7 +116,7 @@ class pesterQuirks(object):
         suffix = [q for q in self.quirklist if q.type=='suffix']
         replace = [q for q in self.quirklist if
                    q.type=='replace' or q.type=='regexp']
-        random = [q for q in self.quirklist if q.type=='random']
+        randomrep = [q for q in self.quirklist if q.type=='random']
         spelling = [q for q in self.quirklist if q.type=='spelling']
         
         newlist = []
@@ -133,19 +133,27 @@ class pesterQuirks(object):
             string = o
             for s in spelling:
                 string = s.apply(string)
-            for r in random:
+            for r in randomrep:
                 string = r.apply(string, first=(i==0), last=lastStr)
             for r in replace:
                 string = r.apply(string, first=(i==0), last=lastStr)
             if i == 0:
-                for p in prefix:
-                    string = p.apply(string)
+                if len(prefix) >= 1:
+                    myprefix = random.choice(prefix)
+                    string = myprefix.apply(string)
             if lastStr:
-                for s in suffix:
-                    string = s.apply(string)
+                if len(suffix) >= 1:
+                    mysuffix = random.choice(suffix)
+                    string = mysuffix.apply(string)
             newlist.append(string)
 
-        return newlist
+        final = []
+        for n in newlist:
+            if type(n) in [str, unicode]:
+                final.extend(lexMessage(n))
+            else:
+                final.append(n)
+        return final
 
     def __iter__(self):
         for q in self.quirklist:

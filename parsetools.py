@@ -151,6 +151,8 @@ def lexMessage(string):
     if beginc > endc:
         for i in range(0, beginc-endc):
             balanced.append(colorEnd("</c>"))
+    if len(balanced) == 0:
+        balanced.append("")
     if type(balanced[len(balanced)-1]) not in [str, unicode]:
         balanced.append("")
     return balanced
