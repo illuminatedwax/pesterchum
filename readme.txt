@@ -24,7 +24,7 @@ themes! But you can also make your own: just make a new directory in
 the themes folder with the proper images and style.js file. The
 style.js file will be documented soon, but feel free to poke at it.
 - Memos. Memos that are a lot more like the ones in the comic and
-allow you to appear at multiple different times in one chat.
+allow you to appear at multiple times in one chat.
 - Quirks: Prefix, suffix, simple replace, regexp replace (like in
 2.5), random replacement, and an auto-mispeller :P
 - Block/user list
@@ -46,12 +46,73 @@ list later on in this readme.
 DOCUMENTATION
 -------------
 
+STARTING
+--------
+
+If this is your first time running Pesterchum 3.14, you need to create
+a new profile. Just type in your chum handle in the box and click the
+color swatch to pick your color. Check the "default" checkbox to make
+this your default profile.
+
 BASIC PESTERING
 ---------------
 To begin pestering, first click the "ADD CHUM" button and type in
 their pester handle. The handle must be all lower case except for one
 capital letter. Once you've added that person, they will appear on
-your chumroll. You can double click to begin pestering them
+your chumroll. You can double click to begin pestering them, or
+right-click to bring up a menu where you can pester them, block them,
+or remove them from your chumroll. (Or you can select them and hit
+"enter" OR hit the "PESTER" button.)
+
+Once you begin pestering somebody (or they begin pestering you), it
+will bring up the conversation window. Here you can type to your
+chum. Also remember that if you right-click on the area just above the
+Pesterlog, it will bring up a list of options: Quirks Off will turn
+your quirks off, Add Chum will add this chum to your list, and Block
+will block them. (Those last two options are useful if you are being
+pestered by someone you don't have on your list yet!)
+
+While pestering your chum, here are some useful features:
+
+* Type /me to create a system message. "/me facepalms." will generate:
+-- ghostDunk [GD] facepalms. --
+  You can also append 's after /me like so: "/me's computer exploded."
+-- ghostDunk's [GD'S] computer exploded. --
+  In fact, any characters you type after a /me before the space will
+  be added: "/meing is the Ghost Nation's official pastime."
+-- ghostDunking [GDING] is the Ghost Nation's official pastime. --
+
+* Color tags! If you feel the need to talk about The Green Sun or add
+  some appleberry blast to your conversation, just use color
+  tags. These work like in TC 1.5: <c=(color)>colored text</c>. But in
+  PC 3.14, you can use type your color in a lot of different ways:
+  - You can use the familiar r,g,b method: 
+  	"<c=0,255,0>The Green Sun</c>"
+  - You can use HTML tags:
+  	"<c=#7f7f7f">DURR I'M KARKAT AND I'M A HUGE IDIOT</c>"
+  - You can even use plain color names:
+  	"<c=red>D4V3 TH1S 1S SO D3C4D3NT</c>"
+  	(list: http://www.w3schools.com/css/css_colornames.asp) 
+  - You don't even have to add the </c> if you are lazy. Just use a
+  	new color tag whenever you want to change colors and PC 3.14 will
+  	add the extra tags for you.
+
+* URLS (anything with http:// in front of it) will automatically be
+  detected and made into a link you can CLIPK. 
+
+* You can also link people to memos by typing "#" and the name of the
+  menu like so: #R41NBOW_RUMPUS_P4RTYTOWN
+  Clicking the link will open up the memo select menu.
+
+* Smilies! There are a list of smilies at the end of this document;
+  they are based on the MSPA Forum smilies. They don't animate, though
+  :(
+
+* Don't worry about your quirks screwing up any of the above: PC will
+  apply your quirks AFTER it figures out color codes, links, smilies, etc.
+
+* Pressing the up arrow will cycle through a history of your comments,
+  so if you want to retype something, you can pull it up.
 
 MEMOS
 -----
@@ -107,6 +168,50 @@ CG: #FRUITYRUMPUSASSHOLEFACTORY
 
 and it will appear as a link that you can click, which will open the
 memo chooser window.
+
+CLIENT MENU
+-----------
+
+OPTIONS:
+Tabbed Conversations: Turns tabbed conversations on and off. Don't
+worry if you do this in the middle of a conversation, PC will save
+them for you.
+Sounds On: Uncheck to shut it the fuck up.
+
+MEMOS: Opens the Memo list as above.
+
+USERLIST: Shows a list of all the users that are currently logged onto
+Pesterchum. Right-click their names and select "ADD CHUM" to add them
+to your chum roll!
+
+IDLE: Make yourself an idle chum. You will appear as idle until you
+uncheck this box, or if you *actually* go idle (stop using the
+computer) for 10 minutes and then come back.
+
+IMPORT: Imports your old Pesterchum 2.0, 2.5 and Tinychum chum
+rolls. This will also import your old quirks soon.
+
+RECONNECT: Forces PC to reconnect to the server.
+
+EXIT: noooooooooooooooooooooooo
+
+PROFILE MENU
+------------
+
+THEME: Select a new theme! Be warned that switching themes will change
+the user interface, so just... look out for that I guess!
+
+QUIRKS: Opens the quirks menu. More on that below!
+
+TROLLSLUM: Opens up the window where you can view people you've
+blocked. You can add and remove people to the list from here as well.
+
+COLOR: Change your text color here!
+
+SWITCH: Switch your profile! You can have any number of profiles, and
+PC will save your color, quirks, and theme for that profile. Chumrolls
+and block lists are the same for all profiles. Feel free to have
+multiple instances of PC running on two or more handles!
 
 QUIRKS
 ------

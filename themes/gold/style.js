@@ -226,7 +226,7 @@
   ]
  },
  "convo":
- {"style": "background-color: rgba(0, 0, 0, 0%);background-image:url($path/convobg.png); background-repeat: no-repeat; border:0px; font-family: 'Arial'",
+ {"style": "background-color: rgba(0, 0, 0, 0%);border-width: 5px; border-image:url($path/convobg.png) 5px; font-family: 'Arial'",
   "tabstyle": "background-color: #fdb302; font-family: 'Arial'",
   "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:  rgba(255, 255, 0, 0%); border:0px;",
                  "handle": "background-color:#c48a00;min-height:20px;",

@@ -199,6 +199,13 @@ class PesterText(QtGui.QTextEdit):
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
+        self.textSelected = False
+        self.connect(self, QtCore.SIGNAL('copyAvailable(bool)'),
+                     self, QtCore.SLOT('textReady(bool)'))
+    @QtCore.pyqtSlot(bool)
+    def textReady(self, ready):
+        print "setting textselected to %s" % (ready)
+        self.textSelected = ready
     def initTheme(self, theme):
         if theme.has_key("convo/scrollbar"):
             self.setStyleSheet("QTextEdit { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["convo/textarea/style"], theme["convo/scrollbar/style"], theme["convo/scrollbar/handle"], theme["convo/scrollbar/downarrow"], theme["convo/scrollbar/uparrow"], theme["convo/scrollbar/uarrowstyle"], theme["convo/scrollbar/darrowstyle"] ))
@@ -295,6 +302,21 @@ class PesterText(QtGui.QTextEdit):
         else:
             self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
+    def contextMenuEvent(self, event):
+        textMenu = self.createStandardContextMenu()
+        print "self.textSelected is %s " %(self.textSelected)
+        if self.textSelected:
+            self.submitLogAction = QtGui.QAction("Submit to Pesterchum QDB", self)
+            self.connect(self.submitLogAction, QtCore.SIGNAL('triggered()'),
+                         self, QtCore.SLOT('submitLog()')) 
+            textMenu.addAction(self.submitLogAction)
+        textMenu.exec_(event.globalPos())
+
+    @QtCore.pyqtSlot()
+    def submitLog(self):
+        mimedata = self.createMimeDataFromSelection()
+        print mimedata.data("text/unicode")
+
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
         QtGui.QLineEdit.__init__(self, parent)
@@ -320,7 +342,6 @@ class PesterInput(QtGui.QLineEdit):
         self.parent().mainwindow.idletime = 0
         QtGui.QLineEdit.keyPressEvent(self, event)
 
-
 class PesterConvo(QtGui.QFrame):
     def __init__(self, chum, initiated, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
@@ -330,7 +351,7 @@ class PesterConvo(QtGui.QFrame):
         self.mainwindow = mainwindow
         theme = self.mainwindow.theme
         self.resize(*theme["convo/size"])
-        self.setStyleSheet("QFrame { %s }" % theme["convo/style"])
+        self.setStyleSheet("QFrame#%s { %s }" % (chum.handle, theme["convo/style"]))
         self.setWindowIcon(self.icon())
         self.setWindowTitle(self.title())
 

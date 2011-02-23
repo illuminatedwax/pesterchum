@@ -216,17 +216,17 @@
                },
   "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
   "size": [500, 325],
-  "chumlabel": { "style": "margin-bottom: 21px;background: rgb(196, 138, 0); color: white; border:0px; font-size: 14px;",
+  "chumlabel": { "style": "margin-bottom: 21px;background: rgb(196, 138, 0); color: white; border:0px; font-size: 14px;font-family: 'Courier'",
                  "align": { "h": "center", "v": "center" },
                  "minheight": 47,
                  "maxheight": 47,
                  "text" : ":: $handle ::"
                },
   "textarea": {
-      "style": "background: white;  font-size: 14px;font:bold; border:2px solid #c48a00;text-align:center; margin-right:10px; margin-left:10px;"
+      "style": "background: white;  font-size: 14px;font:bold; border:2px solid #c48a00;text-align:center; margin-right:10px; margin-left:10px;font-family: 'Courier'"
   },
   "input": {
-      "style": "background: white; border:2px solid #c48a00;margin-top:5px; margin-right:10px; margin-left:10px; font-size: 12px;"
+      "style": "background: white; border:2px solid #c48a00;margin-top:5px; margin-right:10px; margin-left:10px; font-size: 12px;font-family: 'Courier'"
   },
   "tabs": {
       "style": "",
