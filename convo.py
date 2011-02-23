@@ -304,7 +304,6 @@ class PesterText(QtGui.QTextEdit):
 
     def contextMenuEvent(self, event):
         textMenu = self.createStandardContextMenu()
-        print "self.textSelected is %s " %(self.textSelected)
         if self.textSelected:
             self.submitLogAction = QtGui.QAction("Submit to Pesterchum QDB", self)
             self.connect(self.submitLogAction, QtCore.SIGNAL('triggered()'),
@@ -322,7 +321,7 @@ class PesterText(QtGui.QTextEdit):
         htmldata = img2smiley(mimedata.data("text/html"))
         textdoc = QtGui.QTextDocument()
         textdoc.setHtml(htmldata)
-        logdata = textdoc.toPlainText()
+        logdata = "%s\n%s" % (self.submitLogTitle(), textdoc.toPlainText())
         self.sending = QtGui.QDialog(self)
         layout = QtGui.QVBoxLayout()
         self.sending.sendinglabel = QtGui.QLabel("S3ND1NG...", self.sending)

@@ -237,6 +237,10 @@ class MemoText(PesterText):
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
+        self.textSelected = False
+        self.connect(self, QtCore.SIGNAL('copyAvailable(bool)'),
+                     self, QtCore.SLOT('textReady(bool)'))
+
     def initTheme(self, theme):
         if theme.has_key("memos/scrollbar"):
             self.setStyleSheet("QTextEdit { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["memos/textarea/style"], theme["memos/scrollbar/style"], theme["memos/scrollbar/handle"], theme["memos/scrollbar/downarrow"], theme["memos/scrollbar/uparrow"], theme["memos/scrollbar/uarrowstyle"], theme["memos/scrollbar/darrowstyle"] ))
