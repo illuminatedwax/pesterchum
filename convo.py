@@ -1,13 +1,14 @@
 from string import Template
 import re
 import platform
+import httplib, urllib
 from copy import copy
 from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
-from parsetools import convertTags, lexMessage, mecmd, colorBegin, colorEnd
+from parsetools import convertTags, lexMessage, mecmd, colorBegin, colorEnd, img2smiley
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -204,7 +205,6 @@ class PesterText(QtGui.QTextEdit):
                      self, QtCore.SLOT('textReady(bool)'))
     @QtCore.pyqtSlot(bool)
     def textReady(self, ready):
-        print "setting textselected to %s" % (ready)
         self.textSelected = ready
     def initTheme(self, theme):
         if theme.has_key("convo/scrollbar"):
@@ -312,10 +312,44 @@ class PesterText(QtGui.QTextEdit):
             textMenu.addAction(self.submitLogAction)
         textMenu.exec_(event.globalPos())
 
+    def submitLogTitle(self):
+        return "[%s -> %s]" % (self.parent().mainwindow.profile().handle,
+                               self.parent().chum.handle)
+
     @QtCore.pyqtSlot()
     def submitLog(self):
         mimedata = self.createMimeDataFromSelection()
-        print mimedata.data("text/unicode")
+        htmldata = img2smiley(mimedata.data("text/html"))
+        textdoc = QtGui.QTextDocument()
+        textdoc.setHtml(htmldata)
+        logdata = textdoc.toPlainText()
+        self.sending = QtGui.QDialog(self)
+        layout = QtGui.QVBoxLayout()
+        self.sending.sendinglabel = QtGui.QLabel("S3ND1NG...", self.sending)
+        cancelbutton = QtGui.QPushButton("OK", self.sending)
+        self.sending.connect(cancelbutton, QtCore.SIGNAL('clicked()'),
+                             self.sending, QtCore.SLOT('close()'))
+        layout.addWidget(self.sending.sendinglabel)
+        layout.addWidget(cancelbutton)
+        self.sending.setLayout(layout)
+        self.sending.show()
+        params = urllib.urlencode({'quote': logdata, 'do': "add"})
+        headers = {"Content-type": "application/x-www-form-urlencoded",
+                   "Accept": "text/plain"}
+        try:
+            pass
+            hconn = httplib.HTTPConnection('luke.violentlemon.com', 80, 
+                                           timeout=15)
+            hconn.request("POST", "/index.php", params, headers)
+            response = hconn.getresponse()
+            if response.status == "200":
+                self.sending.sendinglabel.setText("SUCC3SS!")
+            else:
+                self.sending.sendinglabel.setText("F41L3D")
+            hconn.close()
+        except Exception, e:
+            self.sending.sendinglabel.setText("F41L3D: %s" % (e))
+        del self.sending
 
 class PesterInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
@@ -418,6 +452,12 @@ class PesterConvo(QtGui.QFrame):
         return self.chum.handle
     def icon(self):
         return self.chum.mood.icon(self.mainwindow.theme)
+    def myUpdateMood(self, mood):
+        chum = self.mainwindow.profile()
+        syscolor = QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"])
+        msg = chum.moodmsg(mood, syscolor, self.mainwindow.theme)
+        self.textArea.append(convertTags(msg))
+        self.mainwindow.chatlog.log(self.title(), msg)
 
     def updateMood(self, mood, unblocked=False, old=None):
         syscolor = QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"])

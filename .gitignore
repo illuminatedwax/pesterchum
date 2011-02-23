@@ -2,3 +2,4 @@ logs/*
 build/*
 profiles/*
 irctest.log
+*.pyc

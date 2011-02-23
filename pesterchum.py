@@ -607,6 +607,8 @@ class PesterMoodHandler(QtCore.QObject):
         if self.mainwindow.currentMoodIcon:
             moodicon = newmood.icon(self.mainwindow.theme)
             self.mainwindow.currentMoodIcon.setPixmap(moodicon.pixmap(moodicon.realsize()))
+        for c in self.mainwindow.convos.values():
+            c.myUpdateMood(newmood)
         self.mainwindow.moodUpdated.emit()
 
 class PesterMoodButton(QtGui.QPushButton):
@@ -1683,6 +1685,7 @@ class MainProgram(QtCore.QObject):
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
+        self.app.setApplicationName("Pesterchum 3.14");
         if pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
             try:
@@ -1697,6 +1700,9 @@ class MainProgram(QtCore.QObject):
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
         self.traymenu = QtGui.QMenu()
         moodMenu = self.traymenu.addMenu("SET MOOD")
+        moodCategories = {}
+        for k in Mood.moodcats:
+            moodCategories[k] = moodMenu.addMenu(k.upper())
         self.moodactions = {}
         for (i,m) in enumerate(Mood.moods):
             maction = QtGui.QAction(m.upper(), self)
@@ -1704,7 +1710,7 @@ class MainProgram(QtCore.QObject):
             self.trayicon.connect(maction, QtCore.SIGNAL('triggered()'),
                                   mobj, QtCore.SLOT('updateMood()'))
             self.moodactions[i] = mobj
-            moodMenu.addAction(maction)
+            moodCategories[Mood.revmoodcats[m]].addAction(maction)
         exitAction = QtGui.QAction("EXIT", self)
         self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
                               self.widget, QtCore.SLOT('close()'))

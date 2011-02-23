@@ -15,6 +15,9 @@ class Mood(object):
              "devious", "sleek", "detestful", "mirthful", "manipulative",
              "vigorous", "perky", "acceptant", "protective", "mystified",
              "amazed", "insolent", "bemused" ]
+    moodcats = ["chums", "trolls", "other"]
+    revmoodcats = {'discontent': 'trolls', 'insolent': 'other', 'rancorous': 'chums', 'sleek': 'trolls', 'bemused': 'other', 'mystified': 'other', 'pranky': 'chums', 'distraught': 'chums', 'offline': 'chums', 'chummy': 'chums', 'protective': 'other', 'vigorous': 'trolls', 'ecstatic': 'trolls', 'relaxed': 'trolls', 'pleasant': 'chums', 'manipulative': 'trolls', 'detestful': 'trolls', 'smooth': 'chums', 'mirthful': 'trolls', 'acceptant': 'trolls', 'perky': 'trolls', 'devious': 'trolls', 'amazed': 'other'}
+
     def __init__(self, mood):
         if type(mood) is int:
             self.mood = mood

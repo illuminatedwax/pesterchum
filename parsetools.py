@@ -114,7 +114,7 @@ class smiley(object):
         self.string = string
     def convert(self, format):
         if format == "html":
-            return "<img src='smilies/%s' />" % (smiledict[self.string])
+            return "<img src='smilies/%s' alt='%s' title='%s' />" % (smiledict[self.string], self.string, self.string)
         else:
             return self.string
 class mecmd(object):
@@ -227,6 +227,12 @@ def timeDifference(td):
         timetext = "%d HOURS %s" % (hours, when)
     return timetext
 
+def img2smiley(string):
+    string = unicode(string)
+    def imagerep(mo):
+        return reverse_smiley[mo.group(1)]
+    string = re.sub(r'<img src="smilies/(\S+)" />', imagerep, string)
+    return string
 
 smiledict = {
     ":rancorous:": "pc_rancorous.gif",  
@@ -269,4 +275,5 @@ smiledict = {
     ":pumpkin:": "whatpumpkin.gif",
     ":trollcool:": "trollcool.gif"}
 
+reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
 _smilere = re.compile("|".join(smiledict.keys()))

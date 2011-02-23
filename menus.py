@@ -10,7 +10,9 @@ class PesterQuirkItem(QtGui.QListWidgetItem):
         QtGui.QListWidgetItem.__init__(self, parent)
         self.quirk = quirk
         self.setText(unicode(quirk))
-
+    def update(self, quirk):
+        self.quirk = quirk
+        self.setText(unicode(quirk))
     def __lt__(self, quirkitem):
         if self.quirk.type == "prefix":
             return True
@@ -31,6 +33,9 @@ class PesterQuirkList(QtGui.QListWidget):
             item = PesterQuirkItem(q, self)
             self.addItem(item)
         #self.sortItems()
+
+    def currentQuirk(self):
+        return self.item(self.currentRow())
 
     @QtCore.pyqtSlot()
     def removeCurrent(self):
@@ -78,13 +83,13 @@ class MispellQuirkDialog(QtGui.QDialog):
             return None
 
 class RandomQuirkDialog(MultiTextDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, values={}):
         QtGui.QDialog.__init__(self, parent)
         self.setWindowTitle("RANDOM QUIRK")
         self.inputs = {}
         layout_1 = QtGui.QHBoxLayout()
         regexpl = QtGui.QLabel("REGEXP:", self)
-        self.regexp = QtGui.QLineEdit(self)
+        self.regexp = QtGui.QLineEdit(values.get("regexp",""), self)
         layout_1.addWidget(regexpl)
         layout_1.addWidget(self.regexp)
         replacewithl = QtGui.QLabel("REPLACE WITH:", self)
@@ -92,6 +97,8 @@ class RandomQuirkDialog(MultiTextDialog):
         layout_2 = QtGui.QVBoxLayout()
         layout_3 = QtGui.QHBoxLayout()
         self.replacelist = QtGui.QListWidget(self)
+        for v in values.get("list", []):
+            item = QtGui.QListWidgetItem(v, self.replacelist)
         self.replaceinput = QtGui.QLineEdit(self)
         addbutton = QtGui.QPushButton("ADD", self)
         self.connect(addbutton, QtCore.SIGNAL('clicked()'),
@@ -190,9 +197,15 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_2.addWidget(self.addRandomReplaceButton)
         layout_2.addWidget(self.addMispellingButton)
 
+        self.editSelectedButton = QtGui.QPushButton("EDIT", self)
+        self.connect(self.editSelectedButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('editSelected()'))
         self.removeSelectedButton = QtGui.QPushButton("REMOVE", self)
         self.connect(self.removeSelectedButton, QtCore.SIGNAL('clicked()'),
                      self.quirkList, QtCore.SLOT('removeCurrent()'))
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(self.editSelectedButton)
+        layout_3.addWidget(self.removeSelectedButton)
         
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
@@ -209,47 +222,90 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_0.addWidget(self.quirkList)
         layout_0.addLayout(layout_1)
         layout_0.addLayout(layout_2)
-        layout_0.addWidget(self.removeSelectedButton)
+        layout_0.addLayout(layout_3)
         layout_0.addLayout(layout_ok)
         self.setLayout(layout_0)
 
     def quirks(self):
         return [self.quirkList.item(i).quirk for i in 
                 range(0,self.quirkList.count())]
-            
+
     @QtCore.pyqtSlot()
-    def addPrefixDialog(self):
-        pdict = MultiTextDialog("ENTER PREFIX", self, {"label": "Value:", "inputname": "value"}).getText()
+    def editSelected(self):
+        q = self.quirkList.currentQuirk()
+        quirk = q.quirk
+        if quirk.type == "prefix":
+            self.addPrefixDialog(q)
+        elif quirk.type == "suffix":
+            self.addSuffixDialog(q)
+        elif quirk.type == "replace":
+            self.addSimpleReplaceDialog(q)
+        elif quirk.type == "regexp":
+            self.addRegexpDialog(q)
+        elif quirk.type == "random":
+            self.addRandomDialog(q)
+        elif quirk.type == "spelling":
+            self.addSpellDialog(q)
+
+    @QtCore.pyqtSlot()
+    def addPrefixDialog(self, qitem=None):
+        d = {"label": "Value:", "inputname": "value" }
+        if qitem is not None:
+            d["value"] = qitem.quirk.quirk["value"]
+        pdict = MultiTextDialog("ENTER PREFIX", self, d).getText()
         if pdict is None:
             return
         pdict["type"] = "prefix"
         prefix = pesterQuirk(pdict)
-        pitem = PesterQuirkItem(prefix, self.quirkList)
-        self.quirkList.addItem(pitem)
+        if qitem is None:
+            pitem = PesterQuirkItem(prefix, self.quirkList)
+            self.quirkList.addItem(pitem)
+        else:
+            qitem.update(prefix)
         #self.quirkList.sortItems()
+
     @QtCore.pyqtSlot()
-    def addSuffixDialog(self):
-        vdict = MultiTextDialog("ENTER SUFFIX", self, {"label": "Value:", "inputname": "value"}).getText()
+    def addSuffixDialog(self, qitem=None):
+        d = {"label": "Value:", "inputname": "value" }
+        if qitem is not None:
+            d["value"] = qitem.quirk.quirk["value"]
+        vdict = MultiTextDialog("ENTER SUFFIX", self, d).getText()
         if vdict is None:
             return
         vdict["type"] = "suffix"
-        quirk = pesterQuirk(vdict)
-        item = PesterQuirkItem(quirk, self.quirkList)
-        self.quirkList.addItem(item)
+        newquirk = pesterQuirk(vdict)
+        if qitem is None:
+            item = PesterQuirkItem(newquirk, self.quirkList)
+            self.quirkList.addItem(item)
+        else:
+            qitem.update(newquirk)
         #self.quirkList.sortItems()
+
     @QtCore.pyqtSlot()
-    def addSimpleReplaceDialog(self):
-        vdict = MultiTextDialog("REPLACE", self, {"label": "Replace:", "inputname": "from"}, {"label": "With:", "inputname": "to"}).getText()
+    def addSimpleReplaceDialog(self, qitem=None):
+        d = [{"label": "Replace:", "inputname": "from"}, {"label": "With:", "inputname": "to"}]
+        if qitem is not None:
+            d[0]["value"] = qitem.quirk.quirk["from"]
+            d[1]["value"] = qitem.quirk.quirk["to"]
+        vdict = MultiTextDialog("REPLACE", self, *d).getText()
         if vdict is None:
             return
         vdict["type"] = "replace"
-        quirk = pesterQuirk(vdict)
-        item = PesterQuirkItem(quirk, self.quirkList)
-        self.quirkList.addItem(item)
+        newquirk = pesterQuirk(vdict)
+        if qitem is None:
+            item = PesterQuirkItem(newquirk, self.quirkList)
+            self.quirkList.addItem(item)
+        else:
+            qitem.update(newquirk)
         #self.quirkList.sortItems()
+
     @QtCore.pyqtSlot()
-    def addRegexpDialog(self):
-        vdict = MultiTextDialog("REGEXP REPLACE", self, {"label": "Regexp:", "inputname": "from"}, {"label": "Replace With:", "inputname": "to"}).getText()
+    def addRegexpDialog(self, qitem=None):
+        d = [{"label": "Regexp:", "inputname": "from"}, {"label": "Replace With:", "inputname": "to"}]
+        if qitem is not None:
+            d[0]["value"] = qitem.quirk.quirk["from"]
+            d[1]["value"] = qitem.quirk.quirk["to"]
+        vdict = MultiTextDialog("REGEXP REPLACE", self, *d).getText()
         if vdict is None:
             return
         vdict["type"] = "regexp"
@@ -262,13 +318,20 @@ class PesterChooseQuirks(QtGui.QDialog):
             quirkWarning.exec_()
             return
             
-        quirk = pesterQuirk(vdict)
-        item = PesterQuirkItem(quirk, self.quirkList)
-        self.quirkList.addItem(item)
+        newquirk = pesterQuirk(vdict)
+        if qitem is None:
+            item = PesterQuirkItem(newquirk, self.quirkList)
+            self.quirkList.addItem(item)
+        else:
+            qitem.update(newquirk)
         #self.quirkList.sortItems()
     @QtCore.pyqtSlot()
-    def addRandomDialog(self):
-        vdict = RandomQuirkDialog(self).getText()
+    def addRandomDialog(self, qitem=None):
+        values = {}
+        if qitem is not None:
+            values["list"] = qitem.quirk.quirk["randomlist"]
+            values["regexp"] = qitem.quirk.quirk["from"]
+        vdict = RandomQuirkDialog(self, values).getText()
         if vdict is None:
             return
         vdict["type"] = "random"
@@ -280,19 +343,25 @@ class PesterChooseQuirks(QtGui.QDialog):
             quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
             quirkWarning.exec_()
             return
-        quirk = pesterQuirk(vdict)
-        item = PesterQuirkItem(quirk, self.quirkList)
-        self.quirkList.addItem(item)
+        newquirk = pesterQuirk(vdict)
+        if qitem is None:
+            item = PesterQuirkItem(newquirk, self.quirkList)
+            self.quirkList.addItem(item)
+        else:
+            qitem.update(newquirk)
         #self.quirkList.sortItems()
     @QtCore.pyqtSlot()
-    def addSpellDialog(self):
+    def addSpellDialog(self, qitem=None):
         vdict = MispellQuirkDialog(self).getPercentage()
         if vdict is None:
             return
         vdict["type"] = "spelling"
-        quirk = pesterQuirk(vdict)
-        item = PesterQuirkItem(quirk, self.quirkList)
-        self.quirkList.addItem(item)
+        newquirk = pesterQuirk(vdict)
+        if qitem is None:
+            item = PesterQuirkItem(newquirk, self.quirkList)
+            self.quirkList.addItem(item)
+        else:
+            qitem.update(newquirk)
         #self.quirkList.sortItems()
 
 class PesterChooseTheme(QtGui.QDialog):

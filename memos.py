@@ -300,7 +300,8 @@ class MemoText(PesterText):
         
     def changeTheme(self, theme):
         self.initTheme(theme)
-
+    def submitLogTitle(self):
+        return "[%s]" % (self.parent().title())
 
 class MemoInput(PesterInput):
     def __init__(self, theme, parent=None):
