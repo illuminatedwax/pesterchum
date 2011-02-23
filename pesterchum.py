@@ -1030,7 +1030,10 @@ class PesterWindow(MovingWindow):
 
         if hasattr(self, 'moods'):
             self.moods.removeButtons()
-        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in theme["main/moods"]])
+        mood_list = theme["main/moods"]
+        mood_list = [dict([(str(k),v) for (k,v) in d.iteritems()]) 
+                     for d in mood_list]
+        self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in mood_list])
         self.moods.showButtons()
         # chum
         addChumStyle = "QPushButton { %s }" % (theme["main/addchum/style"])
