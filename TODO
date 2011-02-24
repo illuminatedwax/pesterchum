@@ -5,11 +5,8 @@ Bugs:
 Features:
 * help menu -- about and forum
 * copy quirks between profiles?
-* shared buddy lists - changes to the buddy list should refresh it? 
-  multiple clients share buddy list???
 * chumList not scaling -- QListView + delegate?
 * help button on quirks menu?
--- release beta
 * hide offline chums
 * chum list groups
 * More complex quirks: by-sound

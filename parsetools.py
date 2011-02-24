@@ -12,7 +12,7 @@ _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)http://[^\s]+")
 _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
-_mecmdre = re.compile(r"^/me(\S*)")
+_mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 
 def lexer(string, objlist):
     """objlist is a list: [(objecttype, re),...] list is in order of preference"""
@@ -118,7 +118,7 @@ class smiley(object):
         else:
             return self.string
 class mecmd(object):
-    def __init__(self, string, suffix):
+    def __init__(self, string, mecmd, suffix):
         self.string = string
         self.suffix = suffix
     def convert(self, format):

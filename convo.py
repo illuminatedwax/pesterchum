@@ -341,10 +341,10 @@ class PesterText(QtGui.QTextEdit):
                                            timeout=15)
             hconn.request("POST", "/index.php", params, headers)
             response = hconn.getresponse()
-            if response.status == "200":
+            if response.status == 200:
                 self.sending.sendinglabel.setText("SUCC3SS!")
             else:
-                self.sending.sendinglabel.setText("F41L3D")
+                self.sending.sendinglabel.setText("F41L3D: %s %s" % (response.status, response.reason))
             hconn.close()
         except Exception, e:
             self.sending.sendinglabel.setText("F41L3D: %s" % (e))

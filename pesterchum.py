@@ -199,6 +199,8 @@ class userConfig(object):
             self.userprofile = None
     def chums(self):
         return self.config['chums']
+    def hideOfflineChums(self):
+        return self.config.get('hideOfflineChums', False)
     def defaultprofile(self):
         try:
             return self.config['defaultprofile']
@@ -208,7 +210,10 @@ class userConfig(object):
         return self.config["tabs"]
     def addChum(self, chum):
         if chum.handle not in self.config['chums']:
-            newchums = self.config['chums'] + [chum.handle]
+            fp = open("pesterchum.js") # what if we have two clients open??
+            newconfig = json.load(fp)
+            fp.close()
+            newchums = newconfig['chums'] + [chum.handle]
             self.set("chums", newchums)
     def removeChum(self, chum):
         if type(chum) is PesterProfile:
@@ -770,7 +775,10 @@ class PesterWindow(MovingWindow):
         self.namesdb = {}
         self.chumdb = PesterProfileDB()
 
-        chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
+        if self.config.hideOfflineChums():
+            chums = []
+        else:
+            chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
         self.chumList = chumArea(chums, self)
         self.connect(self.chumList, 
                      QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
