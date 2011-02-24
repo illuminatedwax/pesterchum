@@ -510,6 +510,9 @@ class PesterOptions(QtGui.QDialog):
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
+        self.hideOffline = QtGui.QCheckBox("Hide Offline Chums", self)
+        if self.config.hideOfflineChums():
+            self.hideOffline.setChecked(True)
 
         self.soundcheck = QtGui.QCheckBox("Sounds On", self)
         if self.config.soundOn():
@@ -528,6 +531,7 @@ class PesterOptions(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.tabcheck)
         layout_0.addWidget(self.soundcheck)
+        layout_0.addWidget(self.hideOffline)
         layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)

@@ -374,12 +374,8 @@ class chumArea(RightClickList):
         self.mainwindow = parent
         theme = self.mainwindow.theme
         self.chums = chums
-        for c in self.chums:
-            chandle = c.handle
-            if not self.findItems(chandle, QtCore.Qt.MatchFlags(0)):
-                chumLabel = chumListing(c, self.mainwindow)
-                self.addItem(chumLabel)
-
+        if not self.mainwindow.config.hideOfflineChums():
+            self.showAllChums()
         self.optionsMenu = QtGui.QMenu(self)
         self.pester = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/pester"], self)
         self.connect(self.pester, QtCore.SIGNAL('triggered()'),
@@ -407,9 +403,41 @@ class chumArea(RightClickList):
     def getChums(self, handle):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
         return chums
+    
+    def showAllChums(self):
+        for c in self.chums:
+            chandle = c.handle
+            if not self.findItems(chandle, QtCore.Qt.MatchFlags(0)):
+                chumLabel = chumListing(c, self.mainwindow)
+                self.addItem(chumLabel)
+        self.sortItems()
+    def hideOfflineChums(self):
+        i = 0
+        listing = self.item(i)
+        while listing is not None:
+            if listing.chum.mood.name() == "offline":
+                self.takeItem(i)
+            else:
+                i += 1
+            listing = self.item(i)
+        self.sortItems()
     def updateMood(self, handle, mood):
+        hideoff = self.mainwindow.config.hideOfflineChums()
         chums = self.getChums(handle)
         oldmood = None
+        if hideoff:
+            if mood.name() != "offline" and \
+                    len(chums) == 0 and \
+                    handle in [p.handle for p in self.chums]:
+                newLabel = chumListing([p for p in self.chums if p.handle == handle][0], self.mainwindow)
+                self.addItem(newLabel)
+                self.sortItems()
+                chums = [newLabel]
+            elif mood.name() == "offline" and \
+                    len(chums) > 0:
+                for c in chums:
+                    self.takeItem(self.row(c))
+                chums = []
         for c in chums:
             oldmood = c.mood
             c.setMood(mood)
@@ -596,6 +624,7 @@ class PesterMoodHandler(QtCore.QObject):
             b.raise_()
     @QtCore.pyqtSlot(int)
     def updateMood(self, m):
+        # update MY mood
         oldmood = self.mainwindow.profile().mood
         try:
             oldbutton = self.buttons[oldmood.value()]
@@ -636,6 +665,7 @@ class PesterMoodButton(QtGui.QPushButton):
             self.setStyleSheet(self.unselectedSheet)
     @QtCore.pyqtSlot()
     def updateMood(self):
+        # updates OUR mood
         self.moodUpdated.emit(self.mood.value())
     moodUpdated = QtCore.pyqtSignal(int)
 
@@ -775,10 +805,7 @@ class PesterWindow(MovingWindow):
         self.namesdb = {}
         self.chumdb = PesterProfileDB()
 
-        if self.config.hideOfflineChums():
-            chums = []
-        else:
-            chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
+        chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
         self.chumList = chumArea(chums, self)
         self.connect(self.chumList, 
                      QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
@@ -910,6 +937,7 @@ class PesterWindow(MovingWindow):
         self.chumdb.setColor(handle, color)
 
     def updateMood(self, handle, mood):
+        # updates OTHER chums' moods
         oldmood = self.chumList.updateMood(handle, mood)
         if self.convos.has_key(handle):
             self.convos[handle].updateMood(mood, old=oldmood)
@@ -1519,6 +1547,14 @@ class PesterWindow(MovingWindow):
             self.memos = newmemos
             # save options
             self.config.set("tabs", tabsetting)
+        # hidden chums
+        chumsetting = self.optionmenu.hideOffline.isChecked()
+        curchum = self.config.hideOfflineChums()
+        if curchum and not chumsetting:
+            self.chumList.showAllChums()
+        elif chumsetting and not curchum:
+            self.chumList.hideOfflineChums()
+        self.config.set("hideOfflineChums", chumsetting)
         # sound
         soundsetting = self.optionmenu.soundcheck.isChecked()
         self.config.set("soundon", soundsetting)
