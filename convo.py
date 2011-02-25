@@ -136,7 +136,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.mainwindow.waitingMessages.messageAnswered(handle)
     def initTheme(self, theme):
         self.resize(*theme["convo/size"])
-        self.setStyleSheet(theme["convo/tabs/style"])
+        self.setStyleSheet(theme["convo/tabwindow/style"])
         self.tabs.setShape(theme["convo/tabs/tabstyle"])
         self.tabs.setStyleSheet("QTabBar::tab{ %s } QTabBar::tab:selected { %s }" % (theme["convo/tabs/style"], theme["convo/tabs/selectedstyle"]))
 

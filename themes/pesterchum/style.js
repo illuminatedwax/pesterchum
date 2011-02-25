@@ -206,7 +206,6 @@
  },
  "convo":
  {"style": "background-color: #fdb302;background-image:url($path/convobg.png);background-repeat: no-repeat; border:2px solid yellow; font-family: 'Courier'",
-  "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
   "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background: white; border:2px solid #c48a00;",
                  "handle": "background-color:#c48a00;min-height:20px;",
                  "downarrow": "height:17px;border:0px solid #c48a00;", 
@@ -228,9 +227,12 @@
   "input": {
       "style": "background: white; border:2px solid #c48a00;margin-top:5px; margin-right:10px; margin-left:10px; font-size: 12px;font-family: 'Courier'"
   },
+  "tabwindow" : {
+	  "style": "background-color:#fdb302;border:0px"
+  },
   "tabs": {
-      "style": "",
-      "selectedstyle": "",
+      "style": "background-color: #7f7f7f; font-family: 'Courier'; font:bold;min-height:25px;padding-left:3px;",
+      "selectedstyle": "border:0px;background-color:#fdb302;border-top:2px solid yellow; border-left:2px solid yellow;border-right:2px solid yellow; border-top-left-radius: 4px; border-top-right-radius: 4px;",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0
   },

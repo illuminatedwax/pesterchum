@@ -114,6 +114,11 @@ While pestering your chum, here are some useful features:
 * Pressing the up arrow will cycle through a history of your comments,
   so if you want to retype something, you can pull it up.
 
+* You can submit directly to the Pesterchum Quote Database! If you
+  have a particualarly awesome conversation, you can submit it to the
+  database by simply highlighting the good part of the conversation,
+  right clicking it and choosing "Submit to Pesterchum QDB!"
+
 MEMOS
 -----
 One of the most interesting features to make was the memos, and make

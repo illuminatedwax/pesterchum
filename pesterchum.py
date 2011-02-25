@@ -641,8 +641,9 @@ class PesterMoodHandler(QtCore.QObject):
         if self.mainwindow.currentMoodIcon:
             moodicon = newmood.icon(self.mainwindow.theme)
             self.mainwindow.currentMoodIcon.setPixmap(moodicon.pixmap(moodicon.realsize()))
-        for c in self.mainwindow.convos.values():
-            c.myUpdateMood(newmood)
+        if oldmood.name() != newmood.name():
+            for c in self.mainwindow.convos.values():
+                c.myUpdateMood(newmood)
         self.mainwindow.moodUpdated.emit()
 
 class PesterMoodButton(QtGui.QPushButton):

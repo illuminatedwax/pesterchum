@@ -247,7 +247,6 @@
  },
  "convo":
  {"style": "background:  rgb(190, 19, 4); font-family: 'Arial';",
-  "tabstyle": "background: rgb(190, 19, 4); font-family: 'Arial'",
   "scrollbar": { "style" : "", "handle": "" },
   "margins": {"top": 22, "bottom": 9, "left": 10, "right": 4 },
   "size": [400, 250],
@@ -263,6 +262,9 @@
   },
   "input": {
       "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px; height: 19px;"
+  },
+  "tabwindow" : {
+	  "style": "background: rgb(190, 19, 4); font-family: 'Arial'"
   },
   "tabs": {
       "style": "",
