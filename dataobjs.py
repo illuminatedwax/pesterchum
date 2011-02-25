@@ -110,12 +110,14 @@ class pesterQuirks(object):
     def __init__(self, quirklist):
         self.quirklist = []
         for q in quirklist:
-            if type(q) == dict:
-                self.quirklist.append(pesterQuirk(q))
-            elif type(q) == pesterQuirk:
-                self.quirklist.append(q)
+            self.addQuirk(q)
     def plainList(self):
         return [q.quirk for q in self.quirklist]
+    def addQuirk(self, q):
+        if type(q) == dict:
+            self.quirklist.append(pesterQuirk(q))
+        elif type(q) == pesterQuirk:
+            self.quirklist.append(q)
     def apply(self, lexed, first=False, last=False):
         prefix = [q for q in self.quirklist if q.type=='prefix']
         suffix = [q for q in self.quirklist if q.type=='suffix']

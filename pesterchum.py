@@ -1399,12 +1399,43 @@ class PesterWindow(MovingWindow):
         if f == "":
             return
         fp = open(f, 'r')
+        regexp_state = None
         for l in fp.xreadlines():
             # import chumlist
+            l = l.rstrip()
             chum_mo = re.match("handle: ([A-Za-z0-9]+)", l)
             if chum_mo is not None:
                 chum = PesterProfile(chum_mo.group(1))
                 self.addChum(chum)
+                continue
+            if regexp_state is not None:
+                replace_mo = re.match("replace: (.+)", l)
+                if replace_mo is not None:
+                    replace = replace_mo.group(1)
+                    try:
+                        re.compile(regexp_state)
+                    except re.error, e:
+                        continue
+                    newquirk = pesterQuirk({"type": "regexp",
+                                            "from": regexp_state,
+                                            "to": replace})
+                    qs = self.userprofile.quirks
+                    qs.addQuirk(newquirk)
+                    self.userprofile.setQuirks(qs)
+                regexp_state = None
+                continue
+            search_mo = re.match("search: (.+)", l)
+            if search_mo is not None:
+                regexp_state = search_mo.group(1)
+                continue
+            other_mo = re.match("(prefix|suffix): (.+)", l)
+            if other_mo is not None:
+                newquirk = pesterQuirk({"type": other_mo.group(1),
+                                        "value": other_mo.group(2)})
+                qs = self.userprofile.quirks
+                qs.addQuirk(newquirk)
+                self.userprofile.setQuirks(qs)
+
     @QtCore.pyqtSlot()
     def showMemos(self, channel=""):
         if not hasattr(self, 'memochooser'):
