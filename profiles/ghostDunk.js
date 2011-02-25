@@ -1,1 +1,1 @@
-{"color": "#ff00ff", "theme": "gold", "quirks": [], "handle": "ghostDunk"}
+{"color": "#ff00ff", "theme": "pesterchum", "quirks": [], "handle": "ghostDunk"}

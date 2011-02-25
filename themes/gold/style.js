@@ -1,6 +1,6 @@
 {"main":
  {"style": "background-repeat: no-repeat; font-family: Arial; font-size: 14px;",
-  "background-image": "$path/gbg.gif",
+  "background-image": "$path/gbg2.png",
   "size": [333, 290],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
