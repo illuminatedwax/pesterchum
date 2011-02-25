@@ -552,7 +552,7 @@ class PesterConvo(QtGui.QFrame):
         self.chumopen = o
     def changeTheme(self, theme):
         self.resize(*theme["convo/size"])
-        self.setStyleSheet("QFrame { %s }" % (theme["convo/style"]))
+        self.setStyleSheet("QFrame#%s { %s }" % (self.chum.handle, theme["convo/style"]))
             
         margins = theme["convo/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],

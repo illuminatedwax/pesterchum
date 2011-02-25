@@ -1,7 +1,7 @@
-Welcome to Pesterchum 3.14 alpha!
+Welcome to Pesterchum 3.14 8eta!
 
-This software is currently in alpha testing. That means there will
-probably be a lot of bugs!! Here's some tips to help you get started:
+This software is currently in 8eta testing. That means there will
+probably be some bugs still!! Here's some tips to help you get started:
 
 - You can import your old Pesterchum contacts by going to
 CLIENT->IMPORT and opening your pesterchum.cfg file. This is usually
@@ -181,7 +181,11 @@ OPTIONS:
 Tabbed Conversations: Turns tabbed conversations on and off. Don't
 worry if you do this in the middle of a conversation, PC will save
 them for you.
+
 Sounds On: Uncheck to shut it the fuck up.
+
+Hide Offline Chums: Turning this option on will hide all offline chums 
+off your chumroll.
 
 MEMOS: Opens the Memo list as above.
 
@@ -224,6 +228,9 @@ There are six kinds of quirks! I'll teach you how to use them all!
 (In this section, I will use quotes ("") around things so it's clearer
 to see exactly what to type! Don't include these quotes when using
 these examples!
+
+Also, note that your quirks will not work until you save them by
+hitting "OK" on the Quirk window.
 
 Prefix/Suffix: This will put text before or after everything you
 say. So for example, we can use prefixes to emulate part of Nepeta or
