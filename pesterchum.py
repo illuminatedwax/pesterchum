@@ -396,9 +396,11 @@ class chumArea(RightClickList):
         if len([c for c in self.chums if c.handle == chum.handle]) != 0:
             return
         self.chums.append(chum)
-        chumLabel = chumListing(chum, self.mainwindow)
-        self.addItem(chumLabel)
-        self.sortItems()
+        if not (self.mainwindow.config.hideOfflineChums() and 
+                chum.mood.name() == "offline"):
+            chumLabel = chumListing(chum, self.mainwindow)
+            self.addItem(chumLabel)
+            self.sortItems()
 
     def getChums(self, handle):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))

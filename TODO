@@ -6,7 +6,6 @@ Features:
 * copy quirks between profiles?
 * chumList not scaling -- QListView + delegate?
 * help button on quirks menu?
-* hide offline chums
 * chum list groups
 * More complex quirks: by-sound
 * change profile only once we have confirmation from server
