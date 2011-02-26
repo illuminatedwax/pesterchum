@@ -22,6 +22,7 @@
                        "memos": "Memos",
                        "userlist": "Userlist",
                        "import": "Import",
+					   "reconnect": "Reconnect",
 					   "idle": "Idle",
                        "exit": "Exit"},
             "profile": {"_name": "Profile",

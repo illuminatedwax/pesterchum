@@ -116,7 +116,6 @@
  },
  "convo": {
      "style": "background-color: #fdb302;border:2px solid yellow; font-family: 'Courier';",
-     "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
      "size": [487, 466],
      "chumlabel": { "style": "margin-bottom: 21px;background: rgb(196, 138, 0); color: white; border:0px; font-size: 14px;",
                     "align": { "h": "center", "v": "center" },
