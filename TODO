@@ -1,5 +1,7 @@
 Bugs:
-* Windows doesnt display gold background properlyt
+* client exits if PC is in tray and convo windows are closed
+* save last mood of user
+* "it's only a few sele¢t letters" <-- unicode error!
 
 Features:
 * help menu -- about and forum

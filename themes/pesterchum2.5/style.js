@@ -9,9 +9,9 @@
   "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 14px; background-color: #fdb302;border:2px solid #ffff00",
 			 "menuitem": "font-size:14px;" },
   "close": { "image": "$path/x.gif",
-             "loc": [280, 2]},
+             "loc": [282, 4]},
   "minimize": { "image": "$path/m.gif",
-                "loc": [260, 8]},
+                "loc": [264, 10]},
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Courier';selection-background-color:#646464; ",
 			 "loc": [15, 70],
 			 "size": [270, 300]
@@ -25,7 +25,7 @@
                                 "size": [240, 25],
 								"style": "background-color: black; padding: 3px; padding-left: 25px; color:white; font-family:'Courier'; font:bold; text-align:left; border:2px solid #ffff00;"
 							  },
-                    "colorswatch": { "loc": [260,435],
+                    "colorswatch": { "loc": [255,435],
                                      "size": [30,25],
                                      "text": "C" },
                     "currentMood": [20, 440]
@@ -116,6 +116,7 @@
  },
  "convo": {
      "style": "background-color: #fdb302;border:2px solid yellow; font-family: 'Courier';",
+     "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
      "size": [487, 466],
      "chumlabel": { "style": "margin-bottom: 21px;background: rgb(196, 138, 0); color: white; border:0px; font-size: 14px;",
                     "align": { "h": "center", "v": "center" },
@@ -126,7 +127,3 @@
  "memos":
  { "size": [600,425] }
 }
-
-
-
-  

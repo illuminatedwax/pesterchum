@@ -43,6 +43,21 @@ link you can just click and follow. No more copy/paste.
 - Smilies. We've added about 30-40 smilies from the forums. There is a
 list later on in this readme.
 
+FAQ
+---
+Q: Can we have different chum rolls for different users?
+A: No. Instead what we're going to do in a later update is make chum
+groups to organize people in your list.
+
+Q: Can we delete profiles?
+A: Yes. Go to the profiles directory and delete the corresponding
+username file.
+
+Q: You should make it so you can ban specific time frames in memos.
+A: This was too complicated to implement, and I don't have the UI
+quite figured out. This will probably go in a future update.
+
+
 DOCUMENTATION
 -------------
 

@@ -1,6 +1,6 @@
 {"inherits": "pesterchum2.5",
  "main":
- {"background-image": "$path/tnbg2.png",
+ {"background-image": "$path/tnbg.png",
   "size": [300,620],
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
@@ -11,7 +11,60 @@
   "minimize": { "image": "$path/m.gif",
                 "loc": [260, 8]},
   "defaultwindow": { "style": "background: #e5000f; font-family:'Arial';font:bold;selection-background-color:#919191; " },
-  "chums": { "style": "border:2px solid #ffa4a4; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Arial';selection-background-color:#646464; " },
+  "chums": { "style": "border:2px solid #ffa4a4; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Arial';selection-background-color:#646464; ",
+             "moods": { 
+
+                 "chummy": { "icon": "$path/chummy.gif", "color": "white" },
+
+                 "rancorous": { "icon": "$path/rancorous.gif", "color": "red" },
+
+                 "offline": { "icon": "$path/offline.gif", "color": "#646464"},
+
+			     
+                 "pleasant": { "icon": "$path/pleasant.gif", "color": "white" },
+
+                 "distraught": { "icon": "$path/distraught.gif", "color": "white" },
+
+                 "pranky": { "icon": "$path/pranky.gif", "color": "white" },
+
+
+                 "smooth": { "icon": "$path/smooth.gif", "color": "white" },
+
+                 "mystified": { "icon": "$path/mystified.gif", "color": "white" },
+
+                 "amazed": { "icon": "$path/amazed.gif", "color": "white" },
+
+                 "insolent": { "icon": "$path/insolent.gif", "color": "white" },
+
+                 "bemused": { "icon": "$path/bemused.gif", "color": "white" },
+
+
+                 "ecstatic": { "icon": "$path/ecstatic.gif", "color": "red" },
+
+                 "relaxed": { "icon": "$path/relaxed.gif", "color": "red" },
+
+                 "discontent": { "icon": "$path/discontent.gif", "color": "red" },
+
+                 "devious": { "icon": "$path/devious.gif", "color": "red" },
+
+                 "sleek": { "icon": "$path/sleek.gif", "color": "red" },
+			     
+                 "detestful": { "icon": "$path/detestful.gif", "color": "red" },
+
+                 "mirthful": { "icon": "$path/mirthful.gif", "color": "red" },
+
+                 "manipulative": { "icon": "$path/manipulative.gif", "color": "red" },
+
+                 "vigorous": { "icon": "$path/vigorous.gif", "color": "red" },
+
+                 "perky": { "icon": "$path/perky.gif", "color": "red" },
+
+                 "acceptant": { "icon": "$path/acceptant.gif", "color": "red" },
+
+                 "protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
+
+                 "blocked": { "icon": "$path/blocked.gif", "color": "black" }
+ },
   "mychumhandle": { "label": 
                     { "text": "TROLLTAG:",
                       "style": "color: black ;font:bold; font-family: 'Arial';" 
@@ -98,7 +151,8 @@
 					"text" : ":: trolling: $handle ::" },
 	 "textarea": {
 		 "style": "background: white;  font-size: 14px;font:bold; border:2px solid #ffa4a4;text-align:center; margin-right:10px; margin-left:10px;font-family: 'Arial'"
-	 },
+ 	 },
+  "input": { "style": "background: white; border:2px solid #ffa4a4;margin-top:5px; margin-right:10px; margin-left:10px; font-size: 12px;" },
 	 "tabwindow" : {
 		 "style": ""
 	 },
