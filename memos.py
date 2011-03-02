@@ -317,6 +317,7 @@ class MemoInput(PesterInput):
 class PesterMemo(PesterConvo):
     def __init__(self, channel, timestr, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose, False)
         self.channel = channel
         self.mainwindow = mainwindow
         self.time = TimeTracker(txt2delta(timestr))

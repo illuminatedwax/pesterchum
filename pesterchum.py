@@ -23,6 +23,17 @@ from parsetools import convertTags, addTimeInitial
 from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 
+_datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
+
+if sys.platform == "darwin":
+    if not os.path.exists(_datadir):
+        os.mkdir(_datadir)
+    if not os.path.exists(_datadir+"profiles"):
+        os.mkdir(_datadir+"profiles")
+    if not os.path.exists(_datadir+"pesterchum.js"):
+        f = open(_datadir+"pesterchum.js", 'w')
+        f.close()
+
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
         self.mainwindow = mainwindow
@@ -56,8 +67,14 @@ class NoneSound(object):
 
 class PesterLog(object):
     def __init__(self, handle):
+        global _datadir
         self.handle = handle
         self.convos = {}
+        if sys.platform != "darwin":
+            self.logpath = "logs"
+        else:
+            self.logpath = _datadir+"logs"
+
     def log(self, handle, msg):
         bbcodemsg = convertTags(msg, "bbcode")
         html = convertTags(msg, "html")+"<br />"
@@ -67,9 +84,9 @@ class PesterLog(object):
             time = datetime.now().strftime("%Y-%m-%d.%H.%M")
             self.convos[handle] = {}
             for (format, t) in modes.iteritems():
-                if not os.path.exists("logs/%s/%s/%s" % (self.handle, handle, format)):
-                    os.makedirs("logs/%s/%s/%s" % (self.handle, handle, format))
-                fp = codecs.open("logs/%s/%s/%s/%s.%s.txt" % (self.handle, handle, format, handle, time), encoding='utf-8', mode='a')
+                if not os.path.exists("%s/%s/%s/%s" % (self.logpath, self.handle, handle, format)):
+                    os.makedirs("%s/%s/%s/%s" % (self.logpath, self.handle, handle, format))
+                fp = codecs.open("%s/%s/%s/%s/%s.%s.txt" % (self.logpath, self.handle, handle, format, handle, time), encoding='utf-8', mode='a')
                 self.convos[handle][format] = fp
         for (format, t) in modes.iteritems():
             f = self.convos[handle][format]
@@ -91,20 +108,25 @@ class PesterLog(object):
 
 class PesterProfileDB(dict):
     def __init__(self):
+        if sys.platform != "darwin":
+            self.logpath = "logs"
+        else:
+            self.logpath = _datadir+"logs"
+
         try:
-            fp = open("logs/chums.js", 'r')
+            fp = open("%s/chums.js" % (self.logpath), 'r')
             chumdict = json.load(fp)
             fp.close()
         except IOError:
             chumdict = {}
-            fp = open("logs/chums.js", 'w')
+            fp = open("%s/chums.js" % (self.logpath), 'w')
             json.dump(chumdict, fp)
             fp.close()
         converted = dict([(handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
         self.update(converted)
 
     def save(self):
-        fp = open("logs/chums.js", 'w')
+        fp = open("%s/chums.js" % (self.logpath), 'w')
         chumdict = dict([p.plaindict() for p in self.itervalues()])
         json.dump(chumdict, fp)
         fp.close()
@@ -124,7 +146,11 @@ class PesterProfileDB(dict):
 
 class pesterTheme(dict):
     def __init__(self, name, default=False):
-        self.path = "themes/%s" % (name)
+        if sys.platform != "darwin":
+            self.path = "themes/%s" % (name)
+        else:
+            self.path = _datadir+"themes/%s" % (name)
+
         self.name = name
         fp = open(self.path+"/style.js")
         theme = json.load(fp, object_hook=self.pathHook)
@@ -190,7 +216,11 @@ class pesterTheme(dict):
 
 class userConfig(object):
     def __init__(self):
-        fp = open("pesterchum.js")
+        if sys.platform != "darwin": 
+            self.filename = "pesterchum.js"
+        else:
+            self.filename = _datadir+"pesterchum.js"
+        fp = open(self.filename)
         self.config = json.load(fp)
         fp.close()
         if self.config.has_key("defaultprofile"):
@@ -198,7 +228,9 @@ class userConfig(object):
         else:
             self.userprofile = None
     def chums(self):
-        return self.config['chums']
+        if not self.config.has_key('chums'):
+            self.set("chums", [])
+        return self.config.get('chums', [])
     def hideOfflineChums(self):
         return self.config.get('hideOfflineChums', False)
     def defaultprofile(self):
@@ -207,10 +239,10 @@ class userConfig(object):
         except KeyError:
             return None
     def tabs(self):
-        return self.config["tabs"]
+        return self.config.get("tabs", True)
     def addChum(self, chum):
-        if chum.handle not in self.config['chums']:
-            fp = open("pesterchum.js") # what if we have two clients open??
+        if chum.handle not in self.chums():
+            fp = open(self.filename) # what if we have two clients open??
             newconfig = json.load(fp)
             fp.close()
             newchums = newconfig['chums'] + [chum.handle]
@@ -249,7 +281,7 @@ class userConfig(object):
             jsonoutput = json.dumps(self.config)
         except ValueError, e:
             raise e
-        fp = open("pesterchum.js", 'w')
+        fp = open(self.filename, 'w')
         fp.write(jsonoutput)
         fp.close()
     def availableThemes(self):
@@ -270,6 +302,11 @@ class userConfig(object):
         return [userProfile(p) for p in profs]
 class userProfile(object):
     def __init__(self, user):
+        if sys.platform != "darwin": 
+            self.profiledir = "profiles"
+        else:
+            self.profiledir = _datadir+"profiles"
+
         if type(user) is PesterProfile:
             self.chat = user
             self.userprofile = {"handle":user.handle,
@@ -278,20 +315,22 @@ class userProfile(object):
                                 "theme": "pesterchum"}
             self.theme = pesterTheme("pesterchum")
             self.chat.mood = Mood(self.theme["main/defaultmood"])
+            self.lastmood = self.chat.mood.value()
             self.quirks = pesterQuirks([])
         else:
-            fp = open("profiles/%s.js" % (user))
+            fp = open("%s/%s.js" % (self.profiledir, user))
             self.userprofile = json.load(fp)
             fp.close()
             try:
                 self.theme = pesterTheme(self.userprofile["theme"])
             except ValueError, e:
                 self.theme = pesterTheme("pesterchum")
-
+            self.lastmood = self.userprofile.get('lastmood', self.theme["main/defaultmood"])
             self.chat = PesterProfile(self.userprofile["handle"],
                                       QtGui.QColor(self.userprofile["color"]),
-                                      Mood(self.theme["main/defaultmood"]))
+                                      Mood(self.lastmood))
             self.quirks = pesterQuirks(self.userprofile["quirks"])
+
     def setMood(self, mood):
         self.chat.mood = mood
     def setTheme(self, theme):
@@ -306,6 +345,12 @@ class userProfile(object):
         self.quirks = quirks
         self.userprofile["quirks"] = self.quirks.plainList()
         self.save()
+    def getLastMood(self):
+        return self.lastmood
+    def setLastMood(self, mood):
+        self.lastmood = mood.value()
+        self.userprofile["lastmood"] = self.lastmood
+        self.save()
     def getTheme(self):
         return self.theme
     def save(self):
@@ -314,7 +359,7 @@ class userProfile(object):
             jsonoutput = json.dumps(self.userprofile)
         except ValueError, e:
             raise e
-        fp = open("profiles/%s.js" % (handle), 'w')
+        fp = open("%s/%s.js" % (self.profiledir, handle), 'w')
         fp.write(jsonoutput)
         fp.close()
     @staticmethod
@@ -640,6 +685,7 @@ class PesterMoodHandler(QtCore.QObject):
             pass
         newmood = Mood(m)
         self.mainwindow.userprofile.chat.mood = newmood
+        self.mainwindow.userprofile.setLastMood(newmood)
         if self.mainwindow.currentMoodIcon:
             moodicon = newmood.icon(self.mainwindow.theme)
             self.mainwindow.currentMoodIcon.setPixmap(moodicon.pixmap(moodicon.realsize()))

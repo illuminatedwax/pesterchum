@@ -13,6 +13,7 @@ from parsetools import convertTags, lexMessage, mecmd, colorBegin, colorEnd, img
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
         QtGui.QFrame.__init__(self, parent)
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose, False)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.mainwindow = mainwindow
 
@@ -378,6 +379,7 @@ class PesterInput(QtGui.QLineEdit):
 class PesterConvo(QtGui.QFrame):
     def __init__(self, chum, initiated, mainwindow, parent=None):
         QtGui.QFrame.__init__(self, parent)
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose, False)
         self.setObjectName(chum.handle)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.chum = chum
