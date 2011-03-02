@@ -64,7 +64,8 @@
                  "protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
 
                  "blocked": { "icon": "$path/blocked.gif", "color": "black" }
- },
+			 },
+		   },
   "mychumhandle": { "label": 
                     { "text": "TROLLTAG:",
                       "style": "color: black ;font:bold; font-family: 'Arial';" 
@@ -144,7 +145,7 @@
 		"mood": 2
 	  }
   ]
- },
+},
  "convo": {
      "style": "background-color: #e5000f;border:2px solid #780000; font-family: 'Arial';",
      "chumlabel": { "style": "margin-bottom: 21px;background: #ffa4a4; color: black; border:0px; font-size: 14px;",
