@@ -6,64 +6,64 @@
   "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "TROLLIAN",
   "menu" : { "style": "font-family: 'Arial'; font: bold; font-size: 14px; background-color: #e5000f;border:2px solid #c20f00" },
-  "close": { "image": "$path/x.gif",
+  "close": { "image": "$path/x.png",
              "loc": [280, 2]},
-  "minimize": { "image": "$path/m.gif",
+  "minimize": { "image": "$path/m.png",
                 "loc": [260, 8]},
   "defaultwindow": { "style": "background: #e5000f; font-family:'Arial';font:bold;selection-background-color:#919191; " },
   "chums": { "style": "border:2px solid #ffa4a4; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Arial';selection-background-color:#646464; ",
              "moods": { 
 
-                 "chummy": { "icon": "$path/chummy.gif", "color": "white" },
+                 "chummy": { "icon": "$path/chummy.png", "color": "white" },
 
-                 "rancorous": { "icon": "$path/rancorous.gif", "color": "red" },
+                 "rancorous": { "icon": "$path/rancorous.png", "color": "red" },
 
-                 "offline": { "icon": "$path/offline.gif", "color": "#646464"},
+                 "offline": { "icon": "$path/offline.png", "color": "#646464"},
 
 			     
-                 "pleasant": { "icon": "$path/pleasant.gif", "color": "white" },
+                 "pleasant": { "icon": "$path/pleasant.png", "color": "white" },
 
-                 "distraught": { "icon": "$path/distraught.gif", "color": "white" },
+                 "distraught": { "icon": "$path/distraught.png", "color": "white" },
 
-                 "pranky": { "icon": "$path/pranky.gif", "color": "white" },
-
-
-                 "smooth": { "icon": "$path/smooth.gif", "color": "white" },
-
-                 "mystified": { "icon": "$path/mystified.gif", "color": "white" },
-
-                 "amazed": { "icon": "$path/amazed.gif", "color": "white" },
-
-                 "insolent": { "icon": "$path/insolent.gif", "color": "white" },
-
-                 "bemused": { "icon": "$path/bemused.gif", "color": "white" },
+                 "pranky": { "icon": "$path/pranky.png", "color": "white" },
 
 
-                 "ecstatic": { "icon": "$path/ecstatic.gif", "color": "red" },
+                 "smooth": { "icon": "$path/smooth.png", "color": "white" },
 
-                 "relaxed": { "icon": "$path/relaxed.gif", "color": "red" },
+                 "mystified": { "icon": "$path/mystified.png", "color": "white" },
 
-                 "discontent": { "icon": "$path/discontent.gif", "color": "red" },
+                 "amazed": { "icon": "$path/amazed.png", "color": "white" },
 
-                 "devious": { "icon": "$path/devious.gif", "color": "red" },
+                 "insolent": { "icon": "$path/insolent.png", "color": "white" },
 
-                 "sleek": { "icon": "$path/sleek.gif", "color": "red" },
+                 "bemused": { "icon": "$path/bemused.png", "color": "white" },
+
+
+                 "ecstatic": { "icon": "$path/ecstatic.png", "color": "red" },
+
+                 "relaxed": { "icon": "$path/relaxed.png", "color": "red" },
+
+                 "discontent": { "icon": "$path/discontent.png", "color": "red" },
+
+                 "devious": { "icon": "$path/devious.png", "color": "red" },
+
+                 "sleek": { "icon": "$path/sleek.png", "color": "red" },
 			     
-                 "detestful": { "icon": "$path/detestful.gif", "color": "red" },
+                 "detestful": { "icon": "$path/detestful.png", "color": "red" },
 
-                 "mirthful": { "icon": "$path/mirthful.gif", "color": "red" },
+                 "mirthful": { "icon": "$path/mirthful.png", "color": "red" },
 
-                 "manipulative": { "icon": "$path/manipulative.gif", "color": "red" },
+                 "manipulative": { "icon": "$path/manipulative.png", "color": "red" },
 
-                 "vigorous": { "icon": "$path/vigorous.gif", "color": "red" },
+                 "vigorous": { "icon": "$path/vigorous.png", "color": "red" },
 
-                 "perky": { "icon": "$path/perky.gif", "color": "red" },
+                 "perky": { "icon": "$path/perky.png", "color": "red" },
 
-                 "acceptant": { "icon": "$path/acceptant.gif", "color": "red" },
+                 "acceptant": { "icon": "$path/acceptant.png", "color": "red" },
 
-                 "protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
+                 "protective": { "icon": "$path/protective.png", "color": "#00ff00" },
 
-                 "blocked": { "icon": "$path/blocked.gif", "color": "black" }
+                 "blocked": { "icon": "$path/blocked.png", "color": "black" }
 			 },
 		   },
   "mychumhandle": { "label": 
@@ -87,7 +87,7 @@
 		"loc": [15, 485],
 		"size": [135, 30],
 	    "text": "ECSTATIC",
-		"icon": "$path/estatic.gif",
+		"icon": "$path/estatic.png",
 		"mood": 7
 	  },
 
@@ -96,7 +96,7 @@
 		"loc": [15, 513],
 		"size": [135, 30],
 	    "text": "RELAXED",
-		"icon": "$path/relaxed.gif",
+		"icon": "$path/relaxed.png",
 		"mood": 8
 	  },
 
@@ -105,7 +105,7 @@
 		"loc": [15, 541],
 		"size": [135, 30],
 	    "text": "DISCONTENT",
-		"icon": "$path/discontent.gif",
+		"icon": "$path/discontent.png",
 		"mood": 9
 	  },
 
@@ -114,7 +114,7 @@
 		"loc": [148, 485],
 		"size": [135, 30],
 	    "text": "DEVIOUS",
-		"icon": "$path/devious.gif",
+		"icon": "$path/devious.png",
 		"mood": 10
 	  },
 
@@ -123,7 +123,7 @@
 		"loc": [148, 513],
 		"size": [135, 30],
 	    "text": "SLEEK",
-		"icon": "$path/sleek.gif",
+		"icon": "$path/sleek.png",
 		"mood": 11
 	  },
 
@@ -132,7 +132,7 @@
 		"loc": [148, 541],
 		"size": [135, 30],
 	    "text": "DETESTFUL",
-		"icon": "$path/detestful.gif",
+		"icon": "$path/detestful.png",
 		"mood": 12
 	  },
 
@@ -141,7 +141,7 @@
 		"loc": [15, 569],
 		"size": [270, 30],
 		"text": "ABSCOND",
-		"icon": "$path/offline.gif",
+		"icon": "$path/offline.png",
 		"mood": 2
 	  }
   ]

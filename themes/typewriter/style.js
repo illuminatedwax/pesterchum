@@ -48,56 +48,56 @@
              "userlistcolor": "black",
              "moods": { 
 
-                 "chummy": { "icon": "$path/chummy.gif", "color": "black" },
+                 "chummy": { "icon": "$path/chummy.png", "color": "black" },
 
-                 "rancorous": { "icon": "$path/rancorous.gif", "color": "red" },
+                 "rancorous": { "icon": "$path/rancorous.png", "color": "red" },
 
-                 "offline": { "icon": "$path/offline.gif", "color": "#646464"},
+                 "offline": { "icon": "$path/offline.png", "color": "#646464"},
 
 			     
-                 "pleasant": { "icon": "$path/pleasant.gif", "color": "black" },
+                 "pleasant": { "icon": "$path/pleasant.png", "color": "black" },
 
-                 "distraught": { "icon": "$path/distraught.gif", "color": "black" },
+                 "distraught": { "icon": "$path/distraught.png", "color": "black" },
 
-                 "pranky": { "icon": "$path/pranky.gif", "color": "black" },
-
-
-                 "smooth": { "icon": "$path/smooth.gif", "color": "black" },
-
-                 "mystified": { "icon": "$path/mystified.gif", "color": "black" },
-
-                 "amazed": { "icon": "$path/amazed.gif", "color": "black" },
-
-                 "insolent": { "icon": "$path/insolent.gif", "color": "black" },
-
-                 "bemused": { "icon": "$path/bemused.gif", "color": "black" },
+                 "pranky": { "icon": "$path/pranky.png", "color": "black" },
 
 
-                 "ecstatic": { "icon": "$path/ecstatic.gif", "color": "red" },
+                 "smooth": { "icon": "$path/smooth.png", "color": "black" },
 
-                 "relaxed": { "icon": "$path/relaxed.gif", "color": "red" },
+                 "mystified": { "icon": "$path/mystified.png", "color": "black" },
 
-                 "discontent": { "icon": "$path/discontent.gif", "color": "red" },
+                 "amazed": { "icon": "$path/amazed.png", "color": "black" },
 
-                 "devious": { "icon": "$path/devious.gif", "color": "red" },
+                 "insolent": { "icon": "$path/insolent.png", "color": "black" },
 
-                 "sleek": { "icon": "$path/sleek.gif", "color": "red" },
+                 "bemused": { "icon": "$path/bemused.png", "color": "black" },
+
+
+                 "ecstatic": { "icon": "$path/ecstatic.png", "color": "red" },
+
+                 "relaxed": { "icon": "$path/relaxed.png", "color": "red" },
+
+                 "discontent": { "icon": "$path/discontent.png", "color": "red" },
+
+                 "devious": { "icon": "$path/devious.png", "color": "red" },
+
+                 "sleek": { "icon": "$path/sleek.png", "color": "red" },
 			     
-                 "detestful": { "icon": "$path/detestful.gif", "color": "red" },
+                 "detestful": { "icon": "$path/detestful.png", "color": "red" },
 
-                 "mirthful": { "icon": "$path/mirthful.gif", "color": "red" },
+                 "mirthful": { "icon": "$path/mirthful.png", "color": "red" },
 
-                 "manipulative": { "icon": "$path/manipulative.gif", "color": "red" },
+                 "manipulative": { "icon": "$path/manipulative.png", "color": "red" },
 
-                 "vigorous": { "icon": "$path/vigorous.gif", "color": "red" },
+                 "vigorous": { "icon": "$path/vigorous.png", "color": "red" },
 
-                 "perky": { "icon": "$path/perky.gif", "color": "red" },
+                 "perky": { "icon": "$path/perky.png", "color": "red" },
 
-                 "acceptant": { "icon": "$path/acceptant.gif", "color": "red" },
+                 "acceptant": { "icon": "$path/acceptant.png", "color": "red" },
 
-                 "protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
+                 "protective": { "icon": "$path/protective.png", "color": "#00ff00" },
 
-                 "blocked": { "icon": "$path/blocked.gif", "color": "black" }
+                 "blocked": { "icon": "$path/blocked.png", "color": "black" }
 
              }
            },
@@ -250,6 +250,6 @@
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/protective.gif" }
+  "op": { "icon": "$path/protective.png" }
  }
 }

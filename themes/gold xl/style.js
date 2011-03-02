@@ -2,9 +2,9 @@
  "main": 
  { "size": [554, 484],
    "background-image": "$path/gbbg.png",
-   "close": { "image": "$path/x.gif",
+   "close": { "image": "$path/x.png",
               "loc": [535, 45]},
-   "minimize": { "image": "$path/m.gif",
+   "minimize": { "image": "$path/m.png",
                  "loc": [515, 48]},
    "menu" : { "loc": [214,44] },
    "chums": { "style": "border:0px; background-image:url($path/chumbg.png); background-color: rgb(110,110,110); background-repeat: no-repeat; color: white; font-family: 'Arial';selection-background-color:#646464; font-size:16px; ",

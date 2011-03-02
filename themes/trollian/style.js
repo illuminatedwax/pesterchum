@@ -5,9 +5,9 @@
   "icon": "$path/trayicon.png",
   "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "TROLLIAN",
-  "close": { "image": "$path/x.gif",
+  "close": { "image": "$path/x.png",
              "loc": [635, 2]},
-  "minimize": { "image": "$path/m.gif",
+  "minimize": { "image": "$path/m.png",
                 "loc": [621, 8]},
   "menubar": { "style": "font-family: 'Arial'; font-size: 11px; color: rgba(0,0,0,0);" },
   "menu" : { "style": "font-family: 'Arial'; font-size: 11px; background-color: #c2c2c2; border:1px solid #545454;",
@@ -324,6 +324,6 @@
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/op.gif" }
+  "op": { "icon": "$path/op.png" }
  }
 }

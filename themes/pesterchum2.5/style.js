@@ -8,9 +8,9 @@
   "windowtitle": "PESTERCHUM",
   "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 14px; background-color: #fdb302;border:2px solid #ffff00",
 			 "menuitem": "font-size:14px;" },
-  "close": { "image": "$path/x.gif",
+  "close": { "image": "$path/x.png",
              "loc": [282, 4]},
-  "minimize": { "image": "$path/m.gif",
+  "minimize": { "image": "$path/m.png",
                 "loc": [264, 10]},
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Courier';selection-background-color:#646464; ",
 			 "loc": [15, 70],
@@ -55,7 +55,7 @@
 		"loc": [15, 485],
 		"size": [135, 30],
 	    "text": "CHUMMY",
-		"icon": "$path/chummy.gif",
+		"icon": "$path/chummy.png",
 		"mood": 0
 	  },
 
@@ -64,7 +64,7 @@
 		"loc": [15, 513],
 		"size": [135, 30],
 	    "text": "PLEASANT",
-		"icon": "$path/pleasant.gif",
+		"icon": "$path/pleasant.png",
 		"mood": 3
 	  },
 
@@ -73,7 +73,7 @@
 		"loc": [15, 541],
 		"size": [135, 30],
 	    "text": "DISTRAUGHT",
-		"icon": "$path/distraught.gif",
+		"icon": "$path/distraught.png",
 		"mood": 4
 	  },
 
@@ -82,7 +82,7 @@
 		"loc": [148, 485],
 		"size": [135, 30],
 	    "text": "PRANKY",
-		"icon": "$path/pranky.gif",
+		"icon": "$path/pranky.png",
 		"mood": 5
 	  },
 
@@ -91,7 +91,7 @@
 		"loc": [148, 513],
 		"size": [135, 30],
 	    "text": "SMOOTH",
-		"icon": "$path/smooth.gif",
+		"icon": "$path/smooth.png",
 		"mood": 6
 	  },
 
@@ -100,7 +100,7 @@
 		"loc": [148, 541],
 		"size": [135, 30],
 	    "text": "RANCOROUS",
-		"icon": "$path/rancorous.gif",
+		"icon": "$path/rancorous.png",
 		"mood": 1
 	  },
 
@@ -109,7 +109,7 @@
 		"loc": [15, 569],
 		"size": [270, 30],
 		"text": "ABSCOND",
-		"icon": "$path/offline.gif",
+		"icon": "$path/offline.png",
 		"mood": 2
 	  }
   ]
