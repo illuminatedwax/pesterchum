@@ -1,0 +1,5 @@
+<Archaemic> setup-py2app.py, which will create the app
+<Archaemic> py2app.sh, which runs setup-py2app.py and does cleanup
+<Archaemic> when it says that it can't find py2app/apptemplate/prebuilt/main-i386
+<Archaemic> you have to cd into prebuilt and ln -s main-fat3 main-i386
+<Archaemic> although I suspect that ln -s main-fat main-i386 works better in this case

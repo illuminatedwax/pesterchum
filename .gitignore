@@ -1,5 +1,6 @@
 logs/*
 build/*
 profiles/*
+tmp/*
 irctest.log
 *.pyc
