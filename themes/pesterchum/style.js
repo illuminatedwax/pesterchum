@@ -231,7 +231,7 @@
 	  "style": "background-color:#fdb302;border:0px"
   },
   "tabs": {
-      "style": "background-color: #7f7f7f; font-family: 'Courier'; font:bold;min-height:25px;",
+      "style": "background-color: #7f7f7f; font-family: 'Courier';font:bold;font-size:12px;min-height:25px;",
       "selectedstyle": "border:0px;background-color:#fdb302;border-top:2px solid yellow; border-left:2px solid yellow;border-right:2px solid yellow; border-top-left-radius: 4px; border-top-right-radius: 4px;",
       "newmsgcolor": "#fdb302",
       "tabstyle": 0

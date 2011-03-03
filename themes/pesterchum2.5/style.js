@@ -8,6 +8,7 @@
   "windowtitle": "PESTERCHUM",
   "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 14px; background-color: #fdb302;border:2px solid #ffff00",
 			 "menuitem": "font-size:14px;" },
+  "menubar": { "style": "font-family: 'Courier'; font:bold; font-size: 14px;" },
   "close": { "image": "$path/x.png",
              "loc": [282, 4]},
   "minimize": { "image": "$path/m.png",
