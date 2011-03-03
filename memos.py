@@ -319,6 +319,7 @@ class PesterMemo(PesterConvo):
         QtGui.QFrame.__init__(self, parent)
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, False)
         self.channel = channel
+        self.setObjectName(self.channel)
         self.mainwindow = mainwindow
         self.time = TimeTracker(txt2delta(timestr))
         self.setWindowTitle(channel)
@@ -454,7 +455,7 @@ class PesterMemo(PesterConvo):
 
     def initTheme(self, theme):
         self.resize(*theme["memos/size"])
-        self.setStyleSheet("QFrame { %s }" % (theme["memos/style"]))
+        self.setStyleSheet("QFrame#%s { %s }" % (self.channel, theme["memos/style"]))
         self.setWindowIcon(PesterIcon(theme["memos/memoicon"]))
 
         t = Template(theme["memos/label/text"])

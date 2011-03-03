@@ -16,7 +16,7 @@ class Mood(object):
              "vigorous", "perky", "acceptant", "protective", "mystified",
              "amazed", "insolent", "bemused" ]
     moodcats = ["chums", "trolls", "other"]
-    revmoodcats = {'discontent': 'trolls', 'insolent': 'other', 'rancorous': 'chums', 'sleek': 'trolls', 'bemused': 'other', 'mystified': 'other', 'pranky': 'chums', 'distraught': 'chums', 'offline': 'chums', 'chummy': 'chums', 'protective': 'other', 'vigorous': 'trolls', 'ecstatic': 'trolls', 'relaxed': 'trolls', 'pleasant': 'chums', 'manipulative': 'trolls', 'detestful': 'trolls', 'smooth': 'chums', 'mirthful': 'trolls', 'acceptant': 'trolls', 'perky': 'trolls', 'devious': 'trolls', 'amazed': 'other'}
+    revmoodcats = {'discontent': 'trolls', 'insolent': 'chums', 'rancorous': 'chums', 'sleek': 'trolls', 'bemused': 'chums', 'mystified': 'chums', 'pranky': 'chums', 'distraught': 'chums', 'offline': 'chums', 'chummy': 'chums', 'protective': 'other', 'vigorous': 'trolls', 'ecstatic': 'trolls', 'relaxed': 'trolls', 'pleasant': 'chums', 'manipulative': 'trolls', 'detestful': 'trolls', 'smooth': 'chums', 'mirthful': 'trolls', 'acceptant': 'trolls', 'perky': 'trolls', 'devious': 'trolls', 'amazed': 'chums'}
 
     def __init__(self, mood):
         if type(mood) is int:
@@ -192,10 +192,16 @@ class PesterProfile(object):
         else:
             return (handle[0]+caps[0]).upper() 
     def colorhtml(self):
-        return self.color.name()
+        if self.color:
+            return self.color.name()
+        else:
+            return "#000000"
     def colorcmd(self):
-        (r, g, b, a) = self.color.getRgb()
-        return "%d,%d,%d" % (r,g,b)
+        if self.color:
+            (r, g, b, a) = self.color.getRgb()
+            return "%d,%d,%d" % (r,g,b)
+        else:
+            return "0,0,0"
     def plaindict(self):
         return (self.handle, {"handle": self.handle,
                               "mood": self.mood.name(),
