@@ -48,8 +48,8 @@
                             "uparrow": "",
                             "uarrowstyle": ""
                           },
-             "loc": [475, 89],
-             "size": [175, 361],
+             "loc": [477, 91],
+             "size": [171, 357],
              "userlistcolor": "black",
              "moods": {
                  

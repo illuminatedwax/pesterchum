@@ -9,7 +9,7 @@ _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _gtag_begin = re.compile(r'(?i)<g[a-f]>')
 _ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
-_urlre = re.compile(r"(?i)http://[^\s]+")
+_urlre = re.compile(r"(?i)https?://[^\s]+")
 _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
@@ -94,7 +94,7 @@ class imagelink(object):
             return self.string
         elif format == "bbcode":
             if self.img[0:7] == "http://":
-                return "[img]%s[/img]" % (img)
+                return "[img]%s[/img]" % (self.img)
             else:
                 return ""
         else:

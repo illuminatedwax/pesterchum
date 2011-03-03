@@ -226,7 +226,10 @@ class PesterIRC(QtCore.QThread):
 
 class PesterHandler(DefaultCommandHandler):
     def privmsg(self, nick, chan, msg):
-        msg = msg.decode("utf-8")
+        try:
+            msg = msg.decode('utf-8')
+        except UnicodeDecodeError:
+            msg = msg.decode('iso-8859-1', 'ignore')
         # display msg, do other stuff
         if len(msg) == 0:
             return

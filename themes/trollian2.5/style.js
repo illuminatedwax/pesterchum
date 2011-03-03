@@ -6,6 +6,7 @@
   "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "TROLLIAN",
   "menu" : { "style": "font-family: 'Arial'; font: bold; font-size: 14px; background-color: #e5000f;border:2px solid #c20f00" },
+  "menubar": { "style": "font-family: 'Arial'; font:bold; font-size: 14px;" },
   "close": { "image": "$path/x.png",
              "loc": [280, 2]},
   "minimize": { "image": "$path/m.png",
@@ -64,7 +65,7 @@
                  "protective": { "icon": "$path/protective.png", "color": "#00ff00" },
 
                  "blocked": { "icon": "$path/blocked.png", "color": "black" }
-			 },
+			 }
 		   },
   "mychumhandle": { "label": 
                     { "text": "TROLLTAG:",

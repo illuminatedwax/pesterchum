@@ -1,5 +1,6 @@
 Bugs:
-* "it's only a few sele¢t letters" <-- unicode error!
+* typewriter tab colors + scrollbar wrong colors
+* typewriter mood icons dont work in convo window
 
 Features:
 * help menu -- about and forum
