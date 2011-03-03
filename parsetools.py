@@ -94,7 +94,7 @@ class imagelink(object):
             return self.string
         elif format == "bbcode":
             if self.img[0:7] == "http://":
-                return "[img]%s[/img]" % (img)
+                return "[img]%s[/img]" % (self.img)
             else:
                 return ""
         else:
