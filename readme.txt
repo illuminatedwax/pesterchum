@@ -9,7 +9,7 @@ in the 2.5 base directory or in Tinychum's data folder.
 already! Some hints: moods are set by clicking the timelines, and you
 can add chums by clicking "Chumproll." Moods correspond to the troll
 that would most likely exhibit them.
-- Right-click is your friend! There are useful right clicks
+- Right-click is your friend! There are useful right click
 options on the chumroll, by clicking the chumhandle in a conversation,
 online userlist, or the list of memo browsers.
 
@@ -118,7 +118,7 @@ While pestering your chum, here are some useful features:
   - You can use the familiar r,g,b method: 
   	"<c=0,255,0>The Green Sun</c>"
   - You can use HTML tags:
-  	"<c=#7f7f7f">DURR I'M KARKAT AND I'M A HUGE IDIOT</c>"
+  	"<c=#7f7f7f>DURR I'M KARKAT AND I'M A HUGE IDIOT</c>"
   - You can even use plain color names:
   	"<c=red>D4V3 TH1S 1S SO D3C4D3NT</c>"
   	(list: http://www.w3schools.com/css/css_colornames.asp) 
@@ -227,7 +227,7 @@ uncheck this box, or if you *actually* go idle (stop using the
 computer) for 10 minutes and then come back.
 
 IMPORT: Imports your old Pesterchum 2.0, 2.5 and Tinychum chum
-rolls. This will also import your old quirks soon.
+rolls. This will also import your old quirks from Pesterchum 2.5.
 
 RECONNECT: Forces PC to reconnect to the server.
 
