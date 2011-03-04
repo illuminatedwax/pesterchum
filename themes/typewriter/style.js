@@ -23,6 +23,7 @@
                        "userlist": "Userlist",
                        "import": "Import",
 					   "idle": "Idle",
+					   "reconnect": "Reconnect",
                        "exit": "Cease"},
             "profile": {"_name": "Ink",
                         "switch": "Alias",
@@ -139,7 +140,7 @@
              "size": [0, 0],
              "text": ""
            },
-  "defaultmood": 0,
+  "defaultmood": 18,
   "moodlabel": { "style": "",
 				 "loc": [20, 430],
 				 "text": "MOODS"
@@ -165,14 +166,7 @@
  },
  "convo":
  {"style": "background-color: grey; border:2px solid black; font-family: 'Courier'; background-image:url($path/convobg.png); background-repeat: no-repeat;",
-  "tabstyle": "background-color: #fdb302; font-family: 'Courier'",
-  "scrollbar": { "style" : "padding-top:17px; padding-bottom:17px;width: 18px; background:  rgba(255, 255, 0, 0%); border:0px;",
-                 "handle": "background-color:black;min-height:20px;",
-                 "downarrow": "height:17px;border:0px;", 
-                 "darrowstyle": "image:url($path/downarrow.png);",
-                 "uparrow": "height:17px;border:0px;",
-                 "uarrowstyle": "image:url($path/uparrow.png);"
-               },
+  "tabwindow": {"style": "background-color: grey; font-family: 'Courier';" },
   "margins": {"top": 0, "bottom": 6, "left": 0, "right": 0 },
   "size": [500, 325],
   "chumlabel": { "style": "margin-bottom: 21px;background: #bebebe; color: white; border:0px; font-size: 14px;",
@@ -188,9 +182,9 @@
       "style": "background: white; border:2px solid black;margin-top:5px; margin-right:10px; margin-left:10px; font-size: 12px;"
   },
   "tabs": {
-      "style": "",
-      "selectedstyle": "",
-      "newmsgcolor": "#fdb302",
+      "style": "background-color: #7f7f7f; font-family: 'Courier';font:bold;font-size:12px;min-height:25px;",
+      "selectedstyle": "border:0px;background-color:#bebebe;border-top:2px solid black; border-left:2px solid black;border-right:2px solid black; border-top-left-radius: 4px; border-top-right-radius: 4px;",
+      "newmsgcolor": "white",
       "tabstyle": 0
   },
   "text": {

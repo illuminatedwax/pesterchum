@@ -81,7 +81,7 @@
            },
   "moodlabel": { "style": "font:bold;font-family:'Arial';color:black;"
 			   },
-  "defaultmood": 7,
+  "defaultmood": 1,
   "moods": [
       { "style": "text-align:left; background:#ffa4a4;border:2px solid #780000;color: black; font-family:'Arial'; font:bold; padding-left:3px;", 
 		"selected": "text-align:left; background:white; border:2px solid #780000; color: black; font-family:'Arial'; font:bold; padding-left:3px;",

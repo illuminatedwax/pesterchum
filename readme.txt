@@ -1,7 +1,6 @@
-Welcome to Pesterchum 3.14 8eta!
+Welcome to Pesterchum 3.14!
 
-This software is currently in 8eta testing. That means there will
-probably be some bugs still!! Here's some tips to help you get started:
+Here's some tips to help you get started:
 
 - You can import your old Pesterchum contacts by going to
 CLIENT->IMPORT and opening your pesterchum.cfg file. This is usually
@@ -42,9 +41,24 @@ link you can just click and follow. No more copy/paste.
 - Memo links. Link your friends to your memos.
 - Smilies. We've added about 30-40 smilies from the forums. There is a
 list later on in this readme.
+- Submit quotes directly to the Pesterchum QDB!
 
-FAQ
+FA%
 ---
+Q: I'm appearing as offline to 2.5 users/other users appear the wrong
+mood? What's happeninggggg
+A: The 2.5 people decided to change the mood protocol. When I made
+this program, I decided to go with Tinychat's original protocol (and
+extend it). So some moods will appear wrong between 2.5
+users. (*COUGH*tell them to switch to 3.14*COUGH*)
+
+Q: Pesterchum 2.5 users don't get my /me messages correctly!
+A: That's because they implemented the /me command differently.
+
+Q: Can we resize the main window?
+A: No. This is done so we can offer more flexible UI creation. It's a
+lot easier to make themes that look canon this way.
+
 Q: Can we have different chum rolls for different users?
 A: No. Instead what we're going to do in a later update is make chum
 groups to organize people in your list.
