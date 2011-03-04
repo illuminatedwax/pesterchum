@@ -1,1 +1,0 @@
-{"color": "#ff00ff", "lastmood": 0, "theme": "gold xl", "quirks": [], "handle": "ghostDunk"}

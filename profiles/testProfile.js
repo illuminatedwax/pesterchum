@@ -1,1 +1,0 @@
-{"color": "#aa00ff", "theme": "pesterchum", "quirks": [], "handle": "testProfile"}

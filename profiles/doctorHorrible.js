@@ -1,1 +1,0 @@
-{"color": "#000000", "theme": "pesterchum", "quirks": [], "handle": "doctorHorrible"}
