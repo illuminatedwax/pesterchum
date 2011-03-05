@@ -108,6 +108,7 @@ class PesterLog(object):
 
 class PesterProfileDB(dict):
     def __init__(self):
+        self.filemutex = QtCore.QMutex()
         if sys.platform != "darwin":
             self.logpath = "logs"
         else:
@@ -122,14 +123,26 @@ class PesterProfileDB(dict):
             fp = open("%s/chums.js" % (self.logpath), 'w')
             json.dump(chumdict, fp)
             fp.close()
+        except ValueError:
+            chumdict = {}
+            fp = open("%s/chums.js" % (self.logpath), 'w')
+            json.dump(chumdict, fp)
+            fp.close()
+            
         converted = dict([(handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
         self.update(converted)
 
     def save(self):
-        fp = open("%s/chums.js" % (self.logpath), 'w')
-        chumdict = dict([p.plaindict() for p in self.itervalues()])
-        json.dump(chumdict, fp)
-        fp.close()
+        self.filemutex.lock()
+        try:
+            fp = open("%s/chums.js" % (self.logpath), 'w')
+            chumdict = dict([p.plaindict() for p in self.itervalues()])
+            json.dump(chumdict, fp)
+            fp.close()
+        except Exception, e:
+            self.filemutex.unlock()
+            raise e
+        self.filemutex.unlock()
     def getColor(self, handle, default=None):
         if not self.has_key(handle):
             return default
