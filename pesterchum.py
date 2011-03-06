@@ -108,7 +108,6 @@ class PesterLog(object):
 
 class PesterProfileDB(dict):
     def __init__(self):
-        self.filemutex = QtCore.QMutex()
         if sys.platform != "darwin":
             self.logpath = "logs"
         else:
@@ -133,16 +132,13 @@ class PesterProfileDB(dict):
         self.update(converted)
 
     def save(self):
-        self.filemutex.lock()
         try:
             fp = open("%s/chums.js" % (self.logpath), 'w')
             chumdict = dict([p.plaindict() for p in self.itervalues()])
             json.dump(chumdict, fp)
             fp.close()
         except Exception, e:
-            self.filemutex.unlock()
             raise e
-        self.filemutex.unlock()
     def getColor(self, handle, default=None):
         if not self.has_key(handle):
             return default
@@ -281,7 +277,7 @@ class userConfig(object):
         l.pop(l.index(handle))
         self.set('block', l)
     def server(self):
-        return self.config.get('server', 'irc.tymoon.eu')
+        return self.config.get('server', 'irc.mindfang.org')
     def port(self):
         return self.config.get('port', '6667')
     def soundOn(self):
@@ -507,7 +503,8 @@ class chumArea(RightClickList):
         for c in chums:
             c.setColor(color)
     def initTheme(self, theme):
-        self.setGeometry(*(theme["main/chums/loc"]+theme["main/chums/size"]))
+        self.resize(*theme["main/chums/size"])
+        self.move(*theme["main/chums/loc"])
         if theme.has_key("main/chums/scrollbar"):
             self.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["main/chums/style"], theme["main/chums/scrollbar/style"], theme["main/chums/scrollbar/handle"], theme["main/chums/scrollbar/downarrow"], theme["main/chums/scrollbar/uparrow"], theme["main/chums/scrollbar/uarrowstyle"], theme["main/chums/scrollbar/darrowstyle"] ))
         else:
@@ -1232,7 +1229,7 @@ class PesterWindow(MovingWindow):
                 self.show()
             else:
                 if self.isActiveWindow():
-                    self.hide()
+                    self.closeToTray()
                 else:
                     self.raise_()
                     self.activateWindow()
@@ -1241,8 +1238,6 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def connected(self):
-        print "CONNECTED!"
-        print self.loadingscreen
         if self.loadingscreen:
             self.loadingscreen.done(QtGui.QDialog.Accepted)
         self.loadingscreen = None
@@ -1972,7 +1967,6 @@ class MainProgram(QtCore.QObject):
             else:
                 widget.loadingscreen.hideReconnect()
             status = widget.loadingscreen.exec_()
-            print "exited with status %d" % status
             if status == QtGui.QDialog.Rejected:
                 sys.exit(0)
             else:
@@ -1990,17 +1984,13 @@ class MainProgram(QtCore.QObject):
             self.widget.loadingscreen = None
         self.attempts += 1
         if hasattr(self, 'irc') and self.irc:
-            print "tryagain: reconnectIRC()"
             self.irc.reconnectIRC()
-            print "finishing"
             self.irc.quit()
         else:
-            print "tryagain: restartIRC()"
             self.restartIRC()
     @QtCore.pyqtSlot()
     def restartIRC(self):
         if hasattr(self, 'irc') and self.irc:
-            print "deleting IRC"
             self.disconnectWidgets(self.irc, self.widget)
             stop = self.irc.stopIRC
             del self.irc
@@ -2016,7 +2006,6 @@ class MainProgram(QtCore.QObject):
                 msg = "R3CONN3CT1NG %d" % (self.attempts)
             else:
                 msg = "CONN3CT1NG"
-            print "loadingscreen: auto reconnect"
             self.reconnectok = False
             self.showLoading(self.widget, msg)
         else:

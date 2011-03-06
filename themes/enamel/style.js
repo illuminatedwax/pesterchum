@@ -266,8 +266,7 @@
   "systemMsgColor": "#646464"
  },
  "memos":
- {"memoicon": "$path/memo.png",
-  "style": "background-color: rgba(0,0,0,0); border-width: 5px; border-image:url($path/convobg.png) 5px; font-family: 'Century Gothic'; selection-background-color:#919191; ",
+ {"style": "background-color: rgba(0,0,0,0); border-width: 5px; border-image:url($path/convobg.png) 5px; font-family: 'Century Gothic'; selection-background-color:#919191; ",
   "size": [500,325],
   "tabs": {
       "style": "",
