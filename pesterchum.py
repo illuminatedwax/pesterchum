@@ -1853,9 +1853,13 @@ class MainProgram(QtCore.QObject):
                                   mobj, QtCore.SLOT('updateMood()'))
             self.moodactions[i] = mobj
             moodCategories[Mood.revmoodcats[m]].addAction(maction)
+        miniAction = QtGui.QAction("MINIMIZE", self)
+        self.trayicon.connect(miniAction, QtCore.SIGNAL('triggered()'),
+                              self.widget, QtCore.SLOT('showMinimized()'))
         exitAction = QtGui.QAction("EXIT", self)
         self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
                               self.widget, QtCore.SLOT('close()'))
+        self.traymenu.addAction(miniAction)
         self.traymenu.addAction(exitAction)
 
         self.trayicon.setContextMenu(self.traymenu)

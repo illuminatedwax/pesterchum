@@ -101,7 +101,7 @@
 
                  "acceptant": { "icon": "$path/acceptant.gif", "color": "red" },
 
-                 "protective": { "icon": "$path/protective.gif", "color": "#00ff00" },
+                 "protective": { "icon": "$path/protective.png", "color": "#00ff00" },
 
                  "blocked": { "icon": "$path/blocked.gif", "color": "red" }
 
