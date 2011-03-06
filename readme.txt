@@ -555,3 +555,15 @@ Here's a list of smilies:
 :befuddled:
 :pumpkin:
 :trollcool:
+:jadecry:
+:ecstatic:
+:relaxed:
+:discontent:
+:devious:
+:sleek:
+:detestful:
+:mirthful:
+:manipulative:
+:vigorous:
+:perky:
+:acceptant:

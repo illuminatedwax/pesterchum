@@ -849,8 +849,12 @@ class PesterWindow(MovingWindow):
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
         self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('aboutPesterchum()'))
+        self.helpAction = QtGui.QAction("HELP", self)
+        self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('launchHelp()'))
         helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
         self.helpmenu = helpmenu
+        self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.aboutAction)
         
 
@@ -1752,6 +1756,9 @@ class PesterWindow(MovingWindow):
         self.aboutwindow = AboutPesterchum(self)
         self.aboutwindow.exec_()
         self.aboutwindow = None
+    @QtCore.pyqtSlot()
+    def launchHelp(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://nova.xzibition.com/~illuminatedwax/help.html", QtCore.QUrl.TolerantMode))
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def nickCollision(self, handle, tmphandle):
