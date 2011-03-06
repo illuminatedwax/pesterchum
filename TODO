@@ -1,19 +1,11 @@
-tutorial album:
-http://imgur.com/a/jaOIS
-http://imgur.com/a/u1NXu
-
 Bugs:
 
 Features:
-* help menu -- about and forum
 * copy quirks between profiles?
-* chumList not scaling -- QListView + delegate?
 * help button on quirks menu?
 * chum list groups
 * More complex quirks: by-sound
-* change profile only once we have confirmation from server
 * log viewer
-* pick your own icon
 * time codes
 * Theme checking
 * Spy mode
