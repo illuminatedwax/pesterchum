@@ -1771,7 +1771,12 @@ class PesterWindow(MovingWindow):
         if not self.chooseprofile:
             h = unicode(handle)
             self.changeProfile(collision=h)
-        
+    @QtCore.pyqtSlot(QtCore.QString)
+    def myHandleChanged(self, handle):
+        if self.profile().handle == handle:
+            return
+        else:
+            self.nickCollision(self.profile().handle, handle)
     @QtCore.pyqtSlot()
     def pickTheme(self):
         self.themePicker()
@@ -1924,6 +1929,8 @@ class MainProgram(QtCore.QObject):
                    'deliverMemo(QString, QString, QString)'),
                   ('nickCollision(QString, QString)',
                    'nickCollision(QString, QString)'),
+                  ('myHandleChanged(QString)',
+                   'myHandleChanged(QString)'),
                   ('namesReceived(QString, PyQt_PyObject)',
                    'updateNames(QString, PyQt_PyObject)'),
                   ('userPresentUpdate(QString, QString, QString)',
