@@ -1192,8 +1192,12 @@ class PesterWindow(MovingWindow):
             self.alarm = NoneSound()
             self.ceasesound = NoneSound()
         else:
-            self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
-            self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
+            try:
+                self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
+                self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
+            except Exception, e:
+                self.alarm = NoneSound()
+                self.ceasesound = NoneSound()
         
     def changeTheme(self, theme):
         self.theme = theme
