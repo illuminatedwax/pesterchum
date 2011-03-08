@@ -1,5 +1,15 @@
 Bugs:
 * Windows doesn't show style sheet sometimes?? Maybe related to themes.
+* Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
+* Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
+* don't save pesterClientXXX names
+
+Mac Bugs:
+* Mac doesn't show tabs right, display gifs, highlighting thing?
+SS: also the background image is broken
+SS: in the one-on-one pester it resizes with the window
+SS: but the memo one doesn't resize
+SS: and the arrows next to the time thing overlap the CLOSE button
 
 Features:
 * copy quirks between profiles?

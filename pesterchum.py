@@ -990,7 +990,8 @@ class PesterWindow(MovingWindow):
         if msg[0:3] != "/me" and msg[0:13] != "PESTERCHUM:ME":
             msg = addTimeInitial(msg, memo.times[handle].getGrammar())
         memo.addMessage(msg, handle)
-        self.alarm.play()
+        if self.config.soundOn():
+            self.alarm.play()
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
