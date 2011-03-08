@@ -273,7 +273,20 @@ smiledict = {
     ":flipout:": "weasel.gif",
     ":befuddled:": "what.gif",
     ":pumpkin:": "whatpumpkin.gif",
-    ":trollcool:": "trollcool.gif"}
+    ":trollcool:": "trollcool.gif",
+    ":jadecry:": "jadespritehead.gif",
+    ":ecstatic:": "ecstatic.png",
+    ":relaxed:": "relaxed.png",
+    ":discontent:": "discontent.png",
+    ":devious:": "devious.png",
+    ":sleek:": "sleek.png",
+    ":detestful:": "detestful.png",
+    ":mirthful:": "mirthful.png",
+    ":manipulative:": "manipulative.png",
+    ":vigorous:": "vigorous.png",
+    ":perky:": "perky.png",
+    ":acceptant:": "acceptant.png",
+    }
 
 reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
 _smilere = re.compile("|".join(smiledict.keys()))

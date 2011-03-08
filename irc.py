@@ -220,6 +220,7 @@ class PesterIRC(QtCore.QThread):
     namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
     channelListReceived = QtCore.pyqtSignal(PesterList)
     nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    myHandleChanged = QtCore.pyqtSignal(QtCore.QString)
     connected = QtCore.pyqtSignal()
     userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
                                    QtCore.QString)
@@ -309,6 +310,8 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.userPresentUpdate.emit(handle, channel, mode)
     def nick(self, oldnick, newnick):
         oldhandle = oldnick[0:oldnick.find("!")]
+        if oldhandle == self.mainwindow.profile().handle:
+            self.parent.myHandleChanged.emit(newnick)
         newchum = PesterProfile(newnick, chumdb=self.mainwindow.chumdb)
         self.parent.moodUpdated.emit(oldhandle, Mood("offline"))
         self.parent.userPresentUpdate.emit("%s:%s" % (oldhandle, newnick), "", "nick")

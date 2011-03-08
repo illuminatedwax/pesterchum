@@ -3,7 +3,7 @@
 Name "PESTERCHUM3.14a"
 
 ; The file to write
-OutFile "pesterchum3.14a.3.exe"
+OutFile "pesterchum3.148.2.exe"
 
 InstallDir C:\Pesterchum
 
@@ -22,7 +22,7 @@ UninstPage instfiles
 Section "Pesterchum"
 
   SectionIn RO
-  
+
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
   
@@ -45,6 +45,7 @@ Section "Pesterchum"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Uninstall.lnk" "$INSTDIR\uninstall.exe"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Logs.lnk" "$INSTDIR\logs"
+
 
 SectionEnd
 

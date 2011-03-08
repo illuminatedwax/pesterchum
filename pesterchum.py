@@ -122,14 +122,23 @@ class PesterProfileDB(dict):
             fp = open("%s/chums.js" % (self.logpath), 'w')
             json.dump(chumdict, fp)
             fp.close()
+        except ValueError:
+            chumdict = {}
+            fp = open("%s/chums.js" % (self.logpath), 'w')
+            json.dump(chumdict, fp)
+            fp.close()
+            
         converted = dict([(handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
         self.update(converted)
 
     def save(self):
-        fp = open("%s/chums.js" % (self.logpath), 'w')
-        chumdict = dict([p.plaindict() for p in self.itervalues()])
-        json.dump(chumdict, fp)
-        fp.close()
+        try:
+            fp = open("%s/chums.js" % (self.logpath), 'w')
+            chumdict = dict([p.plaindict() for p in self.itervalues()])
+            json.dump(chumdict, fp)
+            fp.close()
+        except Exception, e:
+            raise e
     def getColor(self, handle, default=None):
         if not self.has_key(handle):
             return default
@@ -268,7 +277,7 @@ class userConfig(object):
         l.pop(l.index(handle))
         self.set('block', l)
     def server(self):
-        return self.config.get('server', 'irc.tymoon.eu')
+        return self.config.get('server', 'irc.mindfang.org')
     def port(self):
         return self.config.get('port', '6667')
     def soundOn(self):
@@ -494,7 +503,8 @@ class chumArea(RightClickList):
         for c in chums:
             c.setColor(color)
     def initTheme(self, theme):
-        self.setGeometry(*(theme["main/chums/loc"]+theme["main/chums/size"]))
+        self.resize(*theme["main/chums/size"])
+        self.move(*theme["main/chums/loc"])
         if theme.has_key("main/chums/scrollbar"):
             self.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["main/chums/style"], theme["main/chums/scrollbar/style"], theme["main/chums/scrollbar/handle"], theme["main/chums/scrollbar/downarrow"], theme["main/chums/scrollbar/uparrow"], theme["main/chums/scrollbar/uarrowstyle"], theme["main/chums/scrollbar/darrowstyle"] ))
         else:
@@ -839,8 +849,12 @@ class PesterWindow(MovingWindow):
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
         self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('aboutPesterchum()'))
+        self.helpAction = QtGui.QAction("HELP", self)
+        self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('launchHelp()'))
         helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
         self.helpmenu = helpmenu
+        self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.aboutAction)
         
 
@@ -976,7 +990,8 @@ class PesterWindow(MovingWindow):
         if msg[0:3] != "/me" and msg[0:13] != "PESTERCHUM:ME":
             msg = addTimeInitial(msg, memo.times[handle].getGrammar())
         memo.addMessage(msg, handle)
-        self.alarm.play()
+        if self.config.soundOn():
+            self.alarm.play()
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
@@ -1178,8 +1193,12 @@ class PesterWindow(MovingWindow):
             self.alarm = NoneSound()
             self.ceasesound = NoneSound()
         else:
-            self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
-            self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
+            try:
+                self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
+                self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
+            except Exception, e:
+                self.alarm = NoneSound()
+                self.ceasesound = NoneSound()
         
     def changeTheme(self, theme):
         self.theme = theme
@@ -1219,7 +1238,7 @@ class PesterWindow(MovingWindow):
                 self.show()
             else:
                 if self.isActiveWindow():
-                    self.hide()
+                    self.closeToTray()
                 else:
                     self.raise_()
                     self.activateWindow()
@@ -1228,8 +1247,6 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def connected(self):
-        print "CONNECTED!"
-        print self.loadingscreen
         if self.loadingscreen:
             self.loadingscreen.done(QtGui.QDialog.Accepted)
         self.loadingscreen = None
@@ -1744,6 +1761,9 @@ class PesterWindow(MovingWindow):
         self.aboutwindow = AboutPesterchum(self)
         self.aboutwindow.exec_()
         self.aboutwindow = None
+    @QtCore.pyqtSlot()
+    def launchHelp(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://nova.xzibition.com/~illuminatedwax/help.html", QtCore.QUrl.TolerantMode))
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def nickCollision(self, handle, tmphandle):
@@ -1756,7 +1776,12 @@ class PesterWindow(MovingWindow):
         if not self.chooseprofile:
             h = unicode(handle)
             self.changeProfile(collision=h)
-        
+    @QtCore.pyqtSlot(QtCore.QString)
+    def myHandleChanged(self, handle):
+        if self.profile().handle == handle:
+            return
+        else:
+            self.nickCollision(self.profile().handle, handle)
     @QtCore.pyqtSlot()
     def pickTheme(self):
         self.themePicker()
@@ -1838,9 +1863,13 @@ class MainProgram(QtCore.QObject):
                                   mobj, QtCore.SLOT('updateMood()'))
             self.moodactions[i] = mobj
             moodCategories[Mood.revmoodcats[m]].addAction(maction)
+        miniAction = QtGui.QAction("MINIMIZE", self)
+        self.trayicon.connect(miniAction, QtCore.SIGNAL('triggered()'),
+                              self.widget, QtCore.SLOT('showMinimized()'))
         exitAction = QtGui.QAction("EXIT", self)
         self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
                               self.widget, QtCore.SLOT('close()'))
+        self.traymenu.addAction(miniAction)
         self.traymenu.addAction(exitAction)
 
         self.trayicon.setContextMenu(self.traymenu)
@@ -1905,6 +1934,8 @@ class MainProgram(QtCore.QObject):
                    'deliverMemo(QString, QString, QString)'),
                   ('nickCollision(QString, QString)',
                    'nickCollision(QString, QString)'),
+                  ('myHandleChanged(QString)',
+                   'myHandleChanged(QString)'),
                   ('namesReceived(QString, PyQt_PyObject)',
                    'updateNames(QString, PyQt_PyObject)'),
                   ('userPresentUpdate(QString, QString, QString)',
@@ -1959,7 +1990,6 @@ class MainProgram(QtCore.QObject):
             else:
                 widget.loadingscreen.hideReconnect()
             status = widget.loadingscreen.exec_()
-            print "exited with status %d" % status
             if status == QtGui.QDialog.Rejected:
                 sys.exit(0)
             else:
@@ -1977,17 +2007,13 @@ class MainProgram(QtCore.QObject):
             self.widget.loadingscreen = None
         self.attempts += 1
         if hasattr(self, 'irc') and self.irc:
-            print "tryagain: reconnectIRC()"
             self.irc.reconnectIRC()
-            print "finishing"
             self.irc.quit()
         else:
-            print "tryagain: restartIRC()"
             self.restartIRC()
     @QtCore.pyqtSlot()
     def restartIRC(self):
         if hasattr(self, 'irc') and self.irc:
-            print "deleting IRC"
             self.disconnectWidgets(self.irc, self.widget)
             stop = self.irc.stopIRC
             del self.irc
@@ -2003,7 +2029,6 @@ class MainProgram(QtCore.QObject):
                 msg = "R3CONN3CT1NG %d" % (self.attempts)
             else:
                 msg = "CONN3CT1NG"
-            print "loadingscreen: auto reconnect"
             self.reconnectok = False
             self.showLoading(self.widget, msg)
         else:

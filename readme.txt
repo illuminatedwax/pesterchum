@@ -5,10 +5,20 @@ Here's some tips to help you get started:
 - You can import your old Pesterchum contacts by going to
 CLIENT->IMPORT and opening your pesterchum.cfg file. This is usually
 in the 2.5 base directory or in Tinychum's data folder.
-- The Trollian theme can be confusing if you haven't used the program
-already! Some hints: moods are set by clicking the timelines, and you
+- Some themes can be confusing if you haven't used the program
+already! Some hints: 
+
+Trollian: Moods are set by clicking the timelines, and you
 can add chums by clicking "Chumproll." Moods correspond to the troll
-that would most likely exhibit them.
+that would most likely exhibit them. You can go offline by hitting the
+"Timelines" menu bar.
+
+Gold: Add chums by hitting the two chumpeoples in the upper left
+corner. Go offline by clicking the "CHUMHANDLE:" label.
+
+Enamel: Add chums by hitting the "CHUMROLL" label. Go offline by
+clicking the upper left hand corner.
+
 - Right-click is your friend! There are useful right click
 options on the chumroll, by clicking the chumhandle in a conversation,
 online userlist, or the list of memo browsers.
@@ -545,3 +555,15 @@ Here's a list of smilies:
 :befuddled:
 :pumpkin:
 :trollcool:
+:jadecry:
+:ecstatic:
+:relaxed:
+:discontent:
+:devious:
+:sleek:
+:detestful:
+:mirthful:
+:manipulative:
+:vigorous:
+:perky:
+:acceptant:

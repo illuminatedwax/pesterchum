@@ -1,19 +1,22 @@
-tutorial album:
-http://imgur.com/a/jaOIS
-http://imgur.com/a/u1NXu
-
 Bugs:
+* Windows doesn't show style sheet sometimes?? Maybe related to themes.
+* Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
+* Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
+* don't save pesterClientXXX names
+
+Mac Bugs:
+* Mac doesn't show tabs right, display gifs, highlighting thing?
+SS: also the background image is broken
+SS: in the one-on-one pester it resizes with the window
+SS: but the memo one doesn't resize
+SS: and the arrows next to the time thing overlap the CLOSE button
 
 Features:
-* help menu -- about and forum
 * copy quirks between profiles?
-* chumList not scaling -- QListView + delegate?
 * help button on quirks menu?
 * chum list groups
 * More complex quirks: by-sound
-* change profile only once we have confirmation from server
 * log viewer
-* pick your own icon
 * time codes
 * Theme checking
 * Spy mode
