@@ -5,7 +5,7 @@ Basically this is a mishmosh of source code that will run by invoking:
 python pesterchum.py
 
 You will need these libraries:
-PyQt4.7 (implies Qt 4.7!)
+PyQt >= 4.6 (implies Qt 4.6!)
 pygame
 
 The setup files are all broken. If you are building on Mac, Archaemic
