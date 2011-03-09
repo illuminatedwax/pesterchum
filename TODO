@@ -3,6 +3,7 @@ Bugs:
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * don't save pesterClientXXX names
+* enamel doesnt have time arrows
 
 Mac Bugs:
 * Mac doesn't show tabs right, display gifs, highlighting thing?
