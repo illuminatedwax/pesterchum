@@ -8,10 +8,11 @@ from parsetools import timeDifference, convertTags, lexMessage
 from mispeller import mispeller
 
 _upperre = re.compile(r"upper\(([\w\\]+)\)")
+_scramblere = re.compile(r"scramble\(([\w\\]+)\)")
 
 class Mood(object):
-    moods = ["chummy", "rancorous", "offline", "pleasant", "distraught", 
-             "pranky", "smooth", "ecstatic", "relaxed", "discontent", 
+    moods = ["chummy", "rancorous", "offline", "pleasant", "distraught",
+             "pranky", "smooth", "ecstatic", "relaxed", "discontent",
              "devious", "sleek", "detestful", "mirthful", "manipulative",
              "vigorous", "perky", "acceptant", "protective", "mystified",
              "amazed", "insolent", "bemused" ]
@@ -62,7 +63,10 @@ class pesterQuirk(object):
                 to = self.quirk["to"]
                 def upperrep(m):
                     return mo.expand(m.group(1)).upper()
+                def scramblerep(m):
+                    return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
                 to = _upperre.sub(upperrep, to)
+                to = _scramblere.sub(scramblerep, to)
                 return mo.expand(to)
             return re.sub(fr, regexprep, string)
         elif self.type == "random":
@@ -77,6 +81,9 @@ class pesterQuirk(object):
                 choice = random.choice(self.quirk["randomlist"])
                 def upperrep(m):
                     return mo.expand(m.group(1)).upper()
+                def scramblerep(m):
+                    return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
+                choice = _upperre.sub(upperrep, choice)
                 choice = _upperre.sub(upperrep, choice)
                 return mo.expand(choice)
             return re.sub(self.quirk["from"], randomrep, string)
@@ -125,7 +132,7 @@ class pesterQuirks(object):
                    q.type=='replace' or q.type=='regexp']
         randomrep = [q for q in self.quirklist if q.type=='random']
         spelling = [q for q in self.quirklist if q.type=='spelling']
-        
+
         newlist = []
         for (i, o) in enumerate(lexed):
             if type(o) not in [str, unicode]:
@@ -190,7 +197,7 @@ class PesterProfile(object):
             else:
                 return "C"+initials
         else:
-            return (handle[0]+caps[0]).upper() 
+            return (handle[0]+caps[0]).upper()
     def colorhtml(self):
         if self.color:
             return self.color.name()
