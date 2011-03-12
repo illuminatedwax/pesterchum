@@ -12,6 +12,7 @@ import socket
 import platform
 from PyQt4 import QtGui, QtCore
 import pygame
+from time import strftime
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
@@ -76,9 +77,10 @@ class PesterLog(object):
             self.logpath = _datadir+"logs"
 
     def log(self, handle, msg):
-        bbcodemsg = convertTags(msg, "bbcode")
-        html = convertTags(msg, "html")+"<br />"
-        msg = convertTags(msg, "text")
+        time = strftime("[%H:%M:%S] ")
+        bbcodemsg = time + convertTags(msg, "bbcode")
+        html = time + convertTags(msg, "html")+"<br />"
+        msg = time + convertTags(msg, "text")
         modes = {"bbcode": bbcodemsg, "html": html, "text": msg}
         if not self.convos.has_key(handle):
             time = datetime.now().strftime("%Y-%m-%d.%H.%M")
@@ -127,7 +129,7 @@ class PesterProfileDB(dict):
             fp = open("%s/chums.js" % (self.logpath), 'w')
             json.dump(chumdict, fp)
             fp.close()
-            
+
         converted = dict([(handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
         self.update(converted)
 
@@ -179,7 +181,7 @@ class pesterTheme(dict):
                 if hasattr(self, 'defaultTheme'):
                     return self.defaultTheme[key]
                 else:
-                    raise e            
+                    raise e
         for k in keys:
             try:
                 v = v[k]
@@ -225,7 +227,7 @@ class pesterTheme(dict):
 
 class userConfig(object):
     def __init__(self):
-        if sys.platform != "darwin": 
+        if sys.platform != "darwin":
             self.filename = "pesterchum.js"
         else:
             self.filename = _datadir+"pesterchum.js"
@@ -249,6 +251,18 @@ class userConfig(object):
             return None
     def tabs(self):
         return self.config.get("tabs", True)
+    def showTimeStamps(self):
+        if not self.config.has_key('showTimeStamps'):
+            self.set("showTimeStamps", True)
+        return self.config.get('showTimeStamps', True)
+    def time12Format(self):
+        if not self.config.has_key('time12Format'):
+            self.set("time12Format", True)
+        return self.config.get('time12Format', True)
+    def showSeconds(self):
+        if not self.config.has_key('showSeconds'):
+            self.set("showSeconds", False)
+        return self.config.get('showSeconds', False)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -311,7 +325,7 @@ class userConfig(object):
         return [userProfile(p) for p in profs]
 class userProfile(object):
     def __init__(self, user):
-        if sys.platform != "darwin": 
+        if sys.platform != "darwin":
             self.profiledir = "profiles"
         else:
             self.profiledir = _datadir+"profiles"
@@ -450,7 +464,7 @@ class chumArea(RightClickList):
         if len([c for c in self.chums if c.handle == chum.handle]) != 0:
             return
         self.chums.append(chum)
-        if not (self.mainwindow.config.hideOfflineChums() and 
+        if not (self.mainwindow.config.hideOfflineChums() and
                 chum.mood.name() == "offline"):
             chumLabel = chumListing(chum, self.mainwindow)
             self.addItem(chumLabel)
@@ -459,7 +473,7 @@ class chumArea(RightClickList):
     def getChums(self, handle):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
         return chums
-    
+
     def showAllChums(self):
         for c in self.chums:
             chandle = c.handle
@@ -753,8 +767,8 @@ class MovingWindow(QtGui.QFrame):
 
 class PesterWindow(MovingWindow):
     def __init__(self, parent=None):
-        MovingWindow.__init__(self, parent, 
-                              flags=(QtCore.Qt.CustomizeWindowHint | 
+        MovingWindow.__init__(self, parent,
+                              flags=(QtCore.Qt.CustomizeWindowHint |
                                      QtCore.Qt.FramelessWindowHint))
 
         self.convos = {}
@@ -804,7 +818,7 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SIGNAL('reconnectIRC()'))
 
         self.menu = QtGui.QMenuBar(self)
-        
+
         filemenu = self.menu.addMenu(self.theme["main/menus/client/_name"])
         self.filemenu = filemenu
         filemenu.addAction(opts)
@@ -856,7 +870,7 @@ class PesterWindow(MovingWindow):
         self.helpmenu = helpmenu
         self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.aboutAction)
-        
+
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
@@ -870,9 +884,9 @@ class PesterWindow(MovingWindow):
 
         chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
         self.chumList = chumArea(chums, self)
-        self.connect(self.chumList, 
+        self.connect(self.chumList,
                      QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
-                     self, 
+                     self,
                      QtCore.SLOT('newConversationWindow(QListWidgetItem *)'))
         self.connect(self.chumList,
                      QtCore.SIGNAL('removeChumSignal(QListWidgetItem *)'),
@@ -882,7 +896,7 @@ class PesterWindow(MovingWindow):
                      QtCore.SIGNAL('blockChumSignal(QString)'),
                      self,
                      QtCore.SLOT('blockChum(QString)'))
-        
+
         self.addChumButton = QtGui.QPushButton(self.theme["main/addchum/text"], self)
         self.connect(self.addChumButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addChumWindow()'))
@@ -1041,7 +1055,7 @@ class PesterWindow(MovingWindow):
         if self.memos.has_key(channel):
             self.memos[channel].showChat()
             return
-        # do slider dialog then set 
+        # do slider dialog then set
         if self.config.tabs():
             if not self.tabmemo:
                 self.createMemoTabWindow()
@@ -1056,7 +1070,7 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SLOT('closeMemo(QString)'))
         self.connect(self, QtCore.SIGNAL('namesUpdated()'),
                      memoWindow, QtCore.SLOT('namesUpdated()'))
-        self.connect(self, 
+        self.connect(self,
                      QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
                      memoWindow, QtCore.SLOT('userPresentChange(QString, QString, QString)'))
         # chat client send memo open
@@ -1131,7 +1145,7 @@ class PesterWindow(MovingWindow):
         if hasattr(self, 'moods'):
             self.moods.removeButtons()
         mood_list = theme["main/moods"]
-        mood_list = [dict([(str(k),v) for (k,v) in d.iteritems()]) 
+        mood_list = [dict([(str(k),v) for (k,v) in d.iteritems()])
                      for d in mood_list]
         self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in mood_list])
         self.moods.showButtons()
@@ -1182,7 +1196,7 @@ class PesterWindow(MovingWindow):
                 self.currentMoodIcon.hide()
             self.currentMoodIcon = None
 
-                                                                     
+
         if theme["main/mychumhandle/colorswatch/text"]:
             self.mychumcolor.setText(theme["main/mychumhandle/colorswatch/text"])
         else:
@@ -1199,7 +1213,7 @@ class PesterWindow(MovingWindow):
             except Exception, e:
                 self.alarm = NoneSound()
                 self.ceasesound = NoneSound()
-        
+
     def changeTheme(self, theme):
         self.theme = theme
         # do self
@@ -1293,7 +1307,7 @@ class PesterWindow(MovingWindow):
     def memoTabsClosed(self):
         del self.tabmemo
         self.tabmemo = None
-                 
+
     @QtCore.pyqtSlot(QtCore.QString, Mood)
     def updateMoodSlot(self, handle, mood):
         h = unicode(handle)
@@ -1613,7 +1627,7 @@ class PesterWindow(MovingWindow):
                 windows = list(self.tabconvo.convos.values())
             if self.tabmemo:
                 windows += list(self.tabmemo.convos.values())
-                
+
             for w in windows:
                 w.setParent(None)
                 w.show()
@@ -1655,6 +1669,16 @@ class PesterWindow(MovingWindow):
         # sound
         soundsetting = self.optionmenu.soundcheck.isChecked()
         self.config.set("soundon", soundsetting)
+        # timestamps
+        timestampsetting = self.optionmenu.timestampcheck.isChecked()
+        self.config.set("showTimeStamps", timestampsetting)
+        timeformatsetting = unicode(self.optionmenu.timestampBox.currentText())
+        if timeformatsetting == "12 hour":
+          self.config.set("time12Format", True)
+        else:
+          self.config.set("time12Format", False)
+        secondssetting = self.optionmenu.secondscheck.isChecked()
+        self.config.set("showSeconds", secondssetting)
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
@@ -1717,7 +1741,7 @@ class PesterWindow(MovingWindow):
         self.trollslum = TrollSlumWindow(trolls, self)
         self.connect(self.trollslum, QtCore.SIGNAL('blockChumSignal(QString)'),
                      self, QtCore.SLOT('blockChum(QString)'))
-        self.connect(self.trollslum, 
+        self.connect(self.trollslum,
                      QtCore.SIGNAL('unblockChumSignal(QString)'),
                      self, QtCore.SLOT('unblockChum(QString)'))
         self.moodsRequest.emit(PesterList(trolls))
@@ -1874,7 +1898,7 @@ class MainProgram(QtCore.QObject):
 
         self.trayicon.setContextMenu(self.traymenu)
         self.trayicon.show()
-        self.trayicon.connect(self.trayicon, 
+        self.trayicon.connect(self.trayicon,
                               QtCore.SIGNAL('activated(QSystemTrayIcon::ActivationReason)'),
                               self.widget,
                               QtCore.SLOT('systemTrayActivated(QSystemTrayIcon::ActivationReason)'))
@@ -1896,7 +1920,7 @@ class MainProgram(QtCore.QObject):
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
 
-    widget2irc = [('sendMessage(QString, QString)', 
+    widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),
                   ('newConvoStarted(QString, bool)',
                    'startConvo(QString, bool)'),
@@ -1916,15 +1940,15 @@ class MainProgram(QtCore.QObject):
                   ('requestChannelList()', 'requestChannelList()'),
                   ('joinChannel(QString)', 'joinChannel(QString)'),
                   ('leftChannel(QString)', 'leftChannel(QString)'),
-                  ('kickUser(QString, QString)', 
+                  ('kickUser(QString, QString)',
                    'kickUser(QString, QString)'),
                   ('setChannelMode(QString, QString, QString)',
                    'setChannelMode(QString, QString, QString)'),
-                  ('reconnectIRC()', 'reconnectIRC()')                    
+                  ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window
     irc2widget = [('connected()', 'connected()'),
-                  ('moodUpdated(QString, PyQt_PyObject)', 
+                  ('moodUpdated(QString, PyQt_PyObject)',
                    'updateMoodSlot(QString, PyQt_PyObject)'),
                   ('colorUpdated(QString, QColor)',
                    'updateColorSlot(QString, QColor)'),

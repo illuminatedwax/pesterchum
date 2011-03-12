@@ -21,7 +21,7 @@ class PesterQuirkItem(QtGui.QListWidgetItem):
             return True
         else:
             return False
-        
+
 class PesterQuirkList(QtGui.QListWidget):
     def __init__(self, mainwindow, parent):
         QtGui.QListWidget.__init__(self, parent)
@@ -93,7 +93,7 @@ class RandomQuirkDialog(MultiTextDialog):
         layout_1.addWidget(regexpl)
         layout_1.addWidget(self.regexp)
         replacewithl = QtGui.QLabel("REPLACE WITH:", self)
-        
+
         layout_2 = QtGui.QVBoxLayout()
         layout_3 = QtGui.QHBoxLayout()
         self.replacelist = QtGui.QListWidget(self)
@@ -141,7 +141,7 @@ class RandomQuirkDialog(MultiTextDialog):
         else:
             return None
 
-        
+
     @QtCore.pyqtSlot()
     def addRandomString(self):
         text = unicode(self.replaceinput.text())
@@ -167,7 +167,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.setWindowTitle("Set Quirks")
 
         self.quirkList = PesterQuirkList(self.mainwindow, self)
-        
+
         self.addPrefixButton = QtGui.QPushButton("ADD PREFIX", self)
         self.connect(self.addPrefixButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addPrefixDialog()'))
@@ -206,7 +206,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_3 = QtGui.QHBoxLayout()
         layout_3.addWidget(self.editSelectedButton)
         layout_3.addWidget(self.removeSelectedButton)
-        
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -227,7 +227,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.setLayout(layout_0)
 
     def quirks(self):
-        return [self.quirkList.item(i).quirk for i in 
+        return [self.quirkList.item(i).quirk for i in
                 range(0,self.quirkList.count())]
 
     @QtCore.pyqtSlot()
@@ -317,7 +317,7 @@ class PesterChooseQuirks(QtGui.QDialog):
             quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
             quirkWarning.exec_()
             return
-            
+
         newquirk = pesterQuirk(vdict)
         if qitem is None:
             item = PesterQuirkItem(newquirk, self.quirkList)
@@ -444,7 +444,7 @@ class PesterChooseProfile(QtGui.QDialog):
         layout_2 = QtGui.QHBoxLayout()
         layout_2.addWidget(self.defaultlabel)
         layout_2.addWidget(self.defaultcheck)
-        
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -517,6 +517,22 @@ class PesterOptions(QtGui.QDialog):
         self.soundcheck = QtGui.QCheckBox("Sounds On", self)
         if self.config.soundOn():
             self.soundcheck.setChecked(True)
+
+        self.timestampcheck = QtGui.QCheckBox("Time Stamps", self)
+        if self.config.showTimeStamps():
+            self.timestampcheck.setChecked(True)
+
+        self.timestampBox = QtGui.QComboBox(self)
+        self.timestampBox.addItem("12 hour")
+        self.timestampBox.addItem("24 hour")
+        if self.config.time12Format():
+            self.timestampBox.setCurrentIndex(0)
+        else:
+            self.timestampBox.setCurrentIndex(1)
+        self.secondscheck = QtGui.QCheckBox("Show Seconds", self)
+        if self.config.showSeconds():
+            self.secondscheck.setChecked(True)
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -532,6 +548,9 @@ class PesterOptions(QtGui.QDialog):
         layout_0.addWidget(self.tabcheck)
         layout_0.addWidget(self.soundcheck)
         layout_0.addWidget(self.hideOffline)
+        layout_0.addWidget(self.timestampcheck)
+        layout_0.addWidget(self.timestampBox)
+        layout_0.addWidget(self.secondscheck)
         layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)
@@ -565,15 +584,15 @@ class PesterUserlist(QtGui.QDialog):
         layout_0.addWidget(self.label)
         layout_0.addWidget(self.userarea)
         layout_0.addWidget(self.ok)
-        
+
         self.setLayout(layout_0)
 
         self.connect(self.mainwindow, QtCore.SIGNAL('namesUpdated()'),
                      self, QtCore.SLOT('updateUsers()'))
 
-        self.connect(self.mainwindow, 
+        self.connect(self.mainwindow,
                      QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
-                     self, 
+                     self,
                      QtCore.SLOT('updateUserPresent(QString, QString, QString)'))
         self.updateUsers()
     @QtCore.pyqtSlot()
@@ -635,7 +654,7 @@ class PesterMemoList(QtGui.QDialog):
         self.channelarea = RightClickList(self)
         self.channelarea.setStyleSheet(self.theme["main/chums/style"])
         self.channelarea.optionsMenu = QtGui.QMenu(self)
-        self.connect(self.channelarea, 
+        self.connect(self.channelarea,
                      QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
                      self, QtCore.SLOT('joinActivatedMemo(QListWidgetItem *)'))
 
@@ -668,7 +687,7 @@ class PesterMemoList(QtGui.QDialog):
         layout_0.addWidget(self.timeslider)
         layout_0.addWidget(self.timeinput)
         layout_0.addLayout(layout_ok)
-        
+
         self.setLayout(layout_0)
 
     def newmemoname(self):
@@ -689,7 +708,7 @@ class PesterMemoList(QtGui.QDialog):
         for item in [self.userarea.item(i) for i in range(0, self.channelarea.count())]:
             item.setTextColor(QtGui.QColor(theme["main/chums/userlistcolor"]))
             item.setIcon(QtGui.QIcon(theme["memos/memoicon"]))
-    
+
     @QtCore.pyqtSlot()
     def checkEmpty(self):
         newmemo = self.newmemoname()
@@ -704,7 +723,7 @@ class PesterMemoList(QtGui.QDialog):
 
 class LoadingScreen(QtGui.QDialog):
     def __init__(self, parent=None):
-        QtGui.QDialog.__init__(self, parent, flags=(QtCore.Qt.CustomizeWindowHint | 
+        QtGui.QDialog.__init__(self, parent, flags=(QtCore.Qt.CustomizeWindowHint |
                                                     QtCore.Qt.FramelessWindowHint))
         self.mainwindow = parent
         self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
