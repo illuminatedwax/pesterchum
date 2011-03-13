@@ -1,4 +1,5 @@
-o Bugs:
+Bugs:
+* multiline msgs breaks shit
 * Windows doesn't show style sheet sometimes?? Maybe related to themes.
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
@@ -14,6 +15,9 @@ SS: but the memo one doesn't resize
 SS: and the arrows next to the time thing overlap the CLOSE button
 
 Features:
+* OOC
+* random pesters
+* # of users in each memo
 * copy quirks between profiles?
 * help button on quirks menu?
 * chum list groups
