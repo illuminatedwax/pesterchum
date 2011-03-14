@@ -23,6 +23,7 @@ from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags, addTimeInitial
 from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
+from logviewer import PesterLogUserSelect, PesterLogViewer
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
 
@@ -454,7 +455,11 @@ class chumArea(RightClickList):
         self.blockchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"], self)
         self.connect(self.blockchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('blockChum()'))
+        self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
+        self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openChumLogs()'))
         self.optionsMenu.addAction(self.pester)
+        self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.blockchum)
         self.optionsMenu.addAction(self.removechum)
 
@@ -526,6 +531,7 @@ class chumArea(RightClickList):
         self.pester.setText(theme["main/menus/rclickchumlist/pester"])
         self.removechum.setText(theme["main/menus/rclickchumlist/removechum"])
         self.blockchum.setText(theme["main/menus/rclickchumlist/blockchum"])
+        self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
     def changeTheme(self, theme):
         self.initTheme(theme)
         chumlistings = [self.item(i) for i in range(0, self.count())]
@@ -553,6 +559,21 @@ class chumArea(RightClickList):
         if not currentChum:
             return
         self.blockChumSignal.emit(self.currentItem().chum.handle)
+    @QtCore.pyqtSlot()
+    def openChumLogs(self):
+        currentChum = self.currentItem().text()
+        if not currentChum:
+            return
+        self.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
+        self.connect(self.pesterlogviewer, QtCore.SIGNAL('rejected()'),
+                     self, QtCore.SLOT('closeActiveLog()'))
+        self.pesterlogviewer.show()
+        self.pesterlogviewer.raise_()
+        self.pesterlogviewer.activateWindow()
+    @QtCore.pyqtSlot()
+    def closeActiveLog(self):
+        self.pesterlogviewer.close()
+        self.pesterlogviewer = None
 
     removeChumSignal = QtCore.pyqtSignal(QtGui.QListWidgetItem)
     blockChumSignal = QtCore.pyqtSignal(QtCore.QString)
@@ -790,6 +811,10 @@ class PesterWindow(MovingWindow):
 
         self.move(100, 100)
 
+        logv = QtGui.QAction(self.theme["main/menus/client/logviewer"], self)
+        self.logv = logv
+        self.connect(logv, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openLogv()'))
         opts = QtGui.QAction(self.theme["main/menus/client/options"], self)
         self.opts = opts
         self.connect(opts, QtCore.SIGNAL('triggered()'),
@@ -823,6 +848,7 @@ class PesterWindow(MovingWindow):
         self.filemenu = filemenu
         filemenu.addAction(opts)
         filemenu.addAction(memoaction)
+        filemenu.addAction(logv)
         filemenu.addAction(userlistaction)
         filemenu.addAction(self.idleaction)
         filemenu.addAction(self.importaction)
@@ -1120,6 +1146,7 @@ class PesterWindow(MovingWindow):
         self.miniButton.move(*theme["main/minimize/loc"])
         # menus
         self.menu.move(*theme["main/menu/loc"])
+        self.logv.setText(theme["main/menus/client/logviewer"])
         self.opts.setText(theme["main/menus/client/options"])
         self.exitaction.setText(theme["main/menus/client/exit"])
         self.userlistaction.setText(theme["main/menus/client/userlist"])
@@ -1598,6 +1625,23 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def closeQuirks(self):
         self.quirkmenu = None
+    @QtCore.pyqtSlot()
+    def openLogv(self):
+        if not hasattr(self, 'logusermenu'):
+            self.logusermenu = None
+        if not self.logusermenu:
+            self.logusermenu = PesterLogUserSelect(self.config, self.theme, self)
+            self.connect(self.logusermenu, QtCore.SIGNAL('accepted()'),
+                         self, QtCore.SLOT('closeLogUsers()'))
+            self.connect(self.logusermenu, QtCore.SIGNAL('rejected()'),
+                         self, QtCore.SLOT('closeLogUsers()'))
+            self.logusermenu.show()
+            self.logusermenu.raise_()
+            self.logusermenu.activateWindow()
+    @QtCore.pyqtSlot()
+    def closeLogUsers(self):
+        self.logusermenu.close()
+        self.logusermenu = None
     @QtCore.pyqtSlot()
     def openOpts(self):
         if not hasattr(self, 'optionmenu'):
