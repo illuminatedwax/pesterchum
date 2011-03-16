@@ -126,13 +126,6 @@ class PesterLogViewer(QtGui.QDialog):
         else:
             self.instructions = QtGui.QLabel("Pesterlog with " +self.chum+ " on")
 
-            self.logsBox = RightClickList(self)
-            self.logsBox.setFixedSize(220, 300)
-            self.logsBox.setStyleSheet(self.theme["main/chums/style"])
-            self.connect(self.logsBox, QtCore.SIGNAL('itemSelectionChanged()'),
-                     self, QtCore.SLOT('loadSelectedLog()'))
-            self.logsBox.optionsMenu = QtGui.QMenu(self)
-
             self.textArea = QtGui.QTextEdit(self)
             self.textArea.setReadOnly(True)
             self.textArea.setFixedWidth(600)
@@ -144,10 +137,27 @@ class PesterLogViewer(QtGui.QDialog):
             self.logList.sort()
             self.logList.reverse()
 
-            for l in self.logList:
-                item = QtGui.QListWidgetItem(self.fileToTime(l))
-                item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
-                self.logsBox.addItem(item)
+            self.tree = QtGui.QTreeWidget()
+            self.tree.setFixedSize(260, 300)
+            self.tree.header().hide()
+            if theme.has_key("convo/scrollbar"):
+                self.tree.setStyleSheet("QTreeWidget { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["convo/textarea/style"], theme["convo/scrollbar/style"], theme["convo/scrollbar/handle"], theme["convo/scrollbar/downarrow"], theme["convo/scrollbar/uparrow"], theme["convo/scrollbar/uarrowstyle"], theme["convo/scrollbar/darrowstyle"] ))
+            else:
+                self.tree.setStyleSheet("%s" % (theme["convo/textarea/style"]))
+            self.connect(self.tree, QtCore.SIGNAL('itemSelectionChanged()'),
+                             self, QtCore.SLOT('loadSelectedLog()'))
+            self.tree.setSortingEnabled(False)
+            child_1 = None
+            last = ["",""]
+            for (i,l) in enumerate(self.logList):
+                my = self.fileToMonthYear(l)
+                if my[0] != last[0]:
+                    child_1 = QtGui.QTreeWidgetItem(["%s %s" % (my[0], my[1])])
+                    self.tree.addTopLevelItem(child_1)
+                    if i == 0:
+                        child_1.setExpanded(True)
+                child_1.addChild(QtGui.QTreeWidgetItem([self.fileToTime(l)]))
+                last = self.fileToMonthYear(l)
 
             if len(self.logList) > 0: self.loadLog(self.logList[0])
 
@@ -161,7 +171,7 @@ class PesterLogViewer(QtGui.QDialog):
             layout_ok.setAlignment(self.ok, QtCore.Qt.AlignRight)
 
             layout_logs = QtGui.QHBoxLayout()
-            layout_logs.addWidget(self.logsBox)
+            layout_logs.addWidget(self.tree)
             layout_logs.addWidget(self.textArea)
 
             layout_0 = QtGui.QVBoxLayout()
@@ -173,7 +183,8 @@ class PesterLogViewer(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def loadSelectedLog(self):
-        self.loadLog(self.timeToFile(self.logsBox.currentItem().text()))
+        if len(self.tree.currentItem().text(0)) > len("September 2011"):
+            self.loadLog(self.timeToFile(self.tree.currentItem().text(0)))
 
     def loadLog(self, fname):
         fp = codecs.open("%s/%s/%s/%s/%s" % (self.logpath, self.handle, self.chum, self.format, fname), encoding='utf-8', mode='r')
@@ -187,6 +198,9 @@ class PesterLogViewer(QtGui.QDialog):
         self.textArea.setTextCursor(textCur)
         self.instructions.setText("Pesterlog with " +self.chum+ " on " + self.fileToTime(str(fname)))
 
+    def fileToMonthYear(self, fname):
+        time = strptime(fname[(fname.index(".")+1):fname.index(".txt")], "%Y-%m-%d.%H.%M")
+        return [strftime("%B", time), strftime("%Y", time)]
     def fileToTime(self, fname):
         timestr = fname[(fname.index(".")+1):fname.index(".txt")]
         return strftime("%a %d %b %Y %H %M", strptime(timestr, "%Y-%m-%d.%H.%M"))
