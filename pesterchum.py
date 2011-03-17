@@ -550,7 +550,7 @@ class chumArea(RightClickList):
             return
         currentChum = self.currentItem().chum
         self.chums = [c for c in self.chums if c.handle != currentChum.handle]
-        self.removeChumSignal.emit(self.currentItem())
+        self.removeChumSignal.emit(self.currentItem().chum.handle)
         oldlist = self.takeItem(self.currentRow())
         del oldlist
     @QtCore.pyqtSlot()
@@ -575,7 +575,7 @@ class chumArea(RightClickList):
         self.pesterlogviewer.close()
         self.pesterlogviewer = None
 
-    removeChumSignal = QtCore.pyqtSignal(QtGui.QListWidgetItem)
+    removeChumSignal = QtCore.pyqtSignal(QtCore.QString)
     blockChumSignal = QtCore.pyqtSignal(QtCore.QString)
 
 class trollSlum(chumArea):
@@ -913,11 +913,11 @@ class PesterWindow(MovingWindow):
         self.connect(self.chumList,
                      QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
                      self,
-                     QtCore.SLOT('newConversationWindow(QListWidgetItem *)'))
+                     QtCore.SLOT('pesterSelectedChum()'))
         self.connect(self.chumList,
-                     QtCore.SIGNAL('removeChumSignal(QListWidgetItem *)'),
+                     QtCore.SIGNAL('removeChumSignal(QString)'),
                      self,
-                     QtCore.SLOT('removeChum(QListWidgetItem *)'))
+                     QtCore.SLOT('removeChum(QString)'))
         self.connect(self.chumList,
                      QtCore.SIGNAL('blockChumSignal(QString)'),
                      self,
@@ -1430,9 +1430,9 @@ class PesterWindow(MovingWindow):
                 chum = PesterProfile(handle, chumdb=self.chumdb)
                 self.addChum(chum)
             self.addchumdialog = None
-    @QtCore.pyqtSlot(QtGui.QListWidgetItem)
+    @QtCore.pyqtSlot(QtCore.QString)
     def removeChum(self, chumlisting):
-        self.config.removeChum(chumlisting.chum)
+        self.config.removeChum(chumlisting)
     @QtCore.pyqtSlot(QtCore.QString)
     def blockChum(self, handle):
         h = unicode(handle)
