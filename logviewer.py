@@ -5,6 +5,7 @@ from time import strftime, strptime
 from PyQt4 import QtGui, QtCore
 from generic import RightClickList
 from parsetools import convertTags
+from convo import PesterText
 
 class PesterLogUserSelect(QtGui.QDialog):
     def __init__(self, config, theme, parent):
@@ -126,7 +127,7 @@ class PesterLogViewer(QtGui.QDialog):
         else:
             self.instructions = QtGui.QLabel("Pesterlog with " +self.chum+ " on")
 
-            self.textArea = QtGui.QTextEdit(self)
+            self.textArea = PesterLogText(theme, self.parent)
             self.textArea.setReadOnly(True)
             self.textArea.setFixedWidth(600)
             if theme.has_key("convo/scrollbar"):
@@ -190,7 +191,7 @@ class PesterLogViewer(QtGui.QDialog):
         fp = codecs.open("%s/%s/%s/%s/%s" % (self.logpath, self.handle, self.chum, self.format, fname), encoding='utf-8', mode='r')
         self.textArea.clear()
         for line in fp:
-            cline = line.replace("\r\n", "").replace("[/color]","</c>")
+            cline = line.replace("\r\n", "").replace("[/color]","</c>").replace("[url]","").replace("[/url]","")
             cline = re.sub("\[color=(#.{6})]", r"<c=\1>", cline)
             self.textArea.append(convertTags(cline))
         textCur = self.textArea.textCursor()
@@ -206,3 +207,25 @@ class PesterLogViewer(QtGui.QDialog):
         return strftime("%a %d %b %Y %H %M", strptime(timestr, "%Y-%m-%d.%H.%M"))
     def timeToFile(self, time):
         return self.chum + strftime(".%Y-%m-%d.%H.%M.txt", strptime(str(time), "%a %d %b %Y %H %M"))
+
+class PesterLogText(PesterText):
+    def __init__(self, theme, parent=None):
+        PesterText.__init__(self, theme, parent)
+
+    def focusInEvent(self, event):
+        QtGui.QTextEdit.focusInEvent(self, event)
+    def mousePressEvent(self, event):
+        url = self.anchorAt(event.pos())
+        if url != "":
+            if url[0] != "#":
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
+        QtGui.QTextEdit.mousePressEvent(self, event)
+    def mouseMoveEvent(self, event):
+        QtGui.QTextEdit.mouseMoveEvent(self, event)
+        if self.anchorAt(event.pos()):
+            if self.viewport().cursor().shape != QtCore.Qt.PointingHandCursor:
+                url = self.anchorAt(event.pos())
+                if url != "" and url[0] != "#":
+                    self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        else:
+            self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
