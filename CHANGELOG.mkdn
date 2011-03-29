@@ -8,6 +8,8 @@ Visit https://github.com/illuminatedwax/pesterchum for git access and source cod
 CHANGELOG
 ---------
 ### 3.14b (idk on version number scheme)
+* Pesterchum 3.14 - illuminatedwax [ghostDunk]
+* Art - Grimlive [aquaMarinist]
 * Quirks lower() function - Kiooeht [evacipatedBox]
 * Quirks scrabble() function - Kiooeht [evacipatedBox]
 * Timestamps - Kiooeht [evacipatedBox]
