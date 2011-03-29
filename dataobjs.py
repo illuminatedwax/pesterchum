@@ -8,6 +8,7 @@ from parsetools import timeDifference, convertTags, lexMessage
 from mispeller import mispeller
 
 _upperre = re.compile(r"upper\(([\w\\]+)\)")
+_lowerre = re.compile(r"lower\(([\w\\]+)\)")
 _scramblere = re.compile(r"scramble\(([\w\\]+)\)")
 
 class Mood(object):
@@ -63,9 +64,12 @@ class pesterQuirk(object):
                 to = self.quirk["to"]
                 def upperrep(m):
                     return mo.expand(m.group(1)).upper()
+                def lowerrep(m):
+                    return mo.expand(m.group(1)).lower()
                 def scramblerep(m):
                     return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
                 to = _upperre.sub(upperrep, to)
+                to = _lowerre.sub(lowerrep, to)
                 to = _scramblere.sub(scramblerep, to)
                 return mo.expand(to)
             return re.sub(fr, regexprep, string)
@@ -81,9 +85,12 @@ class pesterQuirk(object):
                 choice = random.choice(self.quirk["randomlist"])
                 def upperrep(m):
                     return mo.expand(m.group(1)).upper()
+                def lowerrep(m):
+                    return mo.expand(m.group(1)).lower()
                 def scramblerep(m):
                     return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
                 choice = _upperre.sub(upperrep, choice)
+                choice = _lowerre.sub(lowerrep, choice)
                 choice = _upperre.sub(upperrep, choice)
                 return mo.expand(choice)
             return re.sub(self.quirk["from"], randomrep, string)
