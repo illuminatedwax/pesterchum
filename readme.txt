@@ -6,7 +6,7 @@ Here's some tips to help you get started:
 CLIENT->IMPORT and opening your pesterchum.cfg file. This is usually
 in the 2.5 base directory or in Tinychum's data folder.
 - Some themes can be confusing if you haven't used the program
-already! Some hints: 
+already! Some hints:
 
 Trollian: Moods are set by clicking the timelines, and you
 can add chums by clicking "Chumproll." Moods correspond to the troll
@@ -36,11 +36,15 @@ style.js file will be documented soon, but feel free to poke at it.
 allow you to appear at multiple times in one chat.
 - Quirks: Prefix, suffix, simple replace, regexp replace (like in
 2.5), random replacement, and an auto-mispeller :P
+- Chum groups. Organize your chums into collapsible groups for easy
+management.
 - Block/user list
 - Add/block chums directly from a conversation, the userlist, or memo
 userlist.
+- Timestamps saved in logs and shown in conversations if wanted.
 - Logging. Logs are output in bbcode (for easy forum posting), html,
 and plain text.
+- Logviewer for easy log reading inside Pesterchum
 - Idling. You can set yourself idle manually, and the computer will
 set it for you after 10 minutes.
 - Improved /me. Any letters immediately following /me will be
@@ -125,19 +129,19 @@ While pestering your chum, here are some useful features:
   some appleberry blast to your conversation, just use color
   tags. These work like in TC 1.5: <c=(color)>colored text</c>. But in
   PC 3.14, you can use type your color in a lot of different ways:
-  - You can use the familiar r,g,b method: 
-  	"<c=0,255,0>The Green Sun</c>"
+  - You can use the familiar r,g,b method:
+    "<c=0,255,0>The Green Sun</c>"
   - You can use HTML tags:
-  	"<c=#7f7f7f>DURR I'M KARKAT AND I'M A HUGE IDIOT</c>"
+    "<c=#7f7f7f>DURR I'M KARKAT AND I'M A HUGE IDIOT</c>"
   - You can even use plain color names:
-  	"<c=red>D4V3 TH1S 1S SO D3C4D3NT</c>"
-  	(list: http://www.w3schools.com/css/css_colornames.asp) 
+    "<c=red>D4V3 TH1S 1S SO D3C4D3NT</c>"
+    (list: http://www.w3schools.com/css/css_colornames.asp)
   - You don't even have to add the </c> if you are lazy. Just use a
-  	new color tag whenever you want to change colors and PC 3.14 will
-  	add the extra tags for you.
+    new color tag whenever you want to change colors and PC 3.14 will
+    add the extra tags for you.
 
 * URLS (anything with http:// in front of it) will automatically be
-  detected and made into a link you can CLIPK. 
+  detected and made into a link you can CLIPK.
 
 * You can also link people to memos by typing "#" and the name of the
   menu like so: #R41NBOW_RUMPUS_P4RTYTOWN
@@ -193,7 +197,7 @@ them in the order in which you open them (like in the comic). You can
 have one of your time frames cease responding to the memo by hitting
 "CLOSE." If you open that time frame again, the program will remember
 the number it originally gave it. If you want to be mysteeeeeeeerious,
-you can type in "?" and you will appear as ???. 
+you can type in "?" and you will appear as ???.
 
 The memo viewer list: To the right is a list of people currently
 browsing the memo. A shade icon next to their name means they are the
@@ -204,9 +208,9 @@ to the memo. You kick and op people by right clicking their name in
 the window. You can also add them to your chumroll!
 
 Inviting people to your memo: You can link to a memo by simply typing
-"#nameofmemo" in any conversation or memo window. So you can say: 
+"#nameofmemo" in any conversation or memo window. So you can say:
 
-CG: NOW YOU, ME, AND EGBERT NEED TO HAVE A CHAT. 
+CG: NOW YOU, ME, AND EGBERT NEED TO HAVE A CHAT.
 CG: CLICK IT.
 CG: #FRUITYRUMPUSASSHOLEFACTORY
 
@@ -223,8 +227,17 @@ them for you.
 
 Sounds On: Uncheck to shut it the fuck up.
 
-Hide Offline Chums: Turning this option on will hide all offline chums 
+Hide Offline Chums: Turning this option on will hide all offline chums
 off your chumroll.
+
+Show Empty Groups: Turning this option of will show empty groups.
+
+Time Stamps: Turning this on will show timestamps in your chats.
+
+12/24 hour: Formatting for timestamps. Whether you want them in 12 or
+24 hour time.
+
+Show Seconds: Turning this on will show the seconds in your timestamps.
 
 MEMOS: Opens the Memo list as above.
 
@@ -278,7 +291,7 @@ Equius' quirks:
 PREFIX: ":33 < "
 You type: "*ac twitches her friendly whiskers at ct*"
 Result:
-AC: :33 < *ac twitches her friendly whiskers at ct* 
+AC: :33 < *ac twitches her friendly whiskers at ct*
 
 PREFIX: "D --> "
 You type: "Hi"
@@ -301,7 +314,7 @@ characters. Let's add a quirk to our Nepeta:
 Replace: "ee" With: "33"
 You type: "*ac saunters from her dark cave a little bit sleepy from
 the recent kill*"
-Result: 
+Result:
 AC: :33 < *ac saunters from her dark cave a little bit sl33py from the
 recent kill*
 
@@ -310,10 +323,10 @@ Replace: "loo" With: "100"
 Replace: "x" With "%"
 You type: "look"
 Result:
-CT: D --> 100k 
+CT: D --> 100k
 You type: "What are you expecting to accomplish with this"
 Result:
-CT: D --> What are you e%pecting to accomplish with this 
+CT: D --> What are you e%pecting to accomplish with this
 
 Aradia:
 Replace: "o" With: "0"
@@ -356,7 +369,7 @@ Regexp: "(.)" Replace with: "upper(\1)"
 
 Three concepts here. Let's look at the regexp. "(.)" has two things
 going on. The first is that ".". In regexp speak, "." is the wildcard:
-it will match *any* character -- and just one. 
+it will match *any* character -- and just one.
 
 The parentheses tell the regexp to *save* what's inside them so you
 can put it back when you replace. That's what the "\1" is for -- it
@@ -384,6 +397,28 @@ single character within the brackets will be matched. In this case,
 either "a" or "A" will be matched and replaced with "4," and likewise,
 "i" and "I" will be replaced with "1", and "e" and "E" will be
 replaced with "3."
+
+Just like there is an "upper()" function, there is also a "lower()"
+function. It acts just like "upper()" but instead makes everything
+inside the parentheses lowercase. This allows you to do things like:
+
+Regexp: "(.)" Replace with: "lower(\1)"
+You type: "I AM YELLING"
+Result:
+GD: i am yelling
+
+Along with the upper and lower functions is a "scramble()" function.
+The purpose of this function is to randomly scramble anything inside
+the parentheses.
+
+Regexp: "(\w)(\w*)(\w)" Replace with: "\1scramble(\2)\3"
+You type: "hello there"
+Result:
+GD: hlelo trhee
+
+This particular regular expression scrambles all of the letters in
+the middle of a word. Notice that the "h" and "o" at the beginning
+and end of hello remain in place while the other letters are scrambled.
 
 You should also know that "^" is a special character in brackets. If
 placed immediately after the opening bracket (like "[^"), then the
@@ -518,7 +553,7 @@ SMILIES
 -------
 Here's a list of smilies:
 :rancorous:
-:apple: 
+:apple:
 :bathearst:
 :cathearst:
 :woeful:
