@@ -174,7 +174,7 @@ class pesterQuirks(object):
             yield q
 
 class PesterProfile(object):
-    def __init__(self, handle, color=None, mood=Mood("offline"), chumdb=None):
+    def __init__(self, handle, color=None, mood=Mood("offline"), group=None, chumdb=None):
         self.handle = handle
         if color is None:
             if chumdb:
@@ -183,6 +183,12 @@ class PesterProfile(object):
                 color = QtGui.QColor("black")
         self.color = color
         self.mood = mood
+        if group is None:
+            if chumdb:
+                group = chumdb.getGroup(handle, "Chums")
+            else:
+                group = "Chums"
+        self.group = group
     def initials(self, time=None):
         handle = self.handle
         caps = [l for l in handle if l.isupper()]
@@ -212,7 +218,8 @@ class PesterProfile(object):
     def plaindict(self):
         return (self.handle, {"handle": self.handle,
                               "mood": self.mood.name(),
-                              "color": unicode(self.color.name())})
+                              "color": unicode(self.color.name()),
+                              "group": unicode(self.group)})
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 
