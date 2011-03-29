@@ -820,7 +820,7 @@ class chumArea(RightClickTree):
         for i in range(self.topLevelItemCount()):
             if self.topLevelItem(i).text(0) == currentGroup.text(0):
                 break
-        while self.topLevelItem(i).child(0):
+        while self.topLevelItem(i) and self.topLevelItem(i).child(0):
             chumLabel = self.topLevelItem(i).child(0)
             chumLabel.chum.group = "Chums"
             self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, "Chums")
@@ -2031,8 +2031,8 @@ class PesterWindow(MovingWindow):
         secondssetting = self.optionmenu.secondscheck.isChecked()
         self.config.set("showSeconds", secondssetting)
         # groups
-        groupssetting = self.optionmenu.groupscheck.isChecked()
-        self.config.set("useGroups", groupssetting)
+        #groupssetting = self.optionmenu.groupscheck.isChecked()
+        #self.config.set("useGroups", groupssetting)
         emptygroupssetting = self.optionmenu.showemptycheck.isChecked()
         curemptygroup = self.config.showEmptyGroups()
         if curemptygroup and not emptygroupssetting:
