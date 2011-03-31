@@ -1,0 +1,18 @@
+Pesterchum 3.14
+===============
+
+Visit http://nova.xzibition.com/~illuminatedwax/help.html for tutorial.
+
+Visit https://github.com/illuminatedwax/pesterchum for git access and source code.
+
+CHANGELOG
+---------
+### 3.14b (idk on version number scheme)
+* Pesterchum 3.14 - illuminatedwax [ghostDunk]
+* Art - Grimlive [aquaMarinist]
+* Quirks lower() function - Kiooeht [evacipatedBox]
+* Quirks scrabble() function - Kiooeht [evacipatedBox]
+* Timestamps - Kiooeht [evacipatedBox]
+* Logviewer - Kiooeht [evacipatedBox]
+* Chum list groups - Kiooeht [evacipatedBox]
+* Chum list bug fixes - Kiooeht [evacipatedBox]
