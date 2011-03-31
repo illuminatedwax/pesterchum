@@ -335,12 +335,16 @@ class PesterHandler(DefaultCommandHandler):
         self.channel_list = []
         info = list(info)
         self.channel_field = info.index("Channel") # dunno if this is protocol
+        logging.info("---> recv \"CHANNELS: %s " % (self.channel_field))
     def list(self, server, handle, *info):
         channel = info[self.channel_field]
+        usercount = info[1]
         if channel not in self.channel_list and channel != "#pesterchum":
-            self.channel_list.append(channel)
+            self.channel_list.append((channel, usercount))
+        logging.info("---> recv \"CHANNELS: %s " % (channel))
     def listend(self, server, handle, msg):
         pl = PesterList(self.channel_list)
+        logging.info("---> recv \"CHANNELS END\"")
         self.parent.channelListReceived.emit(pl)
         self.channel_list = []
     

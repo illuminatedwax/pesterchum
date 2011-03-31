@@ -754,9 +754,8 @@ class MovingWindow(QtGui.QFrame):
 class PesterWindow(MovingWindow):
     def __init__(self, parent=None):
         MovingWindow.__init__(self, parent, 
-                              flags=(QtCore.Qt.CustomizeWindowHint | 
-                                     QtCore.Qt.FramelessWindowHint))
-
+                              (QtCore.Qt.CustomizeWindowHint | 
+                               QtCore.Qt.FramelessWindowHint))
         self.convos = {}
         self.memos = {}
         self.tabconvo = None
@@ -1525,7 +1524,7 @@ class PesterWindow(MovingWindow):
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
             self.newMemo(channel, time, secret=secret)
         elif selectedmemo:
-            channel = "#"+unicode(selectedmemo.text())
+            channel = "#"+unicode(selectedmemo.target)
             self.newMemo(channel, time)
         self.memochooser = None
     @QtCore.pyqtSlot()
