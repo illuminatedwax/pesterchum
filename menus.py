@@ -27,13 +27,15 @@ class PesterQuirkList(QtGui.QListWidget):
         QtGui.QListWidget.__init__(self, parent)
         self.resize(400, 200)
         # make sure we have access to mainwindow info like profiles
-        self.mainwindow = mainwindow 
+        self.mainwindow = mainwindow
         self.setStyleSheet("background:black; color:white;")
 
-        for q in mainwindow.userprofile.quirks: 
+        for q in mainwindow.userprofile.quirks:
             item = PesterQuirkItem(q, self)
             self.addItem(item)
         #self.sortItems()
+        self.setDragEnabled(True)
+        self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
 
     def currentQuirk(self):
         return self.item(self.currentRow())
@@ -257,16 +259,16 @@ class PesterChooseQuirks(QtGui.QDialog):
     def quirks(self):
         return [self.quirkList.item(i).quirk for i in
                 range(0,self.quirkList.count())]
-                
+
     # could probably do away with these and just connect to the relevant methods on the quirk list widget
     @QtCore.pyqtSlot()
-    def upShiftQuirk(self): 
+    def upShiftQuirk(self):
         self.quirkList.upShiftQuirk()
 
     @QtCore.pyqtSlot()
     def downShiftQuirk(self):
         self.quirkList.downShiftQuirk()
-    #!!!    
+    #!!!
     @QtCore.pyqtSlot()
     def editSelected(self):
         q = self.quirkList.currentQuirk()
