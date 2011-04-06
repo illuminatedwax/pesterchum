@@ -2,6 +2,7 @@ from string import Template
 import re
 import platform
 import httplib, urllib
+from time import strftime
 from copy import copy
 from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
@@ -65,14 +66,14 @@ class PesterTabWindow(QtGui.QFrame):
             self.tabs.setCurrentIndex(tabi)
 
     def convoHasFocus(self, convo):
-        if ((self.hasFocus() or self.tabs.hasFocus()) and 
+        if ((self.hasFocus() or self.tabs.hasFocus()) and
             self.tabs.tabText(self.tabs.currentIndex()) == convo.title()):
             return True
-        
+
     def keyPressEvent(self, event):
         keypress = event.key()
         mods = event.modifiers()
-        if ((mods & QtCore.Qt.ControlModifier) and 
+        if ((mods & QtCore.Qt.ControlModifier) and
             keypress == QtCore.Qt.Key_Tab):
             handles = self.convos.keys()
             waiting = self.mainwindow.waitingMessages.waitingHandles()
@@ -115,7 +116,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.clearNewMessage(handle)
     def convoHasFocus(self, handle):
         i = self.tabIndices[handle]
-        if (self.tabs.currentIndex() == i and 
+        if (self.tabs.currentIndex() == i and
             (self.hasFocus() or self.tabs.hasFocus())):
             return True
         else:
@@ -221,6 +222,17 @@ class PesterText(QtGui.QTextEdit):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        if self.parent().mainwindow.config.showTimeStamps():
+            if self.parent().mainwindow.config.time12Format():
+                time = strftime("[%I:%M")
+            else:
+                time = strftime("[%H:%M")
+            if self.parent().mainwindow.config.showSeconds():
+                time += strftime(":%S] ")
+            else:
+                time += "] "
+        else:
+            time = ""
         if lexmsg[0] == "PESTERCHUM:BEGIN":
             parent.setChumOpen(True)
             pmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
@@ -253,7 +265,7 @@ class PesterText(QtGui.QTextEdit):
                 window.chatlog.log(parent.chum.handle, memsg)
             else:
                 window.chatlog.log(chum.handle, memsg)
-            self.append(convertTags(memsg))
+            self.append(time + convertTags(memsg))
         else:
             if not parent.chumopen and chum is not me:
                 beginmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
@@ -261,10 +273,10 @@ class PesterText(QtGui.QTextEdit):
                 window.chatlog.log(chum.handle, beginmsg)
                 self.append(convertTags(beginmsg))
 
-            lexmsg[0:0] = [colorBegin("<c=%s>" % (color), color), 
+            lexmsg[0:0] = [colorBegin("<c=%s>" % (color), color),
                            "%s: " % (initials)]
             lexmsg.append(colorEnd("</c>"))
-            self.append(convertTags(lexmsg))
+            self.append(time + convertTags(lexmsg))
             if chum is me:
                 window.chatlog.log(parent.chum.handle, lexmsg)
             else:
@@ -308,7 +320,7 @@ class PesterText(QtGui.QTextEdit):
         if self.textSelected:
             self.submitLogAction = QtGui.QAction("Submit to Pesterchum QDB", self)
             self.connect(self.submitLogAction, QtCore.SIGNAL('triggered()'),
-                         self, QtCore.SLOT('submitLog()')) 
+                         self, QtCore.SLOT('submitLog()'))
             textMenu.addAction(self.submitLogAction)
         textMenu.exec_(event.globalPos())
 
@@ -338,7 +350,7 @@ class PesterText(QtGui.QTextEdit):
                    "Accept": "text/plain"}
         try:
             pass
-            hconn = httplib.HTTPConnection('luke.violentlemon.com', 80, 
+            hconn = httplib.HTTPConnection('luke.violentlemon.com', 80,
                                            timeout=15)
             hconn.request("POST", "/index.php", params, headers)
             response = hconn.getresponse()
@@ -391,7 +403,7 @@ class PesterConvo(QtGui.QFrame):
         self.setWindowTitle(self.title())
 
         t = Template(self.mainwindow.theme["convo/chumlabel/text"])
-        
+
         self.chumLabel = QtGui.QLabel(t.safe_substitute(handle=chum.handle), self)
         self.chumLabel.setStyleSheet(self.mainwindow.theme["convo/chumlabel/style"])
         self.chumLabel.setAlignment(self.aligndict["h"][self.mainwindow.theme["convo/chumlabel/align/h"]] | self.aligndict["v"][self.mainwindow.theme["convo/chumlabel/align/v"]])
@@ -413,7 +425,7 @@ class PesterConvo(QtGui.QFrame):
         margins = self.mainwindow.theme["convo/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                       margins["right"], margins["bottom"])
-        
+
         self.setLayout(self.layout)
 
         self.optionsMenu = QtGui.QMenu(self)
@@ -508,8 +520,8 @@ class PesterConvo(QtGui.QFrame):
 
     def notifyNewMessage(self):
         # first see if this conversation HASS the focus
-        if not (self.hasFocus() or self.textArea.hasFocus() or 
-                self.textInput.hasFocus() or 
+        if not (self.hasFocus() or self.textArea.hasFocus() or
+                self.textInput.hasFocus() or
                 (self.parent() and self.parent().convoHasFocus(self.title()))):
             # ok if it has a tabconvo parent, send that the notify.
             if self.parent():
@@ -521,7 +533,7 @@ class PesterConvo(QtGui.QFrame):
                 def func():
                     self.showChat()
                 self.mainwindow.waitingMessages.addMessage(self.title(), func)
-                
+
     def clearNewMessage(self):
         if self.parent():
             self.parent().clearNewMessage(self.title())
@@ -555,7 +567,7 @@ class PesterConvo(QtGui.QFrame):
     def changeTheme(self, theme):
         self.resize(*theme["convo/size"])
         self.setStyleSheet("QFrame#%s { %s }" % (self.chum.handle, theme["convo/style"]))
-            
+
         margins = theme["convo/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                        margins["right"], margins["bottom"])

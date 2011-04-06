@@ -1,5 +1,9 @@
 Bugs:
 * multiline msgs breaks shit
+* REGEXP: \b(\S)(\S*)(\S)\b REPLACE WITH: upper(\1)\2upper(\3) <--
+   this regexp, when used as a quirk and then typed in breaks
+* import modified.tar
+* channels aren't case sensitive! get the real name of a channel
 * Windows doesn't show style sheet sometimes?? Maybe related to themes.
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
@@ -20,10 +24,7 @@ Features:
 * # of users in each memo
 * copy quirks between profiles?
 * help button on quirks menu?
-* chum list groups
 * More complex quirks: by-sound
-* log viewer
-* time codes
 * Theme checking
 * Spy mode
 * Animated
