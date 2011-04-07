@@ -298,6 +298,10 @@ class userConfig(object):
         if not self.config.has_key('emptyGroups'):
             self.set("emptyGroups", False)
         return self.config.get('emptyGroups', False)
+    def showOnlineNumbers(self):
+        if not self.config.has_key('onlineNumbers'):
+            self.set("onlineNumbers", False)
+        return self.config.get('onlineNumbers', False)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -511,6 +515,8 @@ class chumArea(RightClickTree):
             self.showAllChums()
         if not self.mainwindow.config.showEmptyGroups():
             self.hideEmptyGroups()
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
         self.chumoptions = QtGui.QMenu(self)
         self.groupoptions = QtGui.QMenu(self)
         self.canonMenu = QtGui.QMenu(self)
@@ -671,6 +677,38 @@ class chumArea(RightClickTree):
                 self.addTopLevelItem(child_1)
                 if self.openGroups[i]:
                     child_1.setExpanded(True)
+    def showOnlineNumbers(self):
+        self.hideOnlineNumbers()
+        totals = {'Chums': 0}
+        online = {'Chums': 0}
+        for g in self.groups:
+            totals[str(g)] = 0
+            online[str(g)] = 0
+        for c in self.chums:
+            yes = c.mood.name() != "offline"
+            if c.group == "Chums":
+                totals[str(c.group)] = totals[str(c.group)]+1
+                if yes:
+                    online[str(c.group)] = online[str(c.group)]+1
+            elif c.group in totals:
+                totals[str(c.group)] = totals[str(c.group)]+1
+                if yes:
+                    online[str(c.group)] = online[str(c.group)]+1
+            else:
+                totals["Chums"] = totals["Chums"]+1
+                if yes:
+                    online["Chums"] = online["Chums"]+1
+        for i in range(self.topLevelItemCount()):
+            text = str(self.topLevelItem(i).text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
+    def hideOnlineNumbers(self):
+        for i in range(self.topLevelItemCount()):
+            text = str(self.topLevelItem(i).text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            self.topLevelItem(i).setText(0, "%s" % (text))
     def hideEmptyGroups(self):
         i = 0
         listing = self.topLevelItem(i)
@@ -683,11 +721,15 @@ class chumArea(RightClickTree):
     @QtCore.pyqtSlot()
     def expandGroup(self):
         item = self.currentItem()
-        if item.text(0) in self.groups:
-            self.mainwindow.config.delGroup(str(item.text(0)))
+        text = str(item.text(0))
+        if text.find(" ") != -1:
+            text = text[0:text.rfind(" ")]
+
+        if text in self.groups:
+            self.mainwindow.config.delGroup(text)
             expand = item.isExpanded()
-            self.mainwindow.config.addGroup(str(item.text(0)), not expand)
-        elif item.text(0) == "Chums":
+            self.mainwindow.config.addGroup(text, not expand)
+        elif text == "Chums":
             self.mainwindow.config.set("openDefaultGroup", not item.isExpanded())
     def addItem(self, chumLabel):
         if hasattr(self, 'groups'):
@@ -696,13 +738,16 @@ class chumArea(RightClickTree):
                 self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
             else:
                 if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
-                    if not self.findItems(chumLabel.chum.group, QtCore.Qt.MatchFlags(0)):
+                    if not self.findItems(chumLabel.chum.group, QtCore.Qt.MatchContains):
                         child_1 = QtGui.QTreeWidgetItem(["%s" % (chumLabel.chum.group)])
                         self.addTopLevelItem(child_1)
                         if self.openGroups[self.groups.index("%s" % (chumLabel.chum.group))]:
                             child_1.setExpanded(True)
                     for i in range(self.topLevelItemCount()):
-                        if self.topLevelItem(i).text(0) == chumLabel.chum.group:
+                        text = str(self.topLevelItem(i).text(0))
+                        if text.rfind(" ") != -1:
+                            text = text[0:text.rfind(" ")]
+                        if text == chumLabel.chum.group:
                             break
                     self.topLevelItem(i).addChild(chumLabel)
                     self.topLevelItem(i).sortChildren(0, QtCore.Qt.AscendingOrder)
@@ -740,6 +785,8 @@ class chumArea(RightClickTree):
         for c in chums:
             oldmood = c.mood
             c.setMood(mood)
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
         return oldmood
     def updateColor(self, handle, color):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
@@ -1638,8 +1685,11 @@ class PesterWindow(MovingWindow):
     def pesterSelectedChum(self):
         curChum = self.chumList.currentItem()
         if curChum:
-            if curChum.text(0) not in self.chumList.groups and \
-               curChum.text(0) != "Chums":
+            text = str(curChum.text(0))
+            if text.find(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            if text not in self.chumList.groups and \
+               text != "Chums":
                 self.newConversationWindow(curChum)
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversationWindow(self, chumlisting):
@@ -2102,6 +2152,14 @@ class PesterWindow(MovingWindow):
         elif emptygroupssetting and not curemptygroup:
             self.chumList.showAllGroups()
         self.config.set("emptyGroups", emptygroupssetting)
+        # online numbers
+        onlinenumsetting = self.optionmenu.showonlinenumbers.isChecked()
+        curonlinenum = self.config.showOnlineNumbers()
+        if onlinenumsetting and not curonlinenum:
+            self.chumList.showOnlineNumbers()
+        elif curonlinenum and not onlinenumsetting:
+            self.chumList.hideOnlineNumbers()
+        self.config.set("onlineNumbers", onlinenumsetting)
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
