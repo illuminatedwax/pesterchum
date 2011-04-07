@@ -581,6 +581,8 @@ class PesterOptions(QtGui.QDialog):
         #self.groupscheck.setChecked(self.config.useGroups())
         self.showemptycheck = QtGui.QCheckBox("Show Empty Groups", self)
         self.showemptycheck.setChecked(self.config.showEmptyGroups())
+        self.showonlinenumbers = QtGui.QCheckBox("Show Number of Online Chums", self)
+        self.showonlinenumbers.setChecked(self.config.showOnlineNumbers())
 
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
@@ -599,6 +601,7 @@ class PesterOptions(QtGui.QDialog):
         layout_0.addWidget(self.hideOffline)
         #layout_0.addWidget(self.groupscheck)
         layout_0.addWidget(self.showemptycheck)
+        layout_0.addWidget(self.showonlinenumbers)
         layout_0.addWidget(hr)
         layout_0.addWidget(self.timestampcheck)
         layout_0.addWidget(self.timestampBox)
