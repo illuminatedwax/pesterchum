@@ -1,4 +1,5 @@
 o Bugs:
+* some nicks can override others. ex: ectoBiologist and ectoBio. ectoBio's mood will be seen, not ectoBiologist's
 * REGEXP: \b(\S)(\S*)(\S)\b REPLACE WITH: upper(\1)\2upper(\3) <--
    this regexp, when used as a quirk and then typed in breaks
 * import modified.tar
