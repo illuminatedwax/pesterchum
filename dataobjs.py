@@ -10,6 +10,7 @@ from mispeller import mispeller
 _upperre = re.compile(r"upper\(([\w\\]+)\)")
 _lowerre = re.compile(r"lower\(([\w\\]+)\)")
 _scramblere = re.compile(r"scramble\(([\w\\]+)\)")
+_reversere = re.compile(r"reverse\(([\w\\]+)\)")
 
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught",
@@ -68,9 +69,12 @@ class pesterQuirk(object):
                     return mo.expand(m.group(1)).lower()
                 def scramblerep(m):
                     return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
+                def reverserep(m):
+                    return mo.expand(m.group(1))[::-1]
                 to = _upperre.sub(upperrep, to)
                 to = _lowerre.sub(lowerrep, to)
                 to = _scramblere.sub(scramblerep, to)
+                to = _reversere.sub(reverserep, to)
                 return mo.expand(to)
             return re.sub(fr, regexprep, string)
         elif self.type == "random":
@@ -181,7 +185,7 @@ class pesterQuirks(object):
             yield q
 
 class PesterProfile(object):
-    def __init__(self, handle, color=None, mood=Mood("offline"), group=None, chumdb=None):
+    def __init__(self, handle, color=None, mood=Mood("offline"), chumdb=None):
         self.handle = handle
         if color is None:
             if chumdb:
@@ -190,12 +194,6 @@ class PesterProfile(object):
                 color = QtGui.QColor("black")
         self.color = color
         self.mood = mood
-        if group is None:
-            if chumdb:
-                group = chumdb.getGroup(handle, "Chums")
-            else:
-                group = "Chums"
-        self.group = group
     def initials(self, time=None):
         handle = self.handle
         caps = [l for l in handle if l.isupper()]
@@ -225,8 +223,7 @@ class PesterProfile(object):
     def plaindict(self):
         return (self.handle, {"handle": self.handle,
                               "mood": self.mood.name(),
-                              "color": unicode(self.color.name()),
-                              "group": unicode(self.group)})
+                              "color": unicode(self.color.name())})
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 

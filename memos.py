@@ -218,10 +218,10 @@ class MemoTabWindow(PesterTabWindow):
     def __init__(self, mainwindow, parent=None):
         PesterTabWindow.__init__(self, mainwindow, parent, "memos")
     def addChat(self, convo):
-        self.convos[convo.channel] = convo
+        self.convos[convo.channel.upper()] = convo
         # either addTab or setCurrentIndex will trigger changed()
-        newindex = self.tabs.addTab(convo.channel)
-        self.tabIndices[convo.channel] = newindex
+        newindex = self.tabs.addTab(convo.channel.upper())
+        self.tabIndices[convo.channel.upper()] = newindex
         self.tabs.setCurrentIndex(newindex)
         self.tabs.setTabIcon(newindex, PesterIcon(self.mainwindow.theme["memos/memoicon"]))
     def updateBlocked(self):
@@ -291,16 +291,16 @@ class MemoText(PesterText):
             grammar = time.getGrammar()
             joinmsg = chum.memojoinmsg(systemColor, time.getTime(), grammar, window.theme["convo/text/joinmemo"])
             self.append(convertTags(joinmsg))
-            parent.mainwindow.chatlog.log(parent.channel, joinmsg)
+            parent.mainwindow.chatlog.log(parent.channel.upper(), joinmsg)
             time.openCurrentTime()
 
         if type(lexmsg[0]) is mecmd:
             memsg = chum.memsg(systemColor, lexmsg, time=time.getGrammar())
-            window.chatlog.log(parent.channel, memsg)
+            window.chatlog.log(parent.channel.upper(), memsg)
             self.append(convertTags(memsg))
         else:
             self.append(convertTags(lexmsg))
-            window.chatlog.log(parent.channel, lexmsg)
+            window.chatlog.log(parent.channel.upper(), lexmsg)
         
     def changeTheme(self, theme):
         self.initTheme(theme)
@@ -417,7 +417,7 @@ class PesterMemo(PesterConvo):
         msg = p.memoopenmsg(systemColor, self.time.getTime(), timeGrammar, self.mainwindow.theme["convo/text/openmemo"], self.channel)
         self.time.openCurrentTime()
         self.textArea.append(convertTags(msg))
-        self.mainwindow.chatlog.log(self.channel, msg)
+        self.mainwindow.chatlog.log(self.channel.upper(), msg)
 
         self.op = False
         self.newmessage = False
@@ -425,7 +425,7 @@ class PesterMemo(PesterConvo):
         self.applyquirks = True
 
     def title(self):
-        return self.channel
+        return self.channel.upper()
     def icon(self):
         return PesterIcon(self.mainwindow.theme["memos/memoicon"])
 
@@ -555,7 +555,7 @@ class PesterMemo(PesterConvo):
                     self.times[handle].removeTime(close)
                     msg = chum.memoclosemsg(systemColor, grammar, window.theme["convo/text/closememo"])
                     self.textArea.append(convertTags(msg))
-                    self.mainwindow.chatlog.log(self.channel, msg)
+                    self.mainwindow.chatlog.log(self.channel.upper(), msg)
             elif timed not in self.times[handle]:
                 self.times[handle].addTime(timed)
             else:
@@ -601,7 +601,7 @@ class PesterMemo(PesterConvo):
         namesdb = self.mainwindow.namesdb
         # reload names
         self.userlist.clear()
-        for n in self.mainwindow.namesdb[self.channel]:
+        for n in self.mainwindow.namesdb[self.channel.upper()]:
             self.addUser(n)
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
@@ -635,7 +635,7 @@ class PesterMemo(PesterConvo):
                     grammar = t.getGrammar()
                     msg = chum.memoclosemsg(systemColor, grammar, self.mainwindow.theme["convo/text/closememo"])
                     self.textArea.append(convertTags(msg))
-                    self.mainwindow.chatlog.log(self.channel, msg)
+                    self.mainwindow.chatlog.log(self.channel.upper(), msg)
                     self.times[h].removeTime(t.getTime())
                 if update == "nick":
                     self.addUser(newnick)
@@ -663,7 +663,7 @@ class PesterMemo(PesterConvo):
                     opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
                 msg = chum.memobanmsg(opchum, opgrammar, systemColor, grammar)
                 self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, msg)
+                self.mainwindow.chatlog.log(self.channel.upper(), msg)
                 ttracker.removeTime(ttracker.getTime())
 
             if chum is self.mainwindow.profile():
@@ -682,10 +682,10 @@ class PesterMemo(PesterConvo):
                     self.time.openCurrentTime()
                     msg = me.memoopenmsg(systemColor, self.time.getTime(), self.time.getGrammar(), self.mainwindow.theme["convo/text/openmemo"], self.channel)
                     self.textArea.append(convertTags(msg))
-                    self.mainwindow.chatlog.log(self.channel, msg)
+                    self.mainwindow.chatlog.log(self.channel.upper(), msg)
                 elif ret == QtGui.QMessageBox.Cancel:
                     if self.parent():
-                        i = self.parent().tabIndices[self.channel]
+                        i = self.parent().tabIndices[self.channel.upper()]
                         self.parent().tabClose(i)
                     else:
                         self.close()
@@ -749,7 +749,7 @@ class PesterMemo(PesterConvo):
             systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
             msg = me.memoclosemsg(systemColor, grammar, self.mainwindow.theme["convo/text/closememo"])
             self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.channel, msg)
+            self.mainwindow.chatlog.log(self.channel.upper(), msg)
 
         newtime = self.time.getTime()
         if newtime is None:
