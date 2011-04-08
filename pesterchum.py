@@ -595,6 +595,8 @@ class chumArea(RightClickTree):
             self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
             self.takeItem(chumLabel)
             self.addItem(chumLabel)
+            if self.mainwindow.config.showOnlineNumbers():
+                self.showOnlineNumbers()
 
     def chumoptionsmenu(self):
         self.optionsMenu = self.chumoptions
@@ -678,31 +680,32 @@ class chumArea(RightClickTree):
                 if self.openGroups[i]:
                     child_1.setExpanded(True)
     def showOnlineNumbers(self):
-        self.hideOnlineNumbers()
-        totals = {'Chums': 0}
-        online = {'Chums': 0}
-        for g in self.groups:
-            totals[str(g)] = 0
-            online[str(g)] = 0
-        for c in self.chums:
-            yes = c.mood.name() != "offline"
-            if c.group == "Chums":
-                totals[str(c.group)] = totals[str(c.group)]+1
-                if yes:
-                    online[str(c.group)] = online[str(c.group)]+1
-            elif c.group in totals:
-                totals[str(c.group)] = totals[str(c.group)]+1
-                if yes:
-                    online[str(c.group)] = online[str(c.group)]+1
-            else:
-                totals["Chums"] = totals["Chums"]+1
-                if yes:
-                    online["Chums"] = online["Chums"]+1
-        for i in range(self.topLevelItemCount()):
-            text = str(self.topLevelItem(i).text(0))
-            if text.rfind(" ") != -1:
-                text = text[0:text.rfind(" ")]
-            self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
+        if hasattr(self, 'groups'):
+          self.hideOnlineNumbers()
+          totals = {'Chums': 0}
+          online = {'Chums': 0}
+          for g in self.groups:
+              totals[str(g)] = 0
+              online[str(g)] = 0
+          for c in self.chums:
+              yes = c.mood.name() != "offline"
+              if c.group == "Chums":
+                  totals[str(c.group)] = totals[str(c.group)]+1
+                  if yes:
+                      online[str(c.group)] = online[str(c.group)]+1
+              elif c.group in totals:
+                  totals[str(c.group)] = totals[str(c.group)]+1
+                  if yes:
+                      online[str(c.group)] = online[str(c.group)]+1
+              else:
+                  totals["Chums"] = totals["Chums"]+1
+                  if yes:
+                      online["Chums"] = online["Chums"]+1
+          for i in range(self.topLevelItemCount()):
+              text = str(self.topLevelItem(i).text(0))
+              if text.rfind(" ") != -1:
+                  text = text[0:text.rfind(" ")]
+              self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
     def hideOnlineNumbers(self):
         for i in range(self.topLevelItemCount()):
             text = str(self.topLevelItem(i).text(0))
