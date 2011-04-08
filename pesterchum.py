@@ -586,10 +586,16 @@ class chumArea(RightClickTree):
     def dropEvent(self, event):
         item = self.itemAt(event.pos())
         if item:
-            if item.text(0) == "Chums" or item.text(0) in self.groups:
-                group = item.text(0)
+            text = str(item.text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            if text == "Chums" or text in self.groups:
+                group = text
             else:
-                group = item.parent().text(0)
+                ptext = str(item.parent().text(0))
+                if ptext.rfind(" ") != -1:
+                    ptext = ptext[0:ptext.rfind(" ")]
+                group = ptext
             chumLabel = event.source().currentItem()
             chumLabel.chum.group = group
             self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
