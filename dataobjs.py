@@ -7,10 +7,11 @@ from generic import PesterIcon
 from parsetools import timeDifference, convertTags, lexMessage
 from mispeller import mispeller
 
-_upperre = re.compile(r"upper\(([\w\\]+)\)")
-_lowerre = re.compile(r"lower\(([\w\\]+)\)")
-_scramblere = re.compile(r"scramble\(([\w\\]+)\)")
-_reversere = re.compile(r"reverse\(([\w\\]+)\)")
+_groupre = re.compile(r"\\([0-9]+)")
+_upperre = re.compile(r"upper\(([\w<>\\]+)\)")
+_lowerre = re.compile(r"lower\(([\w<>\\]+)\)")
+_scramblere = re.compile(r"scramble\(([\w<>\\]+)\)")
+_reversere = re.compile(r"reverse\(([\w<>\\]+)\)")
 
 class Mood(object):
     moods = ["chummy", "rancorous", "offline", "pleasant", "distraught",
@@ -63,6 +64,7 @@ class pesterQuirk(object):
                 return string
             def regexprep(mo):
                 to = self.quirk["to"]
+                to = _groupre.sub(r"\\g<\1>", to)
                 def upperrep(m):
                     return mo.expand(m.group(1)).upper()
                 def lowerrep(m):
