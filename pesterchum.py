@@ -716,6 +716,20 @@ class chumArea(RightClickTree):
     def addItem(self, chumLabel):
         if hasattr(self, 'groups'):
             if chumLabel.chum.group not in self.groups:
+                if self.topLevelItemCount() == 0:
+                    child_1 = QtGui.QTreeWidgetItem(["Chums"])
+                    self.addTopLevelItem(child_1)
+                    if self.mainwindow.config.openDefaultGroup():
+                        child_1.setExpanded(True)
+                else:
+                    text = str(self.topLevelItem(0).text(0))
+                    if text.find(" ") != -1:
+                        text = text[0:text.rfind(" ")]
+                    if text != "Chums":
+                        child_1 = QtGui.QTreeWidgetItem(["Chums"])
+                        self.insertTopLevelItems(0, [child_1])
+                        if self.mainwindow.config.openDefaultGroup():
+                            child_1.setExpanded(True)
                 self.topLevelItem(0).addChild(chumLabel)
                 self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
             else:
@@ -1124,8 +1138,8 @@ class MovingWindow(QtGui.QFrame):
 
 class PesterWindow(MovingWindow):
     def __init__(self, parent=None):
-        MovingWindow.__init__(self, parent, 
-                              (QtCore.Qt.CustomizeWindowHint | 
+        MovingWindow.__init__(self, parent,
+                              (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
         self.convos = {}
         self.memos = {}
