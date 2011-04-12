@@ -611,7 +611,10 @@ class chumArea(RightClickTree):
     def moveGroupMenu(self):
         currentGroup = self.currentItem()
         if currentGroup:
-            currentGroup = currentGroup.parent().text(0)
+            text = str(currentGroup.parent().text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            currentGroup = text
         self.moveMenu.clear()
         actGroup = QtGui.QActionGroup(self)
 
@@ -629,8 +632,12 @@ class chumArea(RightClickTree):
         if event.reason() == QtGui.QContextMenuEvent.Mouse:
             listing = self.itemAt(event.pos())
             self.setCurrentItem(listing)
-            if self.currentItem().text(0) == "Chums" or \
-               self.currentItem().text(0) in self.groups:
+            text = str(self.currentItem().text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            if text == "Chums":
+                return
+            elif text in self.groups:
                 self.groupoptionsmenu()
             else:
                 self.chumoptionsmenu()
@@ -673,7 +680,10 @@ class chumArea(RightClickTree):
     def showAllGroups(self):
         curgroups = []
         for i in range(self.topLevelItemCount()):
-            curgroups.append(self.topLevelItem(i).text(0))
+            text = str(self.topLevelItem(i).text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            curgroups.append(text)
         if "Chums" not in curgroups:
             child_1 = QtGui.QTreeWidgetItem(["Chums"])
             self.addTopLevelItem(child_1)
@@ -907,7 +917,10 @@ class chumArea(RightClickTree):
                 index = self.indexOfTopLevelItem(currentGroup)
                 if index != -1:
                     expanded = currentGroup.isExpanded()
-                    self.mainwindow.config.delGroup(str(currentGroup.text(0)))
+                    text = str(currentGroup.text(0))
+                    if text.rfind(" ") != -1:
+                        text = text[0:text.rfind(" ")]
+                    self.mainwindow.config.delGroup(text)
                     self.mainwindow.config.addGroup(gname, expanded)
                     gTemp = self.mainwindow.config.getGroups()
                     self.groups = [g[0] for g in gTemp]
@@ -916,13 +929,18 @@ class chumArea(RightClickTree):
                         currentGroup.child(i).chum.group = gname
                         self.mainwindow.chumdb.setGroup(currentGroup.child(i).chum.handle, gname)
                     currentGroup.setText(0, gname)
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
         self.renamegroupdialog = None
     @QtCore.pyqtSlot()
     def removeGroup(self):
         currentGroup = self.currentItem()
         if not currentGroup:
             return
-        self.mainwindow.config.delGroup(currentGroup.text(0))
+        text = str(currentGroup.text(0))
+        if text.rfind(" ") != -1:
+            text = text[0:text.rfind(" ")]
+        self.mainwindow.config.delGroup(text)
         gTemp = self.mainwindow.config.getGroups()
         self.groups = [g[0] for g in gTemp]
         self.openGroups = [g[1] for g in gTemp]
