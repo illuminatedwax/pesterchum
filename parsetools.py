@@ -131,6 +131,8 @@ def lexMessage(string):
                (hyperlink, _urlre), (memolex, _memore),
                (smiley, _smilere)]
 
+    string = unicode(string)
+    string = string.replace("\n", " ").replace("\r", " ")
     lexed = lexer(unicode(string), lexlist)
 
     balanced = []
@@ -176,6 +178,41 @@ def convertTags(lexed, format="html"):
 
     return escaped
 
+def splitMessage(msg, format="ctag"):
+    """Splits message if it is too long."""
+    okmsg = []
+    cbegintags = []
+    output = []
+    for o in msg:
+        okmsg.append(o)
+        if type(o) is colorBegin:
+            cbegintags.append(o)
+        elif type(o) is colorEnd:
+            cbegintags.pop()
+        # yeah normally i'd do binary search but im lazy
+        msglen = len(convertTags(okmsg, format)) + 4*(len(cbegintags))
+        if msglen > 400:
+            okmsg.pop()
+            if len(okmsg) == 0:
+                output.append([o])
+            else:
+                tmp = []
+                for color in cbegintags:
+                    okmsg.append(colorEnd("</c>"))
+                    tmp.append(color)
+                output.append(okmsg)
+                if type(o) is colorBegin:
+                    cbegintags.append(o)
+                elif type(o) is colorEnd:
+                    cbegintags.pop()
+                tmp.append(o)
+                okmsg = tmp
+
+    if len(okmsg) > 0:
+        output.append(okmsg)
+    return output
+            
+    
 
 def addTimeInitial(string, grammar):
     endofi = string.find(":")
@@ -216,7 +253,7 @@ def timeDifference(td):
     elif atd < timedelta(0,3600):
         if minutes == 1:
             timetext = "%d MINUTE %s" % (minutes, when)
-        else:
+        else: 
             timetext = "%d MINUTES %s" % (minutes, when)
     elif atd < timedelta(0,3600*100):
         if hours == 1 and leftoverminutes == 0:
@@ -235,7 +272,7 @@ def img2smiley(string):
     return string
 
 smiledict = {
-    ":rancorous:": "pc_rancorous.gif",
+    ":rancorous:": "pc_rancorous.gif",  
     ":apple:": "apple.gif",
     ":bathearst:": "bathearst.gif",
     ":cathearst:": "cathearst.png",
@@ -245,7 +282,7 @@ smiledict = {
     ":blueghost:": "blueslimer.gif",
     ":slimer:": "slimer.gif",
     ":candycorn:": "candycorn.gif",
-    ":cheer:": "cheer.gif",
+    ":cheer:": "cheer.gif", 
     ":duhjohn:": "confusedjohn.gif",
     ":datrump:": "datrump.gif",
     ":facepalm:": "facepalm.gif",

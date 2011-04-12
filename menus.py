@@ -544,10 +544,6 @@ class PesterOptions(QtGui.QDialog):
         self.theme = theme
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
 
-        hr = QtGui.QFrame()
-        hr.setFrameShape(QtGui.QFrame.HLine)
-        hr.setFrameShadow(QtGui.QFrame.Sunken)
-
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
@@ -574,12 +570,6 @@ class PesterOptions(QtGui.QDialog):
         if self.config.showSeconds():
             self.secondscheck.setChecked(True)
 
-        # Will add ability to turn off groups later
-        #self.groupscheck = QtGui.QCheckBox("Use Groups", self)
-        #self.groupscheck.setChecked(self.config.useGroups())
-        self.showemptycheck = QtGui.QCheckBox("Show Empty Groups", self)
-        self.showemptycheck.setChecked(self.config.showEmptyGroups())
-
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -595,9 +585,6 @@ class PesterOptions(QtGui.QDialog):
         layout_0.addWidget(self.tabcheck)
         layout_0.addWidget(self.soundcheck)
         layout_0.addWidget(self.hideOffline)
-        #layout_0.addWidget(self.groupscheck)
-        layout_0.addWidget(self.showemptycheck)
-        layout_0.addWidget(hr)
         layout_0.addWidget(self.timestampcheck)
         layout_0.addWidget(self.timestampBox)
         layout_0.addWidget(self.secondscheck)

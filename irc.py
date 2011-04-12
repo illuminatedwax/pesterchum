@@ -97,8 +97,8 @@ class PesterIRC(QtCore.QThread):
                 space = l[0].rfind(" ", 0,400)
                 if space == -1:
                     space = 400
-                a = l[0][0:space]
-                b = l[0][space:]
+                a = l[0][0:space+1]
+                b = l[0][space+1:]
                 if len(b) > 0:
                     return [a] + splittext([b])
                 else:

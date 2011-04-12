@@ -9,7 +9,7 @@ from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList
-from parsetools import convertTags, lexMessage, mecmd, colorBegin, colorEnd, img2smiley
+from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -350,7 +350,7 @@ class PesterText(QtGui.QTextEdit):
                    "Accept": "text/plain"}
         try:
             pass
-            hconn = httplib.HTTPConnection('luke.violentlemon.com', 80,
+            hconn = httplib.HTTPConnection('qdb.pesterchum.net', 80,
                                            timeout=15)
             hconn.request("POST", "/index.php", params, headers)
             response = hconn.getresponse()
@@ -599,13 +599,17 @@ class PesterConvo(QtGui.QFrame):
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd and self.applyquirks:
             lexmsg = quirks.apply(lexmsg)
-        serverMsg = copy(lexmsg)
-        self.addMessage(lexmsg, True)
-        # if ceased, rebegin
-        if hasattr(self, 'chumopen') and not self.chumopen:
-            self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
-        text = convertTags(serverMsg, "ctag")
-        self.messageSent.emit(text, self.title())
+        lexmsgs = splitMessage(lexmsg)
+
+        for lm in lexmsgs:
+            serverMsg = copy(lm)
+            self.addMessage(lm, True)
+            # if ceased, rebegin
+            if hasattr(self, 'chumopen') and not self.chumopen:
+                self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
+                self.setChumOpen(True)
+            text = convertTags(serverMsg, "ctag")
+            self.messageSent.emit(text, self.title())
         self.textInput.setText("")
 
     @QtCore.pyqtSlot()

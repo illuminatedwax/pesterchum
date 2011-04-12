@@ -7,12 +7,22 @@ Visit https://github.com/illuminatedwax/pesterchum for git access and source cod
 
 CHANGELOG
 ---------
-### 3.14b (idk on version number scheme)
+### 3.14.2
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
 * Art - Grimlive [aquaMarinist]
 * Quirks lower() function - Kiooeht [evacipatedBox]
 * Quirks scrabble() function - Kiooeht [evacipatedBox]
+* Quirks reverse() function - illuminatedwax [ghostDunk]
 * Timestamps - Kiooeht [evacipatedBox]
 * Logviewer - Kiooeht [evacipatedBox]
-* Chum list groups - Kiooeht [evacipatedBox]
-* Chum list bug fixes - Kiooeht [evacipatedBox]
+* Quirk ordering - alGore
+* # of users in a memo - alGore
+
+BUG FIXES:
+* mixer bug fixed
+* "flags" bug fixed
+* incorrect characters in memos no longer break log file names
+* memos now do not break on case-sensitivity
+* fixed QDB address
+* now lines too long to send in a single message are split up correctly
+* quirk replace bug fixed
