@@ -11,6 +11,7 @@ _ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)https?://[^\s]+")
 _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
+_handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 
@@ -109,6 +110,16 @@ class memolex(object):
             return "%s<a href='%s'>%s</a>" % (self.space, self.channel, self.channel)
         else:
             return self.string
+class chumhandlelex(object):
+    def __init__(self, string, space, handle):
+        self.string = string
+        self.space = space
+        self.handle = handle
+    def convert(self, format):
+        if format == "html":
+            return "%s<a href='%s'>%s</a>" % (self.space, self.handle, self.handle)
+        else:
+            return self.string
 class smiley(object):
     def __init__(self, string):
         self.string = string
@@ -129,6 +140,7 @@ def lexMessage(string):
                (colorBegin, _ctag_begin), (colorBegin, _gtag_begin),
                (colorEnd, _ctag_end), (imagelink, _imgre),
                (hyperlink, _urlre), (memolex, _memore),
+               (chumhandlelex, _handlere),
                (smiley, _smilere)]
 
     string = unicode(string)
@@ -188,7 +200,11 @@ def splitMessage(msg, format="ctag"):
         if type(o) is colorBegin:
             cbegintags.append(o)
         elif type(o) is colorEnd:
-            cbegintags.pop()
+            print len(cbegintags)
+            try:
+                cbegintags.pop()
+            except IndexError:
+                print len(cbegintags)
         # yeah normally i'd do binary search but im lazy
         msglen = len(convertTags(okmsg, format)) + 4*(len(cbegintags))
         if msglen > 400:
