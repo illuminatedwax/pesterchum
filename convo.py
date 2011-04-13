@@ -304,6 +304,16 @@ class PesterText(QtGui.QTextEdit):
         if url != "":
             if url[0] == "#" and url != "#pesterchum":
                 self.parent().mainwindow.showMemos(url[1:])
+            elif url[0] == "@":
+                handle = unicode(url[1:])
+                mw = self.parent().mainwindow
+                matchingChums = [c for c in mw.chumList.chums if c.handle == handle]
+                if len(matchingChums) > 0:
+                    mood = matchingChums[0].mood
+                else:
+                    mood = Mood(0)
+                chum = PesterProfile(handle, mood=mood, chumdb=mw.chumdb)
+                mw.newConversation(chum)
             else:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)

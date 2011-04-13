@@ -17,6 +17,7 @@ CHANGELOG
 * Logviewer - Kiooeht [evacipatedBox]
 * Quirk ordering - alGore
 * # of users in a memo - alGore
+* @links to users - illuminatedwax [ghostDunk]
 
 BUG FIXES:
 * mixer bug fixed
