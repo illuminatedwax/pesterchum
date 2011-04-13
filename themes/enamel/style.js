@@ -35,7 +35,7 @@
             "rclickchumlist": {"pester": "Pester",
                                "removechum": "Remove Chum",
                                "blockchum": "Block",
-                               "report", "Report",
+                               "report": "Report",
                                "addchum": "Add Chum",
                                "viewlog": "View Pesterlog",
                                "unblockchum": "Unblock",
