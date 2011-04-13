@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
-from generic import PesterIcon, RightClickList
+from generic import PesterIcon
 from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley
 
 class PesterTabWindow(QtGui.QFrame):
@@ -306,14 +306,7 @@ class PesterText(QtGui.QTextEdit):
                 self.parent().mainwindow.showMemos(url[1:])
             elif url[0] == "@":
                 handle = unicode(url[1:])
-                mw = self.parent().mainwindow
-                matchingChums = [c for c in mw.chumList.chums if c.handle == handle]
-                if len(matchingChums) > 0:
-                    mood = matchingChums[0].mood
-                else:
-                    mood = Mood(0)
-                chum = PesterProfile(handle, mood=mood, chumdb=mw.chumdb)
-                mw.newConversation(chum)
+                self.parent().mainwindow.newConversation(handle)
             else:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
@@ -453,10 +446,14 @@ class PesterConvo(QtGui.QFrame):
         self.unblockchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
         self.connect(self.unblockchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('unblockChumSlot()'))
+        self.reportchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/report"], self)
+        self.connect(self.reportchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('reportThisChum()'))
 
         self.optionsMenu.addAction(self.quirksOff)
         self.optionsMenu.addAction(self.addChumAction)
         self.optionsMenu.addAction(self.blockAction)
+        self.optionsMenu.addAction(self.reportchum)
 
         self.chumopen = False
         self.applyquirks = True
@@ -628,6 +625,9 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot()
     def blockThisChum(self):
         self.mainwindow.blockChum(self.chum.handle)
+    @QtCore.pyqtSlot()
+    def reportThisChum(self):
+        self.mainwindow.reportChum(self.chum.handle)
     @QtCore.pyqtSlot()
     def unblockChumSlot(self):
         self.mainwindow.unblockChum(self.chum.handle)

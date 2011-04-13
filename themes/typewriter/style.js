@@ -36,6 +36,7 @@
                       "about": "About" },
             "rclickchumlist": {"pester": "Converse",
                                "removechum": "Erase User",
+                               "report": "Report User",
                                "blockchum": "Condemn",
                                "addchum": "Add User",
                                "viewlog": "View Pesterlog",

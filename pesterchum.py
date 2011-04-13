@@ -26,6 +26,7 @@ from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
+canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
 
 if sys.platform == "darwin":
     if not os.path.exists(_datadir):
@@ -452,6 +453,7 @@ class chumArea(RightClickList):
         if not self.mainwindow.config.hideOfflineChums():
             self.showAllChums()
         self.optionsMenu = QtGui.QMenu(self)
+        self.canonMenu = QtGui.QMenu(self)
         self.pester = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/pester"], self)
         self.connect(self.pester, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('activateChum()'))
@@ -464,13 +466,35 @@ class chumArea(RightClickList):
         self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
         self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('openChumLogs()'))
+        self.reportchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/report"], self)
+        self.connect(self.reportchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('reportChum()'))
+        self.findalts = QtGui.QAction("Find Alts", self)
+        self.connect(self.findalts, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('findAlts()'))
+
         self.optionsMenu.addAction(self.pester)
         self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.blockchum)
         self.optionsMenu.addAction(self.removechum)
+        self.optionsMenu.addAction(self.reportchum)
+
+        
+        self.canonMenu.addAction(self.pester)
+        self.canonMenu.addAction(self.logchum)
+        self.canonMenu.addAction(self.blockchum)
+        self.canonMenu.addAction(self.removechum)
+        self.canonMenu.addAction(self.reportchum)
+        self.canonMenu.addAction(self.findalts)
 
         self.initTheme(theme)
         self.sortItems()
+    def getOptionsMenu(self):
+        currenthandle = self.currentItem().chum.handle
+        if currenthandle in canon_handles:
+            return self.canonMenu
+        else:
+            return self.optionsMenu
     def addChum(self, chum):
         if len([c for c in self.chums if c.handle == chum.handle]) != 0:
             return
@@ -565,6 +589,18 @@ class chumArea(RightClickList):
         if not currentChum:
             return
         self.blockChumSignal.emit(self.currentItem().chum.handle)
+    @QtCore.pyqtSlot()
+    def reportChum(self):
+        currentChum = self.currentItem()
+        if not currentChum:
+            return
+        self.mainwindow.reportChum(self.currentItem().chum.handle)
+    @QtCore.pyqtSlot()
+    def findAlts(self):
+        currentChum = self.currentItem()
+        if not currentChum:
+            return
+        self.mainwindow.sendMessage.emit("ALT %s" % (currentChum.chum.handle) , "calSprite")
     @QtCore.pyqtSlot()
     def openChumLogs(self):
         currentChum = self.currentItem().text()
@@ -910,14 +946,17 @@ class PesterWindow(MovingWindow):
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
         self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('aboutPesterchum()'))
+        self.botAction = QtGui.QAction("CALSPRITE", self)
+        self.connect(self.botAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('loadCalsprite()'))
         self.helpAction = QtGui.QAction("HELP", self)
         self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('launchHelp()'))
         helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
         self.helpmenu = helpmenu
         self.helpmenu.addAction(self.helpAction)
+        self.helpmenu.addAction(self.botAction)
         self.helpmenu.addAction(self.aboutAction)
-
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
         self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
@@ -1069,6 +1108,16 @@ class PesterWindow(MovingWindow):
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.updateMood(handle, mood)
     def newConversation(self, chum, initiated=True):
+        if type(chum) in [str, unicode]:
+            matchingChums = [c for c in self.chumList.chums if c.handle == chum]
+            if len(matchingChums) > 0:
+                mood = matchingChums[0].mood
+            else:
+                mood = Mood(2)
+            chum = PesterProfile(chum, mood=mood, chumdb=self.chumdb)
+            if len(matchingChums) == 0:
+                self.moodRequest.emit(chum)
+
         if self.convos.has_key(chum.handle):
             self.convos[chum.handle].showChat()
             return
@@ -1454,6 +1503,11 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def removeChum(self, chumlisting):
         self.config.removeChum(chumlisting)
+    def reportChum(self, handle):        
+        (reason, ok) = QtGui.QInputDialog.getText(self, "Report User", "Enter the reason you are reporting this user (optional):")
+        if ok:
+            self.sendMessage.emit("REPORT %s %s" % (handle, reason) , "calSprite")
+
     @QtCore.pyqtSlot(QtCore.QString)
     def blockChum(self, handle):
         h = unicode(handle)
@@ -1613,6 +1667,8 @@ class PesterWindow(MovingWindow):
                          self, QtCore.SLOT('userListClose()'))
             self.connect(self.allusers, QtCore.SIGNAL('addChum(QString)'),
                          self, QtCore.SLOT('userListAdd(QString)'))
+            self.connect(self.allusers, QtCore.SIGNAL('pesterChum(QString)'),
+                         self, QtCore.SLOT('userListPester(QString)'))
             self.requestNames.emit("#pesterchum")
             self.allusers.show()
 
@@ -1621,6 +1677,10 @@ class PesterWindow(MovingWindow):
         h = unicode(handle)
         chum = PesterProfile(h, chumdb=self.chumdb)
         self.addChum(chum)
+    @QtCore.pyqtSlot(QtCore.QString)
+    def userListPester(self, handle):
+        h = unicode(handle)
+        self.newConversation(h)
     @QtCore.pyqtSlot()
     def userListClose(self):
         self.allusers = None
@@ -1850,6 +1910,9 @@ class PesterWindow(MovingWindow):
         self.aboutwindow = AboutPesterchum(self)
         self.aboutwindow.exec_()
         self.aboutwindow = None
+    @QtCore.pyqtSlot()
+    def loadCalsprite(self):
+        self.newConversation("calSprite")
     @QtCore.pyqtSlot()
     def launchHelp(self):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://nova.xzibition.com/~illuminatedwax/help.html", QtCore.QUrl.TolerantMode))

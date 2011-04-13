@@ -192,6 +192,15 @@ def convertTags(lexed, format="html"):
 
 def splitMessage(msg, format="ctag"):
     """Splits message if it is too long."""
+    # split long text lines
+    buf = []
+    for o in msg:
+        if type(o) in [str, unicode] and len(o) > 200:
+            for i in range(0, len(o), 200):
+                buf.append(o[i:i+200])
+        else:
+            buf.append(o)
+    msg = buf
     okmsg = []
     cbegintags = []
     output = []
@@ -200,11 +209,7 @@ def splitMessage(msg, format="ctag"):
         if type(o) is colorBegin:
             cbegintags.append(o)
         elif type(o) is colorEnd:
-            print len(cbegintags)
-            try:
-                cbegintags.pop()
-            except IndexError:
-                print len(cbegintags)
+            cbegintags.pop()
         # yeah normally i'd do binary search but im lazy
         msglen = len(convertTags(okmsg, format)) + 4*(len(cbegintags))
         if msglen > 400:

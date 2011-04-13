@@ -610,7 +610,11 @@ class PesterUserlist(QtGui.QDialog):
         self.addChumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/addchum"], self)
         self.connect(self.addChumAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('addChumSlot()'))
+        self.pesterChumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/pester"], self)
+        self.connect(self.pesterChumAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('pesterChumSlot()'))
         self.userarea.optionsMenu.addAction(self.addChumAction)
+        self.userarea.optionsMenu.addAction(self.pesterChumAction)
 
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
@@ -634,7 +638,7 @@ class PesterUserlist(QtGui.QDialog):
         self.updateUsers()
     @QtCore.pyqtSlot()
     def updateUsers(self):
-        names = self.mainwindow.namesdb["#pesterchum"]
+        names = self.mainwindow.namesdb["#PESTERCHUM"]
         self.userarea.clear()
         for n in names:
             item = QtGui.QListWidgetItem(n)
@@ -675,8 +679,15 @@ class PesterUserlist(QtGui.QDialog):
         if not cur:
             return
         self.addChum.emit(cur.text())
+    @QtCore.pyqtSlot()
+    def pesterChumSlot(self):
+        cur = self.userarea.currentItem()
+        if not cur:
+            return
+        self.pesterChum.emit(cur.text())
 
     addChum = QtCore.pyqtSignal(QtCore.QString)
+    pesterChum = QtCore.pyqtSignal(QtCore.QString)
 
 
 class MemoListItem(QtGui.QListWidgetItem):
@@ -798,6 +809,6 @@ class LoadingScreen(QtGui.QDialog):
 class AboutPesterchum(QtGui.QMessageBox):
     def __init__(self, parent=None):
         QtGui.QMessageBox.__init__(self, parent)
-        self.setText("P3ST3RCHUM V. 3.14")
-        self.setInformativeText("Programming by illuminatedwax (ghostDunk), art by Grimlive (aquaMarinist). Special thanks to ABT and gamblingGenocider.")
+        self.setText("P3ST3RCHUM V. 3.14.1")
+        self.setInformativeText("Programming by illuminatedwax (ghostDunk), Kiooeht (evacipatedBox), alGore, art by Grimlive (aquaMarinist). Special thanks to ABT and gamblingGenocider.")
         self.mainwindow = parent

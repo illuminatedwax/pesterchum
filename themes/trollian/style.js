@@ -34,6 +34,7 @@
                       "about": "About" },
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
+                               "report": "Remove",
                                "blockchum": "Block",
                                "addchum": "Add Chump",
                                "viewlog": "View Pesterlog",

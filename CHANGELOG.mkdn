@@ -18,6 +18,7 @@ CHANGELOG
 * Quirk ordering - alGore
 * # of users in a memo - alGore
 * @links to users - illuminatedwax [ghostDunk]
+* Support for REPORT and ALT to calSprite built in
 
 BUG FIXES:
 * mixer bug fixed
