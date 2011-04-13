@@ -28,3 +28,4 @@ BUG FIXES:
 * fixed QDB address
 * now lines too long to send in a single message are split up correctly
 * quirk replace bug fixed
+* pesterClientXXX profiles no longer saved
