@@ -11,6 +11,7 @@ _ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)https?://[^\s]+")
 _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
+_handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 
@@ -109,6 +110,16 @@ class memolex(object):
             return "%s<a href='%s'>%s</a>" % (self.space, self.channel, self.channel)
         else:
             return self.string
+class chumhandlelex(object):
+    def __init__(self, string, space, handle):
+        self.string = string
+        self.space = space
+        self.handle = handle
+    def convert(self, format):
+        if format == "html":
+            return "%s<a href='%s'>%s</a>" % (self.space, self.handle, self.handle)
+        else:
+            return self.string
 class smiley(object):
     def __init__(self, string):
         self.string = string
@@ -129,8 +140,11 @@ def lexMessage(string):
                (colorBegin, _ctag_begin), (colorBegin, _gtag_begin),
                (colorEnd, _ctag_end), (imagelink, _imgre),
                (hyperlink, _urlre), (memolex, _memore),
+               (chumhandlelex, _handlere),
                (smiley, _smilere)]
 
+    string = unicode(string)
+    string = string.replace("\n", " ").replace("\r", " ")
     lexed = lexer(unicode(string), lexlist)
 
     balanced = []
@@ -176,6 +190,50 @@ def convertTags(lexed, format="html"):
 
     return escaped
 
+def splitMessage(msg, format="ctag"):
+    """Splits message if it is too long."""
+    # split long text lines
+    buf = []
+    for o in msg:
+        if type(o) in [str, unicode] and len(o) > 200:
+            for i in range(0, len(o), 200):
+                buf.append(o[i:i+200])
+        else:
+            buf.append(o)
+    msg = buf
+    okmsg = []
+    cbegintags = []
+    output = []
+    for o in msg:
+        okmsg.append(o)
+        if type(o) is colorBegin:
+            cbegintags.append(o)
+        elif type(o) is colorEnd:
+            cbegintags.pop()
+        # yeah normally i'd do binary search but im lazy
+        msglen = len(convertTags(okmsg, format)) + 4*(len(cbegintags))
+        if msglen > 400:
+            okmsg.pop()
+            if len(okmsg) == 0:
+                output.append([o])
+            else:
+                tmp = []
+                for color in cbegintags:
+                    okmsg.append(colorEnd("</c>"))
+                    tmp.append(color)
+                output.append(okmsg)
+                if type(o) is colorBegin:
+                    cbegintags.append(o)
+                elif type(o) is colorEnd:
+                    cbegintags.pop()
+                tmp.append(o)
+                okmsg = tmp
+
+    if len(okmsg) > 0:
+        output.append(okmsg)
+    return output
+            
+    
 
 def addTimeInitial(string, grammar):
     endofi = string.find(":")
@@ -216,7 +274,7 @@ def timeDifference(td):
     elif atd < timedelta(0,3600):
         if minutes == 1:
             timetext = "%d MINUTE %s" % (minutes, when)
-        else:
+        else: 
             timetext = "%d MINUTES %s" % (minutes, when)
     elif atd < timedelta(0,3600*100):
         if hours == 1 and leftoverminutes == 0:
@@ -235,7 +293,7 @@ def img2smiley(string):
     return string
 
 smiledict = {
-    ":rancorous:": "pc_rancorous.gif",
+    ":rancorous:": "pc_rancorous.gif",  
     ":apple:": "apple.gif",
     ":bathearst:": "bathearst.gif",
     ":cathearst:": "cathearst.png",
@@ -245,7 +303,7 @@ smiledict = {
     ":blueghost:": "blueslimer.gif",
     ":slimer:": "slimer.gif",
     ":candycorn:": "candycorn.gif",
-    ":cheer:": "cheer.gif",
+    ":cheer:": "cheer.gif", 
     ":duhjohn:": "confusedjohn.gif",
     ":datrump:": "datrump.gif",
     ":facepalm:": "facepalm.gif",

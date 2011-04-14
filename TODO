@@ -1,14 +1,21 @@
-o Bugs:
-* some nicks can override others. ex: ectoBiologist and ectoBio. ectoBio's mood will be seen, not ectoBiologist's
-* REGEXP: \b(\S)(\S*)(\S)\b REPLACE WITH: upper(\1)\2upper(\3) <--
-   this regexp, when used as a quirk and then typed in breaks
-* import modified.tar
-* channels aren't case sensitive! get the real name of a channel
+Bugs:
+* weird memo time bug
 * Windows doesn't show style sheet sometimes?? Maybe related to themes.
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
-* don't save pesterClientXXX names
-* need to make it so "/" in a memo doesn't mess up the logs
+* enamel doesnt have time arrows
+
+Features:
+* different sound for memos/pesters
+* OOC
+* log viewer needs to have BBCode/HTML/Text copy modes
+* random pesters
+* copy quirks between profiles?
+* chum list groups
+* More complex quirks: by-sound
+* Theme checking
+* Spy mode
+* Animated
 
 Mac Bugs:
 * Mac doesn't show tabs right, display gifs, highlighting thing?
@@ -17,10 +24,3 @@ SS: in the one-on-one pester it resizes with the window
 SS: but the memo one doesn't resize
 SS: and the arrows next to the time thing overlap the CLOSE button
 
-Features:
-* copy quirks between profiles?
-* help button on quirks menu?
-* More complex quirks: by-sound
-* Theme checking
-* Spy mode
-* Animated

@@ -180,7 +180,7 @@
                     },
              "buttons": { "style": "color: black; font: bold; border: 2px solid #780000; font: bold; font-size: 12px; background: #e5000f; margin-top: 5px; margin-right: 5px; margin-left: 5px; padding: 2px; width: 50px;" }
           },
-
+   "tabwindow": { "style": "" },
    "tabs": {
        "style": "",
        "selectedstyle": "",

@@ -546,10 +546,6 @@ class PesterOptions(QtGui.QDialog):
         self.theme = theme
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
 
-        hr = QtGui.QFrame()
-        hr.setFrameShape(QtGui.QFrame.HLine)
-        hr.setFrameShadow(QtGui.QFrame.Sunken)
-
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
@@ -576,14 +572,6 @@ class PesterOptions(QtGui.QDialog):
         if self.config.showSeconds():
             self.secondscheck.setChecked(True)
 
-        # Will add ability to turn off groups later
-        #self.groupscheck = QtGui.QCheckBox("Use Groups", self)
-        #self.groupscheck.setChecked(self.config.useGroups())
-        self.showemptycheck = QtGui.QCheckBox("Show Empty Groups", self)
-        self.showemptycheck.setChecked(self.config.showEmptyGroups())
-        self.showonlinenumbers = QtGui.QCheckBox("Show Number of Online Chums", self)
-        self.showonlinenumbers.setChecked(self.config.showOnlineNumbers())
-
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -599,10 +587,6 @@ class PesterOptions(QtGui.QDialog):
         layout_0.addWidget(self.tabcheck)
         layout_0.addWidget(self.soundcheck)
         layout_0.addWidget(self.hideOffline)
-        #layout_0.addWidget(self.groupscheck)
-        layout_0.addWidget(self.showemptycheck)
-        layout_0.addWidget(self.showonlinenumbers)
-        layout_0.addWidget(hr)
         layout_0.addWidget(self.timestampcheck)
         layout_0.addWidget(self.timestampBox)
         layout_0.addWidget(self.secondscheck)
@@ -628,7 +612,11 @@ class PesterUserlist(QtGui.QDialog):
         self.addChumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/addchum"], self)
         self.connect(self.addChumAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('addChumSlot()'))
+        self.pesterChumAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/pester"], self)
+        self.connect(self.pesterChumAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('pesterChumSlot()'))
         self.userarea.optionsMenu.addAction(self.addChumAction)
+        self.userarea.optionsMenu.addAction(self.pesterChumAction)
 
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
@@ -652,7 +640,7 @@ class PesterUserlist(QtGui.QDialog):
         self.updateUsers()
     @QtCore.pyqtSlot()
     def updateUsers(self):
-        names = self.mainwindow.namesdb["#pesterchum"]
+        names = self.mainwindow.namesdb["#PESTERCHUM"]
         self.userarea.clear()
         for n in names:
             item = QtGui.QListWidgetItem(n)
@@ -693,8 +681,15 @@ class PesterUserlist(QtGui.QDialog):
         if not cur:
             return
         self.addChum.emit(cur.text())
+    @QtCore.pyqtSlot()
+    def pesterChumSlot(self):
+        cur = self.userarea.currentItem()
+        if not cur:
+            return
+        self.pesterChum.emit(cur.text())
 
     addChum = QtCore.pyqtSignal(QtCore.QString)
+    pesterChum = QtCore.pyqtSignal(QtCore.QString)
 
 
 class MemoListItem(QtGui.QListWidgetItem):
@@ -816,6 +811,6 @@ class LoadingScreen(QtGui.QDialog):
 class AboutPesterchum(QtGui.QMessageBox):
     def __init__(self, parent=None):
         QtGui.QMessageBox.__init__(self, parent)
-        self.setText("P3ST3RCHUM V. 3.14")
-        self.setInformativeText("Programming by illuminatedwax (ghostDunk), art by Grimlive (aquaMarinist). Special thanks to ABT and gamblingGenocider.")
+        self.setText("P3ST3RCHUM V. 3.14.1")
+        self.setInformativeText("Programming by illuminatedwax (ghostDunk), Kiooeht (evacipatedBox), alGore, art by Grimlive (aquaMarinist). Special thanks to ABT and gamblingGenocider.")
         self.mainwindow = parent

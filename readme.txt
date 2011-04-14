@@ -1,4 +1,21 @@
-Welcome to Pesterchum 3.14!
+Welcome to Pesterchum 3.14.1!
+
+WHAT'S NEW?
+-----------
+* Quirks now have a lower(), scramble(), and reverse() function!
+* Timestamps - check your Config!
+* Logviewer - View logs right in Pesterchum!
+* Quirk ordering - order your quirks so they work right!
+* # of users in a memo - You can now see how many users are in a memo.
+* @links to users - typing @ before user's name creates a link
+  that will pester them!
+* Support for REPORT and ALT to calSprite built in - 
+  If someone is bothering you, or a canon handle is idle, or
+  for whatever reason, right click their name and go to "Report"
+  to report them to a moderator.
+  If you want to talk to an alt canon handle, just right click
+  the username!
+  if you have an alt handle, register it with calSprite!
 
 Here's some tips to help you get started:
 
@@ -59,6 +76,44 @@ list later on in this readme.
 
 FA%
 ---
+Q: Norton says it has a virus and then deletes it!
+A: Read this helpful Norton FAQ:
+
+Alright, here's a guide to by-passing Norton:
+First, to download Pesterchum:
+1: Make sure you're on a Moderator account. Moreso for the Norton steps than these ones.
+2: Download the .zip file, not the .exe file.
+3: Unzip the .zip file onto memory. Pesterchum should now be installed.
+
+Now, to by-pass Norton:
+1: Make sure you're still on a moderator account.
+2: Open up Norton.
+3: Click on 'Settings' up in the upperright hand corner.
+4: Click on 'Anitivirus', off to the upper left. It has a small image of a needle or something similar off to it's side.
+5: There's a word that reads 'SONAR protection' halfway to the bottomleft. Off to it's right, there's a bar that's half green. Click on the bar.
+6: It will warn you about turning off SONAR. Have it set to turn back on when the system restarts.
+7: If done properly, the background for the main page of Norton(what you saw on steps 2-3) has turned an apocaliptic red. Feel free to close Norton now. Keep in mind to stay off suspicious online sites now.
+8: Open up Pesterchum, and let the chummy convos begin.
+
+When finished:
+First, Log off of Pesterchum. LOG OFF, NOT CLOSE IT.
+Then, you can either shut off your comp, and Norton will re-enable SONAR, or you can repeat steps 1-5, except turning the red bar green. If done right, Norton will be it's happy color again.
+Keep in mind that you must repeat all of this(other than the download) every time you want to get on Pesterchum.
+
+Hope this is helpful!
+
+(This guide brought to you by the slightly combined efforts of empireomega and Xanaomin)
+
+Q: I can't connect because my school/university/network/stolen wifi is blocking my connection! OR I can't seem to connect to the server at all and I'm not running any firewalls!
+A: Edit your pesterchum.js file. Open it up in notepad or something, and then edit the beginning so it looks like this:
+
+{"port": "1413", ....
+
+where the .... is the rest of the gobbledygook there.
+
+Q: The mood buttons on Pesterchum 6.0 don't match up to what it sets your mood to! What gives?
+A: The mood names are just there to look canon. It is intentional.
+
 Q: I'm appearing as offline to 2.5 users/other users appear the wrong
 mood? What's happeninggggg
 A: The 2.5 people decided to change the mood protocol. When I made
@@ -273,6 +328,12 @@ SWITCH: Switch your profile! You can have any number of profiles, and
 PC will save your color, quirks, and theme for that profile. Chumrolls
 and block lists are the same for all profiles. Feel free to have
 multiple instances of PC running on two or more handles!
+
+CALSPRITE
+---------
+calSprite is the bot that helps moderate canon handle usage! Simply pester
+calSprite with the world "HELP" (turn your quirks off!) and you
+will get instructions on how to use calSprite!
 
 QUIRKS
 ------

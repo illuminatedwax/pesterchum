@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
-from generic import PesterIcon, RightClickList
-from parsetools import convertTags, lexMessage, mecmd, colorBegin, colorEnd, img2smiley
+from generic import PesterIcon
+from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -304,6 +304,9 @@ class PesterText(QtGui.QTextEdit):
         if url != "":
             if url[0] == "#" and url != "#pesterchum":
                 self.parent().mainwindow.showMemos(url[1:])
+            elif url[0] == "@":
+                handle = unicode(url[1:])
+                self.parent().mainwindow.newConversation(handle)
             else:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
@@ -350,7 +353,7 @@ class PesterText(QtGui.QTextEdit):
                    "Accept": "text/plain"}
         try:
             pass
-            hconn = httplib.HTTPConnection('luke.violentlemon.com', 80,
+            hconn = httplib.HTTPConnection('qdb.pesterchum.net', 80,
                                            timeout=15)
             hconn.request("POST", "/index.php", params, headers)
             response = hconn.getresponse()
@@ -443,10 +446,14 @@ class PesterConvo(QtGui.QFrame):
         self.unblockchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
         self.connect(self.unblockchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('unblockChumSlot()'))
+        self.reportchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/report"], self)
+        self.connect(self.reportchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('reportThisChum()'))
 
         self.optionsMenu.addAction(self.quirksOff)
         self.optionsMenu.addAction(self.addChumAction)
         self.optionsMenu.addAction(self.blockAction)
+        self.optionsMenu.addAction(self.reportchum)
 
         self.chumopen = False
         self.applyquirks = True
@@ -599,13 +606,17 @@ class PesterConvo(QtGui.QFrame):
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd and self.applyquirks:
             lexmsg = quirks.apply(lexmsg)
-        serverMsg = copy(lexmsg)
-        self.addMessage(lexmsg, True)
-        # if ceased, rebegin
-        if hasattr(self, 'chumopen') and not self.chumopen:
-            self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
-        text = convertTags(serverMsg, "ctag")
-        self.messageSent.emit(text, self.title())
+        lexmsgs = splitMessage(lexmsg)
+
+        for lm in lexmsgs:
+            serverMsg = copy(lm)
+            self.addMessage(lm, True)
+            # if ceased, rebegin
+            if hasattr(self, 'chumopen') and not self.chumopen:
+                self.mainwindow.newConvoStarted.emit(QtCore.QString(self.title()), True)
+                self.setChumOpen(True)
+            text = convertTags(serverMsg, "ctag")
+            self.messageSent.emit(text, self.title())
         self.textInput.setText("")
 
     @QtCore.pyqtSlot()
@@ -614,6 +625,9 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot()
     def blockThisChum(self):
         self.mainwindow.blockChum(self.chum.handle)
+    @QtCore.pyqtSlot()
+    def reportThisChum(self):
+        self.mainwindow.reportChum(self.chum.handle)
     @QtCore.pyqtSlot()
     def unblockChumSlot(self):
         self.mainwindow.unblockChum(self.chum.handle)
