@@ -18,7 +18,7 @@ from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
     LoadingScreen, AboutPesterchum
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
-from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList
+from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList, CaseInsensitiveDict
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags, addTimeInitial
 from memos import PesterMemo, MemoTabWindow, TimeTracker
@@ -849,8 +849,8 @@ class PesterWindow(MovingWindow):
         MovingWindow.__init__(self, parent, 
                               (QtCore.Qt.CustomizeWindowHint | 
                                QtCore.Qt.FramelessWindowHint))
-        self.convos = {}
-        self.memos = {}
+        self.convos = CaseInsensitiveDict()
+        self.memos = CaseInsensitiveDict()
         self.tabconvo = None
         self.tabmemo = None
 
@@ -965,7 +965,7 @@ class PesterWindow(MovingWindow):
         self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('showMinimized()'))
 
-        self.namesdb = {}
+        self.namesdb = CaseInsensitiveDict()
         self.chumdb = PesterProfileDB()
 
         chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
@@ -1077,10 +1077,10 @@ class PesterWindow(MovingWindow):
             else:
                 self.alarm.play()
     def newMemoMsg(self, chan, handle, msg):
-        if not self.memos.has_key(chan.upper()):
+        if not self.memos.has_key(chan):
             # silently ignore in case we forgot to /part
             return
-        memo = self.memos[chan.upper()]
+        memo = self.memos[chan]
         msg = unicode(msg)
         if not memo.times.has_key(handle):
             # new chum! time current
@@ -1148,8 +1148,8 @@ class PesterWindow(MovingWindow):
     def newMemo(self, channel, timestr, secret=False):
         if channel == "#pesterchum":
             return
-        if self.memos.has_key(channel.upper()):
-            self.memos[channel.upper()].showChat()
+        if self.memos.has_key(channel):
+            self.memos[channel].showChat()
             return
         # do slider dialog then set
         if self.config.tabs():
@@ -1170,7 +1170,7 @@ class PesterWindow(MovingWindow):
                      QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
                      memoWindow, QtCore.SLOT('userPresentChange(QString, QString, QString)'))
         # chat client send memo open
-        self.memos[channel.upper()] = memoWindow
+        self.memos[channel] = memoWindow
         self.joinChannel.emit(channel) # race condition?
         self.secret = secret
         if self.secret:
@@ -1395,7 +1395,7 @@ class PesterWindow(MovingWindow):
         c = unicode(channel)
         self.chatlog.finish(c)
         self.leftChannel.emit(channel)
-        del self.memos[c.upper()]
+        del self.memos[c]
     @QtCore.pyqtSlot()
     def tabsClosed(self):
         del self.tabconvo
@@ -1427,19 +1427,19 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def timeCommand(self, chan, handle, command):
         (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
-        if self.memos[c.upper()]:
-            self.memos[c.upper()].timeUpdate(h, cmd)
+        if self.memos[c]:
+            self.memos[c].timeUpdate(h, cmd)
 
     @QtCore.pyqtSlot(QtCore.QString, PesterList)
     def updateNames(self, channel, names):
-        c = unicode(channel).upper()
+        c = unicode(channel)
         # update name DB
         self.namesdb[c] = names
         # warn interested party of names
         self.namesUpdated.emit()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentUpdate(self, handle, channel, update):
-        c = unicode(channel).upper()
+        c = unicode(channel)
         n = unicode(handle)
         if update == "nick":
             l = n.split(":")
