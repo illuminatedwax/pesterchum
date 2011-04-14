@@ -18,7 +18,7 @@ from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
     LoadingScreen, AboutPesterchum
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
-from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList
+from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags, addTimeInitial
 from memos import PesterMemo, MemoTabWindow, TimeTracker
@@ -517,10 +517,9 @@ class chumArea(RightClickTree):
             self.hideEmptyGroups()
         if self.mainwindow.config.showOnlineNumbers():
             self.showOnlineNumbers()
-        self.chumoptions = QtGui.QMenu(self)
-        self.groupoptions = QtGui.QMenu(self)
+        self.groupMenu = QtGui.QMenu(self)
         self.canonMenu = QtGui.QMenu(self)
-        self.optionsMenu = self.chumoptions
+        self.optionsMenu = QtGui.QMenu(self)
         self.pester = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/pester"], self)
         self.connect(self.pester, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('activateChum()'))
@@ -544,22 +543,25 @@ class chumArea(RightClickTree):
                      self, QtCore.SLOT('removeGroup()'))
         self.renamegroup = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/renamegroup"], self)
         self.connect(self.renamegroup, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('renameGroup()'))        self.chumoptions.addAction(self.pester)
+                     self, QtCore.SLOT('renameGroup()'))
 
-        self.chumoptions.addAction(self.logchum)
-        self.chumoptions.addAction(self.blockchum)
-        self.chumoptions.addAction(self.removechum)
+        self.optionsMenu.addAction(self.pester)
+        self.optionsMenu.addAction(self.logchum)
+        self.optionsMenu.addAction(self.blockchum)
+        self.optionsMenu.addAction(self.removechum)
         self.moveMenu = QtGui.QMenu(self.mainwindow.theme["main/menus/rclickchumlist/movechum"], self)
-        self.chumoptions.addMenu(self.moveMenu)
+        self.optionsMenu.addMenu(self.moveMenu)
+        self.optionsMenu.addAction(self.reportchum)
         self.moveGroupMenu()
 
-        self.groupoptions.addAction(self.renamegroup)
-        self.groupoptions.addAction(self.removegroup)
+        self.groupMenu.addAction(self.renamegroup)
+        self.groupMenu.addAction(self.removegroup)
 
         self.canonMenu.addAction(self.pester)
         self.canonMenu.addAction(self.logchum)
         self.canonMenu.addAction(self.blockchum)
         self.canonMenu.addAction(self.removechum)
+        self.canonMenu.addMenu(self.moveMenu)
         self.canonMenu.addAction(self.reportchum)
         self.canonMenu.addAction(self.findalts)
 
@@ -581,7 +583,15 @@ class chumArea(RightClickTree):
         if currenthandle in canon_handles:
             return self.canonMenu
         else:
-            return self.optionsMenu
+            text = str(self.currentItem().text(0))
+            if text.rfind(" ") != -1:
+                text = text[0:text.rfind(" ")]
+            if text == "Chums":
+                return self.groupMenu
+            elif text in self.groups:
+                return self.groupMenu
+            else:
+                return self.optionsMenu
 
     def dropEvent(self, event):
         item = self.itemAt(event.pos())
@@ -604,10 +614,6 @@ class chumArea(RightClickTree):
             if self.mainwindow.config.showOnlineNumbers():
                 self.showOnlineNumbers()
 
-    def chumoptionsmenu(self):
-        self.optionsMenu = self.chumoptions
-    def groupoptionsmenu(self):
-        self.optionsMenu = self.groupoptions
     def moveGroupMenu(self):
         currentGroup = self.currentItem()
         if currentGroup:
@@ -627,22 +633,6 @@ class chumArea(RightClickTree):
             actGroup.addAction(movegroup)
         self.connect(actGroup, QtCore.SIGNAL('triggered(QAction *)'),
                      self, QtCore.SLOT('moveToGroup(QAction *)'))
-    def contextMenuEvent(self, event):
-        #fuckin Qt
-        if event.reason() == QtGui.QContextMenuEvent.Mouse:
-            listing = self.itemAt(event.pos())
-            self.setCurrentItem(listing)
-            text = str(self.currentItem().text(0))
-            if text.rfind(" ") != -1:
-                text = text[0:text.rfind(" ")]
-            if text == "Chums":
-                return
-            elif text in self.groups:
-                self.groupoptionsmenu()
-            else:
-                self.chumoptionsmenu()
-                self.moveGroupMenu()
-            self.optionsMenu.popup(event.globalPos())
 
     def addChum(self, chum):
         if len([c for c in self.chums if c.handle == chum.handle]) != 0:
@@ -1863,7 +1853,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def removeChum(self, chumlisting):
         self.config.removeChum(chumlisting)
-    def reportChum(self, handle):        
+    def reportChum(self, handle):
         (reason, ok) = QtGui.QInputDialog.getText(self, "Report User", "Enter the reason you are reporting this user (optional):")
         if ok:
             self.sendMessage.emit("REPORT %s %s" % (handle, reason) , "calSprite")
