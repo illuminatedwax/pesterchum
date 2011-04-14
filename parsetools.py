@@ -274,7 +274,7 @@ def timeDifference(td):
     elif atd < timedelta(0,3600):
         if minutes == 1:
             timetext = "%d MINUTE %s" % (minutes, when)
-        else: 
+        else:
             timetext = "%d MINUTES %s" % (minutes, when)
     elif atd < timedelta(0,3600*100):
         if hours == 1 and leftoverminutes == 0:
@@ -293,7 +293,7 @@ def img2smiley(string):
     return string
 
 smiledict = {
-    ":rancorous:": "pc_rancorous.gif",  
+    ":rancorous:": "pc_rancorous.gif",
     ":apple:": "apple.gif",
     ":bathearst:": "bathearst.gif",
     ":cathearst:": "cathearst.png",
@@ -303,7 +303,7 @@ smiledict = {
     ":blueghost:": "blueslimer.gif",
     ":slimer:": "slimer.gif",
     ":candycorn:": "candycorn.gif",
-    ":cheer:": "cheer.gif", 
+    ":cheer:": "cheer.gif",
     ":duhjohn:": "confusedjohn.gif",
     ":datrump:": "datrump.gif",
     ":facepalm:": "facepalm.gif",

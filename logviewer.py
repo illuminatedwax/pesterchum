@@ -3,7 +3,7 @@ import codecs
 import re
 from time import strftime, strptime
 from PyQt4 import QtGui, QtCore
-from generic import RightClickList
+from generic import RightClickList, RightClickTree
 from parsetools import convertTags
 from convo import PesterText
 
@@ -138,7 +138,8 @@ class PesterLogViewer(QtGui.QDialog):
             self.logList.sort()
             self.logList.reverse()
 
-            self.tree = QtGui.QTreeWidget()
+            self.tree = RightClickTree()
+            self.tree.optionsMenu = QtGui.QMenu(self)
             self.tree.setFixedSize(260, 300)
             self.tree.header().hide()
             if theme.has_key("convo/scrollbar"):
@@ -148,6 +149,7 @@ class PesterLogViewer(QtGui.QDialog):
             self.connect(self.tree, QtCore.SIGNAL('itemSelectionChanged()'),
                              self, QtCore.SLOT('loadSelectedLog()'))
             self.tree.setSortingEnabled(False)
+
             child_1 = None
             last = ["",""]
             for (i,l) in enumerate(self.logList):

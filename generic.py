@@ -39,6 +39,13 @@ class RightClickList(QtGui.QListWidget):
     def getOptionsMenu(self):
         return self.optionsMenu
 
+class RightClickTree(QtGui.QTreeWidget):
+    def contextMenuEvent(self, event):
+        if event.reason() == QtGui.QContextMenuEvent.Mouse:
+            listing = self.itemAt(event.pos())
+            self.setCurrentItem(listing)
+            self.optionsMenu.popup(event.globalPos())
+
 class MultiTextDialog(QtGui.QDialog):
     def __init__(self, title, parent, *queries):
         QtGui.QDialog.__init__(self, parent)
