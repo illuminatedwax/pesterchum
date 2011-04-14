@@ -219,15 +219,18 @@ class PesterLogText(PesterText):
     def mousePressEvent(self, event):
         url = self.anchorAt(event.pos())
         if url != "":
-            if url[0] != "#":
+            if url[0] == "#" and url != "#pesterchum":
+                self.parent().parent.showMemos(url[1:])
+            elif url[0] == "@":
+                handle = unicode(url[1:])
+                self.parent().parent.newConversation(handle)
+            else:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
     def mouseMoveEvent(self, event):
         QtGui.QTextEdit.mouseMoveEvent(self, event)
         if self.anchorAt(event.pos()):
             if self.viewport().cursor().shape != QtCore.Qt.PointingHandCursor:
-                url = self.anchorAt(event.pos())
-                if url != "" and url[0] != "#":
-                    self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         else:
             self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
