@@ -93,10 +93,10 @@ class PesterIRC(QtCore.QThread):
         h = unicode(handle)
         textl = [unicode(text)]
         def splittext(l):
-            if len(l[0]) > 400:
-                space = l[0].rfind(" ", 0,400)
+            if len(l[0]) > 450:
+                space = l[0].rfind(" ", 0,450)
                 if space == -1:
-                    space = 400
+                    space = 450
                 a = l[0][0:space+1]
                 b = l[0][space+1:]
                 if len(b) > 0:

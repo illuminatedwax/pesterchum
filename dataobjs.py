@@ -4,7 +4,7 @@ import re
 import random
 
 from generic import PesterIcon
-from parsetools import timeDifference, convertTags, lexMessage
+from parsetools import timeDifference, convertTags, lexMessage, parseRegexpFunctions
 from mispeller import mispeller
 
 _groupre = re.compile(r"\\([0-9]+)")
@@ -62,23 +62,9 @@ class pesterQuirk(object):
                 return string
             if not last and len(fr) > 0 and fr[len(fr)-1] == "$":
                 return string
-            def regexprep(mo):
-                to = self.quirk["to"]
-                to = _groupre.sub(r"\\g<\1>", to)
-                def upperrep(m):
-                    return mo.expand(m.group(1)).upper()
-                def lowerrep(m):
-                    return mo.expand(m.group(1)).lower()
-                def scramblerep(m):
-                    return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
-                def reverserep(m):
-                    return mo.expand(m.group(1))[::-1]
-                to = _upperre.sub(upperrep, to)
-                to = _lowerre.sub(lowerrep, to)
-                to = _scramblere.sub(scramblerep, to)
-                to = _reversere.sub(reverserep, to)
-                return mo.expand(to)
-            return re.sub(fr, regexprep, string)
+            to = self.quirk["to"]
+            pt = parseRegexpFunctions(to)
+            return re.sub(fr, pt.expand, string)
         elif self.type == "random":
             if len(self.quirk["randomlist"]) == 0:
                 return string
@@ -89,16 +75,8 @@ class pesterQuirk(object):
                 return string
             def randomrep(mo):
                 choice = random.choice(self.quirk["randomlist"])
-                def upperrep(m):
-                    return mo.expand(m.group(1)).upper()
-                def lowerrep(m):
-                    return mo.expand(m.group(1)).lower()
-                def scramblerep(m):
-                    return "".join(random.sample(mo.expand(m.group(1)), len(mo.expand(m.group(1)))))
-                choice = _upperre.sub(upperrep, choice)
-                choice = _lowerre.sub(lowerrep, choice)
-                choice = _upperre.sub(upperrep, choice)
-                return mo.expand(choice)
+                pt = parseRegexpFunctions(choice)
+                return pt.expand(mo)
             return re.sub(self.quirk["from"], randomrep, string)
         elif self.type == "spelling":
             percentage = self.quirk["percentage"]/100.0

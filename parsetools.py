@@ -1,4 +1,5 @@
 import re
+import random
 from copy import copy
 from datetime import timedelta
 from PyQt4 import QtGui
@@ -14,6 +15,9 @@ _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
 _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
+
+_functionre = re.compile(r"(upper\(|lower\(|scramble\(|reverse\(|\)|\\[0-9]+)")
+_groupre = re.compile(r"\\([0-9]+)")
 
 def lexer(string, objlist):
     """objlist is a list: [(objecttype, re),...] list is in order of preference"""
@@ -205,15 +209,23 @@ def splitMessage(msg, format="ctag"):
     cbegintags = []
     output = []
     for o in msg:
+        oldctag = None
         okmsg.append(o)
         if type(o) is colorBegin:
             cbegintags.append(o)
         elif type(o) is colorEnd:
-            cbegintags.pop()
+            try:
+                oldctag = cbegintags.pop()
+            except IndexError:
+                pass
         # yeah normally i'd do binary search but im lazy
         msglen = len(convertTags(okmsg, format)) + 4*(len(cbegintags))
         if msglen > 400:
             okmsg.pop()
+            if type(o) is colorBegin:
+                cbegintags.pop()
+            elif type(o) is colorEnd and oldctag is not None:
+                cbegintags.append(oldctag)
             if len(okmsg) == 0:
                 output.append([o])
             else:
@@ -225,7 +237,10 @@ def splitMessage(msg, format="ctag"):
                 if type(o) is colorBegin:
                     cbegintags.append(o)
                 elif type(o) is colorEnd:
-                    cbegintags.pop()
+                    try:
+                        cbegintags.pop()
+                    except IndexError:
+                        pass
                 tmp.append(o)
                 okmsg = tmp
 
@@ -284,6 +299,75 @@ def timeDifference(td):
     else:
         timetext = "%d HOURS %s" % (hours, when)
     return timetext
+
+def upperrep(text):
+    return text.upper()
+def lowerrep(text):
+    return text.lower()
+def scramblerep(text):
+    return "".join(random.sample(text, len(text)))
+def reverserep(text):
+    return text[::-1]
+def nonerep(text):
+    return text
+
+class parseLeaf(object):
+    def __init__(self, function, parent):
+        self.nodes = []
+        self.function = function
+        self.parent = parent
+    def append(self, node):
+        self.nodes.append(node)
+    def expand(self, mo):
+        print "starting expand"
+        out = ""
+        for n in self.nodes:
+            if type(n) == parseLeaf:
+                out += n.expand(mo)
+            elif type(n) == backreference:
+                out += mo.group(int(n.number))
+            else:
+                out += n
+            print "out: %s" % (out)
+        out = self.function(out)
+        print "returning %s" % (out)
+        return out
+class backreference(object):
+    def __init__(self, number):
+        self.number = number
+    def __str__(self):
+        return self.number
+
+def parseRegexpFunctions(to):
+    parsed = parseLeaf(nonerep, None)
+    current = parsed
+    curi = 0
+    functiondict = {"upper(": upperrep, "lower(": lowerrep,
+                    "scramble(": scramblerep, "reverse(": reverserep}
+    while curi < len(to):
+        tmp = to[curi:]
+        mo = _functionre.search(tmp)
+        if mo is not None:
+            if mo.start() > 0:
+                current.append(to[curi:curi+mo.start()])
+            backr = _groupre.search(mo.group())
+            if backr is not None:
+                current.append(backreference(backr.group(1)))
+            elif mo.group() in functiondict.keys():
+                p = parseLeaf(functiondict[mo.group()], current)
+                current.append(p)
+                current = p
+            elif mo.group() == ")":
+                if current.parent is not None:
+                    current = current.parent
+                else:
+                    current.append(")")
+            curi = mo.end()+curi
+        else:
+            current.append(to[curi:])
+            curi = len(to)
+    return parsed
+    
 
 def img2smiley(string):
     string = unicode(string)
