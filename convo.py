@@ -449,8 +449,12 @@ class PesterConvo(QtGui.QFrame):
         self.reportchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/report"], self)
         self.connect(self.reportchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('reportThisChum()'))
+        self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
+        self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openChumLogs()'))
 
         self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.addChumAction)
         self.optionsMenu.addAction(self.blockAction)
         self.optionsMenu.addAction(self.reportchum)
@@ -634,6 +638,15 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot(bool)
     def toggleQuirks(self, toggled):
         self.applyquirks = not toggled
+    @QtCore.pyqtSlot()
+    def openChumLogs(self):
+        currentChum = self.chum.handle
+        self.mainwindow.chumList.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
+        self.connect(self.mainwindow.chumList.pesterlogviewer, QtCore.SIGNAL('rejected()'),
+                     self.mainwindow.chumList, QtCore.SLOT('closeActiveLog()'))
+        self.mainwindow.chumList.pesterlogviewer.show()
+        self.mainwindow.chumList.pesterlogviewer.raise_()
+        self.mainwindow.chumList.pesterlogviewer.activateWindow()
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     windowClosed = QtCore.pyqtSignal(QtCore.QString)
@@ -644,3 +657,6 @@ class PesterConvo(QtGui.QFrame):
                  "v": {"center": QtCore.Qt.AlignVCenter,
                        "top": QtCore.Qt.AlignTop,
                        "bottom": QtCore.Qt.AlignBottom } }
+
+# the import is way down here to avoid recursive imports
+from logviewer import PesterLogViewer
