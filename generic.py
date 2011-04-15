@@ -9,6 +9,17 @@ class mysteryTime(timedelta):
     def __neq__(self, other):
         return (type(other) is not mysteryTime)
 
+class CaseInsensitiveDict(dict):
+    def __setitem__(self, key, value):
+        super(CaseInsensitiveDict, self).__setitem__(key.lower(), value)
+    def __getitem__(self, key):
+        return super(CaseInsensitiveDict, self).__getitem__(key.lower())
+    def __contains__(self, key):
+        return super(CaseInsensitiveDict, self).__contains__(key.lower())
+    def has_key(self, key):
+        return super(CaseInsensitiveDict, self).has_key(key.lower())
+    def __delitem__(self, key):
+        super(CaseInsensitiveDict, self).__delitem__(key.lower())
 class PesterList(list):
     def __init__(self, l):
         self.extend(l)

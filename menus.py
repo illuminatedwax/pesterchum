@@ -656,7 +656,7 @@ class PesterUserlist(QtGui.QDialog):
         self.updateUsers()
     @QtCore.pyqtSlot()
     def updateUsers(self):
-        names = self.mainwindow.namesdb["#PESTERCHUM"]
+        names = self.mainwindow.namesdb["#pesterchum"]
         self.userarea.clear()
         for n in names:
             item = QtGui.QListWidgetItem(n)

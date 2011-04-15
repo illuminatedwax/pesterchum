@@ -319,7 +319,6 @@ class parseLeaf(object):
     def append(self, node):
         self.nodes.append(node)
     def expand(self, mo):
-        print "starting expand"
         out = ""
         for n in self.nodes:
             if type(n) == parseLeaf:
@@ -328,9 +327,7 @@ class parseLeaf(object):
                 out += mo.group(int(n.number))
             else:
                 out += n
-            print "out: %s" % (out)
         out = self.function(out)
-        print "returning %s" % (out)
         return out
 class backreference(object):
     def __init__(self, number):
