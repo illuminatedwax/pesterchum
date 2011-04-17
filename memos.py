@@ -9,6 +9,7 @@ from generic import PesterIcon, RightClickList, mysteryTime
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, addTimeInitial, timeProtocol, \
     lexMessage, colorBegin, colorEnd, mecmd
+from logviewer import PesterLogViewer
 
 
 def delta2txt(d, format="pc"):
@@ -154,7 +155,7 @@ class TimeTracker(list):
         timed = self.getTime()
         return not self.open[timed]
     def getTime(self):
-        if self.current >= 0: 
+        if self.current >= 0:
             return self[self.current]
         else:
             return None
@@ -301,7 +302,7 @@ class MemoText(PesterText):
         else:
             self.append(convertTags(lexmsg))
             window.chatlog.log(parent.channel, lexmsg)
-        
+
     def changeTheme(self, theme):
         self.initTheme(theme)
     def submitLogTitle(self):
@@ -350,7 +351,11 @@ class PesterMemo(PesterConvo):
         self.quirksOff.setCheckable(True)
         self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('toggleQuirks(bool)'))
+        self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
+        self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openChumLogs()'))
         self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.logchum)
 
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
@@ -405,7 +410,7 @@ class PesterMemo(PesterConvo):
         margins = self.mainwindow.theme["memos/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                   margins["right"], margins["bottom"])
-        
+
         self.setLayout(self.layout)
 
         if parent:
@@ -471,11 +476,13 @@ class PesterMemo(PesterConvo):
         self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
         self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])
+        self.quirksOff.setText(theme["main/menus/rclickchumlist/quirksoff"])
+        self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
 
         self.timeinput.setFixedWidth(theme["memos/time/text/width"])
         self.timeinput.setStyleSheet(theme["memos/time/text/style"])
         slidercss = "QSlider { %s } QSlider::groove { %s } QSlider::handle { %s }" % (theme["memos/time/slider/style"], theme["memos/time/slider/groove"], theme["memos/time/slider/handle"])
-        self.timeslider.setStyleSheet(slidercss) 
+        self.timeslider.setStyleSheet(slidercss)
 
         larrow = PesterIcon(self.mainwindow.theme["memos/time/arrows/left"])
         self.timeswitchl.setIcon(larrow)
@@ -729,6 +736,16 @@ class PesterMemo(PesterConvo):
         self.timeinput.setSlider()
         if send:
             self.sendtime()
+
+    @QtCore.pyqtSlot()
+    def openChumLogs(self):
+        currentChum = self.channel
+        self.mainwindow.chumList.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
+        self.connect(self.mainwindow.chumList.pesterlogviewer, QtCore.SIGNAL('rejected()'),
+                     self.mainwindow.chumList, QtCore.SLOT('closeActiveLog()'))
+        self.mainwindow.chumList.pesterlogviewer.show()
+        self.mainwindow.chumList.pesterlogviewer.raise_()
+        self.mainwindow.chumList.pesterlogviewer.activateWindow()
 
     @QtCore.pyqtSlot()
     def sendtime(self):

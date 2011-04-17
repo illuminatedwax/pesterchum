@@ -595,6 +595,7 @@ class PesterConvo(QtGui.QFrame):
         self.addChumAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/addchum"])
         self.blockAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"])
         self.unblockchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"])
+        self.logchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"])
 
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
