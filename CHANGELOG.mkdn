@@ -7,6 +7,11 @@ Visit https://github.com/illuminatedwax/pesterchum for git access and source cod
 
 CHANGELOG
 ---------
+### 3.14.2
+* Individually turn quirks on and off - Kiooeht [evacipatedBox]
+* Bug fixes
+    * Logviewer updates
+
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
 * Art - Grimlive [aquaMarinist]
@@ -15,17 +20,16 @@ CHANGELOG
 * Quirks reverse() function - illuminatedwax [ghostDunk]
 * Timestamps - Kiooeht [evacipatedBox]
 * Logviewer - Kiooeht [evacipatedBox]
-* Quirk ordering - alGore
-* # of users in a memo - alGore
+* Quirk ordering - [alGore]
+* # of users in a memo - [alGore]
 * @links to users - illuminatedwax [ghostDunk]
-* Support for REPORT and ALT to calSprite built in
-
-BUG FIXES:
-* mixer bug fixed
-* "flags" bug fixed
-* incorrect characters in memos no longer break log file names
-* memos now do not break on case-sensitivity
-* fixed QDB address
-* now lines too long to send in a single message are split up correctly
-* quirk replace bug fixed
-* pesterClientXXX profiles no longer saved
+* Support for REPORT and ALT to calSprite built in - illuminatedwax [ghostDunk]
+* Bug fixes:
+    * mixer bug fixed
+    * "flags" bug fixed
+    * incorrect characters in memos no longer break log file names
+    * memos now do not break on case-sensitivity
+    * fixed QDB address
+    * now lines too long to send in a single message are split up correctly
+    * quirk replace bug fixed
+    * pesterClientXXX profiles no longer saved
