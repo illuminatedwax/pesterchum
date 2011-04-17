@@ -49,8 +49,13 @@ class pesterQuirk(object):
             raise ValueError("Quirks must be given a dictionary")
         self.quirk = quirk
         self.type = self.quirk["type"]
+        if "on" not in self.quirk:
+            self.quirk["on"] = True
+        self.on = self.quirk["on"]
     def apply(self, string, first=False, last=False):
-        if self.type == "prefix":
+        if not self.on:
+            return string
+        elif self.type == "prefix":
             return self.quirk["value"] + string
         elif self.type == "suffix":
             return string + self.quirk["value"]
