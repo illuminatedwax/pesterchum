@@ -79,8 +79,8 @@ list later on in this readme.
 
 FA%
 ---
-Q: Norton says it has a virus and then deletes it!
-A: Read this helpful Norton FAQ:
+<b>Q:</b> Norton says it has a virus and then deletes it!<br>
+<b>A:</b> Read this helpful Norton FAQ:
 
 Alright, here's a guide to by-passing Norton:
 
@@ -108,56 +108,56 @@ Alright, here's a guide to by-passing Norton:
 
 (This guide brought to you by the slightly combined efforts of empireomega and Xanaomin)
 
--------
+------------------------------------------------------------------------------------
 
-Q: I can't connect because my school/university/network/stolen wifi is blocking my connection! OR I can't seem to connect to the server at all and I'm not running any firewalls!
-A: Edit your pesterchum.js file. Open it up in notepad or something, and then edit the beginning so it looks like this:
+<b>Q:</b> I can't connect because my school/university/network/stolen wifi is blocking my connection! OR I can't seem to connect to the server at all and I'm not running any firewalls!<br>
+<b>A:</b> Edit your pesterchum.js file. Open it up in notepad or something, and then edit the beginning so it looks like this:
 
 {"port": "1413", ....
 
 where the .... is the rest of the gobbledygook there.
 
--------
+------------------------------------------------------------------------------------
 
-Q: The mood buttons on Pesterchum 6.0 don't match up to what it sets your mood to! What gives?
-A: The mood names are just there to look canon. It is intentional.
+<b>Q:</b> The mood buttons on Pesterchum 6.0 don't match up to what it sets your mood to! What gives?<br>
+<b>A:</b> The mood names are just there to look canon. It is intentional.
 
--------
+------------------------------------------------------------------------------------
 
-Q: I'm appearing as offline to 2.5 users/other users appear the wrong
-mood? What's happeninggggg
-A: The 2.5 people decided to change the mood protocol. When I made
+<b>Q:</b> I'm appearing as offline to 2.5 users/other users appear the wrong
+mood? What's happeninggggg<br>
+<b>A:</b> The 2.5 people decided to change the mood protocol. When I made
 this program, I decided to go with Tinychat's original protocol (and
 extend it). So some moods will appear wrong between 2.5
 users. (*COUGH*tell them to switch to 3.14*COUGH*)
 
--------
+------------------------------------------------------------------------------------
 
-Q: Pesterchum 2.5 users don't get my /me messages correctly!
-A: That's because they implemented the /me command differently.
+<b>Q:</b> Pesterchum 2.5 users don't get my /me messages correctly!<br>
+<b>A:</b> That's because they implemented the /me command differently.
 
--------
+------------------------------------------------------------------------------------
 
-Q: Can we resize the main window?
-A: No. This is done so we can offer more flexible UI creation. It's a
+<b>Q:</b> Can we resize the main window?<br>
+<b>A:</b> No. This is done so we can offer more flexible UI creation. It's a
 lot easier to make themes that look canon this way.
 
--------
+------------------------------------------------------------------------------------
 
-Q: Can we have different chum rolls for different users?
-A: No. Instead what we're going to do in a later update is make chum
+<b>Q:</b> Can we have different chum rolls for different users?<br>
+<b>A:</b> No. Instead what we're going to do in a later update is make chum
 groups to organize people in your list.
 
--------
+------------------------------------------------------------------------------------
 
-Q: Can we delete profiles?
-A: Yes. Go to the profiles directory and delete the corresponding
+<b>Q:</b> Can we delete profiles?<br>
+<b>A:</b> Yes. Go to the profiles directory and delete the corresponding
 username file.
 
--------
+------------------------------------------------------------------------------------
 
-Q: You should make it so you can ban specific time frames in memos.
-A: This was too complicated to implement, and I don't have the UI
+<b>Q:</b> You should make it so you can ban specific time frames in memos.<br>
+<b>A:</b> This was too complicated to implement, and I don't have the UI
 quite figured out. This will probably go in a future update.
 
 
