@@ -550,16 +550,18 @@ as well.
     can combine them, too: [a-z0-9] will match any digit and lowercase letter.
 
     There are also different shortcuts for character types:
-    * \d matches any digit; same as [0-9]
-    * \D matches any non-digit; same as [^0-9]
-    * \s matches any spaces
-    * \S matches any non-space
-    * \w matches any alphanumeric character; same as [a-zA-Z0-9_]
-    * \W matches any non-alphanumeric character; same as [^a-zA-Z0-9_]
+    <pre>
+    \d matches any digit; same as [0-9]
+    \D matches any non-digit; same as [^0-9]
+    \s matches any spaces
+    \S matches any non-space
+    \w matches any alphanumeric character; same as [a-zA-Z0-9_]
+    \W matches any non-alphanumeric character; same as [^a-zA-Z0-9_]
+    </pre>
 
     You can include this inside brackets, too.
 
-    There's also a special character, \b. What \b does is make sure that
+    There's also a special character, \\b. What \\b does is make sure that
     you are at the beginning or end of a word.
     * So with that knowledge, let's try Kanaya:
     <pre>
@@ -570,12 +572,12 @@ as well.
     </pre>
 
     Another feature of regular expressions is the ability to match
-    *repeated* characters. There are three repeat characters: the "*", the
+    *repeated* characters. There are three repeat characters: the "\*", the
     "+", "?", and "{m,n}". They work by playing them after the character,
     or character type you want to match. (So, you could say "\s+" or ".*")
 
-    The "*" character matches ZERO or more of that character. So, for
-    example, "f*" would match "f" and "ff" -- and any other character!
+    The "\*" character matches ZERO or more of that character. So, for
+    example, "f\*" would match "f" and "ff" -- and any other character!
     That's right, every character counts as matching it zero times. Yeah,
     it's weird. I suggest you use...
 
@@ -650,14 +652,14 @@ either "bro" or "dog":
     Regexp: "\s" Replace with: " ribbit ", " ", " ", " ", " ", " ", etc....
     </pre>
 
-  where " " is just a blank space added a bunch of times. (You can see
-  how many blank spaces you've added by clicking on the list.) You have
-  to add the spaces because each entry has the same chance of being
-  selected. (Yes, I know this could be improved.) If you add " ribbit "
-  and 9 spaces, " ribbit " will have a 1/10 chance of being picked.
+        where " " is just a blank space added a bunch of times. (You can see
+        how many blank spaces you've added by clicking on the list.) You have
+        to add the spaces because each entry has the same chance of being
+        selected. (Yes, I know this could be improved.) If you add " ribbit "
+        and 9 spaces, " ribbit " will have a 1/10 chance of being picked.
 
-  Also note that if you add more than one prefix or more than one
-  suffix, it will pick randomly from them instead of adding them both!
+    Also note that if you add more than one prefix or more than one
+    suffix, it will pick randomly from them instead of adding them both!
 
 * <b>Mispeller</b>:
 Be careful with thsi one. The mispeller will randomly mispell x% of
