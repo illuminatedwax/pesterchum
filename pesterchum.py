@@ -286,6 +286,8 @@ class userConfig(object):
         if not self.config.has_key('showSeconds'):
             self.set("showSeconds", False)
         return self.config.get('showSeconds', False)
+    def sortMethod(self):
+        return self.config.get('sortMethod', 0)
     def useGroups(self):
         if not self.config.has_key('useGroups'):
             self.set("useGroups", False)
@@ -570,7 +572,7 @@ class chumArea(RightClickTree):
         #self.sortItems(1, QtCore.Qt.AscendingOrder)
         self.setSortingEnabled(False)
         self.header().hide()
-        self.setDropIndicatorShown(False)
+        self.setDropIndicatorShown(True)
         self.setIndentation(0)
         self.setDragEnabled(True)
         self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
@@ -579,17 +581,17 @@ class chumArea(RightClickTree):
                      self, QtCore.SLOT('expandGroup()'))
 
     def getOptionsMenu(self):
-        currenthandle = self.currentItem().chum.handle
-        if currenthandle in canon_handles:
-            return self.canonMenu
+        text = str(self.currentItem().text(0))
+        if text.rfind(" ") != -1:
+            text = text[0:text.rfind(" ")]
+        if text == "Chums":
+            return self.groupMenu
+        elif text in self.groups:
+            return self.groupMenu
         else:
-            text = str(self.currentItem().text(0))
-            if text.rfind(" ") != -1:
-                text = text[0:text.rfind(" ")]
-            if text == "Chums":
-                return self.groupMenu
-            elif text in self.groups:
-                return self.groupMenu
+            currenthandle = self.currentItem().chum.handle
+            if currenthandle in canon_handles:
+                return self.canonMenu
             else:
                 return self.optionsMenu
 
@@ -666,7 +668,7 @@ class chumArea(RightClickTree):
                 else:
                     i += 1
                 listing = self.topLevelItem(j).child(i)
-            self.topLevelItem(j).sortChildren(0, QtCore.Qt.AscendingOrder)
+            self.sort()
     def showAllGroups(self):
         curgroups = []
         for i in range(self.topLevelItemCount()):
@@ -758,7 +760,7 @@ class chumArea(RightClickTree):
                         if self.mainwindow.config.openDefaultGroup():
                             child_1.setExpanded(True)
                 self.topLevelItem(0).addChild(chumLabel)
-                self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
+                self.sort()
             else:
                 if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
                     if not self.findItems(chumLabel.chum.group, QtCore.Qt.MatchContains):
@@ -773,7 +775,7 @@ class chumArea(RightClickTree):
                         if text == chumLabel.chum.group:
                             break
                     self.topLevelItem(i).addChild(chumLabel)
-                    self.topLevelItem(i).sortChildren(0, QtCore.Qt.AscendingOrder)
+                    self.sort()
         else: # usually means this is now the trollslum
             if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
                 self.topLevelItem(0).addChild(chumLabel)
@@ -806,8 +808,12 @@ class chumArea(RightClickTree):
                     self.takeItem(self.row(c))
                 chums = []
         for c in chums:
-            oldmood = c.mood
-            c.setMood(mood)
+            if (hasattr(c, 'mood')):
+                oldmood = c.mood
+                c.setMood(mood)
+        if self.mainwindow.config.sortMethod() == 1:
+            for i in range(self.topLevelItemCount()):
+                self.moodSort(i)
         if self.mainwindow.config.showOnlineNumbers():
             self.showOnlineNumbers()
         return oldmood
@@ -844,6 +850,24 @@ class chumArea(RightClickTree):
         for i in range(self.topLevelItemCount()):
             c = c + self.topLevelItem(i).childCount()
         return c
+
+    def sort(self):
+        if self.mainwindow.config.sortMethod() == 1:
+            for i in range(self.topLevelItemCount()):
+                self.moodSort(i)
+        else:
+            for i in range(self.topLevelItemCount()):
+                self.topLevelItem(i).sortChildren(0, QtCore.Qt.AscendingOrder)
+    def moodSort(self, group):
+        chums = []
+        listing = self.topLevelItem(group).child(0)
+        while listing is not None:
+            chums.append(self.topLevelItem(group).takeChild(0))
+            listing = self.topLevelItem(group).child(0)
+        chums.sort(key=lambda x: ((999 if x.chum.mood.value() == 2 else x.chum.mood.value()), x.chum.handle), reverse=False)
+        for c in chums:
+            self.topLevelItem(group).addChild(c)
+
     @QtCore.pyqtSlot()
     def activateChum(self):
         self.itemActivated.emit(self.currentItem(), 0)
@@ -2160,6 +2184,12 @@ class PesterWindow(MovingWindow):
         elif chumsetting and not curchum:
             self.chumList.hideOfflineChums()
         self.config.set("hideOfflineChums", chumsetting)
+        # sorting method
+        sortsetting = self.optionmenu.sortBox.currentIndex()
+        cursort = self.config.sortMethod()
+        self.config.set("sortMethod", sortsetting)
+        if sortsetting != cursort:
+            self.chumList.sort()
         # sound
         soundsetting = self.optionmenu.soundcheck.isChecked()
         self.config.set("soundon", soundsetting)

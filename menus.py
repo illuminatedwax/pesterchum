@@ -600,6 +600,14 @@ class PesterOptions(QtGui.QDialog):
         self.showonlinenumbers = QtGui.QCheckBox("Show Number of Online Chums", self)
         self.showonlinenumbers.setChecked(self.config.showOnlineNumbers())
 
+        sortLabel = QtGui.QLabel("Sort Chums")
+        self.sortBox = QtGui.QComboBox(self)
+        self.sortBox.addItem("Alphabetically")
+        self.sortBox.addItem("By Mood")
+        method = self.config.sortMethod()
+        if method >= 0 and method < self.sortBox.count():
+            self.sortBox.setCurrentIndex(method)
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -618,6 +626,8 @@ class PesterOptions(QtGui.QDialog):
         #layout_0.addWidget(self.groupscheck)
         layout_0.addWidget(self.showemptycheck)
         layout_0.addWidget(self.showonlinenumbers)
+        layout_0.addWidget(sortLabel)
+        layout_0.addWidget(self.sortBox)
         layout_0.addWidget(hr)
         layout_0.addWidget(self.timestampcheck)
         layout_0.addWidget(self.timestampBox)
