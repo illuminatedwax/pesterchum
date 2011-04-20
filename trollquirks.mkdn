@@ -137,22 +137,14 @@ Gamzee
 ------
 #####Version 1: "HoNk HoNk"
 <pre>
-REGEXP: "([a-zA-Z])([a-zA-Z])"
+REGEXP: "([a-zA-Z])([a-zA-Z]?)"
 REPLACED WITH: "upper(\1)\2"
-</pre>
-<pre>
-REGEXP: "([a-z])([a-z])\b"
-REPLACED WITH: "\1upper(\2)"
 </pre>
 
 #####Version 2: "HoNk hOnK"
 <pre>
-REGEXP: "(.)(.)"
+REGEXP: "([\w\s])([\w\s]?)"
 REPLACED WITH: "upper(\1)\2"
-</pre>
-<pre>
-REGEXP: "([a-z])(.)\b"
-REPLACE WITH: "\1upper(\2)"
 </pre>
 
 Eridan
