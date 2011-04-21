@@ -164,12 +164,16 @@ class PesterLogViewer(QtGui.QDialog):
 
             if len(self.logList) > 0: self.loadLog(self.logList[0])
 
+            self.qdb = QtGui.QPushButton("Pesterchum QDB", self)
+            self.connect(self.qdb, QtCore.SIGNAL('clicked()'),
+                         self, QtCore.SLOT('openQDB()'))
             self.ok = QtGui.QPushButton("CLOSE", self)
             self.ok.setDefault(True)
             self.ok.setFixedWidth(80)
             self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                          self, QtCore.SLOT('reject()'))
             layout_ok = QtGui.QHBoxLayout()
+            layout_ok.addWidget(self.qdb)
             layout_ok.addWidget(self.ok)
             layout_ok.setAlignment(self.ok, QtCore.Qt.AlignRight)
 
@@ -188,6 +192,10 @@ class PesterLogViewer(QtGui.QDialog):
     def loadSelectedLog(self):
         if len(self.tree.currentItem().text(0)) > len("September 2011"):
             self.loadLog(self.timeToFile(self.tree.currentItem().text(0)))
+
+    @QtCore.pyqtSlot()
+    def openQDB(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://qdb.pesterchum.net/index.php?p=browse", QtCore.QUrl.TolerantMode))
 
     def loadLog(self, fname):
         fp = codecs.open("%s/%s/%s/%s/%s" % (self.logpath, self.handle, self.chum, self.format, fname), encoding='utf-8', mode='r')
