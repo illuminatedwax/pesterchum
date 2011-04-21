@@ -9,8 +9,10 @@ CHANGELOG
 ---------
 ### 3.14.2
 * Individually turn quirks on and off - Kiooeht [evacipatedBox]
+* More canon trollian theme timeline indicators - [binaryCabalist]
+* By mood chum sorting - Kiooeht [evacipatedBox]
 * Bug fixes
-    * Logviewer updates
+    * Logviewer updates - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
