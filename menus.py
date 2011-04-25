@@ -607,6 +607,9 @@ class PesterOptions(QtGui.QDialog):
         method = self.config.sortMethod()
         if method >= 0 and method < self.sortBox.count():
             self.sortBox.setCurrentIndex(method)
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(sortLabel)
+        layout_3.addWidget(self.sortBox, 10)
 
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
@@ -626,8 +629,9 @@ class PesterOptions(QtGui.QDialog):
         #layout_0.addWidget(self.groupscheck)
         layout_0.addWidget(self.showemptycheck)
         layout_0.addWidget(self.showonlinenumbers)
-        layout_0.addWidget(sortLabel)
-        layout_0.addWidget(self.sortBox)
+        #layout_0.addWidget(sortLabel)
+        #layout_0.addWidget(self.sortBox)
+        layout_0.addLayout(layout_3)
         layout_0.addWidget(hr)
         layout_0.addWidget(self.timestampcheck)
         layout_0.addWidget(self.timestampBox)
