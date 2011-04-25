@@ -120,6 +120,8 @@ class PesterProfileDB(dict):
         else:
             self.logpath = _datadir+"logs"
 
+        if not os.path.exists(self.logpath):
+            os.makedirs(self.logpath)
         try:
             fp = open("%s/chums.js" % (self.logpath), 'r')
             chumdict = json.load(fp)
@@ -261,6 +263,29 @@ class userConfig(object):
             self.userprofile = userProfile(self.config["defaultprofile"])
         else:
             self.userprofile = None
+
+        if sys.platform != "darwin":
+            self.logpath = "logs"
+        else:
+            self.logpath = _datadir+"logs"
+
+        if not os.path.exists(self.logpath):
+            os.makedirs(self.logpath)
+        try:
+            fp = open("%s/groups.js" % (self.logpath), 'r')
+            self.groups = json.load(fp)
+            fp.close()
+        except IOError:
+            chumdict = {}
+            fp = open("%s/groups.js" % (self.logpath), 'w')
+            json.dump(self.groups, fp)
+            fp.close()
+        except ValueError:
+            chumdict = {}
+            fp = open("%s/groups.js" % (self.logpath), 'w')
+            json.dump(self.groups, fp)
+            fp.close()
+
     def chums(self):
         if not self.config.has_key('chums'):
             self.set("chums", [])
@@ -332,15 +357,15 @@ class userConfig(object):
         l.pop(l.index(handle))
         self.set('block', l)
     def getGroups(self):
-        if not self.config.has_key('groups'):
-            self.set('groups', [])
-        return self.config.get('groups', [])
+        if not self.groups.has_key('groups'):
+            self.saveGroups([])
+        return self.groups.get('groups', [])
     def addGroup(self, group, open=False):
         l = self.getGroups()
         if group not in l:
             l.append([group,open])
             l.sort()
-            self.set('groups', l)
+            self.saveGroups(l)
     def delGroup(self, group):
         l = self.getGroups()
         i = 0
@@ -349,7 +374,17 @@ class userConfig(object):
             i = i+1
         l.pop(i)
         l.sort()
-        self.set('groups', l)
+        self.saveGroups(l)
+    def saveGroups(self, groups):
+        self.groups['groups'] = groups
+        try:
+            jsonoutput = json.dumps(self.groups)
+        except ValueError, e:
+            raise e
+        fp = open("%s/groups.js" % (self.logpath), 'w')
+        fp.write(jsonoutput)
+        fp.close()
+
     def server(self):
         return self.config.get('server', 'irc.mindfang.org')
     def port(self):
@@ -508,10 +543,6 @@ class chumArea(RightClickTree):
         gTemp = self.mainwindow.config.getGroups()
         self.groups = [g[0] for g in gTemp]
         self.openGroups = [g[1] for g in gTemp]
-        # quick hack to sort saved groups
-        self.mainwindow.config.addGroup("f3rskv9dssag[%3ffvsla09iv34G#$v")
-        self.mainwindow.config.delGroup("f3rskv9dssag[%3ffvsla09iv34G#$v")
-        # end quick hack
         self.showAllGroups()
         if not self.mainwindow.config.hideOfflineChums():
             self.showAllChums()
@@ -596,25 +627,49 @@ class chumArea(RightClickTree):
                 return self.optionsMenu
 
     def dropEvent(self, event):
-        item = self.itemAt(event.pos())
-        if item:
-            text = str(item.text(0))
-            if text.rfind(" ") != -1:
-                text = text[0:text.rfind(" ")]
-            if text == "Chums" or text in self.groups:
-                group = text
-            else:
-                ptext = str(item.parent().text(0))
-                if ptext.rfind(" ") != -1:
-                    ptext = ptext[0:ptext.rfind(" ")]
-                group = ptext
-            chumLabel = event.source().currentItem()
-            chumLabel.chum.group = group
-            self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
-            self.takeItem(chumLabel)
-            self.addItem(chumLabel)
-            if self.mainwindow.config.showOnlineNumbers():
-                self.showOnlineNumbers()
+        thisitem = str(event.source().currentItem().text(0))
+        if thisitem.rfind(" ") != -1:
+            thisitem = thisitem[0:thisitem.rfind(" ")]
+        if thisitem == "Chums" or thisitem in self.groups:
+            droppos = str(self.itemAt(event.pos()).text(0))
+            if droppos.rfind(" ") != -1:
+                droppos = droppos[0:droppos.rfind(" ")]
+            if droppos == "Chums" or droppos in self.groups:
+                saveOpen = self.openGroups[self.groups.index(thisitem)]
+                saveDrop = self.itemAt(event.pos())
+                saveItem = self.takeTopLevelItem(self.indexOfTopLevelItem(event.source().currentItem()))
+                self.insertTopLevelItems(self.indexOfTopLevelItem(saveDrop)+1, [saveItem])
+                if saveOpen:
+                    saveItem.setExpanded(True)
+
+                gTemp = []
+                for i in range(self.topLevelItemCount()):
+                    text = str(self.topLevelItem(i).text(0))
+                    if text.rfind(" ") != -1:
+                        text = text[0:text.rfind(" ")]
+                    if text != "Chums":
+                        gTemp.append([unicode(text), self.topLevelItem(i).isExpanded()])
+                self.mainwindow.config.setGroups(gTemp)
+        else:
+            item = self.itemAt(event.pos())
+            if item:
+                text = str(item.text(0))
+                if text.rfind(" ") != -1:
+                    text = text[0:text.rfind(" ")]
+                if text == "Chums" or text in self.groups:
+                    group = text
+                else:
+                    ptext = str(item.parent().text(0))
+                    if ptext.rfind(" ") != -1:
+                        ptext = ptext[0:ptext.rfind(" ")]
+                    group = ptext
+                chumLabel = event.source().currentItem()
+                chumLabel.chum.group = group
+                self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
+                self.takeItem(chumLabel)
+                self.addItem(chumLabel)
+                if self.mainwindow.config.showOnlineNumbers():
+                    self.showOnlineNumbers()
 
     def moveGroupMenu(self):
         currentGroup = self.currentItem()
@@ -657,7 +712,7 @@ class chumArea(RightClickTree):
             if not len(self.findItems(chandle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive)):
                 chumLabel = chumListing(c, self.mainwindow)
                 self.addItem(chumLabel)
-        #self.sortItems()
+        self.sort()
     def hideOfflineChums(self):
         for j in range(self.topLevelItemCount()):
             i = 0

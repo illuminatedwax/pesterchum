@@ -53,7 +53,7 @@ class PesterIRC(QtCore.QThread):
                 if not res:
                     logging.debug("false Yield: %s, returning" % res)
                     return
-                
+
     def setConnected(self):
         self.registeredIRC = True
         self.connected.emit()
@@ -87,7 +87,7 @@ class PesterIRC(QtCore.QThread):
         self.cli.command_handler.getMood(*chums)
     @QtCore.pyqtSlot(PesterList)
     def getMoods(self, chums):
-        self.cli.command_handler.getMood(*chums)        
+        self.cli.command_handler.getMood(*chums)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def sendMessage(self, text, handle):
         h = unicode(handle)
@@ -251,7 +251,7 @@ class PesterHandler(DefaultCommandHandler):
                 mychumhandle = self.mainwindow.profile().handle
                 mymood = self.mainwindow.profile().mood.value()
                 if msg.find(mychumhandle, 8) != -1:
-                    helpers.msg(self.client, "#pesterchum", 
+                    helpers.msg(self.client, "#pesterchum",
                                 "MOOD >%d" % (mymood))
         elif chan[0] == '#':
             if msg[0:16] == "PESTERCHUM:TIME>":
@@ -347,7 +347,7 @@ class PesterHandler(DefaultCommandHandler):
         logging.info("---> recv \"CHANNELS END\"")
         self.parent.channelListReceived.emit(pl)
         self.channel_list = []
-    
+
     def getMood(self, *chums):
         chumglub = "GETMOOD "
         for c in chums:
@@ -364,4 +364,4 @@ class PesterHandler(DefaultCommandHandler):
                 helpers.msg(self.client, "#pesterchum", chumglub)
             except socket.error:
                 self.parent.setConnectionBroken()
-            
+
