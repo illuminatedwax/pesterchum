@@ -276,12 +276,12 @@ class userConfig(object):
             self.groups = json.load(fp)
             fp.close()
         except IOError:
-            chumdict = {}
+            self.groups = {}
             fp = open("%s/groups.js" % (self.logpath), 'w')
             json.dump(self.groups, fp)
             fp.close()
         except ValueError:
-            chumdict = {}
+            self.groups = {}
             fp = open("%s/groups.js" % (self.logpath), 'w')
             json.dump(self.groups, fp)
             fp.close()
@@ -314,13 +314,13 @@ class userConfig(object):
     def sortMethod(self):
         return self.config.get('sortMethod', 0)
     def useGroups(self):
-        if not self.config.has_key('useGroups'):
-            self.set("useGroups", False)
         return self.config.get('useGroups', False)
     def openDefaultGroup(self):
-        if not self.config.has_key('openDefaultGroup'):
-            self.set("openDefaultGroup", True)
-        return self.config.get('openDefaultGroup', True)
+        groups = self.getGroups()
+        for g in groups:
+            if g[0] == "Chums":
+                return g[1]
+        return True
     def showEmptyGroups(self):
         if not self.config.has_key('emptyGroups'):
             self.set("emptyGroups", False)
@@ -358,9 +358,18 @@ class userConfig(object):
         self.set('block', l)
     def getGroups(self):
         if not self.groups.has_key('groups'):
-            self.saveGroups([])
-        return self.groups.get('groups', [])
-    def addGroup(self, group, open=False):
+            self.saveGroups([["Chums", True]])
+        groups = self.groups.get('groups', [["Chums", True]])
+        default = False
+        for g in groups:
+            if g[0] == "Chums":
+                default = True
+                break
+        if not default:
+            groups.insert(0, ["Chums", True])
+        self.saveGroups(groups)
+        return groups
+    def addGroup(self, group, open=True):
         l = self.getGroups()
         if group not in l:
             l.append([group,open])
@@ -616,7 +625,7 @@ class chumArea(RightClickTree):
         if text.rfind(" ") != -1:
             text = text[0:text.rfind(" ")]
         if text == "Chums":
-            return self.groupMenu
+            return None
         elif text in self.groups:
             return self.groupMenu
         else:
@@ -647,9 +656,8 @@ class chumArea(RightClickTree):
                     text = str(self.topLevelItem(i).text(0))
                     if text.rfind(" ") != -1:
                         text = text[0:text.rfind(" ")]
-                    if text != "Chums":
-                        gTemp.append([unicode(text), self.topLevelItem(i).isExpanded()])
-                self.mainwindow.config.setGroups(gTemp)
+                    gTemp.append([unicode(text), self.topLevelItem(i).isExpanded()])
+                self.mainwindow.config.saveGroups(gTemp)
         else:
             item = self.itemAt(event.pos())
             if item:
@@ -731,11 +739,6 @@ class chumArea(RightClickTree):
             if text.rfind(" ") != -1:
                 text = text[0:text.rfind(" ")]
             curgroups.append(text)
-        if "Chums" not in curgroups:
-            child_1 = QtGui.QTreeWidgetItem(["Chums"])
-            self.addTopLevelItem(child_1)
-            if self.mainwindow.config.openDefaultGroup():
-                child_1.setExpanded(True)
         for i,g in enumerate(self.groups):
             if g not in curgroups:
                 child_1 = QtGui.QTreeWidgetItem(["%s" % (g)])
@@ -868,7 +871,9 @@ class chumArea(RightClickTree):
                 c.setMood(mood)
         if self.mainwindow.config.sortMethod() == 1:
             for i in range(self.topLevelItemCount()):
+                saveCurrent = self.currentItem()
                 self.moodSort(i)
+                self.setCurrentItem(saveCurrent)
         if self.mainwindow.config.showOnlineNumbers():
             self.showOnlineNumbers()
         return oldmood
