@@ -7,7 +7,6 @@ Features
 * log viewer needs to have BBCode/HTML/Text copy modes
 * random pesters
 * copy quirks between profiles?
-* chum list groups
 * More complex quirks: by-sound
 * Theme checking
 * Spy mode
