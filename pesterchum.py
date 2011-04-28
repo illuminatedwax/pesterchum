@@ -69,8 +69,9 @@ class NoneSound(object):
     def play(self): pass
 
 class PesterLog(object):
-    def __init__(self, handle):
+    def __init__(self, handle, parent=None):
         global _datadir
+        self.parent = parent
         self.handle = handle
         self.convos = {}
         if sys.platform != "darwin":
@@ -79,6 +80,10 @@ class PesterLog(object):
             self.logpath = _datadir+"logs"
 
     def log(self, handle, msg):
+        if handle[0] == '#':
+            if not self.parent.config.logMemos(): return
+        else:
+            if not self.parent.config.logPesters(): return
         #watch out for illegal characters
         handle = re.sub(r'[<>:"/\\|?*]', "_", handle)
         #time = strftime("[%H:%M:%S] ")
@@ -329,6 +334,10 @@ class userConfig(object):
         if not self.config.has_key('onlineNumbers'):
             self.set("onlineNumbers", False)
         return self.config.get('onlineNumbers', False)
+    def logPesters(self):
+        return self.config.get('logPesters', True)
+    def logMemos(self):
+        return self.config.get('logMemos', True)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -1287,7 +1296,7 @@ class PesterWindow(MovingWindow):
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
             self.theme = self.userprofile.getTheme()
 
-        self.chatlog = PesterLog(self.profile().handle)
+        self.chatlog = PesterLog(self.profile().handle, self)
 
         self.move(100, 100)
 
@@ -2281,6 +2290,15 @@ class PesterWindow(MovingWindow):
         elif curonlinenum and not onlinenumsetting:
             self.chumList.hideOnlineNumbers()
         self.config.set("onlineNumbers", onlinenumsetting)
+        # logging
+        logpesterssetting = self.optionmenu.logpesterscheck.isChecked()
+        curlogpesters = self.config.logPesters()
+        if logpesterssetting != curlogpesters:
+            self.config.set('logPesters', logpesterssetting)
+        logmemossetting = self.optionmenu.logmemoscheck.isChecked()
+        curlogmemos = self.config.logMemos()
+        if logmemossetting != curlogmemos:
+            self.config.set('logMemos', logmemossetting)
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
@@ -2322,7 +2340,7 @@ class PesterWindow(MovingWindow):
             self.changeTheme(self.userprofile.getTheme())
 
         self.chatlog.close()
-        self.chatlog = PesterLog(handle)
+        self.chatlog = PesterLog(handle, self)
 
         # is default?
         if self.chooseprofile.defaultcheck.isChecked():

@@ -566,6 +566,13 @@ class PesterOptions(QtGui.QDialog):
         hr.setFrameShape(QtGui.QFrame.HLine)
         hr.setFrameShadow(QtGui.QFrame.Sunken)
 
+        self.tabs = QtGui.QTabWidget(self)
+        self.tabs.setMovable(True)
+        self.tabs.setUsesScrollButtons(False)
+        tabNames = ["Interface", "Chum List", "Conversations", "Logging"]
+        for t in tabNames:
+            self.tabs.addTab(QtGui.QWidget(), t)
+
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
@@ -611,6 +618,11 @@ class PesterOptions(QtGui.QDialog):
         layout_3.addWidget(sortLabel)
         layout_3.addWidget(self.sortBox, 10)
 
+        self.logpesterscheck = QtGui.QCheckBox("Log all chats", self)
+        self.logpesterscheck.setChecked(self.config.logPesters())
+        self.logmemoscheck = QtGui.QCheckBox("Log all memos", self)
+        self.logmemoscheck.setChecked(self.config.logMemos())
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -622,20 +634,37 @@ class PesterOptions(QtGui.QDialog):
         layout_2.addWidget(self.cancel)
         layout_2.addWidget(self.ok)
 
+        # Tab layouts
+        # Interface
+        layout_interface = QtGui.QVBoxLayout(self.tabs.widget(0))
+        layout_interface.setAlignment(QtCore.Qt.AlignTop)
+        layout_interface.addWidget(self.tabcheck)
+        layout_interface.addWidget(self.soundcheck)
+
+        # Chum List
+        layout_chumlist = QtGui.QVBoxLayout(self.tabs.widget(1))
+        layout_chumlist.setAlignment(QtCore.Qt.AlignTop)
+        layout_chumlist.addWidget(self.hideOffline)
+        #layout_chumlist.addWidget(self.groupscheck)
+        layout_chumlist.addWidget(self.showemptycheck)
+        layout_chumlist.addWidget(self.showonlinenumbers)
+        layout_chumlist.addLayout(layout_3)
+
+        # Conversations
+        layout_chat = QtGui.QVBoxLayout(self.tabs.widget(2))
+        layout_chat.setAlignment(QtCore.Qt.AlignTop)
+        layout_chat.addWidget(self.timestampcheck)
+        layout_chat.addWidget(self.timestampBox)
+        layout_chat.addWidget(self.secondscheck)
+
+        # Logging
+        layout_logs = QtGui.QVBoxLayout(self.tabs.widget(3))
+        layout_logs.setAlignment(QtCore.Qt.AlignTop)
+        layout_logs.addWidget(self.logpesterscheck)
+        layout_logs.addWidget(self.logmemoscheck)
+
         layout_0 = QtGui.QVBoxLayout()
-        layout_0.addWidget(self.tabcheck)
-        layout_0.addWidget(self.soundcheck)
-        layout_0.addWidget(self.hideOffline)
-        #layout_0.addWidget(self.groupscheck)
-        layout_0.addWidget(self.showemptycheck)
-        layout_0.addWidget(self.showonlinenumbers)
-        #layout_0.addWidget(sortLabel)
-        #layout_0.addWidget(self.sortBox)
-        layout_0.addLayout(layout_3)
-        layout_0.addWidget(hr)
-        layout_0.addWidget(self.timestampcheck)
-        layout_0.addWidget(self.timestampBox)
-        layout_0.addWidget(self.secondscheck)
+        layout_0.addWidget(self.tabs)
         layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)

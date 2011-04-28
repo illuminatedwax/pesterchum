@@ -19,6 +19,7 @@ class PesterTabWindow(QtGui.QFrame):
         self.mainwindow = mainwindow
 
         self.tabs = QtGui.QTabBar(self)
+        self.tabs.setMovable(True)
         self.tabs.setTabsClosable(True)
         self.connect(self.tabs, QtCore.SIGNAL('currentChanged(int)'),
                      self, QtCore.SLOT('changeTab(int)'))
