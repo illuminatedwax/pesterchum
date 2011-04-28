@@ -11,6 +11,7 @@ CHANGELOG
 * Individually turn quirks on and off - Kiooeht [evacipatedBox]
 * More canon trollian theme timeline indicators - [binaryCabalist]
 * By mood chum sorting - Kiooeht [evacipatedBox]
+* Customizable idle time - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
 

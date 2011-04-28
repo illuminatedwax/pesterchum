@@ -572,7 +572,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Interface", "Chum List", "Conversations", "Logging"]
+        tabNames = ["Interface", "Chum List", "Conversations", "Logging", "Idle"]
         for t in tabNames:
             button = QtGui.QPushButton(t)
             self.tabs.addButton(button)
@@ -634,6 +634,14 @@ class PesterOptions(QtGui.QDialog):
         self.logmemoscheck = QtGui.QCheckBox("Log all memos", self)
         self.logmemoscheck.setChecked(self.config.logMemos())
 
+        times = ["1", "5", "10", "15", "30"]
+        self.idleBox = QtGui.QComboBox(self)
+        self.idleBox.addItems(times)
+        self.idleBox.setCurrentIndex(self.idleBox.findText(str(self.config.idleTime())))
+        layout_5 = QtGui.QHBoxLayout()
+        layout_5.addWidget(QtGui.QLabel("Minutes before Idle:"))
+        layout_5.addWidget(self.idleBox)
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -685,6 +693,13 @@ class PesterOptions(QtGui.QDialog):
         layout_logs.setAlignment(QtCore.Qt.AlignTop)
         layout_logs.addWidget(self.logpesterscheck)
         layout_logs.addWidget(self.logmemoscheck)
+        self.pages.addWidget(widget)
+
+        # Idle
+        widget = QtGui.QWidget()
+        layout_idle = QtGui.QVBoxLayout(widget)
+        layout_idle.setAlignment(QtCore.Qt.AlignTop)
+        layout_idle.addLayout(layout_5)
         self.pages.addWidget(widget)
 
         layout_0 = QtGui.QVBoxLayout()

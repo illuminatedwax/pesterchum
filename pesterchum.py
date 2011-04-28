@@ -340,6 +340,8 @@ class userConfig(object):
         return self.config.get('logMemos', True)
     def disableUserLinks(self):
         return not self.config.get('userLinks', True)
+    def idleTime(self):
+        return self.config.get('idleTime', 10)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -1449,7 +1451,7 @@ class PesterWindow(MovingWindow):
         self.waitingMessages = waitingMessageHolder(self)
 
         self.autoidle = False
-        self.idlethreshold = 600
+        self.idlethreshold = 60*self.config.idleTime()
         self.idletimer = QtCore.QTimer(self)
         self.idleposition = QtGui.QCursor.pos()
         self.idletime = 0
@@ -2306,6 +2308,12 @@ class PesterWindow(MovingWindow):
         curlinks = self.config.disableUserLinks()
         if linkssetting != curlinks:
             self.config.set('userLinks', not linkssetting)
+        # idle time
+        idlesetting = int(unicode(self.optionmenu.idleBox.currentText()))
+        curidle = self.config.idleTime()
+        if idlesetting != curidle:
+            self.config.set('idleTime', idlesetting)
+            self.idlethreshold = 60*idlesetting
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
