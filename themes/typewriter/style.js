@@ -16,6 +16,7 @@
              "loc": [43,220]
            },
   "sounds": { "alertsound": "$path/alarm.wav",
+        "memosound": "$path/alarm2.wav",
         "ceasesound": "$path/cease.wav" },
   "menus": {"client": {"_name": "Typewriter",
                        "options": "Preferences",

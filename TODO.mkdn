@@ -3,7 +3,6 @@ Todo
 
 Features
 --------
-* different sound for memos/pesters
 * OOC
 * log viewer needs to have BBCode/HTML/Text copy modes
 * random pesters

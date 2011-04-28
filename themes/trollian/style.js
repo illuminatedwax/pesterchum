@@ -15,7 +15,8 @@
              "menuitem": "margin-right:14px;",
              "loc": [14,90]
            },
-  "sounds": { "alertsound": "$path/alarm.wav" },
+  "sounds": { "alertsound": "$path/alarm.wav",
+              "memosound": "$path/alarm2.wav"},
   "menus": {"client": {"_name": "Trollian",
                        "options": "Options",
                        "memos": "Memos",

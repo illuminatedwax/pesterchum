@@ -16,6 +16,7 @@
              "loc": [10,0]
            },
   "sounds": { "alertsound": "$path/alarm.wav",
+                          "memosound": "$path/alarm2.wav",
                           "ceasesound": "$path/cease.wav" },
   "menus": {"client": {"_name": "CLIENT",
                        "options": "OPTIONS",

@@ -415,6 +415,10 @@ class userConfig(object):
         if not self.config.has_key('soundon'):
             self.set('soundon', True)
         return self.config['soundon']
+    def chatSound(self):
+        return self.config.get('chatSound', True)
+    def memoSound(self):
+        return self.config.get('memoSound', True)
     def set(self, item, setting):
         self.config[item] = setting
         try:
@@ -1513,10 +1517,11 @@ class PesterWindow(MovingWindow):
         convo.addMessage(msg, False)
         # play sound here
         if self.config.soundOn():
-            if msg in ["PESTERCHUM:CEASE", "PESTERCHUM:BLOCK"]:
-                self.ceasesound.play()
-            else:
-                self.alarm.play()
+            if self.config.chatSound():
+                if msg in ["PESTERCHUM:CEASE", "PESTERCHUM:BLOCK"]:
+                    self.ceasesound.play()
+                else:
+                    self.alarm.play()
     def newMemoMsg(self, chan, handle, msg):
         if not self.memos.has_key(chan):
             # silently ignore in case we forgot to /part
@@ -1532,7 +1537,8 @@ class PesterWindow(MovingWindow):
             msg = addTimeInitial(msg, memo.times[handle].getGrammar())
         memo.addMessage(msg, handle)
         if self.config.soundOn():
-            self.alarm.play()
+            if self.config.memoSound():
+                self.memosound.play()
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
@@ -1744,13 +1750,16 @@ class PesterWindow(MovingWindow):
         # sounds
         if not pygame.mixer:
             self.alarm = NoneSound()
+            self.memosound = NoneSound()
             self.ceasesound = NoneSound()
         else:
             try:
                 self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
+                self.memosound = pygame.mixer.Sound(theme["main/sounds/memosound"])
                 self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
             except Exception, e:
                 self.alarm = NoneSound()
+                self.memosound = NoneSound()
                 self.ceasesound = NoneSound()
 
     def changeTheme(self, theme):
@@ -2266,6 +2275,14 @@ class PesterWindow(MovingWindow):
         # sound
         soundsetting = self.optionmenu.soundcheck.isChecked()
         self.config.set("soundon", soundsetting)
+        chatsoundsetting = self.optionmenu.chatsoundcheck.isChecked()
+        curchatsound = self.config.chatSound()
+        if chatsoundsetting != curchatsound:
+            self.config.set('chatSound', chatsoundsetting)
+        memosoundsetting = self.optionmenu.memosoundcheck.isChecked()
+        curmemosound = self.config.memoSound()
+        if memosoundsetting != curmemosound:
+            self.config.set('memoSound', memosoundsetting)
         # timestamps
         timestampsetting = self.optionmenu.timestampcheck.isChecked()
         self.config.set("showTimeStamps", timestampsetting)

@@ -12,6 +12,7 @@ CHANGELOG
 * More canon trollian theme timeline indicators - [binaryCabalist]
 * By mood chum sorting - Kiooeht [evacipatedBox]
 * Customizable idle time - Kiooeht [evacipatedBox]
+* Different sound for memos - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
 

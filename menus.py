@@ -568,11 +568,14 @@ class PesterOptions(QtGui.QDialog):
         hr = QtGui.QFrame()
         hr.setFrameShape(QtGui.QFrame.HLine)
         hr.setFrameShadow(QtGui.QFrame.Sunken)
+        vr = QtGui.QFrame()
+        vr.setFrameShape(QtGui.QFrame.VLine)
+        vr.setFrameShadow(QtGui.QFrame.Sunken)
 
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Interface", "Chum List", "Conversations", "Logging", "Idle"]
+        tabNames = ["Chum List", "Conversations", "Sound", "Logging", "Idle"]
         for t in tabNames:
             button = QtGui.QPushButton(t)
             self.tabs.addButton(button)
@@ -587,8 +590,18 @@ class PesterOptions(QtGui.QDialog):
             self.hideOffline.setChecked(True)
 
         self.soundcheck = QtGui.QCheckBox("Sounds On", self)
+        self.connect(self.soundcheck, QtCore.SIGNAL('stateChanged(int)'),
+                     self, QtCore.SLOT('soundChange(int)'))
+        self.chatsoundcheck = QtGui.QCheckBox("Pester Sounds", self)
+        self.chatsoundcheck.setChecked(self.config.chatSound())
+        self.memosoundcheck = QtGui.QCheckBox("Memo Sounds", self)
+        self.memosoundcheck.setChecked(self.config.memoSound())
         if self.config.soundOn():
             self.soundcheck.setChecked(True)
+        else:
+            self.chatsoundcheck.setEnabled(False)
+            self.memosoundcheck.setEnabled(False)
+
 
         self.timestampcheck = QtGui.QCheckBox("Time Stamps", self)
         if self.config.showTimeStamps():
@@ -629,9 +642,9 @@ class PesterOptions(QtGui.QDialog):
         layout_3.addWidget(sortLabel)
         layout_3.addWidget(self.sortBox, 10)
 
-        self.logpesterscheck = QtGui.QCheckBox("Log all chats", self)
+        self.logpesterscheck = QtGui.QCheckBox("Log all Pesters", self)
         self.logpesterscheck.setChecked(self.config.logPesters())
-        self.logmemoscheck = QtGui.QCheckBox("Log all memos", self)
+        self.logmemoscheck = QtGui.QCheckBox("Log all Memos", self)
         self.logmemoscheck.setChecked(self.config.logMemos())
 
         times = ["1", "5", "10", "15", "30"]
@@ -654,14 +667,6 @@ class PesterOptions(QtGui.QDialog):
         layout_2.addWidget(self.ok)
 
         # Tab layouts
-        # Interface
-        widget = QtGui.QWidget()
-        layout_interface = QtGui.QVBoxLayout(widget)
-        layout_interface.setAlignment(QtCore.Qt.AlignTop)
-        layout_interface.addWidget(self.tabcheck)
-        layout_interface.addWidget(self.soundcheck)
-        self.pages.addWidget(widget)
-
         # Chum List
         widget = QtGui.QWidget()
         layout_chumlist = QtGui.QVBoxLayout(widget)
@@ -677,7 +682,7 @@ class PesterOptions(QtGui.QDialog):
         widget = QtGui.QWidget()
         layout_chat = QtGui.QVBoxLayout(widget)
         layout_chat.setAlignment(QtCore.Qt.AlignTop)
-        layout_chat.addWidget(QtGui.QLabel("Time Stamps"))
+        layout_chat.addWidget(self.tabcheck)
         layout_chat.addWidget(self.timestampcheck)
         layout_chat.addWidget(self.timestampBox)
         layout_chat.addWidget(self.secondscheck)
@@ -685,6 +690,18 @@ class PesterOptions(QtGui.QDialog):
         #layout_chat.addWidget(hr)
         #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))
         #layout_chat.addWidget(self.userlinkscheck)
+        self.pages.addWidget(widget)
+
+        # Sound
+        widget = QtGui.QWidget()
+        layout_sound = QtGui.QVBoxLayout(widget)
+        layout_sound.setAlignment(QtCore.Qt.AlignTop)
+        layout_sound.addWidget(self.soundcheck)
+        layout_indent = QtGui.QVBoxLayout()
+        layout_indent.addWidget(self.chatsoundcheck)
+        layout_indent.addWidget(self.memosoundcheck)
+        layout_indent.setContentsMargins(22,0,0,0)
+        layout_sound.addLayout(layout_indent)
         self.pages.addWidget(widget)
 
         # Logging
@@ -705,6 +722,7 @@ class PesterOptions(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_1 = QtGui.QHBoxLayout()
         layout_1.addLayout(layout_4)
+        layout_1.addWidget(vr)
         layout_1.addWidget(self.pages)
         layout_0.addLayout(layout_1)
         layout_0.addSpacing(30)
@@ -717,6 +735,14 @@ class PesterOptions(QtGui.QDialog):
         # What is this, I don't even. qt, fuck
         page = -page - 2
         self.pages.setCurrentIndex(page)
+    @QtCore.pyqtSlot(int)
+    def soundChange(self, state):
+        if state == 0:
+            self.chatsoundcheck.setEnabled(False)
+            self.memosoundcheck.setEnabled(False)
+        else:
+            self.chatsoundcheck.setEnabled(True)
+            self.memosoundcheck.setEnabled(True)
 
 class PesterUserlist(QtGui.QDialog):
     def __init__(self, config, theme, parent):
