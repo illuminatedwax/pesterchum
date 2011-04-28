@@ -338,6 +338,8 @@ class userConfig(object):
         return self.config.get('logPesters', True)
     def logMemos(self):
         return self.config.get('logMemos', True)
+    def disableUserLinks(self):
+        return not self.config.get('userLinks', True)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -2299,6 +2301,11 @@ class PesterWindow(MovingWindow):
         curlogmemos = self.config.logMemos()
         if logmemossetting != curlogmemos:
             self.config.set('logMemos', logmemossetting)
+        # memo and user links
+        linkssetting = self.optionmenu.userlinkscheck.isChecked()
+        curlinks = self.config.disableUserLinks()
+        if linkssetting != curlinks:
+            self.config.set('userLinks', not linkssetting)
         self.optionmenu = None
 
     @QtCore.pyqtSlot()

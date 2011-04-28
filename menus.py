@@ -557,21 +557,27 @@ class PesterChooseProfile(QtGui.QDialog):
 class PesterOptions(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
+        self.setWindowTitle("Options")
         self.setModal(False)
         self.config = config
         self.theme = theme
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
 
+        layout_4 = QtGui.QVBoxLayout()
+
         hr = QtGui.QFrame()
         hr.setFrameShape(QtGui.QFrame.HLine)
         hr.setFrameShadow(QtGui.QFrame.Sunken)
 
-        self.tabs = QtGui.QTabWidget(self)
-        self.tabs.setMovable(True)
-        self.tabs.setUsesScrollButtons(False)
+        self.tabs = QtGui.QButtonGroup(self)
+        self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
+                     self, QtCore.SLOT('changePage(int)'))
         tabNames = ["Interface", "Chum List", "Conversations", "Logging"]
         for t in tabNames:
-            self.tabs.addTab(QtGui.QWidget(), t)
+            button = QtGui.QPushButton(t)
+            self.tabs.addButton(button)
+            layout_4.addWidget(button)
+        self.pages = QtGui.QStackedWidget(self)
 
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
@@ -598,6 +604,11 @@ class PesterOptions(QtGui.QDialog):
         self.secondscheck = QtGui.QCheckBox("Show Seconds", self)
         if self.config.showSeconds():
             self.secondscheck.setChecked(True)
+
+        self.userlinkscheck = QtGui.QCheckBox("Disable #Memo and @User Links", self)
+        self.userlinkscheck.setChecked(self.config.disableUserLinks())
+        self.userlinkscheck.setVisible(False)
+
 
         # Will add ability to turn off groups later
         #self.groupscheck = QtGui.QCheckBox("Use Groups", self)
@@ -636,38 +647,61 @@ class PesterOptions(QtGui.QDialog):
 
         # Tab layouts
         # Interface
-        layout_interface = QtGui.QVBoxLayout(self.tabs.widget(0))
+        widget = QtGui.QWidget()
+        layout_interface = QtGui.QVBoxLayout(widget)
         layout_interface.setAlignment(QtCore.Qt.AlignTop)
         layout_interface.addWidget(self.tabcheck)
         layout_interface.addWidget(self.soundcheck)
+        self.pages.addWidget(widget)
 
         # Chum List
-        layout_chumlist = QtGui.QVBoxLayout(self.tabs.widget(1))
+        widget = QtGui.QWidget()
+        layout_chumlist = QtGui.QVBoxLayout(widget)
         layout_chumlist.setAlignment(QtCore.Qt.AlignTop)
         layout_chumlist.addWidget(self.hideOffline)
         #layout_chumlist.addWidget(self.groupscheck)
         layout_chumlist.addWidget(self.showemptycheck)
         layout_chumlist.addWidget(self.showonlinenumbers)
         layout_chumlist.addLayout(layout_3)
+        self.pages.addWidget(widget)
 
         # Conversations
-        layout_chat = QtGui.QVBoxLayout(self.tabs.widget(2))
+        widget = QtGui.QWidget()
+        layout_chat = QtGui.QVBoxLayout(widget)
         layout_chat.setAlignment(QtCore.Qt.AlignTop)
+        layout_chat.addWidget(QtGui.QLabel("Time Stamps"))
         layout_chat.addWidget(self.timestampcheck)
         layout_chat.addWidget(self.timestampBox)
         layout_chat.addWidget(self.secondscheck)
+        # Re-enable these when it's possible to disable User and Memo links
+        #layout_chat.addWidget(hr)
+        #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))
+        #layout_chat.addWidget(self.userlinkscheck)
+        self.pages.addWidget(widget)
 
         # Logging
-        layout_logs = QtGui.QVBoxLayout(self.tabs.widget(3))
+        widget = QtGui.QWidget()
+        layout_logs = QtGui.QVBoxLayout(widget)
         layout_logs.setAlignment(QtCore.Qt.AlignTop)
         layout_logs.addWidget(self.logpesterscheck)
         layout_logs.addWidget(self.logmemoscheck)
+        self.pages.addWidget(widget)
 
         layout_0 = QtGui.QVBoxLayout()
-        layout_0.addWidget(self.tabs)
+        layout_1 = QtGui.QHBoxLayout()
+        layout_1.addLayout(layout_4)
+        layout_1.addWidget(self.pages)
+        layout_0.addLayout(layout_1)
+        layout_0.addSpacing(30)
         layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)
+
+    @QtCore.pyqtSlot(int)
+    def changePage(self, page):
+        # What is this, I don't even. qt, fuck
+        page = -page - 2
+        self.pages.setCurrentIndex(page)
 
 class PesterUserlist(QtGui.QDialog):
     def __init__(self, config, theme, parent):

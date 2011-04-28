@@ -13,6 +13,7 @@ Features
 * Theme checking
 * Spy mode
 * Animated
+* Turn @ and # links on/off?
 
 Bugs
 ----
