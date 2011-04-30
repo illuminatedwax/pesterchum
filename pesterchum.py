@@ -707,7 +707,6 @@ class chumArea(RightClickTree):
         actGroup = QtGui.QActionGroup(self)
 
         groups = self.groups[:]
-        groups.insert(0, "Chums")
         for gtext in groups:
             if gtext == currentGroup:
                 continue
@@ -2192,6 +2191,7 @@ class PesterWindow(MovingWindow):
                 gTemp = self.config.getGroups()
                 self.chumList.groups = [g[0] for g in gTemp]
                 self.chumList.openGroups = [g[1] for g in gTemp]
+                self.chumList.moveGroupMenu()
                 self.chumList.showAllGroups()
                 if not self.config.showEmptyGroups():
                     self.chumList.hideEmptyGroups()
