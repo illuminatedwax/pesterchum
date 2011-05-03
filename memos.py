@@ -8,7 +8,7 @@ from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList, mysteryTime
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, addTimeInitial, timeProtocol, \
-    lexMessage, colorBegin, colorEnd, mecmd
+    lexMessage, colorBegin, colorEnd, mecmd, smiledict
 from logviewer import PesterLogViewer
 
 
@@ -241,6 +241,9 @@ class MemoText(PesterText):
         self.textSelected = False
         self.connect(self, QtCore.SIGNAL('copyAvailable(bool)'),
                      self, QtCore.SLOT('textReady(bool)'))
+        self.urls = {}
+        for k in smiledict:
+            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]));
 
     def initTheme(self, theme):
         if theme.has_key("memos/scrollbar"):

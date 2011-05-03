@@ -9,7 +9,7 @@ from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon
-from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley
+from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley, smiledict
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -206,6 +206,23 @@ class PesterText(QtGui.QTextEdit):
         self.textSelected = False
         self.connect(self, QtCore.SIGNAL('copyAvailable(bool)'),
                      self, QtCore.SLOT('textReady(bool)'))
+        self.urls = {}
+        for k in smiledict:
+            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]));
+    def addAnimation(self, url, fileName):
+        movie = QtGui.QMovie(self)
+        movie.setFileName(fileName)
+        self.urls[movie] = url
+        self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
+                     self, QtCore.SLOT('animate()'));
+        movie.start();
+    @QtCore.pyqtSlot()
+    def animate(self):
+        movie = self.sender()
+        self.document().addResource(QtGui.QTextDocument.ImageResource,
+                               self.urls[movie], movie.currentPixmap());
+        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth());
+
     @QtCore.pyqtSlot(bool)
     def textReady(self, ready):
         self.textSelected = ready
