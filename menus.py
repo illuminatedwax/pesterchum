@@ -580,6 +580,8 @@ class PesterOptions(QtGui.QDialog):
             button = QtGui.QPushButton(t)
             self.tabs.addButton(button)
             layout_4.addWidget(button)
+            button.setCheckable(True)
+        self.tabs.button(-2).setChecked(True)
         self.pages = QtGui.QStackedWidget(self)
 
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
@@ -732,6 +734,7 @@ class PesterOptions(QtGui.QDialog):
 
     @QtCore.pyqtSlot(int)
     def changePage(self, page):
+        self.tabs.button(page).setChecked(True)
         # What is this, I don't even. qt, fuck
         page = -page - 2
         self.pages.setCurrentIndex(page)
