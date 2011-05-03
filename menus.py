@@ -83,10 +83,14 @@ class MispellQuirkDialog(QtGui.QDialog):
         layout_1 = QtGui.QHBoxLayout()
         zero = QtGui.QLabel("1%", self)
         hund = QtGui.QLabel("100%", self)
+        self.current = QtGui.QLabel("50%", self)
+        self.current.setAlignment(QtCore.Qt.AlignHCenter)
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.slider.setMinimum(1)
         self.slider.setMaximum(100)
         self.slider.setValue(50)
+        self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'),
+                     self, QtCore.SLOT('printValue(int)'))
         layout_1.addWidget(zero)
         layout_1.addWidget(self.slider)
         layout_1.addWidget(hund)
@@ -104,6 +108,7 @@ class MispellQuirkDialog(QtGui.QDialog):
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addLayout(layout_1)
+        layout_0.addWidget(self.current)
         layout_0.addLayout(layout_ok)
 
         self.setLayout(layout_0)
@@ -114,6 +119,10 @@ class MispellQuirkDialog(QtGui.QDialog):
             return retval
         else:
             return None
+
+    @QtCore.pyqtSlot(int)
+    def printValue(self, value):
+        self.current.setText(str(value)+"%")
 
 class RandomQuirkDialog(MultiTextDialog):
     def __init__(self, parent, values={}):
