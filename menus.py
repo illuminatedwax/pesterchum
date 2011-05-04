@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore
 import re
 
+from os import remove
 from generic import RightClickList, MultiTextDialog
 from dataobjs import pesterQuirk, PesterProfile
 from memos import TimeSlider, TimeInput
@@ -516,6 +517,10 @@ class PesterChooseProfile(QtGui.QDialog):
         self.cancel = QtGui.QPushButton("CANCEL", self)
         self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('reject()'))
+        if not collision:
+            self.delete = QtGui.QPushButton("DELETE", self)
+            self.connect(self.delete, QtCore.SIGNAL('clicked()'),
+                         self, QtCore.SLOT('deleteProfile()'))
         layout_ok = QtGui.QHBoxLayout()
         layout_ok.addWidget(self.cancel)
         layout_ok.addWidget(self.ok)
@@ -532,6 +537,8 @@ class PesterChooseProfile(QtGui.QDialog):
             layout_0.addWidget(profileLabel)
             layout_0.addWidget(self.profileBox)
         layout_0.addLayout(layout_ok)
+        if not collision:
+            layout_0.addWidget(self.delete)
         layout_0.addLayout(layout_2)
         self.errorMsg = QtGui.QLabel(self)
         self.errorMsg.setStyleSheet("color:red;")
@@ -562,6 +569,36 @@ class PesterChooseProfile(QtGui.QDialog):
                 self.errorMsg.setText("NOT A VALID CHUMTAG")
                 return
         self.accept()
+
+    @QtCore.pyqtSlot()
+    def deleteProfile(self):
+        if self.profileBox and self.profileBox.currentIndex() > 0:
+            handle = unicode(self.profileBox.currentText())
+            if handle == self.parent.profile().handle:
+                problem = QtGui.QMessageBox()
+                problem.setStyleSheet(self.theme["main/defaultwindow/style"])
+                problem.setWindowTitle("Problem!")
+                problem.setInformativeText("You can't delete the profile you're currently using!")
+                problem.setStandardButtons(QtGui.QMessageBox.Ok)
+                problem.exec_()
+                return
+            msgbox = QtGui.QMessageBox()
+            msgbox.setStyleSheet(self.theme["main/defaultwindow/style"])
+            msgbox.setWindowTitle("WARNING!")
+            msgbox.setInformativeText("Are you sure you want to delete the profile: %s" % (handle))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            ret = msgbox.exec_()
+            if ret == QtGui.QMessageBox.Ok:
+                try:
+                    remove("profiles/%s.js" % (handle))
+                except OSError:
+                    problem = QtGui.QMessageBox()
+                    problem.setStyleSheet(self.theme["main/defaultwindow/style"])
+                    problem.setWindowTitle("Problem!")
+                    problem.setInformativeText("There was a problem deleting the profile: %s" % (handle))
+                    problem.setStandardButtons(QtGui.QMessageBox.Ok)
+                    problem.exec_()
+        self.reject()
 
 class PesterOptions(QtGui.QDialog):
     def __init__(self, config, theme, parent):
