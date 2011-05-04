@@ -621,7 +621,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Chum List", "Conversations", "Sound", "Logging", "Idle"]
+        tabNames = ["Chum List", "Conversations", "Sound", "Logging", "Idle", "Theme"]
         for t in tabNames:
             button = QtGui.QPushButton(t)
             self.tabs.addButton(button)
@@ -703,6 +703,13 @@ class PesterOptions(QtGui.QDialog):
         layout_5.addWidget(QtGui.QLabel("Minutes before Idle:"))
         layout_5.addWidget(self.idleBox)
 
+        avail_themes = self.config.availableThemes()
+        self.themeBox = QtGui.QComboBox(self)
+        for (i, t) in enumerate(avail_themes):
+            self.themeBox.addItem(t)
+            if t == theme.name:
+                self.themeBox.setCurrentIndex(i)
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -765,6 +772,14 @@ class PesterOptions(QtGui.QDialog):
         layout_idle = QtGui.QVBoxLayout(widget)
         layout_idle.setAlignment(QtCore.Qt.AlignTop)
         layout_idle.addLayout(layout_5)
+        self.pages.addWidget(widget)
+
+        # Theme
+        widget = QtGui.QWidget()
+        layout_theme = QtGui.QVBoxLayout(widget)
+        layout_theme.setAlignment(QtCore.Qt.AlignTop)
+        layout_theme.addWidget(QtGui.QLabel("Pick a Theme:"))
+        layout_theme.addWidget(self.themeBox)
         self.pages.addWidget(widget)
 
         layout_0 = QtGui.QVBoxLayout()

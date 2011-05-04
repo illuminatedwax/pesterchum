@@ -1356,10 +1356,6 @@ class PesterWindow(MovingWindow):
         filemenu.addAction(self.reconnectAction)
         filemenu.addAction(exitaction)
 
-        changetheme = QtGui.QAction(self.theme["main/menus/profile/theme"], self)
-        self.changetheme = changetheme
-        self.connect(changetheme, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('pickTheme()'))
         changequirks = QtGui.QAction(self.theme["main/menus/profile/quirks"], self)
         self.changequirks = changequirks
         self.connect(changequirks, QtCore.SIGNAL('triggered()'),
@@ -1381,7 +1377,6 @@ class PesterWindow(MovingWindow):
 
         profilemenu = self.menu.addMenu(self.theme["main/menus/profile/_name"])
         self.profilemenu = profilemenu
-        profilemenu.addAction(changetheme)
         profilemenu.addAction(changequirks)
         profilemenu.addAction(loadslum)
         profilemenu.addAction(changecoloraction)
@@ -1672,7 +1667,6 @@ class PesterWindow(MovingWindow):
         self.idleaction.setText(theme["main/menus/client/idle"])
         self.reconnectAction.setText(theme["main/menus/client/reconnect"])
         self.filemenu.setTitle(theme["main/menus/client/_name"])
-        self.changetheme.setText(theme["main/menus/profile/theme"])
         self.changequirks.setText(theme["main/menus/profile/quirks"])
         self.loadslum.setText(theme["main/menus/profile/block"])
         self.changecoloraction.setText(theme["main/menus/profile/color"])
@@ -2331,11 +2325,13 @@ class PesterWindow(MovingWindow):
         if idlesetting != curidle:
             self.config.set('idleTime', idlesetting)
             self.idlethreshold = 60*idlesetting
+        # theme
+        self.themeSelected()
         self.optionmenu = None
 
     @QtCore.pyqtSlot()
     def themeSelected(self):
-        themename = unicode(self.choosetheme.themeBox.currentText())
+        themename = unicode(self.optionmenu.themeBox.currentText())
         if themename != self.theme.name:
             try:
                 self.changeTheme(pesterTheme(themename))
