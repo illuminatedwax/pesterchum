@@ -665,7 +665,7 @@ class chumArea(RightClickTree):
             if droppos.rfind(" ") != -1:
                 droppos = droppos[0:droppos.rfind(" ")]
             if droppos == "Chums" or droppos in self.groups:
-                saveOpen = self.openGroups[self.groups.index(thisitem)]
+                saveOpen = event.source().currentItem().isExpanded()
                 saveDrop = self.itemAt(event.pos())
                 saveItem = self.takeTopLevelItem(self.indexOfTopLevelItem(event.source().currentItem()))
                 self.insertTopLevelItems(self.indexOfTopLevelItem(saveDrop)+1, [saveItem])
