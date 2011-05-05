@@ -12,10 +12,17 @@ CHANGELOG
 * More canon trollian theme timeline indicators - [binaryCabalist]
 * By mood chum sorting - Kiooeht [evacipatedBox]
 * Chum groups - Kiooeht [evacipatedBox]
+* Turn logging on and off - Kiooeht [evacipatedBox]
 * Customizable idle time - Kiooeht [evacipatedBox]
 * Different sound for memos - Kiooeht [evacipatedBox]
+* Animated smilies - Kiooeht [evacipatedBox]
+* Delete profiles - Kiooeht [evacipatedBox]
+* Customize minimize and close button actions - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
+    * Memo scrollbar thing - Kiooeht [evacipatedBox]
+    * Time arrows in enamel - Kiooeht [evacipatedBox]
+    * Quirk order actually works - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]

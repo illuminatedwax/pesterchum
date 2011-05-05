@@ -18,6 +18,9 @@ Bugs
 * Windows doesn't show style sheet sometimes?? Maybe related to themes.
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
+* Leave memos on reconnect, needs to auto-rejoin memos
+* Leave memos on profile change (should just change nick)
+* Text input loses focus when scrolling/clicking on text area
 
 Mac Bugs
 --------
