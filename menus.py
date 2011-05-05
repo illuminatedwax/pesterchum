@@ -621,7 +621,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Chum List", "Conversations", "Sound", "Logging", "Idle", "Theme"]
+        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Logging", "Idle", "Theme"]
         for t in tabNames:
             button = QtGui.QPushButton(t)
             self.tabs.addButton(button)
@@ -710,6 +710,20 @@ class PesterOptions(QtGui.QDialog):
             if t == theme.name:
                 self.themeBox.setCurrentIndex(i)
 
+        self.buttonOptions = ["Minimize to Taskbar", "Minimize to Tray", "Quit"]
+        self.miniBox = QtGui.QComboBox(self)
+        self.miniBox.addItems(self.buttonOptions)
+        self.miniBox.setCurrentIndex(self.config.minimizeAction())
+        self.closeBox = QtGui.QComboBox(self)
+        self.closeBox.addItems(self.buttonOptions)
+        self.closeBox.setCurrentIndex(self.config.closeAction())
+        layout_mini = QtGui.QHBoxLayout()
+        layout_mini.addWidget(QtGui.QLabel("Minimize"))
+        layout_mini.addWidget(self.miniBox)
+        layout_close = QtGui.QHBoxLayout()
+        layout_close.addWidget(QtGui.QLabel("Close"))
+        layout_close.addWidget(self.closeBox)
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -745,6 +759,14 @@ class PesterOptions(QtGui.QDialog):
         #layout_chat.addWidget(hr)
         #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))
         #layout_chat.addWidget(self.userlinkscheck)
+        self.pages.addWidget(widget)
+
+        # Interface
+        widget = QtGui.QWidget()
+        layout_interface = QtGui.QVBoxLayout(widget)
+        layout_interface.setAlignment(QtCore.Qt.AlignTop)
+        layout_interface.addLayout(layout_mini)
+        layout_interface.addLayout(layout_close)
         self.pages.addWidget(widget)
 
         # Sound

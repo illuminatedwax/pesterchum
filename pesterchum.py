@@ -342,6 +342,10 @@ class userConfig(object):
         return not self.config.get('userLinks', True)
     def idleTime(self):
         return self.config.get('idleTime', 10)
+    def minimizeAction(self):
+        return self.config.get('miniAction', 0)
+    def closeAction(self):
+        return self.config.get('closeAction', 1)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -1398,11 +1402,9 @@ class PesterWindow(MovingWindow):
         self.helpmenu.addAction(self.aboutAction)
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
-        self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('closeToTray()'))
+        self.setButtonAction(self.closeButton, self.config.closeAction(), -1)
         self.miniButton = WMButton(PesterIcon(self.theme["main/minimize/image"]), self)
-        self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('showMinimized()'))
+        self.setButtonAction(self.miniButton, self.config.minimizeAction(), -1)
 
         self.namesdb = CaseInsensitiveDict()
         self.chumdb = PesterProfileDB()
@@ -2327,7 +2329,39 @@ class PesterWindow(MovingWindow):
             self.idlethreshold = 60*idlesetting
         # theme
         self.themeSelected()
+        # button actions
+        minisetting = self.optionmenu.miniBox.currentIndex()
+        curmini = self.config.minimizeAction()
+        if minisetting != curmini:
+            self.config.set('miniAction', minisetting)
+            self.setButtonAction(self.miniButton, minisetting, curmini)
+        closesetting = self.optionmenu.closeBox.currentIndex()
+        curclose = self.config.closeAction()
+        if closesetting != curclose:
+            self.config.set('closeAction', closesetting)
+            self.setButtonAction(self.closeButton, closesetting, curclose)
         self.optionmenu = None
+
+    def setButtonAction(self, button, setting, old):
+        if old == 0: # minimize to taskbar
+            self.disconnect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('showMinimized()'));
+        elif old == 1: # minimize to tray
+            self.disconnect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('closeToTray()'));
+        elif old == 2: # quit
+            self.disconnect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('close()'));
+
+        if setting == 0: # minimize to taskbar
+            self.connect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('showMinimized()'));
+        elif setting == 1: # minimize to tray
+            self.connect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('closeToTray()'));
+        elif setting == 2: # quit
+            self.connect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('close()'));
 
     @QtCore.pyqtSlot()
     def themeSelected(self):
