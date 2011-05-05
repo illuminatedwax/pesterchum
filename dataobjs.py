@@ -124,10 +124,6 @@ class pesterQuirks(object):
     def apply(self, lexed, first=False, last=False):
         prefix = [q for q in self.quirklist if q.type=='prefix']
         suffix = [q for q in self.quirklist if q.type=='suffix']
-        replace = [q for q in self.quirklist if
-                   q.type=='replace' or q.type=='regexp']
-        randomrep = [q for q in self.quirklist if q.type=='random']
-        spelling = [q for q in self.quirklist if q.type=='spelling']
 
         newlist = []
         for (i, o) in enumerate(lexed):
@@ -141,12 +137,12 @@ class pesterQuirks(object):
                 continue
             lastStr = (i == len(lexed)-1)
             string = o
-            for s in spelling:
-                string = s.apply(string)
-            for r in randomrep:
-                string = r.apply(string, first=(i==0), last=lastStr)
-            for r in replace:
-                string = r.apply(string, first=(i==0), last=lastStr)
+            for q in self.quirklist:
+                if q.type != 'prefix' and q.type != 'suffix':
+                    if q.type == 'regexp' or q.type == 'random':
+                        string = q.apply(string, first=(i==0), last=lastStr)
+                    else:
+                        string = q.apply(string)
             if i == 0:
                 if len(prefix) >= 1:
                     myprefix = random.choice(prefix)
