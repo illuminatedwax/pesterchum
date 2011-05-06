@@ -25,6 +25,8 @@ class PesterTabWindow(QtGui.QFrame):
                      self, QtCore.SLOT('changeTab(int)'))
         self.connect(self.tabs, QtCore.SIGNAL('tabCloseRequested(int)'),
                      self, QtCore.SLOT('tabClose(int)'))
+        self.connect(self.tabs, QtCore.SIGNAL('tabMoved(int, int)'),
+                     self, QtCore.SLOT('tabMoved(int, int)'))
 
         self.initTheme(self.mainwindow.theme)
         self.layout = QtGui.QVBoxLayout()
@@ -194,6 +196,17 @@ class PesterTabWindow(QtGui.QFrame):
         self.activateWindow()
         self.raise_()
         convo.raiseChat()
+
+    @QtCore.pyqtSlot(int, int)
+    def tabMoved(self, to, fr):
+        l = self.tabIndices
+        for i in l:
+            if l[i] == fr:
+                oldpos = i
+            if l[i] == to:
+                newpos = i
+        l[oldpos] = to
+        l[newpos] = fr
 
     windowClosed = QtCore.pyqtSignal()
 
