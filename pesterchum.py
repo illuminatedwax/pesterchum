@@ -376,19 +376,15 @@ class userConfig(object):
     def getGroups(self):
         if not self.groups.has_key('groups'):
             self.saveGroups([["Chums", True]])
-        groups = self.groups.get('groups', [["Chums", True]])
-        default = False
-        for g in groups:
-            if g[0] == "Chums":
-                default = True
-                break
-        if not default:
-            groups.insert(0, ["Chums", True])
-        self.saveGroups(groups)
-        return groups
+        return self.groups.get('groups', [["Chums", True]])
     def addGroup(self, group, open=True):
         l = self.getGroups()
-        if group not in l:
+        exists = False
+        for g in l:
+            if g[0] == group:
+                exists = True
+                break
+        if not exists:
             l.append([group,open])
             l.sort()
             self.saveGroups(l)
@@ -400,6 +396,13 @@ class userConfig(object):
             i = i+1
         l.pop(i)
         l.sort()
+        self.saveGroups(l)
+    def expandGroup(self, group, open=True):
+        l = self.getGroups()
+        for g in l:
+            if g[0] == group:
+                g[1] = open
+                break
         self.saveGroups(l)
     def saveGroups(self, groups):
         self.groups['groups'] = groups
@@ -705,7 +708,10 @@ class chumArea(RightClickTree):
     def moveGroupMenu(self):
         currentGroup = self.currentItem()
         if currentGroup:
-            text = str(currentGroup.parent().text(0))
+            if currentGroup.parent():
+                text = str(currentGroup.parent().text(0))
+            else:
+                text = str(currentGroup.text(0))
             if text.rfind(" (") != -1:
                 text = text[0:text.rfind(" (")]
             currentGroup = text
@@ -813,49 +819,34 @@ class chumArea(RightClickTree):
     def expandGroup(self):
         item = self.currentItem()
         text = str(item.text(0))
-        if text.find(" ") != -1:
+        if text.rfind(" (") != -1:
             text = text[0:text.rfind(" (")]
 
         if text in self.groups:
-            self.mainwindow.config.delGroup(text)
             expand = item.isExpanded()
-            self.mainwindow.config.addGroup(text, not expand)
-        elif text == "Chums":
-            self.mainwindow.config.set("openDefaultGroup", not item.isExpanded())
+            self.mainwindow.config.expandGroup(text, not expand)
     def addItem(self, chumLabel):
         if hasattr(self, 'groups'):
             if chumLabel.chum.group not in self.groups:
-                if self.topLevelItemCount() == 0:
-                    child_1 = QtGui.QTreeWidgetItem(["Chums"])
+                chumLabel.chum.group = "Chums"
+            if "Chums" not in self.groups:
+                self.mainwindow.config.addGroup("Chums")
+            if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+                if not self.findItems(chumLabel.chum.group, QtCore.Qt.MatchContains):
+                    child_1 = QtGui.QTreeWidgetItem(["%s" % (chumLabel.chum.group)])
                     self.addTopLevelItem(child_1)
-                    if self.mainwindow.config.openDefaultGroup():
+                    if self.openGroups[self.groups.index("%s" % (chumLabel.chum.group))]:
                         child_1.setExpanded(True)
-                else:
-                    text = str(self.topLevelItem(0).text(0))
-                    if text.find(" ") != -1:
+                for i in range(self.topLevelItemCount()):
+                    text = str(self.topLevelItem(i).text(0))
+                    if text.rfind(" (") != -1:
                         text = text[0:text.rfind(" (")]
-                    if text != "Chums":
-                        child_1 = QtGui.QTreeWidgetItem(["Chums"])
-                        self.insertTopLevelItems(0, [child_1])
-                        if self.mainwindow.config.openDefaultGroup():
-                            child_1.setExpanded(True)
-                self.topLevelItem(0).addChild(chumLabel)
+                    if text == chumLabel.chum.group:
+                        break
+                self.topLevelItem(i).addChild(chumLabel)
                 self.sort()
-            else:
-                if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
-                    if not self.findItems(chumLabel.chum.group, QtCore.Qt.MatchContains):
-                        child_1 = QtGui.QTreeWidgetItem(["%s" % (chumLabel.chum.group)])
-                        self.addTopLevelItem(child_1)
-                        if self.openGroups[self.groups.index("%s" % (chumLabel.chum.group))]:
-                            child_1.setExpanded(True)
-                    for i in range(self.topLevelItemCount()):
-                        text = str(self.topLevelItem(i).text(0))
-                        if text.rfind(" (") != -1:
-                            text = text[0:text.rfind(" (")]
-                        if text == chumLabel.chum.group:
-                            break
-                    self.topLevelItem(i).addChild(chumLabel)
-                    self.sort()
+                if self.mainwindow.config.showOnlineNumbers():
+                    self.showOnlineNumbers()
         else: # usually means this is now the trollslum
             if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
                 self.topLevelItem(0).addChild(chumLabel)
@@ -885,7 +876,7 @@ class chumArea(RightClickTree):
             elif mood.name() == "offline" and \
                     len(chums) > 0:
                 for c in chums:
-                    self.takeItem(self.row(c))
+                    self.takeItem(c)
                 chums = []
         for c in chums:
             if (hasattr(c, 'mood')):
@@ -1822,7 +1813,7 @@ class PesterWindow(MovingWindow):
         curChum = self.chumList.currentItem()
         if curChum:
             text = str(curChum.text(0))
-            if text.find(" ") != -1:
+            if text.rfind(" (") != -1:
                 text = text[0:text.rfind(" (")]
             if text not in self.chumList.groups and \
                text != "Chums":
@@ -2187,7 +2178,7 @@ class PesterWindow(MovingWindow):
             (gname, ok) = QtGui.QInputDialog.getText(self, "Add Group", "Enter a name for the new group:")
             if ok:
                 gname = unicode(gname)
-                if re.search("[^A-Za-z0-9\s]", gname) is not None:
+                if re.search("[^A-Za-z0-9_\s]", gname) is not None:
                     msgbox = QtGui.QMessageBox()
                     msgbox.setInformativeText("THIS IS NOT A VALID GROUP NAME")
                     msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
