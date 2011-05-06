@@ -20,6 +20,7 @@ Bugs
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * Leave memos on reconnect, needs to auto-rejoin memos
 * Leave memos on profile change (should just change nick)
+* When using mood sort, scroll position jumps to last selected chum
 
 Mac Bugs
 --------

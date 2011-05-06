@@ -634,9 +634,11 @@ class chumArea(RightClickTree):
         self.setSortingEnabled(False)
         self.header().hide()
         self.setDropIndicatorShown(True)
-        self.setIndentation(0)
+        self.setIndentation(4)
         self.setDragEnabled(True)
         self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.setAnimated(True)
+        self.setRootIsDecorated(False)
 
         self.connect(self, QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
                      self, QtCore.SLOT('expandGroup()'))
@@ -939,6 +941,7 @@ class chumArea(RightClickTree):
             for i in range(self.topLevelItemCount()):
                 self.topLevelItem(i).sortChildren(0, QtCore.Qt.AscendingOrder)
     def moodSort(self, group):
+        scrollPos = self.verticalScrollBar().sliderPosition()
         chums = []
         listing = self.topLevelItem(group).child(0)
         while listing is not None:
@@ -947,6 +950,7 @@ class chumArea(RightClickTree):
         chums.sort(key=lambda x: ((999 if x.chum.mood.value() == 2 else x.chum.mood.value()), x.chum.handle), reverse=False)
         for c in chums:
             self.topLevelItem(group).addChild(c)
+        self.verticalScrollBar().setSliderPosition(scrollPos)
 
     @QtCore.pyqtSlot()
     def activateChum(self):
