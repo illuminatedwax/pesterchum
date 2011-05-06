@@ -941,7 +941,7 @@ class PesterMemoList(QtGui.QDialog):
         self.theme = parent.theme
         self.mainwindow = parent
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
-        self.resize(200, 300)
+        self.resize(250, 500)
 
         self.label = QtGui.QLabel("MEMOS")
         self.channelarea = RightClickList(self)
