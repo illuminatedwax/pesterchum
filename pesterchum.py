@@ -576,13 +576,11 @@ class chumArea(RightClickTree):
         gTemp = self.mainwindow.config.getGroups()
         self.groups = [g[0] for g in gTemp]
         self.openGroups = [g[1] for g in gTemp]
-        self.showAllGroups()
+        self.showAllGroups(True)
         if not self.mainwindow.config.hideOfflineChums():
             self.showAllChums()
         if not self.mainwindow.config.showEmptyGroups():
             self.hideEmptyGroups()
-        if self.mainwindow.config.showOnlineNumbers():
-            self.showOnlineNumbers()
         self.groupMenu = QtGui.QMenu(self)
         self.canonMenu = QtGui.QMenu(self)
         self.optionsMenu = QtGui.QMenu(self)
@@ -760,7 +758,14 @@ class chumArea(RightClickTree):
                     i += 1
                 listing = self.topLevelItem(j).child(i)
             self.sort()
-    def showAllGroups(self):
+    def showAllGroups(self, first=False):
+        if first:
+            for i,g in enumerate(self.groups):
+                child_1 = QtGui.QTreeWidgetItem(["%s" % (g)])
+                self.addTopLevelItem(child_1)
+                if self.openGroups[i]:
+                    child_1.setExpanded(True)
+            return
         curgroups = []
         for i in range(self.topLevelItemCount()):
             text = str(self.topLevelItem(i).text(0))
@@ -770,9 +775,18 @@ class chumArea(RightClickTree):
         for i,g in enumerate(self.groups):
             if g not in curgroups:
                 child_1 = QtGui.QTreeWidgetItem(["%s" % (g)])
-                self.addTopLevelItem(child_1)
+                j = 0
+                for h in self.groups:
+                    print h + ":" + g
+                    if h == g:
+                        self.insertTopLevelItem(j, child_1)
+                        break
+                    if h in curgroups:
+                        j += 1
                 if self.openGroups[i]:
                     child_1.setExpanded(True)
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
     def showOnlineNumbers(self):
         if hasattr(self, 'groups'):
           self.hideOnlineNumbers()
@@ -831,10 +845,22 @@ class chumArea(RightClickTree):
                 chumLabel.chum.group = "Chums"
             if "Chums" not in self.groups:
                 self.mainwindow.config.addGroup("Chums")
+            curgroups = []
+            for i in range(self.topLevelItemCount()):
+                text = str(self.topLevelItem(i).text(0))
+                if text.rfind(" (") != -1:
+                    text = text[0:text.rfind(" (")]
+                curgroups.append(text)
             if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
-                if not self.findItems(chumLabel.chum.group, QtCore.Qt.MatchContains):
+                if chumLabel.chum.group not in curgroups:
                     child_1 = QtGui.QTreeWidgetItem(["%s" % (chumLabel.chum.group)])
-                    self.addTopLevelItem(child_1)
+                    i = 0
+                    for g in self.groups:
+                        if g == chumLabel.chum.group:
+                            self.insertTopLevelItem(i, child_1)
+                            break
+                        if g in curgroups:
+                            i += 1
                     if self.openGroups[self.groups.index("%s" % (chumLabel.chum.group))]:
                         child_1.setExpanded(True)
                 for i in range(self.topLevelItemCount()):
