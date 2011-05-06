@@ -317,6 +317,10 @@ class PesterText(QtGui.QTextEdit):
         self.parent().clearNewMessage()
         QtGui.QTextEdit.focusInEvent(self, event)
 
+    def keyPressEvent(self, event):
+        self.parent().textInput.keyPressEvent(event)
+        QtGui.QTextEdit.keyPressEvent(self, event)
+
     def mousePressEvent(self, event):
         url = self.anchorAt(event.pos())
         if url != "":
