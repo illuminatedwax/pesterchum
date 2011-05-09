@@ -886,6 +886,8 @@ class chumArea(RightClickTree):
                     break
         if not self.mainwindow.config.showEmptyGroups():
             self.hideEmptyGroups()
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
         return r
     def updateMood(self, handle, mood):
         hideoff = self.mainwindow.config.hideOfflineChums()
@@ -902,6 +904,8 @@ class chumArea(RightClickTree):
             elif mood.name() == "offline" and \
                     len(chums) > 0:
                 for c in chums:
+                    if (hasattr(c, 'mood')):
+                        c.setMood(mood)
                     self.takeItem(c)
                 chums = []
         for c in chums:
