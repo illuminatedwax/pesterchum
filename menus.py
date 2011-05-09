@@ -695,10 +695,10 @@ class PesterOptions(QtGui.QDialog):
         self.logmemoscheck = QtGui.QCheckBox("Log all Memos", self)
         self.logmemoscheck.setChecked(self.config.logMemos())
 
-        times = ["1", "5", "10", "15", "30"]
-        self.idleBox = QtGui.QComboBox(self)
-        self.idleBox.addItems(times)
-        self.idleBox.setCurrentIndex(self.idleBox.findText(str(self.config.idleTime())))
+        self.idleBox = QtGui.QSpinBox(self)
+        self.idleBox.setStyleSheet("background:#FFFFFF")
+        self.idleBox.setRange(1, 1440)
+        self.idleBox.setValue(self.config.idleTime())
         layout_5 = QtGui.QHBoxLayout()
         layout_5.addWidget(QtGui.QLabel("Minutes before Idle:"))
         layout_5.addWidget(self.idleBox)

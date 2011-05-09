@@ -2363,7 +2363,7 @@ class PesterWindow(MovingWindow):
         if linkssetting != curlinks:
             self.config.set('userLinks', not linkssetting)
         # idle time
-        idlesetting = int(unicode(self.optionmenu.idleBox.currentText()))
+        idlesetting = self.optionmenu.idleBox.value()
         curidle = self.config.idleTime()
         if idlesetting != curidle:
             self.config.set('idleTime', idlesetting)
