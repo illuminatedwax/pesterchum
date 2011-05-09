@@ -2741,6 +2741,12 @@ class MainProgram(QtCore.QObject):
             if status == QtGui.QDialog.Rejected:
                 sys.exit(0)
             else:
+                if self.widget.tabmemo:
+                    for c in self.widget.tabmemo.convos:
+                        self.irc.joinChannel(c)
+                else:
+                    for c in self.widget.memos.values():
+                        self.irc.joinChannel(c.channel)
                 return True
 
     @QtCore.pyqtSlot()
