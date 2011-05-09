@@ -2,7 +2,7 @@ from PyQt4 import QtGui, QtCore
 import re
 
 from os import remove
-from generic import RightClickList, MultiTextDialog
+from generic import RightClickList, RightClickTree, MultiTextDialog
 from dataobjs import pesterQuirk, PesterProfile
 from memos import TimeSlider, TimeInput
 
@@ -928,11 +928,10 @@ class PesterUserlist(QtGui.QDialog):
     pesterChum = QtCore.pyqtSignal(QtCore.QString)
 
 
-class MemoListItem(QtGui.QListWidgetItem):
+class MemoListItem(QtGui.QTreeWidgetItem):
     def __init__(self, channel, usercount):
-        QtGui.QListWidgetItem.__init__(self, None)
+        QtGui.QTreeWidgetItem.__init__(self, [channel, str(usercount)])
         self.target = channel
-        self.setText(channel + " (" + str(usercount) + ")")
 
 class PesterMemoList(QtGui.QDialog):
     def __init__(self, parent, channel=""):
@@ -941,15 +940,20 @@ class PesterMemoList(QtGui.QDialog):
         self.theme = parent.theme
         self.mainwindow = parent
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
-        self.resize(250, 500)
+        self.resize(460, 300)
 
         self.label = QtGui.QLabel("MEMOS")
-        self.channelarea = RightClickList(self)
+        self.channelarea = RightClickTree(self)
         self.channelarea.setStyleSheet(self.theme["main/chums/style"])
         self.channelarea.optionsMenu = QtGui.QMenu(self)
+        self.channelarea.setColumnCount(2)
+        self.channelarea.setHeaderLabels(["Memo", "Users"])
+        self.channelarea.setIndentation(0)
+        self.channelarea.setColumnWidth(0,200)
+        self.channelarea.setColumnWidth(1,10)
         self.connect(self.channelarea,
-                     QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
-                     self, QtCore.SLOT('joinActivatedMemo(QListWidgetItem *)'))
+                     QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
+                     self, QtCore.SLOT('joinActivatedMemo(QTreeWidgetItem *, int)'))
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
@@ -970,15 +974,22 @@ class PesterMemoList(QtGui.QDialog):
         layout_ok.addWidget(self.cancel)
         layout_ok.addWidget(self.join)
 
+        layout_left  = QtGui.QVBoxLayout()
+        layout_right = QtGui.QVBoxLayout()
+        layout_right.setAlignment(QtCore.Qt.AlignTop)
         layout_0 = QtGui.QVBoxLayout()
-        layout_0.addWidget(self.label)
-        layout_0.addWidget(self.channelarea)
-        layout_0.addWidget(self.orjoinlabel)
-        layout_0.addWidget(self.newmemo)
-        layout_0.addWidget(self.secretChannel)
-        layout_0.addWidget(self.timelabel)
-        layout_0.addWidget(self.timeslider)
-        layout_0.addWidget(self.timeinput)
+        layout_1 = QtGui.QHBoxLayout()
+        layout_left.addWidget(self.label)
+        layout_left.addWidget(self.channelarea)
+        layout_right.addWidget(self.orjoinlabel)
+        layout_right.addWidget(self.newmemo)
+        layout_right.addWidget(self.secretChannel)
+        layout_right.addWidget(self.timelabel)
+        layout_right.addWidget(self.timeslider)
+        layout_right.addWidget(self.timeinput)
+        layout_1.addLayout(layout_left)
+        layout_1.addLayout(layout_right)
+        layout_0.addLayout(layout_1)
         layout_0.addLayout(layout_ok)
 
         self.setLayout(layout_0)
@@ -991,9 +1002,10 @@ class PesterMemoList(QtGui.QDialog):
     def updateChannels(self, channels):
         for c in channels:
             item = MemoListItem(c[0][1:],c[1])
-            item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
-            item.setIcon(QtGui.QIcon(self.theme["memos/memoicon"]))
-            self.channelarea.addItem(item)
+            item.setTextColor(0, QtGui.QColor(self.theme["main/chums/userlistcolor"]))
+            item.setTextColor(1, QtGui.QColor(self.theme["main/chums/userlistcolor"]))
+            item.setIcon(0, QtGui.QIcon(self.theme["memos/memoicon"]))
+            self.channelarea.addTopLevelItem(item)
 
     def updateTheme(self, theme):
         self.theme = theme
@@ -1008,9 +1020,9 @@ class PesterMemoList(QtGui.QDialog):
         selectedmemo = self.selectedmemo()
         if newmemo or selectedmemo:
             self.accept()
-    @QtCore.pyqtSlot(QtGui.QListWidgetItem)
-    def joinActivatedMemo(self, item):
-        self.channelarea.setCurrentItem(item)
+    @QtCore.pyqtSlot(QtGui.QTreeWidgetItem, int)
+    def joinActivatedMemo(self, item, column):
+        self.channelarea.setCurrentItem(item, column)
         self.accept()
 
 
@@ -1044,9 +1056,33 @@ class LoadingScreen(QtGui.QDialog):
 
     tryAgain = QtCore.pyqtSignal()
 
-class AboutPesterchum(QtGui.QMessageBox):
+class AboutPesterchum(QtGui.QDialog):
     def __init__(self, parent=None):
-        QtGui.QMessageBox.__init__(self, parent)
-        self.setText("P3ST3RCHUM V. 3.14.1")
-        self.setInformativeText("Programming by illuminatedwax (ghostDunk), Kiooeht (evacipatedBox), alGore, art by Grimlive (aquaMarinist). Special thanks to ABT and gamblingGenocider.")
+        QtGui.QDialog.__init__(self, parent)
         self.mainwindow = parent
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+
+        self.title = QtGui.QLabel("P3ST3RCHUM V. 3.14.2")
+        self.credits = QtGui.QLabel("Programming by:\n\
+  illuminatedwax (ghostDunk)\n\
+  Kiooeht (evacipatedBox)\n\
+  alGore\n\
+\n\
+Art by:\n\
+  Grimlive (aquaMarinist)\n\
+  binaryCabalist\n\
+\n\
+Special Thanks:\n\
+  ABT\n\
+  gamblingGenocider")
+
+        self.ok = QtGui.QPushButton("OK", self)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.title)
+        layout_0.addWidget(self.credits)
+        layout_0.addWidget(self.ok)
+
+        self.setLayout(layout_0)
