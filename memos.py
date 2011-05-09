@@ -475,10 +475,8 @@ class PesterMemo(PesterConvo):
 
         self.userlist.optionsMenu.setStyleSheet(theme["main/defaultwindow/style"])
         if theme.has_key("main/chums/scrollbar"):
-            print "yes scrollbars!"
             self.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["memos/userlist/style"], theme["main/chums/scrollbar/style"], theme["main/chums/scrollbar/handle"], theme["main/chums/scrollbar/downarrow"], theme["main/chums/scrollbar/uparrow"], theme["main/chums/scrollbar/uarrowstyle"], theme["main/chums/scrollbar/darrowstyle"] ))
         else:
-            print "no scroll bars :("
             self.userlist.setStyleSheet(theme["memos/userlist/style"])
         self.userlist.setFixedWidth(theme["memos/userlist/width"])
         self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])

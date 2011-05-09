@@ -135,6 +135,7 @@ class PesterIRC(QtCore.QThread):
             helpers.nick(self.cli, handle)
         except socket.error:
             self.setConnectionBroken()
+        self.mainwindow.closeConversations(True)
         self.updateMood()
     @QtCore.pyqtSlot()
     def updateMood(self):

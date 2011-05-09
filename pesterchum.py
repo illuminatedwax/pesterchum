@@ -1489,7 +1489,7 @@ class PesterWindow(MovingWindow):
 
     def profile(self):
         return self.userprofile.chat
-    def closeConversations(self):
+    def closeConversations(self, switch=False):
         if not hasattr(self, 'tabconvo'):
             self.tabconvo = None
         if self.tabconvo:
@@ -1498,10 +1498,17 @@ class PesterWindow(MovingWindow):
             for c in self.convos.values():
                 c.close()
         if self.tabmemo:
-            self.tabmemo.close()
+            if not switch:
+                self.tabmemo.close()
+            else:
+                for m in self.tabmemo.convos:
+                    self.tabmemo.convos[m].sendtime()
         else:
             for m in self.memos.values():
-                m.close()
+                if not switch:
+                    m.close()
+                else:
+                    m.sendtime()
     def paintEvent(self, event):
         palette = QtGui.QPalette()
         palette.setBrush(QtGui.QPalette.Window, QtGui.QBrush(self.backgroundImage))
@@ -2441,8 +2448,6 @@ class PesterWindow(MovingWindow):
         # is default?
         if self.chooseprofile.defaultcheck.isChecked():
             self.config.set("defaultprofile", self.userprofile.chat.handle)
-        # this may have to be fixed
-        self.closeConversations()
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.close()
         self.chooseprofile = None
