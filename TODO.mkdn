@@ -8,7 +8,6 @@ Features
 * random pesters
 * copy quirks between profiles?
 * More complex quirks: by-sound
-* Theme checking
 * Spy mode
 * Turn @ and # links on/off?
 

@@ -20,7 +20,7 @@ from menus import PesterChooseQuirks, PesterChooseTheme, \
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
 from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList, CaseInsensitiveDict
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
-from parsetools import convertTags, addTimeInitial
+from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
 from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
@@ -1334,6 +1334,15 @@ class PesterWindow(MovingWindow):
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
             self.theme = self.userprofile.getTheme()
 
+        try:
+            themeChecker(self.theme)
+        except ThemeException, (inst):
+            print "Caught: "+inst.parameter
+            themeWarning = QtGui.QMessageBox(self)
+            themeWarning.setText("Theme Error: %s\nFalling back..." % (inst))
+            themeWarning.exec_()
+            self.theme = pesterTheme("pesterchum")
+
         self.chatlog = PesterLog(self.profile().handle, self)
 
         self.move(100, 100)
@@ -1413,13 +1422,13 @@ class PesterWindow(MovingWindow):
         profilemenu.addAction(changecoloraction)
         profilemenu.addAction(switch)
 
-        self.helpAction = QtGui.QAction("HELP", self)
+        self.helpAction = QtGui.QAction(self.theme["main/menus/help/help"], self)
         self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('launchHelp()'))
-        self.botAction = QtGui.QAction("CALSPRITE", self)
+        self.botAction = QtGui.QAction(self.theme["main/menus/help/calsprite"], self)
         self.connect(self.botAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('loadCalsprite()'))
-        self.nickServAction = QtGui.QAction("NICKSERV", self)
+        self.nickServAction = QtGui.QAction(self.theme["main/menus/help/nickserv"], self)
         self.connect(self.nickServAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('loadNickServ()'))
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
@@ -1808,6 +1817,15 @@ class PesterWindow(MovingWindow):
                 self.ceasesound = NoneSound()
 
     def changeTheme(self, theme):
+        # check theme
+        try:
+            themeChecker(theme)
+        except ThemeException, (inst):
+            themeWarning = QtGui.QMessageBox(self)
+            themeWarning.setText("Theme Error: %s\nFalling back..." % (inst))
+            themeWarning.exec_()
+            theme = pesterTheme("pesterchum")
+            return
         self.theme = theme
         # do self
         self.initTheme(theme)
