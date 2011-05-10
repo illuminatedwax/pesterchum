@@ -29,6 +29,7 @@ CHANGELOG
     * Quirk order actually works - Kiooeht [evacipatedBox]
     * Stay in memos on profile switch - Kiooeht [evacipatedBox]
     * Auto rejoin memos on reconnect - Kiooeht [evacipatedBox]
+    * De-Op in memos correctly - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]

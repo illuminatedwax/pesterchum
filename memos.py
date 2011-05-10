@@ -631,7 +631,7 @@ class PesterMemo(PesterConvo):
             oldnick = l[0]
             newnick = l[1]
             h = oldnick
-        if (update in ["join","left", "kick", "+o"]) \
+        if (update in ["join","left", "kick", "+o", "-o"]) \
                 and channel != self.channel:
             return
         chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
@@ -718,6 +718,14 @@ class PesterMemo(PesterConvo):
                 if unicode(c.text()) == self.mainwindow.profile().handle:
                     self.userlist.optionsMenu.addAction(self.opAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
+        elif update == "-o":
+            chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
+            for c in chums:
+                icon = QtGui.QIcon()
+                c.setIcon(icon)
+                if unicode(c.text()) == self.mainwindow.profile().handle:
+                    self.userlist.optionsMenu.removeAction(self.opAction)
+                    self.userlist.optionsMenu.removeAction(self.banuserAction)
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):
