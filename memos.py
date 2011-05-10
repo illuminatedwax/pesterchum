@@ -346,6 +346,9 @@ class PesterMemo(PesterConvo):
         self.opAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/opuser"], self)
         self.connect(self.opAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('opSelectedUser()'))
+        self.voiceAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/voiceuser"], self)
+        self.connect(self.voiceAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('voiceSelectedUser()'))
         self.userlist.optionsMenu.addAction(self.addchumAction)
         # ban & op list added if we are op
 
@@ -482,6 +485,7 @@ class PesterMemo(PesterConvo):
         self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
         self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])
+        self.voiceAction.setText(theme["main/menus/rclickchumlist/voiceuser"])
         self.quirksOff.setText(theme["main/menus/rclickchumlist/quirksoff"])
         self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
 
@@ -514,11 +518,15 @@ class PesterMemo(PesterConvo):
             if item.op:
                 icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
                 item.setIcon(icon)
+            elif item.voice:
+                icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                item.setIcon(icon)
 
     def addUser(self, handle):
         chumdb = self.mainwindow.chumdb
         defaultcolor = QtGui.QColor("black")
         op = False
+        voice = False
         if handle[0] == '@':
             op = True
             handle = handle[1:]
@@ -526,6 +534,9 @@ class PesterMemo(PesterConvo):
                 self.userlist.optionsMenu.addAction(self.opAction)
                 self.userlist.optionsMenu.addAction(self.banuserAction)
                 self.op = True
+        elif handle[0] == '+':
+            voice = True
+            handle = handle[1:]
         item = QtGui.QListWidgetItem(handle)
         if handle == self.mainwindow.profile().handle:
             color = self.mainwindow.profile().color
@@ -533,8 +544,12 @@ class PesterMemo(PesterConvo):
             color = chumdb.getColor(handle, defaultcolor)
         item.setTextColor(color)
         item.op = op
+        item.voice = voice
         if op:
             icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+            item.setIcon(icon)
+        elif voice:
+            icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
             item.setIcon(icon)
         self.userlist.addItem(item)
 
@@ -631,7 +646,7 @@ class PesterMemo(PesterConvo):
             oldnick = l[0]
             newnick = l[1]
             h = oldnick
-        if (update in ["join","left", "kick", "+o", "-o"]) \
+        if (update in ["join","left", "kick", "+o", "-o", "+v", "-v"]) \
                 and channel != self.channel:
             return
         chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
@@ -713,19 +728,44 @@ class PesterMemo(PesterConvo):
         elif update == "+o":
             chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
             for c in chums:
+                c.op = True
                 icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
                 c.setIcon(icon)
                 if unicode(c.text()) == self.mainwindow.profile().handle:
                     self.userlist.optionsMenu.addAction(self.opAction)
+                    self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
         elif update == "-o":
             chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
             for c in chums:
-                icon = QtGui.QIcon()
-                c.setIcon(icon)
+                c.op = False
+                if c.voice:
+                    icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                    c.setIcon(icon)
+                else:
+                    icon = QtGui.QIcon()
+                    c.setIcon(icon)
                 if unicode(c.text()) == self.mainwindow.profile().handle:
                     self.userlist.optionsMenu.removeAction(self.opAction)
+                    self.userlist.optionsMenu.removeAction(self.voiceAction)
                     self.userlist.optionsMenu.removeAction(self.banuserAction)
+        elif update == "+v":
+            chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
+            for c in chums:
+                c.voice = True
+                if not c.op:
+                    icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                    c.setIcon(icon)
+        elif update == "-v":
+            chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
+            for c in chums:
+                c.voice = False
+                if c.op:
+                    icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+                    c.setIcon(icon)
+                else:
+                    icon = QtGui.QIcon()
+                    c.setIcon(icon)
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):
@@ -745,6 +785,12 @@ class PesterMemo(PesterConvo):
             return
         currentHandle = unicode(self.userlist.currentItem().text())
         self.mainwindow.setChannelMode.emit(self.channel, "+o", currentHandle)
+    @QtCore.pyqtSlot()
+    def voiceSelectedUser(self):
+        if not self.userlist.currentItem():
+            return
+        currentHandle = unicode(self.userlist.currentItem().text())
+        self.mainwindow.setChannelMode.emit(self.channel, "+v", currentHandle)
     def resetSlider(self, time, send=True):
         self.timeinput.setText(delta2txt(time))
         self.timeinput.setSlider()

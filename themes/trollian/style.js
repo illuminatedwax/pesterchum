@@ -47,6 +47,7 @@
                                "movechum": "Move To",
                                "banuser": "Ban",
                                "opuser": "Promote",
+                               "voiceuser": "Let Speak",
                                "quirksoff": "Quirks Off" }
            },
   "chums": { "style": "font-size: 12px; background: white; border:0px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
@@ -333,6 +334,7 @@
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/op.png" }
+  "op": { "icon": "$path/op.png" },
+  "voice": { "icon": "$path/voice.png" }
  }
 }

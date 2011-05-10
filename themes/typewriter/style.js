@@ -48,6 +48,7 @@
                                "movechum": "Move To",
                                "banuser": "Expel User",
                                "opuser": "Promote",
+                               "voiceuser": "Let Speak",
                                "quirksoff": "Quirks Off"
                               }
            },
@@ -252,6 +253,7 @@
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/protective.png" }
+  "op": { "icon": "$path/protective.png" },
+  "voice": { "icon": "$path/voice.png" }
  }
 }

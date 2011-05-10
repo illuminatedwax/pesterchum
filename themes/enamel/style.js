@@ -45,6 +45,7 @@
                                "movechum": "Move To",
                                "banuser": "Ban User",
                                "opuser": "Make OP",
+                               "voiceuser": "Give Voice",
                                "quirksoff": "Quirks Off"
                               }
            },
@@ -314,6 +315,7 @@
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/smooth.png" }
+  "op": { "icon": "$path/smooth.png" },
+  "voice": { "icon": "$path/voice.png" }
  }
 }
