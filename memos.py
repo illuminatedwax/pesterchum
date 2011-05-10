@@ -163,6 +163,8 @@ class TimeTracker(list):
         timed = self.getTime()
         return self.getGrammarTime(timed)
     def getGrammarTime(self, timed):
+        if not timed:
+            timed = timedelta(0)
         mytime = timedelta(0)
         (temporal, pcf, when) = pcfGrammar(timed - mytime)
         if timed == mytime:
