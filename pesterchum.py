@@ -879,6 +879,8 @@ class chumArea(RightClickTree):
                 self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
     def takeItem(self, chumLabel):
         r = None
+        if not hasattr(chumLabel, 'chum'):
+            return r
         for i in range(self.topLevelItemCount()):
             for j in range(self.topLevelItem(i).childCount()):
                 if self.topLevelItem(i).child(j).text(0) == chumLabel.chum.handle:
@@ -1411,19 +1413,23 @@ class PesterWindow(MovingWindow):
         profilemenu.addAction(changecoloraction)
         profilemenu.addAction(switch)
 
-        self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
-        self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('aboutPesterchum()'))
-        self.botAction = QtGui.QAction("CALSPRITE", self)
-        self.connect(self.botAction, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('loadCalsprite()'))
         self.helpAction = QtGui.QAction("HELP", self)
         self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('launchHelp()'))
+        self.botAction = QtGui.QAction("CALSPRITE", self)
+        self.connect(self.botAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('loadCalsprite()'))
+        self.nickServAction = QtGui.QAction("NICKSERV", self)
+        self.connect(self.nickServAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('loadNickServ()'))
+        self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
+        self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('aboutPesterchum()'))
         helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
         self.helpmenu = helpmenu
         self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.botAction)
+        self.helpmenu.addAction(self.nickServAction)
         self.helpmenu.addAction(self.aboutAction)
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
@@ -1608,7 +1614,19 @@ class PesterWindow(MovingWindow):
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
-        self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
+        if str(chum.handle).upper() == "NICKSERV" or \
+           str(chum.handle).upper() == "CHANSERV" or \
+           str(chum.handle).upper() == "MEMOSERV" or \
+           str(chum.handle).upper() == "OPERSERV" or \
+           str(chum.handle).upper() == "HELPSERV":
+            convoWindow.toggleQuirks(True)
+            convoWindow.quirksOff.setChecked(True)
+        else:
+            if str(chum.handle).upper() == "CALSPRITE" or \
+               str(chum.handle).upper() == "RANDOMENCOUNTER":
+                convoWindow.toggleQuirks(True)
+                convoWindow.quirksOff.setChecked(True)
+            self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
 
     def createTabWindow(self):
@@ -1907,6 +1925,12 @@ class PesterWindow(MovingWindow):
     def deliverMemo(self, chan, handle, msg):
         (c, h, m) = (unicode(chan), unicode(handle), unicode(msg))
         self.newMemoMsg(c,h,m)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def deliverNotice(self, handle, msg):
+        h = unicode(handle)
+        m = unicode(msg)
+        if self.convos.has_key(h):
+            self.newMessage(h, m)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def timeCommand(self, chan, handle, command):
         (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
@@ -2510,6 +2534,9 @@ class PesterWindow(MovingWindow):
     def loadCalsprite(self):
         self.newConversation("calSprite")
     @QtCore.pyqtSlot()
+    def loadNickServ(self):
+        self.newConversation("nickServ")
+    @QtCore.pyqtSlot()
     def launchHelp(self):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://nova.xzibition.com/~illuminatedwax/help.html", QtCore.QUrl.TolerantMode))
 
@@ -2680,6 +2707,8 @@ class MainProgram(QtCore.QObject):
                    'deliverMessage(QString, QString)'),
                   ('memoReceived(QString, QString, QString)',
                    'deliverMemo(QString, QString, QString)'),
+                  ('noticeReceived(QString, QString)',
+                   'deliverNotice(QString, QString)'),
                   ('nickCollision(QString, QString)',
                    'nickCollision(QString, QString)'),
                   ('myHandleChanged(QString)',

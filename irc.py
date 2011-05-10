@@ -217,6 +217,7 @@ class PesterIRC(QtCore.QThread):
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     memoReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
+    noticeReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     timeCommand = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
     channelListReceived = QtCore.pyqtSignal(PesterList)
@@ -227,6 +228,18 @@ class PesterIRC(QtCore.QThread):
                                    QtCore.QString)
 
 class PesterHandler(DefaultCommandHandler):
+    def notice(self, nick, chan, msg):
+        try:
+            msg = msg.decode('utf-8')
+        except UnicodeDecodeError:
+            msg = msg.decode('iso-8859-1', 'ignore')
+        handle = nick[0:nick.find("!")]
+        logging.info("---> recv \"NOTICE %s :%s\"" % (handle, msg))
+        if handle == "ChanServ":
+            if chan == self.parent.mainwindow.profile().handle and msg[0:2] == "[#":
+                self.parent.memoReceived.emit(msg[1:msg.index("]")], handle, msg)
+        else:
+            self.parent.noticeReceived.emit(handle, msg)
     def privmsg(self, nick, chan, msg):
         try:
             msg = msg.decode('utf-8')
