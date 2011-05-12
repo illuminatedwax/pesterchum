@@ -7,6 +7,14 @@ from generic import RightClickList, RightClickTree
 from parsetools import convertTags
 from convo import PesterText
 
+class PesterLogSearchInput(QtGui.QLineEdit):
+    def __init__(self, theme, parent=None):
+        QtGui.QLineEdit.__init__(self, parent)
+        self.setStyleSheet(theme["convo/input/style"] + "margin-right:0px;")
+    def keyPressEvent(self, event):
+        QtGui.QLineEdit.keyPressEvent(self, event)
+        self.parent().logSearch(self.text())
+
 class PesterLogUserSelect(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -44,6 +52,9 @@ class PesterLogUserSelect(QtGui.QDialog):
             item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
             self.chumsBox.addItem(item)
 
+        self.search = PesterLogSearchInput(theme, self)
+        self.search.setFocus()
+
         self.cancel = QtGui.QPushButton("CANCEL", self)
         self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('reject()'))
@@ -58,12 +69,19 @@ class PesterLogUserSelect(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(instructions)
         layout_0.addWidget(self.chumsBox)
+        layout_0.addWidget(self.search)
         layout_0.addLayout(layout_ok)
 
         self.setLayout(layout_0)
 
     def selectedchum(self):
         return self.chumsBox.currentItem()
+
+    def logSearch(self, search):
+        found = self.chumsBox.findItems(search, QtCore.Qt.MatchStartsWith)
+        print found
+        if len(found) > 0 and len(found) < self.chumsBox.count():
+            self.chumsBox.setCurrentItem(found[0])
 
     @QtCore.pyqtSlot()
     def viewActivatedLog(self):
