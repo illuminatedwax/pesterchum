@@ -973,7 +973,7 @@ class PesterMemoList(QtGui.QDialog):
         self.channelarea.setColumnWidth(1,10)
         self.connect(self.channelarea,
                      QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
-                     self, QtCore.SLOT('joinActivatedMemo(QTreeWidgetItem *, int)'))
+                     self, QtCore.SLOT('joinActivatedMemo(QTreeWidgetItem, int)'))
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
