@@ -221,20 +221,21 @@ class PesterText(QtGui.QTextEdit):
                      self, QtCore.SLOT('textReady(bool)'))
         self.urls = {}
         for k in smiledict:
-            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]));
+            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]))
     def addAnimation(self, url, fileName):
         movie = QtGui.QMovie(self)
         movie.setFileName(fileName)
         self.urls[movie] = url
         self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
-                     self, QtCore.SLOT('animate()'));
-        movie.start();
+                     self, QtCore.SLOT('animate()'))
+        movie.start()
     @QtCore.pyqtSlot()
     def animate(self):
         movie = self.sender()
+        self.document().resource(QtGui.QTextDocument.ImageResource, self.urls[movie]).clear()
         self.document().addResource(QtGui.QTextDocument.ImageResource,
-                               self.urls[movie], movie.currentPixmap());
-        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth());
+                               self.urls[movie], movie.currentPixmap())
+        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
 
     @QtCore.pyqtSlot(bool)
     def textReady(self, ready):
@@ -331,7 +332,8 @@ class PesterText(QtGui.QTextEdit):
         QtGui.QTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, event):
-        self.parent().textInput.keyPressEvent(event)
+        if hasattr(self.parent(), 'textInput'):
+            self.parent().textInput.keyPressEvent(event)
         QtGui.QTextEdit.keyPressEvent(self, event)
 
     def mousePressEvent(self, event):
