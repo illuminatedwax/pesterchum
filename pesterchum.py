@@ -1,6 +1,6 @@
 # pesterchum
 import logging
-import os, sys
+import os, sys, getopt
 import os.path
 from datetime import *
 from string import Template
@@ -13,7 +13,6 @@ import platform
 from PyQt4 import QtGui, QtCore
 import pygame
 from time import strftime
-import getopt
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
@@ -265,7 +264,8 @@ class pesterTheme(dict):
                 return False
 
 class userConfig(object):
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         if sys.platform != "darwin":
             self.filename = "pesterchum.js"
         else:
@@ -426,8 +426,12 @@ class userConfig(object):
         fp.close()
 
     def server(self):
+        if hasattr(self.parent, 'serverOverride'):
+            return self.parent.serverOverride
         return self.config.get('server', 'irc.mindfang.org')
     def port(self):
+        if hasattr(self.parent, 'portOverride'):
+            return self.parent.portOverride
         return self.config.get('port', '6667')
     def soundOn(self):
         if not self.config.has_key('soundon'):
@@ -1325,7 +1329,7 @@ class MovingWindow(QtGui.QFrame):
 
 
 class PesterWindow(MovingWindow):
-    def __init__(self, parent=None, advanced=False):
+    def __init__(self, options, parent=None):
         MovingWindow.__init__(self, parent,
                               (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
@@ -1333,11 +1337,17 @@ class PesterWindow(MovingWindow):
         self.memos = CaseInsensitiveDict()
         self.tabconvo = None
         self.tabmemo = None
-        self.advanced = advanced
+        if "advanced" in options:
+              self.advanced = options["advanced"]
+        else: self.advanced = False
+        if "server" in options:
+            self.serverOverride = options["server"]
+        if "port" in options:
+            self.portOverride = options["port"]
 
         self.setAutoFillBackground(True)
         self.setObjectName("main")
-        self.config = userConfig()
+        self.config = userConfig(self)
         if self.config.defaultprofile():
             self.userprofile = userProfile(self.config.defaultprofile())
             self.theme = self.userprofile.getTheme()
@@ -2655,7 +2665,7 @@ class MainProgram(QtCore.QObject):
         self.app = QtGui.QApplication(sys.argv)
         self.app.setApplicationName("Pesterchum 3.14")
 
-        self.oppts(sys.argv[1:])
+        options = self.oppts(sys.argv[1:])
 
         if pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
@@ -2665,7 +2675,7 @@ class MainProgram(QtCore.QObject):
                 print "Warning: No sound! %s" % (e)
         else:
             print "Warning: No sound!"
-        self.widget = PesterWindow(advanced=self.advanced)
+        self.widget = PesterWindow(options)
         self.widget.show()
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
@@ -2865,14 +2875,19 @@ class MainProgram(QtCore.QObject):
             self.showLoading(self.widget, "F41L3D: %s" % stop)
 
     def oppts(self, argv):
-        self.advanced = False
+        options = {}
         try:
-            opts, args = getopt.getopt(argv, "", ["advanced"])
+            opts, args = getopt.getopt(argv, "s:p:", ["server=", "port=", "advanced"])
         except getopt.GetoptError:
-            return
+            return options
         for opt, arg in opts:
-            if opt in ("--advanced"):
-                self.advanced = True
+            if opt in ("-s", "--server"):
+                options["server"] = arg
+            elif opt in ("-p", "--port"):
+                options["port"] = arg
+            elif opt in ("--advanced"):
+                options["advanced"] = True
+        return options
 
     def run(self):
         self.irc.start()
