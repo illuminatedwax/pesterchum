@@ -92,6 +92,7 @@ class PesterLog(object):
             if not self.parent.config.logMemos(): return
         else:
             if not self.parent.config.logPesters(): return
+        if str(handle).upper() == "NICKSERV": return
         #watch out for illegal characters
         handle = re.sub(r'[<>:"/\\|?*]', "_", handle)
         #time = strftime("[%H:%M:%S] ")
