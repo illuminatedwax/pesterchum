@@ -13,6 +13,7 @@ import platform
 from PyQt4 import QtGui, QtCore
 import pygame
 from time import strftime
+import getopt
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
@@ -1316,7 +1317,7 @@ class MovingWindow(QtGui.QFrame):
 
 
 class PesterWindow(MovingWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, advanced=False):
         MovingWindow.__init__(self, parent,
                               (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
@@ -1324,6 +1325,7 @@ class PesterWindow(MovingWindow):
         self.memos = CaseInsensitiveDict()
         self.tabconvo = None
         self.tabmemo = None
+        self.advanced = advanced
 
         self.setAutoFillBackground(True)
         self.setObjectName("main")
@@ -1334,6 +1336,7 @@ class PesterWindow(MovingWindow):
         else:
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
             self.theme = self.userprofile.getTheme()
+        self.modes = ""
 
         try:
             themeChecker(self.theme)
@@ -2429,6 +2432,11 @@ class PesterWindow(MovingWindow):
         curopvmess = self.config.opvoiceMessages()
         if opvmesssetting != curopvmess:
             self.config.set('opvMessages', opvmesssetting)
+        # advanced
+        ## user mode
+        newmodes = self.optionmenu.modechange.text()
+        if newmodes:
+            self.setChannelMode.emit(self.profile().handle, newmodes, "")
         self.optionmenu = None
 
     def setButtonAction(self, button, setting, old):
@@ -2638,6 +2646,9 @@ class MainProgram(QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
         self.app.setApplicationName("Pesterchum 3.14")
+
+        self.oppts(sys.argv[1:])
+
         if pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
             try:
@@ -2646,7 +2657,7 @@ class MainProgram(QtCore.QObject):
                 print "Warning: No sound! %s" % (e)
         else:
             print "Warning: No sound!"
-        self.widget = PesterWindow()
+        self.widget = PesterWindow(advanced=self.advanced)
         self.widget.show()
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
@@ -2844,6 +2855,16 @@ class MainProgram(QtCore.QObject):
         else:
             self.reconnectok = True
             self.showLoading(self.widget, "F41L3D: %s" % stop)
+
+    def oppts(self, argv):
+        self.advanced = False
+        try:
+            opts, args = getopt.getopt(argv, "", ["advanced"])
+        except getopt.GetoptError:
+            return
+        for opt, arg in opts:
+            if opt in ("--advanced"):
+                self.advanced = True
 
     def run(self):
         self.irc.start()

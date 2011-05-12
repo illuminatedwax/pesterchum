@@ -622,6 +622,7 @@ class PesterOptions(QtGui.QDialog):
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
         tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Logging", "Idle", "Theme"]
+        if parent.advanced: tabNames.append("Advanced")
         for t in tabNames:
             button = QtGui.QPushButton(t)
             self.tabs.addButton(button)
@@ -728,6 +729,11 @@ class PesterOptions(QtGui.QDialog):
         layout_close.addWidget(QtGui.QLabel("Close"))
         layout_close.addWidget(self.closeBox)
 
+        self.modechange = QtGui.QLineEdit(self)
+        layout_change = QtGui.QHBoxLayout()
+        layout_change.addWidget(QtGui.QLabel("Change:"))
+        layout_change.addWidget(self.modechange)
+
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
@@ -808,6 +814,15 @@ class PesterOptions(QtGui.QDialog):
         layout_theme.addWidget(QtGui.QLabel("Pick a Theme:"))
         layout_theme.addWidget(self.themeBox)
         self.pages.addWidget(widget)
+
+        # Advanced
+        if parent.advanced:
+            widget = QtGui.QWidget()
+            layout_advanced = QtGui.QVBoxLayout(widget)
+            layout_advanced.setAlignment(QtCore.Qt.AlignTop)
+            layout_advanced.addWidget(QtGui.QLabel("Current User Mode: %s" % parent.modes))
+            layout_advanced.addLayout(layout_change)
+            self.pages.addWidget(widget)
 
         layout_0 = QtGui.QVBoxLayout()
         layout_1 = QtGui.QHBoxLayout()

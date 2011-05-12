@@ -383,6 +383,9 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.channelListReceived.emit(pl)
         self.channel_list = []
 
+    def umodeis(self, server, handle, modes):
+        self.parent.mainwindow.modes = modes
+
     def getMood(self, *chums):
         chumglub = "GETMOOD "
         for c in chums:
