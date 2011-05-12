@@ -15,6 +15,18 @@ class PesterLogSearchInput(QtGui.QLineEdit):
         QtGui.QLineEdit.keyPressEvent(self, event)
         self.parent().logSearch(self.text())
 
+class PesterLogHighlighter(QtGui.QSyntaxHighlighter):
+    def __init__(self, parent):
+        QtGui.QSyntaxHighlighter.__init__(self, parent)
+        self.searchTerm = ""
+        self.hilightstyle = QtGui.QTextCharFormat()
+        self.hilightstyle.setBackground(QtGui.QBrush(QtCore.Qt.green))
+        self.hilightstyle.setForeground(QtGui.QBrush(QtCore.Qt.black))
+    def highlightBlock(self, text):
+        for i in range(0, len(text)-(len(self.searchTerm)-1)):
+            if str(text[i:i+len(self.searchTerm)]).lower() == str(self.searchTerm).lower():
+                self.setFormat(i, len(self.searchTerm), self.hilightstyle)
+
 class PesterLogUserSelect(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -79,7 +91,6 @@ class PesterLogUserSelect(QtGui.QDialog):
 
     def logSearch(self, search):
         found = self.chumsBox.findItems(search, QtCore.Qt.MatchStartsWith)
-        print found
         if len(found) > 0 and len(found) < self.chumsBox.count():
             self.chumsBox.setCurrentItem(found[0])
 
@@ -180,7 +191,11 @@ class PesterLogViewer(QtGui.QDialog):
                 child_1.addChild(QtGui.QTreeWidgetItem([self.fileToTime(l)]))
                 last = self.fileToMonthYear(l)
 
+            self.hilight = PesterLogHighlighter(self.textArea)
             if len(self.logList) > 0: self.loadLog(self.logList[0])
+
+            self.search = PesterLogSearchInput(theme, self)
+            self.search.setFocus()
 
             self.qdb = QtGui.QPushButton("Pesterchum QDB", self)
             self.connect(self.qdb, QtCore.SIGNAL('clicked()'),
@@ -197,7 +212,10 @@ class PesterLogViewer(QtGui.QDialog):
 
             layout_logs = QtGui.QHBoxLayout()
             layout_logs.addWidget(self.tree)
-            layout_logs.addWidget(self.textArea)
+            layout_right = QtGui.QVBoxLayout()
+            layout_right.addWidget(self.textArea)
+            layout_right.addWidget(self.search)
+            layout_logs.addLayout(layout_right)
 
             layout_0 = QtGui.QVBoxLayout()
             layout_0.addWidget(self.instructions)
@@ -226,6 +244,10 @@ class PesterLogViewer(QtGui.QDialog):
         textCur.movePosition(1)
         self.textArea.setTextCursor(textCur)
         self.instructions.setText("Pesterlog with " +self.chum+ " on " + self.fileToTime(str(fname)))
+
+    def logSearch(self, search):
+        self.hilight.searchTerm = search
+        self.hilight.rehighlight()
 
     def fileToMonthYear(self, fname):
         time = strptime(fname[(fname.index(".")+1):fname.index(".txt")], "%Y-%m-%d.%H.%M")

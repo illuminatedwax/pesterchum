@@ -27,6 +27,7 @@ CHANGELOG
 * Display (De)OP/Voice messages in memos - Kiooeht [evacipatedBox]
 * Advanced Mode: Alter IRC user mode - Kiooeht [evacipatedBox]
 * Logviewer chum search - Kiooeht [evacipatedBox]
+* Logviewer log search - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
