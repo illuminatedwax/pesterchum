@@ -696,9 +696,17 @@ class PesterOptions(QtGui.QDialog):
         layout_3.addWidget(self.sortBox, 10)
 
         self.logpesterscheck = QtGui.QCheckBox("Log all Pesters", self)
-        self.logpesterscheck.setChecked(self.config.logPesters())
+        if self.config.logPesters() & self.config.LOG:
+            self.logpesterscheck.setChecked(True)
         self.logmemoscheck = QtGui.QCheckBox("Log all Memos", self)
-        self.logmemoscheck.setChecked(self.config.logMemos())
+        if self.config.logMemos() & self.config.LOG:
+            self.logmemoscheck.setChecked(True)
+        self.stamppestercheck = QtGui.QCheckBox("Log Time Stamps for Pesters", self)
+        if self.config.logPesters() & self.config.STAMP:
+            self.stamppestercheck.setChecked(True)
+        self.stampmemocheck = QtGui.QCheckBox("Log Time Stamps for Memos", self)
+        if self.config.logMemos() & self.config.STAMP:
+            self.stampmemocheck.setChecked(True)
 
         self.idleBox = QtGui.QSpinBox(self)
         self.idleBox.setStyleSheet("background:#FFFFFF")
@@ -798,6 +806,8 @@ class PesterOptions(QtGui.QDialog):
         layout_logs.setAlignment(QtCore.Qt.AlignTop)
         layout_logs.addWidget(self.logpesterscheck)
         layout_logs.addWidget(self.logmemoscheck)
+        layout_logs.addWidget(self.stamppestercheck)
+        layout_logs.addWidget(self.stampmemocheck)
         self.pages.addWidget(widget)
 
         # Idle

@@ -88,18 +88,28 @@ class PesterLog(object):
             self.logpath = _datadir+"logs"
 
     def log(self, handle, msg):
-        if handle[0] == '#':
-            if not self.parent.config.logMemos(): return
+        if self.parent.config.time12Format():
+            time = strftime("[%I:%M")
         else:
-            if not self.parent.config.logPesters(): return
+            time = strftime("[%H:%M")
+        if self.parent.config.showSeconds():
+            time += strftime(":%S] ")
+        else:
+            time += "] "
+        if handle[0] == '#':
+            if not self.parent.config.logMemos() & self.parent.config.LOG: return
+            if not self.parent.config.logMemos() & self.parent.config.STAMP:
+                time = ""
+        else:
+            if not self.parent.config.logPesters() & self.parent.config.LOG: return
+            if not self.parent.config.logPesters() & self.parent.config.STAMP:
+                time = ""
         if str(handle).upper() == "NICKSERV": return
         #watch out for illegal characters
         handle = re.sub(r'[<>:"/\\|?*]', "_", handle)
-        #time = strftime("[%H:%M:%S] ")
-        # no time codes in logs
-        bbcodemsg = convertTags(msg, "bbcode")
-        html = convertTags(msg, "html")+"<br />"
-        msg = convertTags(msg, "text")
+        bbcodemsg = time + convertTags(msg, "bbcode")
+        html = time + convertTags(msg, "html")+"<br />"
+        msg = time +convertTags(msg, "text")
         modes = {"bbcode": bbcodemsg, "html": html, "text": msg}
         if not self.convos.has_key(handle):
             time = datetime.now().strftime("%Y-%m-%d.%H.%M")
@@ -267,6 +277,9 @@ class pesterTheme(dict):
 class userConfig(object):
     def __init__(self, parent):
         self.parent = parent
+        # Use for bit flag log setting
+        self.LOG = 1
+        self.STAMP = 2
         if sys.platform != "darwin":
             self.filename = "pesterchum.js"
         else:
@@ -345,9 +358,9 @@ class userConfig(object):
             self.set("onlineNumbers", False)
         return self.config.get('onlineNumbers', False)
     def logPesters(self):
-        return self.config.get('logPesters', True)
+        return self.config.get('logPesters', self.LOG | self.STAMP)
     def logMemos(self):
-        return self.config.get('logMemos', True)
+        return self.config.get('logMemos', self.LOG)
     def disableUserLinks(self):
         return not self.config.get('userLinks', True)
     def idleTime(self):
@@ -2414,11 +2427,19 @@ class PesterWindow(MovingWindow):
             self.chumList.hideOnlineNumbers()
         self.config.set("onlineNumbers", onlinenumsetting)
         # logging
-        logpesterssetting = self.optionmenu.logpesterscheck.isChecked()
+        logpesterssetting = 0
+        if self.optionmenu.logpesterscheck.isChecked():
+            logpesterssetting = logpesterssetting | self.config.LOG
+        if self.optionmenu.stamppestercheck.isChecked():
+            logpesterssetting = logpesterssetting | self.config.STAMP
         curlogpesters = self.config.logPesters()
         if logpesterssetting != curlogpesters:
             self.config.set('logPesters', logpesterssetting)
-        logmemossetting = self.optionmenu.logmemoscheck.isChecked()
+        logmemossetting = 0
+        if self.optionmenu.logmemoscheck.isChecked():
+            logmemossetting = logmemossetting | self.config.LOG
+        if self.optionmenu.stampmemocheck.isChecked():
+            logmemossetting = logmemossetting | self.config.STAMP
         curlogmemos = self.config.logMemos()
         if logmemossetting != curlogmemos:
             self.config.set('logMemos', logmemossetting)
