@@ -37,6 +37,14 @@ if sys.platform == "darwin":
     if not os.path.exists(_datadir+"pesterchum.js"):
         f = open(_datadir+"pesterchum.js", 'w')
         f.close()
+else:
+    if not os.path.exists("logs"):
+        os.mkdir("logs")
+    if not os.path.exists("profiles"):
+        os.mkdir("profiles")
+    if not os.path.exists("pesterchum.js"):
+        f = open("pesterchum.js", 'w')
+        f.close()
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):

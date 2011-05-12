@@ -35,6 +35,7 @@ CHANGELOG
     * Auto rejoin memos on reconnect - Kiooeht [evacipatedBox]
     * De-Op in memos correctly - Kiooeht [evacipatedBox]
     * Don't blow up if someone's not using Pesterchum in a memo - Kiooeht [evacipatedBox]
+    * Make 'logs' and 'profiles' directories if non-existant - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
