@@ -666,6 +666,10 @@ class PesterOptions(QtGui.QDialog):
         if self.config.showSeconds():
             self.secondscheck.setChecked(True)
 
+        self.memomessagecheck = QtGui.QCheckBox("Show OP and Voice Messages in Memos", self)
+        if self.config.opvoiceMessages():
+            self.memomessagecheck.setChecked(True)
+
         self.userlinkscheck = QtGui.QCheckBox("Disable #Memo and @User Links", self)
         self.userlinkscheck.setChecked(self.config.disableUserLinks())
         self.userlinkscheck.setVisible(False)
@@ -754,6 +758,7 @@ class PesterOptions(QtGui.QDialog):
         layout_chat.addWidget(self.timestampcheck)
         layout_chat.addWidget(self.timestampBox)
         layout_chat.addWidget(self.secondscheck)
+        layout_chat.addWidget(self.memomessagecheck)
         # Re-enable these when it's possible to disable User and Memo links
         #layout_chat.addWidget(hr)
         #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))

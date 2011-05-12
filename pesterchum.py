@@ -346,6 +346,8 @@ class userConfig(object):
         return self.config.get('miniAction', 0)
     def closeAction(self):
         return self.config.get('closeAction', 1)
+    def opvoiceMessages(self):
+        return self.config.get('opvMessages', True)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -777,7 +779,6 @@ class chumArea(RightClickTree):
                 child_1 = QtGui.QTreeWidgetItem(["%s" % (g)])
                 j = 0
                 for h in self.groups:
-                    print h + ":" + g
                     if h == g:
                         self.insertTopLevelItem(j, child_1)
                         break
@@ -2423,6 +2424,11 @@ class PesterWindow(MovingWindow):
         if closesetting != curclose:
             self.config.set('closeAction', closesetting)
             self.setButtonAction(self.closeButton, closesetting, curclose)
+        # op and voice messages
+        opvmesssetting = self.optionmenu.memomessagecheck.isChecked()
+        curopvmess = self.config.opvoiceMessages()
+        if opvmesssetting != curopvmess:
+            self.config.set('opvMessages', opvmesssetting)
         self.optionmenu = None
 
     def setButtonAction(self, button, setting, old):
@@ -2630,7 +2636,7 @@ class MainProgram(QtCore.QObject):
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
-        self.app.setApplicationName("Pesterchum 3.14");
+        self.app.setApplicationName("Pesterchum 3.14")
         if pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
             try:

@@ -252,6 +252,22 @@ class PesterProfile(object):
         return "<c=%s><c=%s>%s %s [%s]</c> %s %s." % \
             (syscolor.name(), self.colorhtml(), temporal, self.handle,
              initials, timetext, verb)
+    def memoopmsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> made <c=%s>%s</c> an OP." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memodeopmsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> took away <c=%s>%s</c>'s OP powers." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memovoicemsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> gave <c=%s>%s</c> voice." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memodevoicemsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> took away <c=%s>%s</c>'s voice." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
 
     @staticmethod
     def checkLength(handle):
