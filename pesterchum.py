@@ -2614,6 +2614,7 @@ class PesterWindow(MovingWindow):
     joinChannel = QtCore.pyqtSignal(QtCore.QString)
     leftChannel = QtCore.pyqtSignal(QtCore.QString)
     setChannelMode = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
+    channelNames = QtCore.pyqtSignal(QtCore.QString)
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
 
@@ -2719,6 +2720,8 @@ class MainProgram(QtCore.QObject):
                    'kickUser(QString, QString)'),
                   ('setChannelMode(QString, QString, QString)',
                    'setChannelMode(QString, QString, QString)'),
+                  ('channelNames(QString)',
+                   'channelNames(QString)'),
                   ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window

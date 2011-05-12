@@ -212,6 +212,13 @@ class PesterIRC(QtCore.QThread):
             helpers.mode(self.cli, c, m, cmd)
         except socket.error:
             self.setConnectionBroken()
+    @QtCore.pyqtSlot(QtCore.QString)
+    def channelNames(self, channel):
+        c = unicode(channel)
+        try:
+            helpers.names(self.cli, c)
+        except socket.error:
+            self.setConnectionBroken()
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
