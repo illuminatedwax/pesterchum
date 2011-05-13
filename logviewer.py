@@ -126,6 +126,7 @@ class PesterLogViewer(QtGui.QDialog):
         self.config = config
         self.theme = theme
         self.parent = parent
+        self.mainwindow = parent
         global _datadir
         self.handle = parent.profile().handle
         self.chum = chum
@@ -207,13 +208,13 @@ class PesterLogViewer(QtGui.QDialog):
             font.setPointSize(8)
             self.find.setFont(font)
             self.find.setDefault(True)
-            self.find.setFixedSize(40, 16)
+            self.find.setFixedSize(40, 20)
             layout_search = QtGui.QHBoxLayout()
             layout_search.addWidget(self.search)
             layout_search.addWidget(self.find)
 
             self.qdb = QtGui.QPushButton("Pesterchum QDB", self)
-            self.qdb.setFixedWidth(200)
+            self.qdb.setFixedWidth(260)
             self.connect(self.qdb, QtCore.SIGNAL('clicked()'),
                          self, QtCore.SLOT('openQDB()'))
             self.ok = QtGui.QPushButton("CLOSE", self)

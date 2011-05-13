@@ -670,6 +670,14 @@ class PesterOptions(QtGui.QDialog):
         if self.config.opvoiceMessages():
             self.memomessagecheck.setChecked(True)
 
+        self.animationscheck = QtGui.QCheckBox("Use animated smilies", self)
+        if self.config.animations():
+            self.animationscheck.setChecked(True)
+        animateLabel = QtGui.QLabel("(Disable if you leave chats open for LOOOONG periods of time)")
+        font = animateLabel.font()
+        font.setPointSize(8)
+        animateLabel.setFont(font)
+
         self.userlinkscheck = QtGui.QCheckBox("Disable #Memo and @User Links", self)
         self.userlinkscheck.setChecked(self.config.disableUserLinks())
         self.userlinkscheck.setVisible(False)
@@ -773,6 +781,8 @@ class PesterOptions(QtGui.QDialog):
         layout_chat.addWidget(self.timestampBox)
         layout_chat.addWidget(self.secondscheck)
         layout_chat.addWidget(self.memomessagecheck)
+        layout_chat.addWidget(self.animationscheck)
+        layout_chat.addWidget(animateLabel)
         # Re-enable these when it's possible to disable User and Memo links
         #layout_chat.addWidget(hr)
         #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))

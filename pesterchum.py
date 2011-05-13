@@ -372,6 +372,8 @@ class userConfig(object):
         return self.config.get('closeAction', 1)
     def opvoiceMessages(self):
         return self.config.get('opvMessages', True)
+    def animations(self):
+        return self.config.get('animations', True)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -2473,6 +2475,11 @@ class PesterWindow(MovingWindow):
         curopvmess = self.config.opvoiceMessages()
         if opvmesssetting != curopvmess:
             self.config.set('opvMessages', opvmesssetting)
+        # animated smiles
+        animatesetting = self.optionmenu.animationscheck.isChecked()
+        curanimate = self.config.animations()
+        if animatesetting != curanimate:
+            self.config.set('animations', animatesetting)
         # advanced
         ## user mode
         if self.advanced:

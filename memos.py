@@ -237,6 +237,10 @@ _ctag_begin = re.compile(r'<c=(.*?)>')
 class MemoText(PesterText):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        if hasattr(self.parent(), 'mainwindow'):
+            self.mainwindow = self.parent().mainwindow
+        else:
+            self.mainwindow = self.parent()
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)

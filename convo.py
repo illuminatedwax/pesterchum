@@ -213,6 +213,10 @@ class PesterTabWindow(QtGui.QFrame):
 class PesterText(QtGui.QTextEdit):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        if hasattr(self.parent(), 'mainwindow'):
+            self.mainwindow = self.parent().mainwindow
+        else:
+            self.mainwindow = self.parent()
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
@@ -231,11 +235,13 @@ class PesterText(QtGui.QTextEdit):
         movie.start()
     @QtCore.pyqtSlot()
     def animate(self):
-        movie = self.sender()
-        self.document().resource(QtGui.QTextDocument.ImageResource, self.urls[movie]).clear()
-        self.document().addResource(QtGui.QTextDocument.ImageResource,
-                               self.urls[movie], movie.currentPixmap())
-        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+        if self.mainwindow.config.animations():
+            movie = self.sender()
+            self.document().resource(QtGui.QTextDocument.ImageResource, self.urls[movie]).clear()
+            self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                   self.urls[movie], movie.currentPixmap())
+            self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+
 
     @QtCore.pyqtSlot(bool)
     def textReady(self, ready):
