@@ -43,6 +43,7 @@ else:
         os.mkdir("profiles")
     if not os.path.exists("pesterchum.js"):
         f = open("pesterchum.js", 'w')
+        f.write("{}")
         f.close()
 
 class waitingMessageHolder(object):
