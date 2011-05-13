@@ -2474,9 +2474,10 @@ class PesterWindow(MovingWindow):
             self.config.set('opvMessages', opvmesssetting)
         # advanced
         ## user mode
-        newmodes = self.optionmenu.modechange.text()
-        if newmodes:
-            self.setChannelMode.emit(self.profile().handle, newmodes, "")
+        if self.advanced:
+            newmodes = self.optionmenu.modechange.text()
+            if newmodes:
+                self.setChannelMode.emit(self.profile().handle, newmodes, "")
         self.optionmenu = None
 
     def setButtonAction(self, button, setting, old):

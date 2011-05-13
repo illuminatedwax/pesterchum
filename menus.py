@@ -517,7 +517,7 @@ class PesterChooseProfile(QtGui.QDialog):
         self.cancel = QtGui.QPushButton("CANCEL", self)
         self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('reject()'))
-        if not collision:
+        if not collision and avail_profiles:
             self.delete = QtGui.QPushButton("DELETE", self)
             self.connect(self.delete, QtCore.SIGNAL('clicked()'),
                          self, QtCore.SLOT('deleteProfile()'))
@@ -537,7 +537,7 @@ class PesterChooseProfile(QtGui.QDialog):
             layout_0.addWidget(profileLabel)
             layout_0.addWidget(self.profileBox)
         layout_0.addLayout(layout_ok)
-        if not collision:
+        if not collision and avail_profiles:
             layout_0.addWidget(self.delete)
         layout_0.addLayout(layout_2)
         self.errorMsg = QtGui.QLabel(self)
@@ -598,7 +598,6 @@ class PesterChooseProfile(QtGui.QDialog):
                     problem.setInformativeText("There was a problem deleting the profile: %s" % (handle))
                     problem.setStandardButtons(QtGui.QMessageBox.Ok)
                     problem.exec_()
-        self.reject()
 
 class PesterOptions(QtGui.QDialog):
     def __init__(self, config, theme, parent):
@@ -737,10 +736,11 @@ class PesterOptions(QtGui.QDialog):
         layout_close.addWidget(QtGui.QLabel("Close"))
         layout_close.addWidget(self.closeBox)
 
-        self.modechange = QtGui.QLineEdit(self)
-        layout_change = QtGui.QHBoxLayout()
-        layout_change.addWidget(QtGui.QLabel("Change:"))
-        layout_change.addWidget(self.modechange)
+        if parent.advanced:
+            self.modechange = QtGui.QLineEdit(self)
+            layout_change = QtGui.QHBoxLayout()
+            layout_change.addWidget(QtGui.QLabel("Change:"))
+            layout_change.addWidget(self.modechange)
 
         self.ok = QtGui.QPushButton("OK", self)
         self.ok.setDefault(True)
