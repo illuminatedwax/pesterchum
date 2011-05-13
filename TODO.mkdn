@@ -19,6 +19,7 @@ Bugs
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * When using mood sort, scroll position jumps to last selected chum
 * When switching chumhandles, OP doesn't appear to retain OP status (though they do)
+* When left for a really long time, animations slow down pesterchum
 
 Mac Bugs
 --------
