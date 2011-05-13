@@ -13,7 +13,13 @@ class PesterLogSearchInput(QtGui.QLineEdit):
         self.setStyleSheet(theme["convo/input/style"] + "margin-right:0px;")
     def keyPressEvent(self, event):
         QtGui.QLineEdit.keyPressEvent(self, event)
-        self.parent().logSearch(self.text())
+        if hasattr(self.parent(), 'textArea'):
+            if event.key() == QtCore.Qt.Key_Return:
+                self.parent().logSearch(self.text())
+                if self.parent().textArea.find(self.text()):
+                    self.parent().textArea.ensureCursorVisible()
+        else:
+            self.parent().logSearch(self.text())
 
 class PesterLogHighlighter(QtGui.QSyntaxHighlighter):
     def __init__(self, parent):
@@ -24,7 +30,7 @@ class PesterLogHighlighter(QtGui.QSyntaxHighlighter):
         self.hilightstyle.setForeground(QtGui.QBrush(QtCore.Qt.black))
     def highlightBlock(self, text):
         for i in range(0, len(text)-(len(self.searchTerm)-1)):
-            if str(text[i:i+len(self.searchTerm)]).lower() == str(self.searchTerm).lower():
+            if unicode(text[i:i+len(self.searchTerm)]).lower() == unicode(self.searchTerm).lower():
                 self.setFormat(i, len(self.searchTerm), self.hilightstyle)
 
 class PesterLogUserSelect(QtGui.QDialog):
@@ -196,12 +202,21 @@ class PesterLogViewer(QtGui.QDialog):
 
             self.search = PesterLogSearchInput(theme, self)
             self.search.setFocus()
+            self.find = QtGui.QPushButton("Find", self)
+            font = self.find.font()
+            font.setPointSize(8)
+            self.find.setFont(font)
+            self.find.setDefault(True)
+            self.find.setFixedSize(40, 16)
+            layout_search = QtGui.QHBoxLayout()
+            layout_search.addWidget(self.search)
+            layout_search.addWidget(self.find)
 
             self.qdb = QtGui.QPushButton("Pesterchum QDB", self)
+            self.qdb.setFixedWidth(200)
             self.connect(self.qdb, QtCore.SIGNAL('clicked()'),
                          self, QtCore.SLOT('openQDB()'))
             self.ok = QtGui.QPushButton("CLOSE", self)
-            self.ok.setDefault(True)
             self.ok.setFixedWidth(80)
             self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                          self, QtCore.SLOT('reject()'))
@@ -214,7 +229,7 @@ class PesterLogViewer(QtGui.QDialog):
             layout_logs.addWidget(self.tree)
             layout_right = QtGui.QVBoxLayout()
             layout_right.addWidget(self.textArea)
-            layout_right.addWidget(self.search)
+            layout_right.addLayout(layout_search)
             layout_logs.addLayout(layout_right)
 
             layout_0 = QtGui.QVBoxLayout()
