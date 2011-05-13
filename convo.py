@@ -333,7 +333,8 @@ class PesterText(QtGui.QTextEdit):
 
     def keyPressEvent(self, event):
         if hasattr(self.parent(), 'textInput'):
-            self.parent().textInput.keyPressEvent(event)
+            if event.key() not in [QtCore.Qt.Key_PageUp, QtCore.Qt.Key_PageDown]:
+                self.parent().textInput.keyPressEvent(event)
         QtGui.QTextEdit.keyPressEvent(self, event)
 
     def mousePressEvent(self, event):
