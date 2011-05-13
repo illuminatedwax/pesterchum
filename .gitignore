@@ -4,3 +4,4 @@ profiles/*
 tmp/*
 irctest.log
 *.pyc
+pesterchum.js
