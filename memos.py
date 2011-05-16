@@ -558,6 +558,17 @@ class PesterMemo(PesterConvo):
             icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
             item.setIcon(icon)
         self.userlist.addItem(item)
+        self.sortUsers()
+
+    def sortUsers(self):
+        users = []
+        listing = self.userlist.item(0)
+        while listing is not None:
+            users.append(self.userlist.takeItem(0))
+            listing = self.userlist.item(0)
+        users.sort(key=lambda x: ((0 if x.op else 1), (0 if x.voice else 1), x.text()))
+        for u in users:
+            self.userlist.addItem(u)
 
     def timeUpdate(self, handle, cmd):
         window = self.mainwindow
@@ -764,6 +775,7 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.addAction(self.opAction)
                     self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
+            self.sortUsers()
         elif update == "-o":
             self.mainwindow.channelNames.emit(self.channel)
             if self.mainwindow.config.opvoiceMessages():
@@ -798,6 +810,7 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.removeAction(self.opAction)
                     self.userlist.optionsMenu.removeAction(self.voiceAction)
                     self.userlist.optionsMenu.removeAction(self.banuserAction)
+            self.sortUsers()
         elif update == "+v":
             if self.mainwindow.config.opvoiceMessages():
                 chum = PesterProfile(h)
@@ -824,6 +837,7 @@ class PesterMemo(PesterConvo):
                 if not c.op:
                     icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
                     c.setIcon(icon)
+            self.sortUsers()
         elif update == "-v":
             if self.mainwindow.config.opvoiceMessages():
                 chum = PesterProfile(h)
@@ -853,6 +867,7 @@ class PesterMemo(PesterConvo):
                 else:
                     icon = QtGui.QIcon()
                     c.setIcon(icon)
+            self.sortUsers()
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):
