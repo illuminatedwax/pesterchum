@@ -123,14 +123,20 @@ class TimeTracker(list):
     def setCurrent(self, timed):
         self.current = self.index(timed)
     def addRecord(self, timed):
-        (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        try:
+            (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        except TypeError:
+            (temporal, pcf, when) = pcfGrammar(mysteryTime())
         if pcf == "C" or pcf == "?":
             return
         if timed in self.timerecord[pcf]:
             return
         self.timerecord[pcf].append(timed)
     def getRecord(self, timed):
-        (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        try:
+            (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        except TypeError:
+            (temporal, pcf, when) = pcfGrammar(mysteryTime())
         if pcf == "C" or pcf == "?":
             return 0
         if len(self.timerecord[pcf]) > 1:
@@ -163,10 +169,11 @@ class TimeTracker(list):
         timed = self.getTime()
         return self.getGrammarTime(timed)
     def getGrammarTime(self, timed):
-        if not timed:
-            timed = timedelta(0)
         mytime = timedelta(0)
-        (temporal, pcf, when) = pcfGrammar(timed - mytime)
+        try:
+            (temporal, pcf, when) = pcfGrammar(timed - mytime)
+        except TypeError:
+            (temporal, pcf, when) = pcfGrammar(mysteryTime())
         if timed == mytime:
             return TimeGrammar(temporal, pcf, when, 0)
         return TimeGrammar(temporal, pcf, when, self.getRecord(timed))
