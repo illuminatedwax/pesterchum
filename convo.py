@@ -249,7 +249,7 @@ class PesterText(QtGui.QTextEdit):
             url = self.urls[movie].toString()
             def stuff(mo):
                 return '<img src="%s_%s" />' % (url, frame)
-            html = re.sub(r'<img src="%s\S{0,3}" />' % (url), stuff, str(self.toHtml()))
+            html = re.sub(r'<img src="%s\S{0,3}" />' % (url), stuff, unicode(self.toHtml()))
             self.setHtml(html)
             self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
             self.verticalScrollBar().setSliderPosition(scrollPos)
