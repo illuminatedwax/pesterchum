@@ -424,7 +424,7 @@ smiledict = {
     ":manipulative:": "manipulative.png",
     ":vigorous:": "vigorous.png",
     ":perky:": "perky.png",
-    ":acceptant:": "acceptant.png",
+    ":acceptant:": "acceptant.gif",
     }
 
 reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
