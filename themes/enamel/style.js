@@ -49,7 +49,8 @@
                                "banuser": "Ban User",
                                "opuser": "Make OP",
                                "voiceuser": "Give Voice",
-                               "quirksoff": "Quirks Off"
+                               "quirksoff": "Quirks Off",
+                               "invitechum": "Invite Chum"
                               }
            },
   "chums": { "style": "text-align: center; border:0px; background-image:url($path/chumbg.png); background-color: #ffe400; background-repeat: no-repeat; color: white; font-family: 'Century Gothic';selection-background-color:#646464; font-size:18px; ",

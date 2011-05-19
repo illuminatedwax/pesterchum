@@ -52,7 +52,8 @@
                                "banuser": "Expel User",
                                "opuser": "Promote",
                                "voiceuser": "Let Speak",
-                               "quirksoff": "Quirks Off"
+                               "quirksoff": "Quirks Off",
+                               "invitechum": "Invite User"
                               }
            },
   "chums": { "style": "border:0px; background-color: white; font: bold;font-family: 'Courier';selection-background-color: black; ",

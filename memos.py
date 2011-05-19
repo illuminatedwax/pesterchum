@@ -373,8 +373,12 @@ class PesterMemo(PesterConvo):
         self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
         self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('openChumLogs()'))
+        self.invitechum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/invitechum"], self)
+        self.connect(self.invitechum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('inviteChums()'))
         self.optionsMenu.addAction(self.quirksOff)
         self.optionsMenu.addAction(self.logchum)
+        self.optionsMenu.addAction(self.invitechum)
 
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
@@ -656,6 +660,24 @@ class PesterMemo(PesterConvo):
         for n in self.mainwindow.namesdb[self.channel]:
             self.addUser(n)
 
+    @QtCore.pyqtSlot(QtCore.QString)
+    def closeInviteOnly(self, channel):
+        c = unicode(channel)
+        if c == self.channel:
+            self.disconnect(self.mainwindow, QtCore.SIGNAL('inviteOnlyChan(QString)'),
+                     self, QtCore.SLOT('closeInviteOnly(QString)'))
+            if self.parent():
+                print self.channel
+                i = self.parent().tabIndices[self.channel]
+                self.parent().tabClose(i)
+            else:
+                self.close()
+            msgbox = QtGui.QMessageBox()
+            msgbox.setText("%s: Invites only!" % (c))
+            msgbox.setInformativeText("This channel is invite-only. You must get an invitation from someone on the inside before entering.")
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            ret = msgbox.exec_()
+
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
         h = unicode(handle)
@@ -915,6 +937,17 @@ class PesterMemo(PesterConvo):
         self.mainwindow.chumList.pesterlogviewer.show()
         self.mainwindow.chumList.pesterlogviewer.raise_()
         self.mainwindow.chumList.pesterlogviewer.activateWindow()
+
+    @QtCore.pyqtSlot()
+    def inviteChums(self):
+        if not hasattr(self, 'invitechums'):
+            self.invitechums = None
+        if not self.invitechums:
+            (chum, ok) = QtGui.QInputDialog.getText(self, "Invite to Char", "Enter the chumhandle of the user you'd like to invite:")
+            if ok:
+                chum = unicode(chum)
+                self.mainwindow.inviteChum.emit(chum, self.channel)
+            self.invitechums = None
 
     @QtCore.pyqtSlot()
     def sendtime(self):

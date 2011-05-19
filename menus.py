@@ -990,6 +990,7 @@ class PesterMemoList(QtGui.QDialog):
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
         self.secretChannel = QtGui.QCheckBox("HIDDEN CHANNEL?", self)
+        self.inviteChannel = QtGui.QCheckBox("INVITATION ONLY?", self)
 
         self.timelabel = QtGui.QLabel("TIMEFRAME:")
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
@@ -1016,6 +1017,7 @@ class PesterMemoList(QtGui.QDialog):
         layout_right.addWidget(self.orjoinlabel)
         layout_right.addWidget(self.newmemo)
         layout_right.addWidget(self.secretChannel)
+        layout_right.addWidget(self.inviteChannel)
         layout_right.addWidget(self.timelabel)
         layout_right.addWidget(self.timeslider)
         layout_right.addWidget(self.timeinput)

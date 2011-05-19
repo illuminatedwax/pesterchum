@@ -221,17 +221,27 @@ class PesterIRC(QtCore.QThread):
             helpers.names(self.cli, c)
         except socket.error:
             self.setConnectionBroken()
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def inviteChum(self, handle, channel):
+        h = unicode(handle)
+        c = unicode(channel)
+        try:
+            helpers.invite(self.cli, h, c)
+        except socket.error:
+            self.setConnectionBroken()
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     memoReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     noticeReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    inviteReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     timeCommand = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
     channelListReceived = QtCore.pyqtSignal(PesterList)
     nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     myHandleChanged = QtCore.pyqtSignal(QtCore.QString)
+    chanInviteOnly = QtCore.pyqtSignal(QtCore.QString)
     connected = QtCore.pyqtSignal()
     userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
                                    QtCore.QString)
@@ -387,6 +397,11 @@ class PesterHandler(DefaultCommandHandler):
 
     def umodeis(self, server, handle, modes):
         self.parent.mainwindow.modes = modes
+    def invite(self, sender, you, channel):
+        handle = sender.split('!')[0]
+        self.parent.inviteReceived.emit(handle, channel)
+    def inviteonlychan(self, server, handle, channel, msg):
+        self.parent.chanInviteOnly.emit(channel)
 
     def getMood(self, *chums):
         chumglub = "GETMOOD "

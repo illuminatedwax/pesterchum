@@ -1404,7 +1404,7 @@ class PesterWindow(MovingWindow):
         except ThemeException, (inst):
             print "Caught: "+inst.parameter
             themeWarning = QtGui.QMessageBox(self)
-            themeWarning.setText("Theme Error: %s\nFalling back..." % (inst))
+            themeWarning.setText("Theme Error: %s" % (inst))
             themeWarning.exec_()
             self.theme = pesterTheme("pesterchum")
 
@@ -1712,7 +1712,7 @@ class PesterWindow(MovingWindow):
         self.connect(self.tabmemo, QtCore.SIGNAL('windowClosed()'),
                      self, QtCore.SLOT('memoTabsClosed()'))
 
-    def newMemo(self, channel, timestr, secret=False):
+    def newMemo(self, channel, timestr, secret=False, invite=False):
         if channel == "#pesterchum":
             return
         if self.memos.has_key(channel):
@@ -1727,6 +1727,8 @@ class PesterWindow(MovingWindow):
         else:
             memoWindow = PesterMemo(channel, timestr, self, None)
         # connect signals
+        self.connect(self, QtCore.SIGNAL('inviteOnlyChan(QString)'),
+                     memoWindow, QtCore.SLOT('closeInviteOnly(QString)'))
         self.connect(memoWindow, QtCore.SIGNAL('messageSent(QString, QString)'),
                      self, QtCore.SIGNAL('sendMessage(QString, QString)'))
         self.connect(memoWindow, QtCore.SIGNAL('windowClosed(QString)'),
@@ -1743,6 +1745,8 @@ class PesterWindow(MovingWindow):
         if self.secret:
             self.secret = True
             self.setChannelMode.emit(channel, "+s", "")
+        if invite:
+            self.setChannelMode.emit(channel, "+i", "")
         memoWindow.sendTimeInfo()
         memoWindow.show()
 
@@ -1887,7 +1891,7 @@ class PesterWindow(MovingWindow):
             themeChecker(theme)
         except ThemeException, (inst):
             themeWarning = QtGui.QMessageBox(self)
-            themeWarning.setText("Theme Error: %s\nFalling back..." % (inst))
+            themeWarning.setText("Theme Error: %s" % (inst))
             themeWarning.exec_()
             theme = pesterTheme("pesterchum")
             return
@@ -2014,6 +2018,19 @@ class PesterWindow(MovingWindow):
         m = unicode(msg)
         if self.convos.has_key(h):
             self.newMessage(h, m)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def deliverInvite(self, handle, channel):
+        msgbox = QtGui.QMessageBox()
+        msgbox.setText("You're invited!")
+        msgbox.setInformativeText("%s has invited you to the memo: %s\nWould you like to join them?" % (handle, channel))
+        msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+        ret = msgbox.exec_()
+        if ret == QtGui.QMessageBox.Ok:
+            self.newMemo(unicode(channel), "+0:00")
+    @QtCore.pyqtSlot(QtCore.QString)
+    def chanInviteOnly(self, channel):
+        print "Invite only: %s" % channel
+        self.inviteOnlyChan.emit(channel)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def timeCommand(self, chan, handle, command):
         (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
@@ -2226,10 +2243,11 @@ class PesterWindow(MovingWindow):
         selectedmemo = self.memochooser.selectedmemo()
         time = unicode(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
+        invite = self.memochooser.inviteChannel.isChecked()
         if newmemo:
             channel = "#"+unicode(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
-            self.newMemo(channel, time, secret=secret)
+            self.newMemo(channel, time, secret=secret, invite=invite)
         elif selectedmemo:
             channel = "#"+unicode(selectedmemo.target)
             self.newMemo(channel, time)
@@ -2701,6 +2719,8 @@ class PesterWindow(MovingWindow):
     leftChannel = QtCore.pyqtSignal(QtCore.QString)
     setChannelMode = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     channelNames = QtCore.pyqtSignal(QtCore.QString)
+    inviteChum = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    inviteOnlyChan = QtCore.pyqtSignal(QtCore.QString)
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
 
@@ -2811,6 +2831,8 @@ class MainProgram(QtCore.QObject):
                    'setChannelMode(QString, QString, QString)'),
                   ('channelNames(QString)',
                    'channelNames(QString)'),
+                  ('inviteChum(QString, QString)',
+                   'inviteChum(QString, QString)'),
                   ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window
@@ -2825,6 +2847,8 @@ class MainProgram(QtCore.QObject):
                    'deliverMemo(QString, QString, QString)'),
                   ('noticeReceived(QString, QString)',
                    'deliverNotice(QString, QString)'),
+                  ('inviteReceived(QString, QString)',
+                   'deliverInvite(QString, QString)'),
                   ('nickCollision(QString, QString)',
                    'nickCollision(QString, QString)'),
                   ('myHandleChanged(QString)',
@@ -2836,7 +2860,9 @@ class MainProgram(QtCore.QObject):
                   ('channelListReceived(PyQt_PyObject)',
                    'updateChannelList(PyQt_PyObject)'),
                   ('timeCommand(QString, QString, QString)',
-                   'timeCommand(QString, QString, QString)')
+                   'timeCommand(QString, QString, QString)'),
+                  ('chanInviteOnly(QString)',
+                   'chanInviteOnly(QString)')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),

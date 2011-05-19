@@ -52,7 +52,8 @@
                                "banuser": "BAN USER",
                                "opuser": "MAKE OP",
                                "voiceuser": "GIVE VOICE",
-                               "quirksoff": "QUIRKS OFF"
+                               "quirksoff": "QUIRKS OFF",
+                               "invitechum": "INVITE CHUM"
                               }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",
