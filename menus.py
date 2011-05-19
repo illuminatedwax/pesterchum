@@ -39,20 +39,12 @@ class PesterQuirkList(QtGui.QListWidget):
         self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
 
     def addItem(self, item):
-        self.connect(self, QtCore.SIGNAL('itemChanged(QListWidgetItem *)'),
-                     self, QtCore.SLOT('changeCheckState()'))
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
         if item.quirk.on:
             item.setCheckState(2)
         else:
             item.setCheckState(0)
         QtGui.QListWidget.addItem(self, item)
-
-    @QtCore.pyqtSlot()
-    def changeCheckState(self):
-        item = self.currentItem()
-        if not item: return
-        item.quirk.quirk["on"] = item.quirk.on = (item.checkState() == QtCore.Qt.Checked)
 
     def currentQuirk(self):
         return self.item(self.currentRow())
