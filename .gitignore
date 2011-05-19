@@ -2,6 +2,7 @@ logs/*
 build/*
 profiles/*
 tmp/*
+tutorial/*
 irctest.log
 *.pyc
 pesterchum.js
