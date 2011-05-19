@@ -229,30 +229,21 @@ class PesterText(QtGui.QTextEdit):
     def addAnimation(self, url, fileName):
         movie = QtGui.QMovie(self)
         movie.setFileName(fileName)
-        self.urls[movie] = url
-
-        for f in range(movie.frameCount()):
-            yes = movie.jumpToFrame(f)
-            if yes:
-                url = "%s_%s" % (self.urls[movie].toString(), f)
-                self.document().addResource(QtGui.QTextDocument.ImageResource,
-                                      QtCore.QUrl(url), movie.currentPixmap())
-
-        self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
-                     self, QtCore.SLOT('animate(int)'))
-        movie.start()
+        if movie.frameCount() > 1:
+            self.urls[movie] = url
+            self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
+                         self, QtCore.SLOT('animate(int)'))
+            movie.start()
     @QtCore.pyqtSlot(int)
     def animate(self, frame):
         if self.mainwindow.config.animations():
-            scrollPos = self.verticalScrollBar().sliderPosition()
             movie = self.sender()
             url = self.urls[movie].toString()
-            def stuff(mo):
-                return '<img src="%s_%s" />' % (url, frame)
-            html = re.sub(r'<img src="%s\S{0,3}" />' % (url), stuff, unicode(self.toHtml()))
-            self.setHtml(html)
-            self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
-            self.verticalScrollBar().setSliderPosition(scrollPos)
+            html = unicode(self.toHtml())
+            if html.find(url) != -1:
+                self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                   self.urls[movie], movie.currentPixmap())
+                self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
 
 
     @QtCore.pyqtSlot(bool)
