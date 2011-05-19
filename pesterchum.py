@@ -10,9 +10,35 @@ import codecs
 import re
 import socket
 import platform
-from PyQt4 import QtGui, QtCore
-import pygame
 from time import strftime
+
+missing = []
+try:
+    from PyQt4 import QtGui, QtCore
+except ImportError, e:
+    module = str(e)
+    if module[:16] == "No module named ": missing.append(module[16:])
+    else: print e
+try:
+    import pygame
+except ImportError, e:
+    module = str(e)
+    if module[:16] == "No module named ": missing.append(module[16:])
+    else: print e
+if missing:
+    print "ERROR: The following modules are required for Pesterchum to run and are missing on your system:"
+    for m in missing: print "* "+m
+    exit()
+vnum = QtCore.qVersion()
+major = int(vnum[:vnum.find(".")])
+if vnum.find(".", vnum.find(".")+1) != -1:
+    minor = int(vnum[vnum.find(".")+1:vnum.find(".", vnum.find(".")+1)])
+else:
+    minor = int(vnum[vnum.find(".")+1:])
+if not ((major > 4) or (major == 4 and minor >= 6)):
+    print "ERROR: Pesterchum requires Qt version >= 4.6"
+    print "You currently have version " + vnum + ". Please ungrade Qt"
+    exit()
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
