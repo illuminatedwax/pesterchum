@@ -31,6 +31,7 @@ CHANGELOG
 * Set server and port from command line - Kiooeht [evacipatedBox]
 * Invite-only memos, invite chums to memos - Kiooeht [evacipatedBox]
 * Check Pyqt4 and pygame are installed and correct versions - Kiooeht [evacipatedBox]
+* Advanced Mode: View memo (channel) modes - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]

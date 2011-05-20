@@ -1735,6 +1735,8 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SLOT('closeMemo(QString)'))
         self.connect(self, QtCore.SIGNAL('namesUpdated()'),
                      memoWindow, QtCore.SLOT('namesUpdated()'))
+        self.connect(self, QtCore.SIGNAL('modesUpdated(QString, QString)'),
+                     memoWindow, QtCore.SLOT('modesUpdated(QString, QString)'))
         self.connect(self,
                      QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
                      memoWindow, QtCore.SLOT('userPresentChange(QString, QString, QString)'))
@@ -2709,6 +2711,7 @@ class PesterWindow(MovingWindow):
     requestChannelList = QtCore.pyqtSignal()
     requestNames = QtCore.pyqtSignal(QtCore.QString)
     namesUpdated = QtCore.pyqtSignal()
+    modesUpdated = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     userPresentSignal = QtCore.pyqtSignal(QtCore.QString,QtCore.QString,QtCore.QString)
     mycolorUpdated = QtCore.pyqtSignal()
     trayIconSignal = QtCore.pyqtSignal(int)
@@ -2862,7 +2865,9 @@ class MainProgram(QtCore.QObject):
                   ('timeCommand(QString, QString, QString)',
                    'timeCommand(QString, QString, QString)'),
                   ('chanInviteOnly(QString)',
-                   'chanInviteOnly(QString)')
+                   'chanInviteOnly(QString)'),
+                  ('modesUpdated(QString, QString)',
+                   'modesUpdated(QString, QString)')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),

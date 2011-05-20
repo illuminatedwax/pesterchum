@@ -580,6 +580,25 @@ class PesterMemo(PesterConvo):
         for u in users:
             self.userlist.addItem(u)
 
+    def updateChanModes(self, modes):
+        if not hasattr(self, 'modes'): self.modes = ""
+        chanmodes = list(str(self.modes))
+        if chanmodes and chanmodes[0] == "+": chanmodes = chanmodes[1:]
+        modes = str(modes)
+        if modes[0] == "+":
+            chanmodes.extend(modes[1:])
+        elif modes[0] == "-":
+            for i in modes[1:]:
+                try:
+                    chanmodes.remove(i)
+                except ValueError:
+                    pass
+        chanmodes.sort()
+        self.modes = "+" + "".join(chanmodes)
+        if self.mainwindow.advanced:
+            t = Template(self.mainwindow.theme["memos/label/text"])
+            self.channelLabel.setText(t.safe_substitute(channel=self.channel) + "(%s)" % (self.modes))
+
     def timeUpdate(self, handle, cmd):
         window = self.mainwindow
         chum = PesterProfile(handle)
@@ -658,6 +677,11 @@ class PesterMemo(PesterConvo):
         self.userlist.clear()
         for n in self.mainwindow.namesdb[self.channel]:
             self.addUser(n)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def modesUpdated(self, channel, modes):
+        c = unicode(channel)
+        if c == self.channel:
+            self.updateChanModes(modes)
 
     @QtCore.pyqtSlot(QtCore.QString)
     def closeInviteOnly(self, channel):
@@ -679,6 +703,8 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
+        if channel != self.channel:
+            return
         h = unicode(handle)
         c = unicode(channel)
         update = unicode(update)
@@ -691,7 +717,7 @@ class PesterMemo(PesterConvo):
             oldnick = l[0]
             newnick = l[1]
             h = oldnick
-        if update[0:2] in ["+o", "-o", "+v", "-v"]:
+        if update[0:1] in ["+", "-"]:
             l = update.split(":")
             update = l[0]
             op = l[1]
@@ -896,6 +922,8 @@ class PesterMemo(PesterConvo):
                     icon = QtGui.QIcon()
                     c.setIcon(icon)
             self.sortUsers()
+        elif h == "" and update[0] in ["+","-"]:
+            self.updateChanModes(update)
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):

@@ -186,6 +186,7 @@ class PesterIRC(QtCore.QThread):
         c = unicode(channel)
         try:
             helpers.join(self.cli, c)
+            helpers.mode(self.cli, c, "", None)
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
@@ -242,6 +243,7 @@ class PesterIRC(QtCore.QThread):
     nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     myHandleChanged = QtCore.pyqtSignal(QtCore.QString)
     chanInviteOnly = QtCore.pyqtSignal(QtCore.QString)
+    modesUpdated = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     connected = QtCore.pyqtSignal()
     userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
                                    QtCore.QString)
@@ -347,11 +349,11 @@ class PesterHandler(DefaultCommandHandler):
             if mode[0] == "+":
                 modes.extend(mode[1:])
             elif mode[0] == "-":
-                  for i in mode[1:]:
-                      try:
-                          modes.remove(i)
-                      except ValueError:
-                          pass
+                for i in mode[1:]:
+                    try:
+                        modes.remove(i)
+                    except ValueError:
+                        pass
             modes.sort()
             self.parent.mainwindow.modes = "+" + "".join(modes)
         self.parent.userPresentUpdate.emit(handle, channel, mode+":%s" % (op))
@@ -402,6 +404,8 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.inviteReceived.emit(handle, channel)
     def inviteonlychan(self, server, handle, channel, msg):
         self.parent.chanInviteOnly.emit(channel)
+    def channelmodeis(self, server, handle, channel, modes):
+        self.parent.modesUpdated.emit(channel, modes)
 
     def getMood(self, *chums):
         chumglub = "GETMOOD "
