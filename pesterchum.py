@@ -795,7 +795,7 @@ class chumArea(RightClickTree):
             #self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
 
     def getChums(self, handle):
-        chums = self.findItems(handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive)
+        chums = self.findItems(handle, QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive)
         return chums
 
     def showAllChums(self):

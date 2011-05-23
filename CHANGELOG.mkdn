@@ -43,6 +43,7 @@ CHANGELOG
     * Don't blow up if someone's not using Pesterchum in a memo - Kiooeht [evacipatedBox]
     * Make 'logs' and 'profiles' directories if non-existant - Kiooeht [evacipatedBox]
     * Don't split messages in bad places - Kiooeht [evacipatedBox]
+    * Chumhandles must match EXACTLY to register mood changes - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
