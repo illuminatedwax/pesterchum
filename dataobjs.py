@@ -143,14 +143,10 @@ class pesterQuirks(object):
                         string = q.apply(string, first=(i==0), last=lastStr)
                     else:
                         string = q.apply(string)
-            if i == 0:
-                if len(prefix) >= 1:
-                    myprefix = random.choice(prefix)
-                    string = myprefix.apply(string)
-            if lastStr:
-                if len(suffix) >= 1:
-                    mysuffix = random.choice(suffix)
-                    string = mysuffix.apply(string)
+                elif q.type == 'prefix' and i == 0:
+                    string = q.apply(string)
+                elif q.type == 'suffix' and lastStr:
+                    string = q.apply(string)
             newlist.append(string)
 
         final = []
