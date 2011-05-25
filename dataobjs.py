@@ -52,6 +52,9 @@ class pesterQuirk(object):
         if "on" not in self.quirk:
             self.quirk["on"] = True
         self.on = self.quirk["on"]
+        if "group" not in self.quirk:
+            self.quirk["group"] = "Miscellaneous"
+        self.group = self.quirk["group"]
     def apply(self, string, first=False, last=False):
         if not self.on:
             return string

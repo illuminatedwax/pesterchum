@@ -2310,9 +2310,12 @@ class PesterWindow(MovingWindow):
             self.quirkmenu.activateWindow()
     @QtCore.pyqtSlot()
     def updateQuirks(self):
-        for i in range(self.quirkmenu.quirkList.count()):
-            item = self.quirkmenu.quirkList.item(i)
-            item.quirk.quirk["on"] = item.quirk.on = (item.checkState() == QtCore.Qt.Checked)
+        for i in range(self.quirkmenu.quirkList.topLevelItemCount()):
+            curgroup = unicode(self.quirkmenu.quirkList.topLevelItem(i).text(0))
+            for j in range(self.quirkmenu.quirkList.topLevelItem(i).childCount()):
+                item = self.quirkmenu.quirkList.topLevelItem(i).child(j)
+                item.quirk.quirk["on"] = item.quirk.on = (item.checkState(0) == QtCore.Qt.Checked)
+                item.quirk.quirk["group"] = item.quirk.group = curgroup
         quirks = pesterQuirks(self.quirkmenu.quirks())
         self.userprofile.setQuirks(quirks)
         self.quirkmenu = None

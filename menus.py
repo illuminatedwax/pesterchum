@@ -6,14 +6,15 @@ from generic import RightClickList, RightClickTree, MultiTextDialog
 from dataobjs import pesterQuirk, PesterProfile
 from memos import TimeSlider, TimeInput
 
-class PesterQuirkItem(QtGui.QListWidgetItem):
-    def __init__(self, quirk, parent):
-        QtGui.QListWidgetItem.__init__(self, parent)
+class PesterQuirkItem(QtGui.QTreeWidgetItem):
+    def __init__(self, quirk):
+        parent = None
+        QtGui.QTreeWidgetItem.__init__(self, parent)
         self.quirk = quirk
-        self.setText(unicode(quirk))
+        self.setText(0, unicode(quirk))
     def update(self, quirk):
         self.quirk = quirk
-        self.setText(unicode(quirk))
+        self.setText(0, unicode(quirk))
     def __lt__(self, quirkitem):
         """Sets the order of quirks if auto-sorted by Qt. Obsolete now."""
         if self.quirk.type == "prefix":
@@ -23,51 +24,184 @@ class PesterQuirkItem(QtGui.QListWidgetItem):
             return True
         else:
             return False
-class PesterQuirkList(QtGui.QListWidget):
+class PesterQuirkList(QtGui.QTreeWidget):
     def __init__(self, mainwindow, parent):
-        QtGui.QListWidget.__init__(self, parent)
+        QtGui.QTreeWidget.__init__(self, parent)
         self.resize(400, 200)
         # make sure we have access to mainwindow info like profiles
         self.mainwindow = mainwindow
         self.setStyleSheet("background:black; color:white;")
 
-        for q in mainwindow.userprofile.quirks:
-            item = PesterQuirkItem(q, self)
-            self.addItem(item)
-        #self.sortItems()
-        self.setDragEnabled(True)
-        self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.connect(self, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'),
+                     self, QtCore.SLOT('changeCheckState()'))
 
-    def addItem(self, item):
-        item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+        for q in mainwindow.userprofile.quirks:
+            item = PesterQuirkItem(q)
+            self.addItem(item, False)
+        self.changeCheckState()
+        #self.setDragEnabled(True)
+        #self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.setDropIndicatorShown(True)
+        self.setSortingEnabled(False)
+        self.setIndentation(15)
+        self.header().hide()
+
+    def addItem(self, item, new=True):
+        item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
         if item.quirk.on:
-            item.setCheckState(2)
+            item.setCheckState(0, 2)
         else:
-            item.setCheckState(0)
-        QtGui.QListWidget.addItem(self, item)
+            item.setCheckState(0, 0)
+        if new:
+            curgroup = self.currentItem()
+            if curgroup:
+                if curgroup.parent(): curgroup = curgroup.parent()
+                item.quirk.quirk["group"] = item.quirk.group = curgroup.text(0)
+        found = self.findItems(item.quirk.group, QtCore.Qt.MatchExactly)
+        if len(found) > 0:
+            found[0].addChild(item)
+        else:
+            child_1 = QtGui.QTreeWidgetItem([item.quirk.group])
+            self.addTopLevelItem(child_1)
+            child_1.setFlags(child_1.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            child_1.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicatorWhenChildless)
+            child_1.setCheckState(0,0)
+            child_1.setExpanded(True)
+            child_1.addChild(item)
 
     def currentQuirk(self):
-        return self.item(self.currentRow())
+        if type(self.currentItem()) is PesterQuirkItem:
+            return self.currentItem()
+        else: return None
 
+    @QtCore.pyqtSlot()
     def upShiftQuirk(self):
-        i = self.currentRow()
-        if i > 0:
-            shifted_item = self.takeItem(i)
-            self.insertItem(i-1,shifted_item)
-            self.setCurrentRow(i-1)
+        found = self.findItems(self.currentItem().text(0), QtCore.Qt.MatchExactly)
+        if len(found): # group
+            i = self.indexOfTopLevelItem(found[0])
+            if i > 0:
+                expand = found[0].isExpanded()
+                shifted_item = self.takeTopLevelItem(i)
+                self.insertTopLevelItem(i-1, shifted_item)
+                shifted_item.setExpanded(expand)
+                self.setCurrentItem(shifted_item)
+        else: # quirk
+            found = self.findItems(self.currentItem().text(0), QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive)
+            for f in found:
+                if not f.isSelected(): continue
+                if not f.parent(): continue
+                i = f.parent().indexOfChild(f)
+                if i > 0: # keep in same group
+                    p = f.parent()
+                    shifted_item = f.parent().takeChild(i)
+                    p.insertChild(i-1, shifted_item)
+                    self.setCurrentItem(shifted_item)
+                else: # move to another group
+                    j = self.indexOfTopLevelItem(f.parent())
+                    if j <= 0: continue
+                    shifted_item = f.parent().takeChild(i)
+                    self.topLevelItem(j-1).addChild(shifted_item)
+                    self.setCurrentItem(shifted_item)
+            self.changeCheckState()
 
+    @QtCore.pyqtSlot()
     def downShiftQuirk(self):
-        i = self.currentRow()
-        if i < self.count() - 1 and i >= 0:
-            shifted_item = self.takeItem(i)
-            self.insertItem(i+1,shifted_item)
-            self.setCurrentRow(i+1)
+        found = self.findItems(self.currentItem().text(0), QtCore.Qt.MatchExactly)
+        if len(found): # group
+            i = self.indexOfTopLevelItem(found[0])
+            if i < self.topLevelItemCount()-1 and i >= 0:
+                expand = found[0].isExpanded()
+                shifted_item = self.takeTopLevelItem(i)
+                self.insertTopLevelItem(i+1, shifted_item)
+                shifted_item.setExpanded(expand)
+                self.setCurrentItem(shifted_item)
+        else: # quirk
+            found = self.findItems(self.currentItem().text(0), QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive)
+            for f in found:
+                if not f.isSelected(): continue
+                if not f.parent(): continue
+                i = f.parent().indexOfChild(f)
+                if i < f.parent().childCount()-1 and i >= 0:
+                    p = f.parent()
+                    shifted_item = f.parent().takeChild(i)
+                    p.insertChild(i+1, shifted_item)
+                    self.setCurrentItem(shifted_item)
+                else:
+                    j = self.indexOfTopLevelItem(f.parent())
+                    if j >= self.topLevelItemCount()-1 or j < 0: continue
+                    shifted_item = f.parent().takeChild(i)
+                    self.topLevelItem(j+1).insertChild(0, shifted_item)
+                    self.setCurrentItem(shifted_item)
+            self.changeCheckState()
 
     @QtCore.pyqtSlot()
     def removeCurrent(self):
-        i = self.currentRow()
-        if i >= 0:
-            self.takeItem(i)
+        i = self.currentItem()
+        found = self.findItems(i.text(0), QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive)
+        for f in found:
+            if not f.isSelected(): continue
+            if not f.parent(): # group
+                msgbox = QtGui.QMessageBox()
+                msgbox.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+                msgbox.setWindowTitle("WARNING!")
+                msgbox.setInformativeText("Are you sure you want to delete the quirk group: %s" % (f.text(0)))
+                msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                ret = msgbox.exec_()
+                if ret == QtGui.QMessageBox.Ok:
+                    self.takeTopLevelItem(self.indexOfTopLevelItem(f))
+            else:
+                f.parent().takeChild(f.parent().indexOfChild(f))
+
+    @QtCore.pyqtSlot()
+    def addQuirkGroup(self):
+        if not hasattr(self, 'addgroupdialog'):
+            self.addgroupdialog = None
+        if not self.addgroupdialog:
+            (gname, ok) = QtGui.QInputDialog.getText(self, "Add Group", "Enter a name for the new quirk group:")
+            if ok:
+                gname = unicode(gname)
+                if re.search("[^A-Za-z0-9_\s]", gname) is not None:
+                    msgbox = QtGui.QMessageBox()
+                    msgbox.setInformativeText("THIS IS NOT A VALID GROUP NAME")
+                    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                    ret = msgbox.exec_()
+                    self.addgroupdialog = None
+                    return
+                found = self.findItems(gname, QtCore.Qt.MatchExactly)
+                if found:
+                    msgbox = QtGui.QMessageBox()
+                    msgbox.setInformativeText("THIS QUIRK GROUP ALREADY EXISTS")
+                    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                    ret = msgbox.exec_()
+                    return
+                child_1 = QtGui.QTreeWidgetItem([gname])
+                self.addTopLevelItem(child_1)
+                child_1.setFlags(child_1.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                child_1.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicatorWhenChildless)
+                child_1.setCheckState(0,0)
+                child_1.setExpanded(True)
+
+            self.addgroupdialog = None
+
+    @QtCore.pyqtSlot()
+    def changeCheckState(self):
+        index = self.indexOfTopLevelItem(self.currentItem())
+        if index == -1:
+            for i in range(self.topLevelItemCount()):
+                allChecked = True
+                noneChecked = True
+                for j in range(self.topLevelItem(i).childCount()):
+                    if self.topLevelItem(i).child(j).checkState(0):
+                        noneChecked = False
+                    else:
+                        allChecked = False
+                if allChecked:    self.topLevelItem(i).setCheckState(0, 2)
+                elif noneChecked: self.topLevelItem(i).setCheckState(0, 0)
+                else:             self.topLevelItem(i).setCheckState(0, 1)
+        else:
+            state = self.topLevelItem(index).checkState(0)
+            for j in range(self.topLevelItem(index).childCount()):
+                self.topLevelItem(index).child(j).setCheckState(0, state)
 
 class MispellQuirkDialog(QtGui.QDialog):
     def __init__(self, parent):
@@ -218,20 +352,28 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.addRandomReplaceButton = QtGui.QPushButton("RANDOM REPLACE", self)
         self.connect(self.addRandomReplaceButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addRandomDialog()'))
-
         self.addMispellingButton = QtGui.QPushButton("MISPELLER", self)
         self.connect(self.addMispellingButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addSpellDialog()'))
+
         self.upShiftButton = QtGui.QPushButton("^", self)
         self.downShiftButton = QtGui.QPushButton("v", self)
+        self.upShiftButton.setToolTip("Move quirk up one")
+        self.downShiftButton.setToolTip("Move quirk down one")
         self.connect(self.upShiftButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('upShiftQuirk()'))
+                     self.quirkList, QtCore.SLOT('upShiftQuirk()'))
         self.connect(self.downShiftButton, QtCore.SIGNAL('clicked()'),
-                    self, QtCore.SLOT('downShiftQuirk()'))
+                    self.quirkList, QtCore.SLOT('downShiftQuirk()'))
+
+        self.newGroupButton = QtGui.QPushButton("*", self)
+        self.newGroupButton.setToolTip("New Quirk Group")
+        self.connect(self.newGroupButton, QtCore.SIGNAL('clicked()'),
+                     self.quirkList, QtCore.SLOT('addQuirkGroup()'))
 
         layout_quirklist = QtGui.QHBoxLayout() #the nude layout quirklist
         layout_shiftbuttons = QtGui.QVBoxLayout() #the shift button layout
         layout_shiftbuttons.addWidget(self.upShiftButton)
+        layout_shiftbuttons.addWidget(self.newGroupButton)
         layout_shiftbuttons.addWidget(self.downShiftButton)
         layout_quirklist.addWidget(self.quirkList)
         layout_quirklist.addLayout(layout_shiftbuttons)
@@ -275,21 +417,17 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.setLayout(layout_0)
 
     def quirks(self):
-        return [self.quirkList.item(i).quirk for i in
-                range(0,self.quirkList.count())]
+        u = []
+        for i in range(self.quirkList.topLevelItemCount()):
+            for j in range(self.quirkList.topLevelItem(i).childCount()):
+                u.append(self.quirkList.topLevelItem(i).child(j).quirk)
+        return u
+        #return [self.quirkList.item(i).quirk for i in range(self.quirkList.count())]
 
-    # could probably do away with these and just connect to the relevant methods on the quirk list widget
-    @QtCore.pyqtSlot()
-    def upShiftQuirk(self):
-        self.quirkList.upShiftQuirk()
-
-    @QtCore.pyqtSlot()
-    def downShiftQuirk(self):
-        self.quirkList.downShiftQuirk()
-    #!!!
     @QtCore.pyqtSlot()
     def editSelected(self):
         q = self.quirkList.currentQuirk()
+        if not q: return
         quirk = q.quirk
         if quirk.type == "prefix":
             self.addPrefixDialog(q)
@@ -315,7 +453,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         pdict["type"] = "prefix"
         prefix = pesterQuirk(pdict)
         if qitem is None:
-            pitem = PesterQuirkItem(prefix, self.quirkList)
+            pitem = PesterQuirkItem(prefix)
             self.quirkList.addItem(pitem)
         else:
             qitem.update(prefix)
@@ -332,7 +470,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         vdict["type"] = "suffix"
         newquirk = pesterQuirk(vdict)
         if qitem is None:
-            item = PesterQuirkItem(newquirk, self.quirkList)
+            item = PesterQuirkItem(newquirk)
             self.quirkList.addItem(item)
         else:
             qitem.update(newquirk)
@@ -350,7 +488,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         vdict["type"] = "replace"
         newquirk = pesterQuirk(vdict)
         if qitem is None:
-            item = PesterQuirkItem(newquirk, self.quirkList)
+            item = PesterQuirkItem(newquirk)
             self.quirkList.addItem(item)
         else:
             qitem.update(newquirk)
@@ -377,7 +515,7 @@ class PesterChooseQuirks(QtGui.QDialog):
 
         newquirk = pesterQuirk(vdict)
         if qitem is None:
-            item = PesterQuirkItem(newquirk, self.quirkList)
+            item = PesterQuirkItem(newquirk)
             self.quirkList.addItem(item)
         else:
             qitem.update(newquirk)
@@ -402,7 +540,7 @@ class PesterChooseQuirks(QtGui.QDialog):
             return
         newquirk = pesterQuirk(vdict)
         if qitem is None:
-            item = PesterQuirkItem(newquirk, self.quirkList)
+            item = PesterQuirkItem(newquirk)
             self.quirkList.addItem(item)
         else:
             qitem.update(newquirk)
@@ -415,7 +553,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         vdict["type"] = "spelling"
         newquirk = pesterQuirk(vdict)
         if qitem is None:
-            item = PesterQuirkItem(newquirk, self.quirkList)
+            item = PesterQuirkItem(newquirk)
             self.quirkList.addItem(item)
         else:
             qitem.update(newquirk)
