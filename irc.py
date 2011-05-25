@@ -341,7 +341,8 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.userPresentUpdate.emit(handle, channel, "join")
         if channel == "#pesterchum":
             self.parent.moodUpdated.emit(handle, Mood("chummy"))
-    def mode(self, op, channel, mode, handle=""):
+    def mode(self, op, channel, mode, *handles):
+        if len(handles) <= 0: handles = [""]
         opnick = op[0:op.find("!")]
         if op == channel or channel == self.parent.mainwindow.profile().handle:
             modes = list(self.parent.mainwindow.modes)
@@ -356,7 +357,17 @@ class PesterHandler(DefaultCommandHandler):
                         pass
             modes.sort()
             self.parent.mainwindow.modes = "+" + "".join(modes)
-        self.parent.userPresentUpdate.emit(handle, channel, mode+":%s" % (op))
+        modes = []
+        cur = "+"
+        for l in mode:
+            if l in ["+","-"]: cur = l
+            else:
+                modes.append("%s%s" % (cur, l))
+        for (i,m) in enumerate(modes):
+            try:
+                self.parent.userPresentUpdate.emit(handles[i], channel, m+":%s" % (op))
+            except IndexError:
+                self.parent.userPresentUpdate.emit("", channel, m+":%s" % (op))
     def nick(self, oldnick, newnick):
         oldhandle = oldnick[0:oldnick.find("!")]
         if oldhandle == self.mainwindow.profile().handle:
