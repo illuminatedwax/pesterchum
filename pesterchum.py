@@ -1,4 +1,6 @@
 # pesterchum
+import version
+version.pcVerCalc()
 import logging
 import os, sys, getopt
 import os.path

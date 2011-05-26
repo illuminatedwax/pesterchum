@@ -5,6 +5,7 @@ from os import remove
 from generic import RightClickList, RightClickTree, MultiTextDialog
 from dataobjs import pesterQuirk, PesterProfile
 from memos import TimeSlider, TimeInput
+from version import _pcVersion
 
 class PesterQuirkItem(QtGui.QTreeWidgetItem):
     def __init__(self, quirk):
@@ -1234,7 +1235,7 @@ class AboutPesterchum(QtGui.QDialog):
         self.mainwindow = parent
         self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
 
-        self.title = QtGui.QLabel("P3ST3RCHUM V. 3.14.2")
+        self.title = QtGui.QLabel("P3ST3RCHUM V. %s" % (_pcVersion))
         self.credits = QtGui.QLabel("Programming by:\n\
   illuminatedwax (ghostDunk)\n\
   Kiooeht (evacipatedBox)\n\

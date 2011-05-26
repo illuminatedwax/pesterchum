@@ -8,6 +8,7 @@ import socket
 
 from dataobjs import Mood, PesterProfile
 from generic import PesterList
+from version import _pcVersion
 
 logging.basicConfig(level=logging.INFO)
 
@@ -271,6 +272,10 @@ class PesterHandler(DefaultCommandHandler):
             return
         # silently ignore CTCP
         if msg[0] == '\x01':
+            handle = nick[0:nick.find("!")]
+            logging.info("---> recv \"CTCP %s :%s\"" % (handle, msg[1:-1]))
+            if msg[1:-1] == "VERSION":
+                helpers.notice(self.parent.cli, handle, "\x01VERSION Pesterchum %s\x01" % (_pcVersion))
             return
         handle = nick[0:nick.find("!")]
         logging.info("---> recv \"PRIVMSG %s :%s\"" % (handle, msg))

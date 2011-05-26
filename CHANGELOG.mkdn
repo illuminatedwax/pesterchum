@@ -33,6 +33,7 @@ CHANGELOG
 * Check Pyqt4 and pygame are installed and correct versions - Kiooeht [evacipatedBox]
 * Advanced Mode: View memo (channel) modes - Kiooeht [evacipatedBox]
 * Quirk groups - Kiooeht [evacipatedBox]
+* CTCP Version reply - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
