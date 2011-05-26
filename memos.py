@@ -380,6 +380,23 @@ class PesterMemo(PesterConvo):
         self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.invitechum)
 
+        self.chanModeMenu = QtGui.QMenu("Memo Settings", self)
+        self.chanHide = QtGui.QAction("Hidden", self)
+        self.chanHide.setCheckable(True)
+        self.connect(self.chanHide, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('hideChan(bool)'))
+        self.chanInvite = QtGui.QAction("Invite-Only", self)
+        self.chanInvite.setCheckable(True)
+        self.connect(self.chanInvite, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('inviteChan(bool)'))
+        self.chanMod = QtGui.QAction("Mute", self)
+        self.chanMod.setCheckable(True)
+        self.connect(self.chanMod, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('modChan(bool)'))
+        self.chanModeMenu.addAction(self.chanHide)
+        self.chanModeMenu.addAction(self.chanInvite)
+        self.chanModeMenu.addAction(self.chanMod)
+
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
         self.timeinput.setText(timestr)
@@ -550,6 +567,7 @@ class PesterMemo(PesterConvo):
             if handle == self.mainwindow.profile().handle:
                 self.userlist.optionsMenu.addAction(self.opAction)
                 self.userlist.optionsMenu.addAction(self.banuserAction)
+                self.optionsMenu.addMenu(self.chanModeMenu)
                 self.op = True
         elif handle[0] == '+':
             voice = True
@@ -588,12 +606,18 @@ class PesterMemo(PesterConvo):
         modes = str(modes)
         if modes[0] == "+":
             chanmodes.extend(modes[1:])
+            if modes.find("s") >= 0: self.chanHide.setChecked(True)
+            if modes.find("i") >= 0: self.chanInvite.setChecked(True)
+            if modes.find("m") >= 0: self.chanMod.setChecked(True)
         elif modes[0] == "-":
             for i in modes[1:]:
                 try:
                     chanmodes.remove(i)
                 except ValueError:
                     pass
+            if modes.find("s") >= 0: self.chanHide.setChecked(False)
+            if modes.find("i") >= 0: self.chanInvite.setChecked(False)
+            if modes.find("m") >= 0: self.chanMod.setChecked(False)
         chanmodes.sort()
         self.modes = "+" + "".join(chanmodes)
         if self.mainwindow.advanced:
@@ -830,6 +854,7 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.addAction(self.opAction)
                     self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
+                    self.optionsMenu.addMenu(self.chanModeMenu)
             self.sortUsers()
         elif update == "-o":
             self.mainwindow.channelNames.emit(self.channel)
@@ -865,6 +890,7 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.removeAction(self.opAction)
                     self.userlist.optionsMenu.removeAction(self.voiceAction)
                     self.userlist.optionsMenu.removeAction(self.banuserAction)
+                    self.optionsMenu.removeAction(self.chanModeMenu.menuAction())
             self.sortUsers()
         elif update == "+v":
             if self.mainwindow.config.opvoiceMessages():
@@ -971,11 +997,24 @@ class PesterMemo(PesterConvo):
         if not hasattr(self, 'invitechums'):
             self.invitechums = None
         if not self.invitechums:
-            (chum, ok) = QtGui.QInputDialog.getText(self, "Invite to Char", "Enter the chumhandle of the user you'd like to invite:")
+            (chum, ok) = QtGui.QInputDialog.getText(self, "Invite to Chat", "Enter the chumhandle of the user you'd like to invite:")
             if ok:
                 chum = unicode(chum)
                 self.mainwindow.inviteChum.emit(chum, self.channel)
             self.invitechums = None
+
+    @QtCore.pyqtSlot(bool)
+    def hideChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"s", "")
+    @QtCore.pyqtSlot(bool)
+    def inviteChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"i", "")
+    @QtCore.pyqtSlot(bool)
+    def modChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"m", "")
 
     @QtCore.pyqtSlot()
     def sendtime(self):

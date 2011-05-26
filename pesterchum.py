@@ -2286,9 +2286,6 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def memoChooserClose(self):
         self.memochooser = None
-    @QtCore.pyqtSlot()
-    def memoChooserClose(self):
-        self.memochooser = None
 
     @QtCore.pyqtSlot(PesterList)
     def updateChannelList(self, channels):

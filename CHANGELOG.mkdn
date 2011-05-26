@@ -35,6 +35,7 @@ CHANGELOG
 * Quirk groups - Kiooeht [evacipatedBox]
 * CTCP Version reply - Kiooeht [evacipatedBox]
 * Check for Pesterchum updates - Kiooeht [evacipatedBox]
+* Memo OP options: Secret, Invite-only, Mute - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
