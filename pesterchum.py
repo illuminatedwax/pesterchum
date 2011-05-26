@@ -44,7 +44,7 @@ if not ((major > 4) or (major == 4 and minor >= 6)):
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
-    LoadingScreen, AboutPesterchum
+    LoadingScreen, AboutPesterchum, UpdatePesterchum
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
 from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList, CaseInsensitiveDict
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
@@ -402,6 +402,8 @@ class userConfig(object):
         return self.config.get('opvMessages', True)
     def animations(self):
         return self.config.get('animations', True)
+    def checkForUpdates(self):
+        return self.config.get('checkUpdates', True)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -1569,6 +1571,31 @@ class PesterWindow(MovingWindow):
         if not self.config.defaultprofile():
             self.changeProfile()
 
+        self.connect(self, QtCore.SIGNAL('pcUpdate(QString, QString)'),
+                     self, QtCore.SLOT('updateMsg(QString, QString)'))
+
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def updateMsg(self, ver, url):
+        if not hasattr(self, 'updatemenu'):
+            self.updatemenu = None
+        if not self.updatemenu:
+            self.updatemenu = UpdatePesterchum(ver, url, self)
+            self.connect(self.updatemenu, QtCore.SIGNAL('accepted()'),
+                         self, QtCore.SLOT('updatePC()'))
+            self.connect(self.updatemenu, QtCore.SIGNAL('rejected()'),
+                         self, QtCore.SLOT('noUpdatePC()'))
+            self.updatemenu.show()
+            self.updatemenu.raise_()
+            self.updatemenu.activateWindow()
+
+    @QtCore.pyqtSlot()
+    def updatePC(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(self.updatemenu.url, QtCore.QUrl.TolerantMode))
+        self.updatemenu = None
+    @QtCore.pyqtSlot()
+    def noUpdatePC(self):
+        self.updatemenu = None
+
     def profile(self):
         return self.userprofile.chat
     def closeConversations(self, switch=False):
@@ -2534,6 +2561,11 @@ class PesterWindow(MovingWindow):
         curanimate = self.config.animations()
         if animatesetting != curanimate:
             self.config.set('animations', animatesetting)
+        # update checked
+        updatechecksetting = self.optionmenu.updatecheck.isChecked()
+        curupdatecheck = self.config.checkForUpdates()
+        if updatechecksetting != curupdatecheck:
+            self.config.set('checkUpdates', updatechecksetting)
         # advanced
         ## user mode
         if self.advanced:
@@ -2705,6 +2737,7 @@ class PesterWindow(MovingWindow):
             # show context menu i guess
             #self.showTrayContext.emit()
 
+    pcUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     closeToTraySignal = QtCore.pyqtSignal()
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
@@ -2812,6 +2845,11 @@ class MainProgram(QtCore.QObject):
 
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
+
+        if self.widget.config.checkForUpdates():
+            (new,url) = version.updateCheck()
+            if new:
+                self.widget.pcUpdate.emit(new, url)
 
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),

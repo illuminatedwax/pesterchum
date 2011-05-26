@@ -751,7 +751,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Logging", "Idle", "Theme"]
+        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Logging", "Idle/Updates", "Theme"]
         if parent.advanced: tabNames.append("Advanced")
         for t in tabNames:
             button = QtGui.QPushButton(t)
@@ -854,6 +854,9 @@ class PesterOptions(QtGui.QDialog):
         layout_5.addWidget(QtGui.QLabel("Minutes before Idle:"))
         layout_5.addWidget(self.idleBox)
 
+        self.updatecheck = QtGui.QCheckBox("Check for Updates on Start", self)
+        self.updatecheck.setChecked(self.config.checkForUpdates())
+
         avail_themes = self.config.availableThemes()
         self.themeBox = QtGui.QComboBox(self)
         for (i, t) in enumerate(avail_themes):
@@ -951,11 +954,12 @@ class PesterOptions(QtGui.QDialog):
         layout_logs.addWidget(self.stampmemocheck)
         self.pages.addWidget(widget)
 
-        # Idle
+        # Idle/Updates
         widget = QtGui.QWidget()
         layout_idle = QtGui.QVBoxLayout(widget)
         layout_idle.setAlignment(QtCore.Qt.AlignTop)
         layout_idle.addLayout(layout_5)
+        layout_idle.addWidget(self.updatecheck)
         self.pages.addWidget(widget)
 
         # Theme
@@ -1257,5 +1261,34 @@ Special Thanks:\n\
         layout_0.addWidget(self.title)
         layout_0.addWidget(self.credits)
         layout_0.addWidget(self.ok)
+
+        self.setLayout(layout_0)
+
+class UpdatePesterchum(QtGui.QDialog):
+    def __init__(self, ver, url, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.url = url
+        self.mainwindow = parent
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+        self.setWindowTitle("Pesterchum v%s Update" % (ver))
+        self.setModal(False)
+
+        self.title = QtGui.QLabel("An update to Pesterchum is avaliable!")
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.title)
+
+        self.ok = QtGui.QPushButton("D0WNL04D N0W", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_2 = QtGui.QHBoxLayout()
+        layout_2.addWidget(self.cancel)
+        layout_2.addWidget(self.ok)
+
+        layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)
