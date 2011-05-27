@@ -2060,8 +2060,10 @@ class PesterWindow(MovingWindow):
             self.newMemo(unicode(channel), "+0:00")
     @QtCore.pyqtSlot(QtCore.QString)
     def chanInviteOnly(self, channel):
-        print "Invite only: %s" % channel
         self.inviteOnlyChan.emit(channel)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def cannotSendToChan(self, channel, msg):
+        self.deliverMemo(channel, "ChanServ", msg)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def timeCommand(self, chan, handle, command):
         (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
@@ -2907,7 +2909,9 @@ class MainProgram(QtCore.QObject):
                   ('chanInviteOnly(QString)',
                    'chanInviteOnly(QString)'),
                   ('modesUpdated(QString, QString)',
-                   'modesUpdated(QString, QString)')
+                   'modesUpdated(QString, QString)'),
+                  ('cannotSendToChan(QString, QString)',
+                   'cannotSendToChan(QString, QString)')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),
