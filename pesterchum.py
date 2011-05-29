@@ -2850,9 +2850,13 @@ class MainProgram(QtCore.QObject):
         self.connectWidgets(self.irc, self.widget)
 
         if self.widget.config.checkForUpdates():
-            (new,url) = version.updateCheck()
-            if new:
-                self.widget.pcUpdate.emit(new, url)
+            import Queue
+            import threading
+            q = Queue.Queue(1)
+            s = threading.Thread(target=version.updateCheck, args=(q,0)) # the 0 is to stop
+            w = threading.Thread(target=self.showUpdate, args=(q,0))     # stupid syntax errors
+            w.start()
+            s.start()
 
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),
@@ -2939,6 +2943,12 @@ class MainProgram(QtCore.QObject):
                      self, QtCore.SLOT('connected()'))
         self.disconnect(self.irc, QtCore.SIGNAL('finished()'),
                         self, QtCore.SLOT('restartIRC()'))
+
+    def showUpdate(self, q,num):
+        new_url = q.get()
+        if new_url[0]:
+            self.widget.pcUpdate.emit(new_url[0], new_url[1])
+        q.task_done()
 
     def showLoading(self, widget, msg="CONN3CT1NG"):
         self.widget.show()

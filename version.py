@@ -1,5 +1,6 @@
 import urllib
 import re
+import time
 
 USER_TYPE = "dev"
 
@@ -26,30 +27,31 @@ def verStrToNum(ver):
     full = ver[:ver.find(":")]
     return full,w.group(1),w.group(2),w.group(3),w.group(4),w.group(5)
 
-def updateCheck():
+def updateCheck(q,num):
+    time.sleep(3)
     data = urllib.urlencode({"type" : USER_TYPE})
     try:
         f = urllib.urlopen("http://distantsphere.com/pesterchum.php?" + data)
     except:
-        print "Update check Failure: 1"; return False,1
+        print "Update check Failure: 1"; q.put((False,1))
     newest = f.read()
     f.close()
     if not newest or newest[0] == "<":
-        print "Update check Failure: 2"; return False,2
+        print "Update check Failure: 2"; q.put((False,2))
     try:
         (full, major, minor, status, revision, url) = verStrToNum(newest)
     except TypeError:
-        return False,3
+        return q.put((False,3))
     print full
     if major <= _pcMajor:
         if minor <= _pcMinor:
             if status:
                 if status <= _pcStatus:
                     if revision <= _pcRevision:
-                        return False,0
+                        return q.put((False,0))
             else:
                 if not _pcStatus:
                     if revision <= _pcRevision:
-                        return False,0
+                        return q.put((False,0))
     print "A new version of Pesterchum is avaliable!"
-    return full,url
+    q.put((full,url))
