@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+#  This program is free software. It comes without any warranty, to
+#  the extent permitted by applicable law. You can redistribute it
+#  and/or modify it under the terms of the Do What The Fuck You Want
+#  To Public License, Version 2, as published by Sam Hocevar. See
+#  http://sam.zoy.org/wtfpl/COPYING for more details.
+
 import os, sys, shutil
 from stat import *
 from string import Template
@@ -72,6 +78,14 @@ Of course you are!!! ::::D"
                 gnome = False;break
             else:
                 print "herpaderp"
+    while 1:
+        shortcut = raw_input("Create launcher in home directory? [Y/n]: ")
+        if shortcut.lower() == "y" or shortcut == "":
+            shortcut = True;break
+        elif shortcut.lower() == "n":
+            shortcut = False;break
+        else:
+            print "u jelly?"
 
     # do some shitty install
     try:
@@ -88,6 +102,23 @@ Of course you are!!! ::::D"
     ignore = shutil.ignore_patterns('*.pyc')
     if not os.path.exists(instLoc):
         shutil.copytree(fileLoc, instLoc, ignore=ignore)
+        if os.path.exists(instLoc+"/pesterchum.js"):
+            f = open(instLoc+"/pesterchum.js")
+            js = f.read()
+            f.close()
+            defa = js.find("\"defaultprofile\"")
+            if defa != -1:
+                start = js.find("\"", js.find(":", defa+1))
+                end = js.find("\"", start+1)
+                party = js[start+1:end]
+                if not os.path.exists(instLoc+"/profiles") or \
+                   party+".js" not in os.listdir(instLoc+"/profiles"):
+                    print "Protecting you from stupidity..."
+                    print "  (aka. Deleting reference to non-existant default profile)"
+                    #os.remove(instLoc+"/pesterchum.js")
+                    f = open(instLoc+"/pesterchum.js", "w")
+                    f.write(js[:defa-1]+js[js.find(",", end)+1:])
+                    f.close()
     else:
         if not os.path.exists(instLoc+"/logs") and os.path.exists(fileLoc+"/logs"):
             shutil.copytree(fileLoc+"/logs", instLoc+"/logs", ignore=ignore)
@@ -119,6 +150,16 @@ Of course you are!!! ::::D"
         t = Template("[Desktop Entry]\nEncoding=UTF-8\nVersion=3.14.2\nName=Pesterchum\nComment=IM client based on Homestuck Pesterchum\nCategories=Network;InstantMessaging;\nExec=/usr/local/bin/pesterchum\nIcon=$loc/pesterchum.ico\nTerminal=false\nType=Application")
         f = open("/usr/share/applications/pesterchum.desktop", "w")
         f.write(t.safe_substitute(loc=instLoc))
+        f.close()
+    # create shortcut launcher
+    if shortcut:
+        print "Creating launcher..."
+        t = Template("#!/usr/bin/env xdg-open\n[Desktop Entry]\nEncoding=UTF-8\nVersion=3.14.2\nName=Pesterchum\nComment=IM client based on Homestuck Pesterchum\nCategories=Network;InstantMessaging;\nExec=pesterchum\nIcon=$loc/pesterchum.ico\nTerminal=false\nType=Application")
+        f = open(_HOME+"/Pesterchum.desktop", "w")
+        f.write(t.safe_substitute(loc=instLoc))
+        f.close()
+        os.chown(_HOME+"/Pesterchum.desktop", _UID, _GID)
+        os.chmod(_HOME+"/Pesterchum.desktop", S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
 else:
     print "Welcome to the Pesterchum 3.14 Easy Uninstaller (for Linux)!\n\
     Created by Kiooeht [evacipatedBox] May 28th-29th, 2011.\n\
@@ -165,6 +206,14 @@ else:
             if os.path.exists("/usr/share/applications/pesterchum.desktop"):
                 print "Maiming menu item..."
                 os.remove("/usr/share/applications/pesterchum.desktop")
+            if os.path.exists(_HOME+"/Pesterchum.desktop"):
+                print "Destroying launcher..."
+                os.remove(_HOME+"/Pesterchum.desktop")
+            elif os.path.exists(_HOME+"/Desktop/Pesterchum.desktop"):
+                print "Destroying launcher..."
+                os.remove(_HOME+"/Desktop/Pesterchum.desktop")
+            else:
+                print "Unable to find launcher, non destroyed"
             break
         elif remove.lower() == "n":
             print "Aborting uninstallation process"
