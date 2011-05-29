@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+
+import os, sys, shutil
+from stat import *
+from string import Template
+
+_PLATFORM = sys.platform
+if _PLATFORM in ['win32','cygwin','darwin','os2','os2emx','riscos','atheos']:
+    print "Whoa there buddy! This installation script isn't meant to be run on your OS."
+    exit()
+
+if os.getuid() != 0:
+    print "This program must be run as root (sudo)."
+    exit()
+
+_HOME     = os.environ['HOME']
+_USER     = os.environ['SUDO_USER']
+_UID      = int(os.environ['SUDO_UID'])
+_GID      = int(os.environ['SUDO_GID'])
+
+def setPermissions(path):
+    os.chown(path, _UID, _GID)
+    for file_ in os.listdir(path):
+        filePath = os.path.join(path,file_)
+        if os.path.isdir(filePath):
+            setPermissions(filePath)
+        else:
+            os.chown(filePath, _UID, _GID)
+
+def findPesterchum(path):
+    for f in os.listdir(path):
+        filePath = os.path.join(path, f)
+        if os.path.isdir(filePath):
+            if os.path.exists(filePath+"/pesterchum.py"):
+                return filePath
+            else:
+                a=findPesterchum(filePath)
+                if a: return a
+        elif f == "pesterchum.py":
+            return path
+
+if not os.path.exists(_HOME+"/.pcInstallLoc"):
+    print "Welcome to the Pesterchum 3.14 Easy Installer (for Linux)!\n\
+    Created by Kiooeht [evacipatedBox] May 28th-29th, 2011.\n\
+    License: WTFPL\n\
+    \n\
+Leaving an option blank will accept it's default [in brackets]\n\
+Are you ready to begin your MAGICAL JOURNEY?!\n\
+Of course you are!!! ::::D"
+    # ask user about things
+    while 1:
+        install = raw_input("Install location [~/.pesterchum]: ")
+        if install == "":
+            instLoc = _HOME+"/.pesterchum"
+            break
+        else:
+            if install[0] == "~":
+                install = _HOME+install[1:]
+            if os.path.exists(install[:install.rfind("/")]):
+                instLoc = install
+                break
+        print "No can do"
+    if os.path.exists("/usr/share/applications"):
+        while 1:
+            gnome = raw_input("Create a GNOME menu item? [Y/n]: ")
+            if gnome.lower() == "y" or gnome == "":
+                gnome = True;break
+            elif gnome.lower() == "n":
+                gnome = False;break
+            else:
+                print "herpaderp"
+
+    # do some shitty install
+    try:
+        fileLoc = findPesterchum(".")
+    except RuntimeError:
+        print "I'm sorry! I was unable to find the pesterchum files :("
+        print "Please put them where I can find them"
+        exit()
+    if not fileLoc:
+        print "I'm sorry! I was unable to find the pesterchum files :("
+        print "Please put them where I can find them"
+        exit()
+    print "Copying files..."
+    ignore = shutil.ignore_patterns('*.pyc')
+    if not os.path.exists(instLoc):
+        shutil.copytree(fileLoc, instLoc, ignore=ignore)
+    else:
+        if not os.path.exists(instLoc+"/logs") and os.path.exists(fileLoc+"/logs"):
+            shutil.copytree(fileLoc+"/logs", instLoc+"/logs", ignore=ignore)
+        if not os.path.exists(instLoc+"/profiles") and os.path.exists(fileLoc+"/profiles"):
+            shutil.copytree(fileLoc+"/profiles", instLoc+"/profiles", ignore=ignore)
+        if not os.path.exists(instLoc+"/pesterchum.js") and os.path.exists(fileLoc+"/pesterchum.js"):
+            shutil.copy(fileLoc+"/pesterchum.js", instLoc)
+        shutil.copytree(fileLoc+"/oyoyo", instLoc+"/oyoyo", ignore=ignore)
+        shutil.copytree(fileLoc+"/smilies", instLoc+"/smilies", ignore=ignore)
+        shutil.copytree(fileLoc+"/themes", instLoc+"/themes", ignore=ignore)
+        for f in os.listdir(fileLoc):
+            filePath = os.path.join(fileLoc, f)
+            if not os.path.isdir(filePath) and f != "pesterchum.js":
+                shutil.copy(filePath, instLoc)
+    setPermissions(instLoc)
+    # save the install location
+    f = open(_HOME+"/.pcInstallLoc", "w")
+    f.write(instLoc)
+    f.close()
+    #create a cool executable
+    print "Creating executable... (/usr/local/bin/pesterchum)"
+    f = open("/usr/local/bin/pesterchum", 'w')
+    f.write("#!/bin/sh\ncd "+instLoc+"\n./pesterchum $@")
+    f.close()
+    os.chmod("/usr/local/bin/pesterchum", S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
+    # Create a fancy menu item in gnome
+    if gnome:
+        print "Creating menu item..."
+        t = Template("[Desktop Entry]\nEncoding=UTF-8\nVersion=3.14.2\nName=Pesterchum\nComment=IM client based on Homestuck Pesterchum\nCategories=Network;InstantMessaging;\nExec=/usr/local/bin/pesterchum\nIcon=$loc/pesterchum.ico\nTerminal=false\nType=Application")
+        f = open("/usr/share/applications/pesterchum.desktop", "w")
+        f.write(t.safe_substitute(loc=instLoc))
+else:
+    print "Welcome to the Pesterchum 3.14 Easy Uninstaller (for Linux)!\n\
+    Created by Kiooeht [evacipatedBox] May 28th-29th, 2011.\n\
+    License: WTFPL\n"
+    while 1:
+        remove = raw_input("Would you like to uninstall Pesterchum? [y/n]: ")
+        if remove.lower() == "y":
+            while 1:
+                killdata = raw_input("Purge your settings, profiles, and logs? [y/N]: ")
+                if killdata.lower() == "n" or killdata == "":
+                    killdata = False;break
+                elif killdata.lower() == "y":
+                    killdata = True;break
+                else:
+                    print "Hmmmmm...?"
+            f = open(_HOME+"/.pcInstallLoc")
+            instLoc = f.readline()
+            f.close()
+            os.remove(_HOME+"/.pcInstallLoc")
+            if killdata:
+                print "Removing files..."
+                shutil.rmtree(instLoc)
+            else:
+                print "Backing up settings, profiles, and logs..."
+                if os.path.exists(instLoc+"/logs"):
+                    shutil.move(instLoc+"/logs", "_easyBackupLOGS")
+                if os.path.exists(instLoc+"/profiles"):
+                    shutil.move(instLoc+"/profiles", "_easyBackupPROFILES")
+                if os.path.exists(instLoc+"/pesterchum.js"):
+                    shutil.move(instLoc+"/pesterchum.js", "_easyBackupSETTINGS")
+                print "Removing files..."
+                shutil.rmtree(instLoc)
+                print "Restoring up settings, profiles, and logs..."
+                os.mkdir(instLoc)
+                if os.path.exists("_easyBackupLOGS"):
+                    shutil.move("_easyBackupLOGS", instLoc+"/logs")
+                if os.path.exists("_easyBackupPROFILES"):
+                    shutil.move("_easyBackupPROFILES", instLoc+"/profiles")
+                if os.path.exists("_easyBackupSETTINGS"):
+                    shutil.move("_easyBackupSETTINGS", instLoc+"/pesterchum.js")
+                setPermissions(instLoc)
+            print "Trashing executable..."
+            os.remove("/usr/local/bin/pesterchum")
+            if os.path.exists("/usr/share/applications/pesterchum.desktop"):
+                print "Maiming menu item..."
+                os.remove("/usr/share/applications/pesterchum.desktop")
+            break
+        elif remove.lower() == "n":
+            print "Aborting uninstallation process"
+            break
+        else:
+            print "Invalid input, try again"
