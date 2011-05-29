@@ -17,6 +17,9 @@ _HOME     = os.environ['HOME']
 _USER     = os.environ['SUDO_USER']
 _UID      = int(os.environ['SUDO_UID'])
 _GID      = int(os.environ['SUDO_GID'])
+# fix home if it's root weirdness
+if _HOME.find("root") != -1:
+    _HOME = "/home/"+_USER
 
 def setPermissions(path):
     os.chown(path, _UID, _GID)
