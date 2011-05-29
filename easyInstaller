@@ -78,14 +78,14 @@ Of course you are!!! ::::D"
                 gnome = False;break
             else:
                 print "herpaderp"
-    while 1:
-        shortcut = raw_input("Create launcher in home directory? [Y/n]: ")
-        if shortcut.lower() == "y" or shortcut == "":
-            shortcut = True;break
-        elif shortcut.lower() == "n":
-            shortcut = False;break
-        else:
-            print "u jelly?"
+        while 1:
+            shortcut = raw_input("Create launcher in home directory? [Y/n]: ")
+            if shortcut.lower() == "y" or shortcut == "":
+                shortcut = True;break
+            elif shortcut.lower() == "n":
+                shortcut = False;break
+            else:
+                print "u jelly?"
 
     # do some shitty install
     try:
