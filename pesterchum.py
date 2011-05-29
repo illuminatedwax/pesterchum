@@ -54,7 +54,10 @@ from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
-canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
+canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
+                 "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
+                 "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
+                 "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
 
 if sys.platform == "darwin":
     if not os.path.exists(_datadir):
@@ -1452,6 +1455,7 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SIGNAL('reconnectIRC()'))
 
         self.menu = QtGui.QMenuBar(self)
+        self.menu.setNativeMenuBar(False)
 
         filemenu = self.menu.addMenu(self.theme["main/menus/client/_name"])
         self.filemenu = filemenu
