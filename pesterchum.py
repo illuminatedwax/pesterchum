@@ -52,6 +52,7 @@ from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
 from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
+from bugreport import BugReporter
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
 canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
@@ -1507,12 +1508,16 @@ class PesterWindow(MovingWindow):
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
         self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('aboutPesterchum()'))
+        self.reportBugAction = QtGui.QAction("REPORT BUG", self)
+        self.connect(self.reportBugAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('reportBug()'))
         helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
         self.helpmenu = helpmenu
         self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.botAction)
         self.helpmenu.addAction(self.nickServAction)
         self.helpmenu.addAction(self.aboutAction)
+        self.helpmenu.addAction(self.reportBugAction)
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
         self.setButtonAction(self.closeButton, self.config.closeAction(), -1)
@@ -2709,6 +2714,13 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def launchHelp(self):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://nova.xzibition.com/~illuminatedwax/help.html", QtCore.QUrl.TolerantMode))
+    @QtCore.pyqtSlot()
+    def reportBug(self):
+        if hasattr(self, 'bugreportwindow') and self.bugreportwindow:
+            return
+        self.bugreportwindow = BugReporter(self)
+        self.bugreportwindow.exec_()
+        self.bugreportwindow = None
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def nickCollision(self, handle, tmphandle):

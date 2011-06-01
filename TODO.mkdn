@@ -10,6 +10,7 @@ Features
 * More complex quirks: by-sound
 * Spy mode
 * Turn @ and # links on/off?
+* "someone has friended you" notifier
 
 Bugs
 ----
