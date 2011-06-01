@@ -728,8 +728,6 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
-        if channel != self.channel and update != "quit":
-            return
         h = unicode(handle)
         c = unicode(channel)
         update = unicode(update)
