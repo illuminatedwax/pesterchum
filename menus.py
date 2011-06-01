@@ -1127,8 +1127,8 @@ class PesterMemoList(QtGui.QDialog):
         self.channelarea.setColumnWidth(0,200)
         self.channelarea.setColumnWidth(1,10)
         self.connect(self.channelarea,
-                     QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
-                     self, QtCore.SLOT('joinActivatedMemo(QTreeWidgetItem, int)'))
+                     QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
+                     self, QtCore.SLOT('joinActivatedMemo()'))
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
@@ -1197,9 +1197,8 @@ class PesterMemoList(QtGui.QDialog):
         selectedmemo = self.selectedmemo()
         if newmemo or selectedmemo:
             self.accept()
-    @QtCore.pyqtSlot(QtGui.QTreeWidgetItem, int)
-    def joinActivatedMemo(self, item, column):
-        self.channelarea.setCurrentItem(item, column)
+    @QtCore.pyqtSlot()
+    def joinActivatedMemo(self):
         self.accept()
 
 
