@@ -765,6 +765,18 @@ class PesterMemo(PesterConvo):
                     self.times[h].removeTime(t.getTime())
                 if update == "nick":
                     self.addUser(newnick)
+                    newchums = self.userlist.findItems(newnick, QtCore.Qt.MatchFlags(0))
+                    for nc in newchums:
+                        for c in chums:
+                            if c.op:
+                                nc.op = True
+                                icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+                                nc.setIcon(icon)
+                            if c.voice:
+                                nc.voice = True
+                                icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                                nc.setIcon(icon)
+                    self.sortUsers()
         elif update == "kick":
             if len(chums) == 0:
                 return
