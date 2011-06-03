@@ -11,6 +11,7 @@ Features
 * Spy mode
 * Turn @ and # links on/off?
 * "someone has friended you" notifier
+* Python quirks (so normal users can write their own quirk functions in python)
 
 Bugs
 ----
@@ -19,10 +20,10 @@ Bugs
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * When using mood sort, scroll position jumps to last selected chum
-* When switching chumhandles, OP doesn't appear to retain OP status (though they do)
 * When left for a really long time, animations slow down pesterchum
 * Openning userlist resets appearance of OP/voice for anyone that become OP/voice after you joined a memo
 * No sign of error if regexp quirk is malformed (not enough captured groups, etc)
+* Windows: Dragging a chum on top of another chum and releasing makes one disappear
 
 Mac Bugs
 --------
