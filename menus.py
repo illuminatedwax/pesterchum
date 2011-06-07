@@ -326,6 +326,29 @@ class RandomQuirkDialog(MultiTextDialog):
             self.replacelist.takeItem(self.replacelist.currentRow())
         self.replaceinput.setFocus()
 
+class QuirkFuncWindow(QtGui.QDialog):
+    def __init__(self, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.mainwindow = parent
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+        self.setWindowTitle("Quirk Functions")
+
+        self.funclist = QtGui.QListWidget(self)
+        self.funclist.setStyleSheet("background-color: #FFFFFF;")
+
+        from parsetools import quirkloader
+        funcs = [q+")" for q in quirkloader.quirks.keys()]
+        funcs.sort()
+        self.funclist.addItems(funcs)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(QtGui.QLabel("Avaliable Quirk Functions"))
+        layout_0.addWidget(self.funclist)
+        self.setLayout(layout_0)
+
+    def closeEvent(self, event):
+        self.mainwindow.quirkmenu.funclistwindow = None
+
 class PesterChooseQuirks(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -338,6 +361,12 @@ class PesterChooseQuirks(QtGui.QDialog):
 
         self.quirkList = PesterQuirkList(self.mainwindow, self)
 
+        self.viewQuirkFuncButton = QtGui.QPushButton("VIEW FUNCTIONS", self)
+        self.connect(self.viewQuirkFuncButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('viewQuirkFuncSlot()'))
+        self.reloadQuirkFuncButton = QtGui.QPushButton("RELOAD FUNCTIONS", self)
+        self.connect(self.reloadQuirkFuncButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reloadQuirkFuncSlot()'))
         self.addPrefixButton = QtGui.QPushButton("ADD PREFIX", self)
         self.connect(self.addPrefixButton, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('addPrefixDialog()'))
@@ -379,6 +408,9 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_quirklist.addWidget(self.quirkList)
         layout_quirklist.addLayout(layout_shiftbuttons)
 
+        layout_4 = QtGui.QHBoxLayout()
+        layout_4.addWidget(self.viewQuirkFuncButton)
+        layout_4.addWidget(self.reloadQuirkFuncButton)
         layout_1 = QtGui.QHBoxLayout()
         layout_1.addWidget(self.addPrefixButton)
         layout_1.addWidget(self.addSuffixButton)
@@ -411,6 +443,7 @@ class PesterChooseQuirks(QtGui.QDialog):
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addLayout(layout_quirklist)
+        layout_0.addLayout(layout_4)
         layout_0.addLayout(layout_1)
         layout_0.addLayout(layout_2)
         layout_0.addLayout(layout_3)
@@ -424,6 +457,20 @@ class PesterChooseQuirks(QtGui.QDialog):
                 u.append(self.quirkList.topLevelItem(i).child(j).quirk)
         return u
         #return [self.quirkList.item(i).quirk for i in range(self.quirkList.count())]
+
+    @QtCore.pyqtSlot()
+    def viewQuirkFuncSlot(self):
+        if not hasattr(self, 'funclistwindow'):
+            self.funclistwindow = None
+        if self.funclistwindow:
+            return
+        self.funclistwindow = QuirkFuncWindow(self.mainwindow)
+        self.funclistwindow.show()
+
+    @QtCore.pyqtSlot()
+    def reloadQuirkFuncSlot(self):
+        from parsetools import reloadQuirkFunctions
+        reloadQuirkFunctions()
 
     @QtCore.pyqtSlot()
     def editSelected(self):

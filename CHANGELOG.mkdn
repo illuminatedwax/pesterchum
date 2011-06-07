@@ -38,6 +38,7 @@ CHANGELOG
 * Memo OP options: Secret, Invite-only, Mute - Kiooeht [evacipatedBox]
 * Notify user if channel blocks message - Kiooeht [evacipatedBox]
 * Bug reporter - Kiooeht [evacipatedBox]
+* Python quirks (users can create own quirk functions) - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]

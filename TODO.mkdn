@@ -11,7 +11,6 @@ Features
 * Spy mode
 * Turn @ and # links on/off?
 * "someone has friended you" notifier
-* Python quirks (so normal users can write their own quirk functions in python)
 
 Bugs
 ----

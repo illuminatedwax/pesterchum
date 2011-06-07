@@ -5,6 +5,7 @@ from datetime import timedelta
 from PyQt4 import QtGui
 
 from generic import mysteryTime
+from pyquirks import PythonQuirks
 
 _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _gtag_begin = re.compile(r'(?i)<g[a-f]>')
@@ -16,8 +17,14 @@ _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 
-_functionre = re.compile(r"(upper\(|lower\(|scramble\(|reverse\(|\)|\\[0-9]+)")
+quirkloader = PythonQuirks()
+_functionre = re.compile(r"%s" % quirkloader.funcre())
 _groupre = re.compile(r"\\([0-9]+)")
+
+def reloadQuirkFunctions():
+    quirkloader.load()
+    global _functionre
+    _functionre = re.compile(r"%s" % quirkloader.funcre())
 
 def lexer(string, objlist):
     """objlist is a list: [(objecttype, re),...] list is in order of preference"""
@@ -300,14 +307,6 @@ def timeDifference(td):
         timetext = "%d HOURS %s" % (hours, when)
     return timetext
 
-def upperrep(text):
-    return text.upper()
-def lowerrep(text):
-    return text.lower()
-def scramblerep(text):
-    return "".join(random.sample(text, len(text)))
-def reverserep(text):
-    return text[::-1]
 def nonerep(text):
     return text
 
@@ -339,8 +338,7 @@ def parseRegexpFunctions(to):
     parsed = parseLeaf(nonerep, None)
     current = parsed
     curi = 0
-    functiondict = {"upper(": upperrep, "lower(": lowerrep,
-                    "scramble(": scramblerep, "reverse(": reverserep}
+    functiondict = quirkloader.quirks
     while curi < len(to):
         tmp = to[curi:]
         mo = _functionre.search(tmp)

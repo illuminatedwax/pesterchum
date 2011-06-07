@@ -2355,9 +2355,13 @@ class PesterWindow(MovingWindow):
                 item.quirk.quirk["group"] = item.quirk.group = curgroup
         quirks = pesterQuirks(self.quirkmenu.quirks())
         self.userprofile.setQuirks(quirks)
+        if hasattr(self.quirkmenu, 'funclistwindow') and self.quirkmenu.funclistwindow:
+            self.quirkmenu.funclistwindow.close()
         self.quirkmenu = None
     @QtCore.pyqtSlot()
     def closeQuirks(self):
+        if hasattr(self.quirkmenu, 'funclistwindow') and self.quirkmenu.funclistwindow:
+            self.quirkmenu.funclistwindow.close()
         self.quirkmenu = None
     @QtCore.pyqtSlot()
     def openLogv(self):

@@ -6,3 +6,5 @@ tutorial/*
 irctest.log
 *.pyc
 pesterchum.js
+quirks/*
+!quirks/defaults.py
