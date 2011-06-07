@@ -962,7 +962,7 @@ class PesterMemo(PesterConvo):
                     icon = QtGui.QIcon()
                     c.setIcon(icon)
             self.sortUsers()
-        elif c == self.channel and update[0] in ["+","-"]:
+        elif c == self.channel and h == "" and update[0] in ["+","-"]:
             self.updateChanModes(update)
 
     @QtCore.pyqtSlot()
