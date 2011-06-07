@@ -1,7 +1,7 @@
 Python Quirk Functions
 ===============
 
-0. Table of Contents
+Table of Contents
 -----------------
 1. Introduction
 2. Create A Module
@@ -9,7 +9,7 @@ Python Quirk Functions
 4. Command Requirements
 5. Completed Quirk Function
 
-1. Introduction
+Introduction
 ---------------
 Over the course of this short tutorial you will learn:
 
@@ -28,7 +28,7 @@ If you follow the instructions in these boxes, by the end of this tutorial
 you will have recreated the default reverse() Quirk Function.
 </pre>
 
-2. Create A Module
+Create A Module
 -------------------
 All Quirk Function Modules should be created in the 'quirks/' directory. File names <b>must</b> end in '.py'.
 You can have multiple Quirk Functions per Module.
@@ -39,7 +39,7 @@ Each Module can also have a 'setup' function which will be called once, the mome
 Create 'reverse.py' in the 'quirks/' directory.
 </pre>
 
-3. Functions In A Module
+Functions In A Module
 --------------------------
 If you've ever done programming before, you should know what a function is. If not, I suggest picking up a good programming book (or e-book).
 
@@ -57,7 +57,7 @@ def reverserep(text):
     return text[::-1]
 </pre>
 
-4. Command Requirements
+Command Requirements
 ------------------------
 For a function to be registered as a Quirk Function, it must conform to three simple rules:
 
@@ -73,7 +73,7 @@ function_name.command = "name"
 reverserep.command = "reverse"
 </pre>
 
-5. Completed Quirk Function
+Completed Quirk Function
 ---------------------------
 Below is the completed, fully working, reverse Quirk Function. After it I will break down the pieces of each line.
 <pre>
