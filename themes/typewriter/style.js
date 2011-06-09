@@ -10,7 +10,7 @@
   "minimize": { "image": "$path/m.png",
                 "loc": [239, 168]},
   "menubar": { "style": "font-family: 'Courier'; font:bold; font-size: 12px; color: rgba(0,0,0,0);" },
-  "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 12px; background-color: white;border:2px solid black;",
+  "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 12px; color: #000000; background-color: white;border:2px solid black;",
              "menuitem": "margin-right:30px;",
              "selected": "background-color: black",
              "loc": [43,220]

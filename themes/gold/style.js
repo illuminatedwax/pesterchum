@@ -9,8 +9,8 @@
              "loc": [315, 26]},
   "minimize": { "image": "$path/m.png",
                 "loc": [300, 32]},
-  "menubar": { "style": "font-family: 'Arial'; font:bold; font-size: 12px;" },
-  "menu" : { "style": "font-family: 'Arial'; font: bold; font-size: 12px; background-color: #fdb302;border:2px solid #ffff00",
+  "menubar": { "style": "font-family: 'Arial'; font:bold; font-size: 12px; color: #000000;" },
+  "menu" : { "style": "font-family: 'Arial'; font: bold; font-size: 12px; color: #000000; background-color: #fdb302;border:2px solid #ffff00",
              "menuitem": "margin-right:15px;",
              "selected": "background-color: #ffff00",
              "loc": [150,22]

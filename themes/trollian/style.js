@@ -10,7 +10,7 @@
   "minimize": { "image": "$path/m.png",
                 "loc": [621, 8]},
   "menubar": { "style": "font-family: 'Arial'; font-size: 11px; color: rgba(0,0,0,0);" },
-  "menu" : { "style": "font-family: 'Arial'; font-size: 11px; background-color: #c2c2c2; border:1px solid #545454;",
+  "menu" : { "style": "font-family: 'Arial'; font-size: 11px; color: #000000; background-color: #c2c2c2; border:1px solid #545454;",
              "selected": "background-color: #545454",
              "menuitem": "margin-right:14px;",
              "loc": [14,90]

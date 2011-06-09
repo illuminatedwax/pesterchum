@@ -10,7 +10,7 @@
   "minimize": { "image": "$path/m.gif",
                 "loc": [300, 32]},
   "menubar": { "style": "font-family: 'Century Gothic'; font-size: 14px; color:#9d9d9d" },
-  "menu" : { "style": "font-family: 'Century Gothic'; font-size: 14px; background-color: #fdb302;border:2px solid #ffff00",
+  "menu" : { "style": "font-family: 'Century Gothic'; font-size: 14px; color: #000000; background-color: #fdb302;border:2px solid #ffff00",
              "menuitem": "margin-right:25px;",
              "selected": "background-color: #ffff00",
              "loc": [480,30]

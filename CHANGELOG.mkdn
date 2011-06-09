@@ -51,6 +51,7 @@ CHANGELOG
     * Make 'logs' and 'profiles' directories if non-existant - Kiooeht [evacipatedBox]
     * Don't split messages in bad places - Kiooeht [evacipatedBox]
     * Chumhandles must match EXACTLY to register mood changes - Kiooeht [evacipatedBox]
+    * Menu bar text colour correct when default system colour isn't black - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
