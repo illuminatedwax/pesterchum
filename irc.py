@@ -258,8 +258,7 @@ class PesterHandler(DefaultCommandHandler):
             msg = msg.decode('iso-8859-1', 'ignore')
         handle = nick[0:nick.find("!")]
         logging.info("---> recv \"NOTICE %s :%s\"" % (handle, msg))
-        if handle == "ChanServ":
-            if chan == self.parent.mainwindow.profile().handle and msg[0:2] == "[#":
+        if handle == "ChanServ" and chan == self.parent.mainwindow.profile().handle and msg[0:2] == "[#":
                 self.parent.memoReceived.emit(msg[1:msg.index("]")], handle, msg)
         else:
             self.parent.noticeReceived.emit(handle, msg)
