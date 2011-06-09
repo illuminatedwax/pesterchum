@@ -110,6 +110,27 @@ class PesterIRC(QtCore.QThread):
                     space = space+4
                 a = l[0][0:space+1]
                 b = l[0][space+1:]
+                if a.count("<c") > a.count("</c>"):
+                    # oh god ctags will break!! D=
+                    hanging = []
+                    usedends = []
+                    c = a.rfind("<c")
+                    while c != -1:
+                        d = a.find("</c>", c)
+                        while d in usedends:
+                            d = a.find("</c>", d+1)
+                        if d != -1: usedends.append(d)
+                        else:
+                            f = a.find(">", c)+1
+                            hanging.append(a[c:f])
+                        c = a.rfind("<c",0,c)
+
+                    # end all ctags in first part
+                    for i in range(a.count("<c")-a.count("</c>")):
+                        a = a + "</c>"
+                    #start them up again in the second part
+                    for c in hanging:
+                        b = c + b
                 if len(b) > 0:
                     return [a] + splittext([b])
                 else:

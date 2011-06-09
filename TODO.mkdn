@@ -21,6 +21,7 @@ Bugs
 * When left for a really long time, animations slow down pesterchum
 * Openning userlist resets appearance of OP/voice for anyone that become OP/voice after you joined a memo
 * Windows: Dragging a chum on top of another chum and releasing makes one disappear
+* If pesterchum is open but offline due to a network failure and you open the memos screen, it connects you but doesn't fetch the memo list when it finishes connecting
 
 Mac Bugs
 --------
