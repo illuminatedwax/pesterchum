@@ -39,6 +39,7 @@ CHANGELOG
 * Notify user if channel blocks message - Kiooeht [evacipatedBox]
 * Bug reporter - Kiooeht [evacipatedBox]
 * Python quirks (users can create own quirk functions) - Kiooeht [evacipatedBox]
+* Incorporate support for the new randomEncounter - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]

@@ -90,6 +90,14 @@ class PesterIRC(QtCore.QThread):
     def getMoods(self, chums):
         self.cli.command_handler.getMood(*chums)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def sendNotice(self, text, handle):
+        h = unicode(handle)
+        t = unicode(text)
+        try:
+            helpers.notice(self.cli, h, t)
+        except socket.error:
+            self.setConnectionBroken()
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def sendMessage(self, text, handle):
         h = unicode(handle)
         textl = [unicode(text)]

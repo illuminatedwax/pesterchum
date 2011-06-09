@@ -490,7 +490,8 @@ def themeChecker(theme):
     "convo/text/closememo", "convo/text/kickedmemo", \
     "main/chums/userlistcolor", "main/defaultwindow/style", \
     "main/chums/moods", "main/chums/moods/chummy/icon", "main/menus/help/help", \
-    "main/menus/help/calsprite", "main/menus/help/nickserv", "main/menus/rclickchumlist/invitechum"]
+    "main/menus/help/calsprite", "main/menus/help/nickserv", \
+    "main/menus/rclickchumlist/invitechum", "main/menus/client/randen"]
 
     for n in needs:
         try:

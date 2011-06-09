@@ -69,6 +69,7 @@ class PesterQuirkList(QtGui.QTreeWidget):
             child_1.setCheckState(0,0)
             child_1.setExpanded(True)
             child_1.addChild(item)
+        self.changeCheckState()
 
     def currentQuirk(self):
         if type(self.currentItem()) is PesterQuirkItem:
@@ -152,6 +153,7 @@ class PesterQuirkList(QtGui.QTreeWidget):
                     self.takeTopLevelItem(self.indexOfTopLevelItem(f))
             else:
                 f.parent().takeChild(f.parent().indexOfChild(f))
+        self.changeCheckState()
 
     @QtCore.pyqtSlot()
     def addQuirkGroup(self):
@@ -904,6 +906,10 @@ class PesterOptions(QtGui.QDialog):
         self.updatecheck = QtGui.QCheckBox("Check for Updates on Start", self)
         self.updatecheck.setChecked(self.config.checkForUpdates())
 
+        if parent.randhandler.running:
+            self.randomscheck = QtGui.QCheckBox("Receive Random Encounters")
+            self.randomscheck.setChecked(parent.userprofile.randoms)
+
         avail_themes = self.config.availableThemes()
         self.themeBox = QtGui.QComboBox(self)
         for (i, t) in enumerate(avail_themes):
@@ -964,6 +970,8 @@ class PesterOptions(QtGui.QDialog):
         layout_chat.addWidget(self.memomessagecheck)
         layout_chat.addWidget(self.animationscheck)
         layout_chat.addWidget(animateLabel)
+        if parent.randhandler.running:
+            layout_chat.addWidget(self.randomscheck)
         # Re-enable these when it's possible to disable User and Memo links
         #layout_chat.addWidget(hr)
         #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))

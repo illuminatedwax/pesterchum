@@ -22,6 +22,7 @@
                        "options": "Preferences",
                        "memos": "Bulletin Boards",
                        "logviewer": "Pesterlogs",
+                       "randen": "Random Encounter",
                        "userlist": "Userlist",
                        "addgroup": "Add Group",
                        "import": "Import",

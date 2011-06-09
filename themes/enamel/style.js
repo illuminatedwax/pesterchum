@@ -19,6 +19,7 @@
                        "options": "Options",
                        "memos": "Memos",
                        "logviewer": "Pesterlogs",
+                       "randen": "Random Encounter",
                        "userlist": "Userlist",
                        "addgroup": "Add Group",
                        "import": "Import",

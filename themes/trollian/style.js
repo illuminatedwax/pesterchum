@@ -21,6 +21,7 @@
                        "options": "Options",
                        "memos": "Memos",
                        "logviewer": "Pesterlogs",
+                       "randen": "Random Encounter",
                        "userlist": "Fresh Targets",
                        "addgroup": "Add Group",
                        "import": "import U2;",

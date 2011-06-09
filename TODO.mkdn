@@ -5,7 +5,6 @@ Features
 --------
 * OOC
 * log viewer needs to have BBCode/HTML/Text copy modes
-* random pesters
 * copy quirks between profiles?
 * More complex quirks: by-sound
 * Spy mode

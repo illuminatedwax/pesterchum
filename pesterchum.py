@@ -53,6 +53,7 @@ from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
+from randomer import RandomHandler
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
 canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
@@ -534,6 +535,7 @@ class userProfile(object):
             self.chat.mood = Mood(self.theme["main/defaultmood"])
             self.lastmood = self.chat.mood.value()
             self.quirks = pesterQuirks([])
+            self.randoms = False
         else:
             fp = open("%s/%s.js" % (self.profiledir, user))
             self.userprofile = json.load(fp)
@@ -547,6 +549,9 @@ class userProfile(object):
                                       QtGui.QColor(self.userprofile["color"]),
                                       Mood(self.lastmood))
             self.quirks = pesterQuirks(self.userprofile["quirks"])
+            if "randoms" not in self.userprofile:
+                self.userprofile["randoms"] = False
+            self.randoms = self.userprofile["randoms"]
 
     def setMood(self, mood):
         self.chat.mood = mood
@@ -561,6 +566,10 @@ class userProfile(object):
     def setQuirks(self, quirks):
         self.quirks = quirks
         self.userprofile["quirks"] = self.quirks.plainList()
+        self.save()
+    def setRandom(self, random):
+        self.randoms = random
+        self.userprofile["randoms"] = random
         self.save()
     def getLastMood(self):
         return self.lastmood
@@ -1407,6 +1416,8 @@ class PesterWindow(MovingWindow):
             self.theme = self.userprofile.getTheme()
         self.modes = ""
 
+        self.randhandler = RandomHandler(self)
+
         try:
             themeChecker(self.theme)
         except ThemeException, (inst):
@@ -1428,6 +1439,9 @@ class PesterWindow(MovingWindow):
         self.grps = grps
         self.connect(grps, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('addGroupWindow()'))
+        self.rand = QtGui.QAction(self.theme["main/menus/client/randen"], self)
+        self.connect(self.rand, QtCore.SIGNAL('triggered()'),
+                     self.randhandler, QtCore.SLOT('getEncounter()'))
         opts = QtGui.QAction(self.theme["main/menus/client/options"], self)
         self.opts = opts
         self.connect(opts, QtCore.SIGNAL('triggered()'),
@@ -1463,6 +1477,8 @@ class PesterWindow(MovingWindow):
         filemenu.addAction(opts)
         filemenu.addAction(memoaction)
         filemenu.addAction(logv)
+        if self.randhandler.running:
+            filemenu.addAction(self.rand)
         filemenu.addAction(userlistaction)
         filemenu.addAction(self.idleaction)
         filemenu.addAction(grps)
@@ -1829,6 +1845,7 @@ class PesterWindow(MovingWindow):
         self.menu.move(*theme["main/menu/loc"])
         self.logv.setText(theme["main/menus/client/logviewer"])
         self.grps.setText(theme["main/menus/client/addgroup"])
+        self.rand.setText(self.theme["main/menus/client/randen"])
         self.opts.setText(theme["main/menus/client/options"])
         self.exitaction.setText(theme["main/menus/client/exit"])
         self.userlistaction.setText(theme["main/menus/client/userlist"])
@@ -2056,7 +2073,9 @@ class PesterWindow(MovingWindow):
     def deliverNotice(self, handle, msg):
         h = unicode(handle)
         m = unicode(msg)
-        if self.convos.has_key(h):
+        if h == self.randhandler.randNick:
+            self.randhandler.incoming(msg)
+        elif self.convos.has_key(h):
             self.newMessage(h, m)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def deliverInvite(self, handle, channel):
@@ -2552,6 +2571,8 @@ class PesterWindow(MovingWindow):
             self.idlethreshold = 60*idlesetting
         # theme
         self.themeSelected()
+        # randoms
+        self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
         # button actions
         minisetting = self.optionmenu.miniBox.currentIndex()
         curmini = self.config.minimizeAction()
@@ -2760,6 +2781,7 @@ class PesterWindow(MovingWindow):
     closeToTraySignal = QtCore.pyqtSignal()
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    sendNotice = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
     profileChanged = QtCore.pyqtSignal()
     moodRequest = QtCore.pyqtSignal(PesterProfile)
@@ -2876,6 +2898,8 @@ class MainProgram(QtCore.QObject):
 
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),
+                  ('sendNotice(QString, QString)',
+                   'sendNotice(QString, QString)'),
                   ('newConvoStarted(QString, bool)',
                    'startConvo(QString, bool)'),
                   ('convoClosed(QString)',
