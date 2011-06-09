@@ -21,7 +21,6 @@ Bugs
 * When using mood sort, scroll position jumps to last selected chum
 * When left for a really long time, animations slow down pesterchum
 * Openning userlist resets appearance of OP/voice for anyone that become OP/voice after you joined a memo
-* No sign of error if regexp quirk is malformed (not enough captured groups, etc)
 * Windows: Dragging a chum on top of another chum and releasing makes one disappear
 
 Mac Bugs

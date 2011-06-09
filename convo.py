@@ -658,7 +658,14 @@ class PesterConvo(QtGui.QFrame):
         quirks = self.mainwindow.userprofile.quirks
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd and self.applyquirks:
-            lexmsg = quirks.apply(lexmsg)
+            try:
+                lexmsg = quirks.apply(lexmsg)
+            except:
+                msgbox = QtGui.QMessageBox()
+                msgbox.setText("Whoa there! There seems to be a problem.")
+                msgbox.setInformativeText("A quirk seems to be having a problem. (Possibly you're trying to capture a non-existant group?)")
+                msgbox.exec_()
+                return
         lexmsgs = splitMessage(lexmsg)
 
         for lm in lexmsgs:
