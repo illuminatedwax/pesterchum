@@ -330,9 +330,6 @@ class PesterHandler(DefaultCommandHandler):
         mymood = self.mainwindow.profile().mood.value()
         helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
-        chums = self.mainwindow.chumList.chums
-        self.getMood(*chums)
-
     def nicknameinuse(self, server, cmd, nick, msg):
         newnick = "pesterClient%d" % (random.randint(100,999))
         helpers.nick(self.client, newnick)
@@ -395,7 +392,7 @@ class PesterHandler(DefaultCommandHandler):
         logging.info("---> recv \"NAMES %s: %d names\"" % (channel, len(namelist)))
         if not hasattr(self, 'channelnames'):
             self.channelnames = {}
-        if not self.channelnames.has_key(channel):
+        if channel not in self.channelnames:
             self.channelnames[channel] = []
         self.channelnames[channel].extend(namelist)
     def endofnames(self, server, nick, channel, msg):
@@ -403,6 +400,14 @@ class PesterHandler(DefaultCommandHandler):
         pl = PesterList(namelist)
         del self.channelnames[channel]
         self.parent.namesReceived.emit(channel, pl)
+        if channel == "#pesterchum":
+            chums = self.mainwindow.chumList.chums
+            lesschums = []
+            for c in chums:
+                chandle = c.handle
+                if chandle in namelist:
+                    lesschums.append(c)
+            self.getMood(*lesschums)
 
     def liststart(self, server, handle, *info):
         self.channel_list = []
