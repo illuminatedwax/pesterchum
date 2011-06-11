@@ -10,18 +10,24 @@ Features
 * Spy mode
 * Turn @ and # links on/off?
 * "someone has friended you" notifier
+* Reorder quirk window into a multi-page wizard
 
 Bugs
 ----
 * weird memo time bug
 * Windows doesn't show style sheet sometimes?? Maybe related to themes.
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
-* Windows XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * When using mood sort, scroll position jumps to last selected chum
 * When left for a really long time, animations slow down pesterchum
 * Openning userlist resets appearance of OP/voice for anyone that become OP/voice after you joined a memo
-* Windows: Dragging a chum on top of another chum and releasing makes one disappear
 * If pesterchum is open but offline due to a network failure and you open the memos screen, it connects you but doesn't fetch the memo list when it finishes connecting
+* right clicking an offline chum and choosing remove asks you why you're reporting someone, and if you hit cancel the menus stop working
+
+Windows Bugs
+------------
+* XP SP2: sometimes mouse clicks dont register? must be some kinda crash
+* Dragging a chum on top of another chum and releasing makes one disappear
+* On reconnect and nick change, momentary theme change causes menu items to stop working
 
 Mac Bugs
 --------
