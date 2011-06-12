@@ -735,12 +735,41 @@ class chumArea(RightClickTree):
             else:
                 return self.optionsMenu
 
+    def startDrag(self, dropAction):
+        # create mime data object
+        mime = QtCore.QMimeData()
+        mime.setData('application/x-item', '???')
+        # start drag 
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(mime)        
+        drag.start(QtCore.Qt.MoveAction)
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasFormat("application/x-item"):
+            event.setDropAction(QtCore.Qt.MoveAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragEnterEvent(self, event):
+        if (event.mimeData().hasFormat('application/x-item')):
+            event.accept()
+        else:
+            event.ignore() 
+
     def dropEvent(self, event):
+        if (event.mimeData().hasFormat('application/x-item')):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+            return
         thisitem = str(event.source().currentItem().text(0))
         if thisitem.rfind(" ") != -1:
             thisitem = thisitem[0:thisitem.rfind(" ")]
         if thisitem == "Chums" or thisitem in self.groups:
-            droppos = str(self.itemAt(event.pos()).text(0))
+            droppos = self.itemAt(event.pos())
+            if not droppos: return
+            droppos = str(droppos.text(0))
             if droppos.rfind(" ") != -1:
                 droppos = droppos[0:droppos.rfind(" ")]
             if droppos == "Chums" or droppos in self.groups:

@@ -26,7 +26,6 @@ Bugs
 Windows Bugs
 ------------
 * XP SP2: sometimes mouse clicks dont register? must be some kinda crash
-* Dragging a chum on top of another chum and releasing makes one disappear
 * On reconnect and nick change, momentary theme change causes menu items to stop working
 
 Mac Bugs
