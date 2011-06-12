@@ -8,9 +8,9 @@
   "menu" : { "style": "font-family: 'Arial'; font: bold; font-size: 14px; color: #000000; background-color: #e5000f;border:2px solid #c20f00" },
   "menubar": { "style": "font-family: 'Arial'; font:bold; font-size: 14px; color: #000000;" },
   "close": { "image": "$path/x.png",
-             "loc": [280, 2]},
+             "loc": [272, 0]},
   "minimize": { "image": "$path/m.png",
-                "loc": [260, 8]},
+                "loc": [248, 2]},
   "defaultwindow": { "style": "background: #e5000f; font-family:'Arial';font:bold;selection-background-color:#919191; " },
   "chums": { "style": "border:2px solid #ffa4a4; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Arial';selection-background-color:#646464; ",
              "moods": {

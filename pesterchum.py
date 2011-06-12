@@ -605,6 +605,7 @@ class WMButton(QtGui.QPushButton):
     def __init__(self, icon, parent=None):
         QtGui.QPushButton.__init__(self, icon, "", parent)
         self.setIconSize(icon.realsize())
+        self.resize(icon.realsize())
         self.setFlat(True)
         self.setStyleSheet("QPushButton { padding: 0px; }")
         self.setAutoDefault(False)
@@ -1836,10 +1837,12 @@ class PesterWindow(MovingWindow):
         newcloseicon = PesterIcon(theme["main/close/image"])
         self.closeButton.setIcon(newcloseicon)
         self.closeButton.setIconSize(newcloseicon.realsize())
+        self.closeButton.resize(newcloseicon.realsize())
         self.closeButton.move(*theme["main/close/loc"])
         newminiicon = PesterIcon(theme["main/minimize/image"])
         self.miniButton.setIcon(newminiicon)
         self.miniButton.setIconSize(newminiicon.realsize())
+        self.miniButton.resize(newminiicon.realsize())
         self.miniButton.move(*theme["main/minimize/loc"])
         # menus
         self.menu.move(*theme["main/menu/loc"])
@@ -2572,7 +2575,8 @@ class PesterWindow(MovingWindow):
         # theme
         self.themeSelected()
         # randoms
-        self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
+        if self.randhandler.running:
+            self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
         # button actions
         minisetting = self.optionmenu.miniBox.currentIndex()
         curmini = self.config.minimizeAction()

@@ -10,9 +10,9 @@
                          "menuitem": "font-size:14px;" },
   "menubar": { "style": "font-family: 'Courier'; font:bold; font-size: 14px; color: #000000;" },
   "close": { "image": "$path/x.png",
-             "loc": [282, 4]},
+             "loc": [286, 6]},
   "minimize": { "image": "$path/m.png",
-                "loc": [264, 10]},
+                "loc": [268, 12]},
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-size:14px;font-family: 'Courier';selection-background-color:#646464; ",
                          "loc": [15, 70],
                          "size": [270, 300]
