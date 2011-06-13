@@ -228,10 +228,15 @@ class PesterIRC(QtCore.QThread):
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def kickUser(self, handle, channel):
+        l = handle.split(":")
         c = unicode(channel)
-        h = unicode(handle)
+        h = unicode(l[0])
+        if len(l) > 1:
+            reason = unicode(l[1])
+        else:
+            reason = ""
         try:
-            helpers.kick(self.cli, h, c)
+            helpers.kick(self.cli, h, c, reason)
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
@@ -359,8 +364,9 @@ class PesterHandler(DefaultCommandHandler):
         handle = nick[0:nick.find("!")]
         self.parent.userPresentUpdate.emit(handle, "", "quit")
         self.parent.moodUpdated.emit(handle, Mood("offline"))
-    def kick(self, opnick, channel, handle, op):
-        self.parent.userPresentUpdate.emit(handle, channel, "kick:%s" % (op))
+    def kick(self, opnick, channel, handle, reason):
+        op = opnick[0:opnick.find("!")]
+        self.parent.userPresentUpdate.emit(handle, channel, "kick:%s:%s" % (op, reason))
         # ok i shouldnt be overloading that but am lazy
     def part(self, nick, channel, reason="nanchos"):
         handle = nick[0:nick.find("!")]

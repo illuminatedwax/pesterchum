@@ -11,6 +11,7 @@ Features
 * Turn @ and # links on/off?
 * "someone has friended you" notifier
 * Reorder quirk window into a multi-page wizard
+* MSPA update notifier option
 
 Bugs
 ----

@@ -38,8 +38,8 @@ def names(cli, *channels):
 def channel_list(cli):
     cli.send("LIST")
 
-def kick(cli, handle, channel):
-    cli.send("KICK %s %s" % (channel, handle))
+def kick(cli, handle, channel, reason=""):
+    cli.send("KICK %s %s %s" % (channel, handle, reason))
 
 def mode(cli, channel, mode, options=None):
     cmd = "MODE %s %s" % (channel, mode)

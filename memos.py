@@ -743,6 +743,7 @@ class PesterMemo(PesterConvo):
             l = update.split(":")
             update = l[0]
             op = l[1]
+            reason = l[2]
         if update == "nick":
             l = h.split(":")
             oldnick = l[0]
@@ -807,7 +808,7 @@ class PesterMemo(PesterConvo):
                     opgrammar = self.time.getGrammar()
                 else:
                     opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
-                msg = chum.memobanmsg(opchum, opgrammar, systemColor, grammar)
+                msg = chum.memobanmsg(opchum, opgrammar, systemColor, grammar, reason)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
                 ttracker.removeTime(ttracker.getTime())
@@ -981,7 +982,9 @@ class PesterMemo(PesterConvo):
         if not self.userlist.currentItem():
             return
         currentHandle = unicode(self.userlist.currentItem().text())
-        self.mainwindow.kickUser.emit(currentHandle, self.channel)
+        (reason, ok) = QtGui.QInputDialog.getText(self, "Ban User", "Enter the reason you are banning this user (optional):")
+        if ok:
+            self.mainwindow.kickUser.emit("%s:%s" % (currentHandle, reason), self.channel)
     @QtCore.pyqtSlot()
     def opSelectedUser(self):
         if not self.userlist.currentItem():

@@ -38,10 +38,11 @@ CHANGELOG
 * Memo OP options: Secret, Invite-only, Mute - Kiooeht [evacipatedBox]
 * Notify user if channel blocks message - Kiooeht [evacipatedBox]
 * Bug reporter - Kiooeht [evacipatedBox]
-* Python quirks (users can create own quirk functions) - Kiooeht [evacipatedBox]
-* Incorporate support for the new randomEncounter - Kiooeht [evacipatedBox]
-* Only GETMOOD for people online (less spam!) - Kiooeht [evacipatedBox]
-* Quirk tester in quirk window - Kiooeht [evacipatedBox]
+* Python quirks (users can create own quirk functions) - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Incorporate support for the new randomEncounter - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Only GETMOOD for people online (less spam!) - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Quirk tester in quirk window - Kiooeht [evacipatedBox] (Idea: [alGore])
+* Show and support giving kick reasons - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
