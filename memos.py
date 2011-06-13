@@ -311,12 +311,17 @@ class MemoText(PesterText):
             parent.mainwindow.chatlog.log(parent.channel, joinmsg)
             time.openCurrentTime()
 
+        def makeSafe(msg):
+            if msg.count("<c") > msg.count("</c>"):
+                for i in range(msg.count("<c") - msg.count("</c>")):
+                    msg = msg + "</c>"
+            return msg
         if type(lexmsg[0]) is mecmd:
             memsg = chum.memsg(systemColor, lexmsg, time=time.getGrammar())
             window.chatlog.log(parent.channel, memsg)
             self.append(convertTags(memsg))
         else:
-            self.append(convertTags(lexmsg))
+            self.append(makeSafe(convertTags(lexmsg)))
             window.chatlog.log(parent.channel, lexmsg)
 
     def changeTheme(self, theme):
