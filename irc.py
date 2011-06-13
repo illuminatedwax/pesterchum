@@ -421,7 +421,8 @@ class PesterHandler(DefaultCommandHandler):
         pl = PesterList(namelist)
         del self.channelnames[channel]
         self.parent.namesReceived.emit(channel, pl)
-        if channel == "#pesterchum":
+        if channel == "#pesterchum" and not hasattr(self, "joined"):
+            self.joined = True
             chums = self.mainwindow.chumList.chums
             lesschums = []
             for c in chums:
