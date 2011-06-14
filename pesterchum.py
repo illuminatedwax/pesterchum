@@ -739,9 +739,9 @@ class chumArea(RightClickTree):
         # create mime data object
         mime = QtCore.QMimeData()
         mime.setData('application/x-item', '???')
-        # start drag 
+        # start drag
         drag = QtGui.QDrag(self)
-        drag.setMimeData(mime)        
+        drag.setMimeData(mime)
         drag.start(QtCore.Qt.MoveAction)
 
     def dragMoveEvent(self, event):
@@ -755,7 +755,7 @@ class chumArea(RightClickTree):
         if (event.mimeData().hasFormat('application/x-item')):
             event.accept()
         else:
-            event.ignore() 
+            event.ignore()
 
     def dropEvent(self, event):
         if (event.mimeData().hasFormat('application/x-item')):
@@ -2627,6 +2627,7 @@ class PesterWindow(MovingWindow):
         curanimate = self.config.animations()
         if animatesetting != curanimate:
             self.config.set('animations', animatesetting)
+            self.animationSetting.emit(animatesetting)
         # update checked
         updatechecksetting = self.optionmenu.updatecheck.isChecked()
         curupdatecheck = self.config.checkForUpdates()
@@ -2817,6 +2818,7 @@ class PesterWindow(MovingWindow):
     sendNotice = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
     profileChanged = QtCore.pyqtSignal()
+    animationSetting = QtCore.pyqtSignal(bool)
     moodRequest = QtCore.pyqtSignal(PesterProfile)
     moodsRequest = QtCore.pyqtSignal(PesterList)
     moodUpdated = QtCore.pyqtSignal()

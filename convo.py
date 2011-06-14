@@ -226,6 +226,8 @@ class PesterText(QtGui.QTextEdit):
         self.urls = {}
         for k in smiledict:
             self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]))
+        self.connect(self.mainwindow, QtCore.SIGNAL('animationSetting(bool)'),
+                     self, QtCore.SLOT('animateChanged(bool)'))
     def addAnimation(self, url, fileName):
         movie = QtGui.QMovie(self)
         movie.setFileName(fileName)
@@ -233,7 +235,7 @@ class PesterText(QtGui.QTextEdit):
             self.urls[movie] = url
             self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
                          self, QtCore.SLOT('animate(int)'))
-            movie.start()
+            #movie.start()
     @QtCore.pyqtSlot(int)
     def animate(self, frame):
         if self.mainwindow.config.animations():
@@ -244,7 +246,20 @@ class PesterText(QtGui.QTextEdit):
                 self.document().addResource(QtGui.QTextDocument.ImageResource,
                                    self.urls[movie], movie.currentPixmap())
                 self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
-
+    @QtCore.pyqtSlot(bool)
+    def animateChanged(self, animate):
+        if animate:
+            for m in self.urls:
+                html = unicode(self.toHtml())
+                if html.find(self.urls[m].toString()) != -1:
+                    if movie.frameCount() > 1:
+                        m.start()
+        else:
+            for m in self.urls:
+                html = unicode(self.toHtml())
+                if html.find(self.urls[m].toString()) != -1:
+                    if movie.frameCount() > 1:
+                        m.stop()
 
     @QtCore.pyqtSlot(bool)
     def textReady(self, ready):
@@ -263,6 +278,11 @@ class PesterText(QtGui.QTextEdit):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        if self.mainwindow.config.animations():
+            for m in self.urls:
+                if convertTags(lexmsg).find(self.urls[m].toString()) != -1:
+                    if m.state() == QtGui.QMovie.NotRunning:
+                        m.start()
         if self.parent().mainwindow.config.showTimeStamps():
             if self.parent().mainwindow.config.time12Format():
                 time = strftime("[%I:%M")
