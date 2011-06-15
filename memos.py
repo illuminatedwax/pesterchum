@@ -509,7 +509,10 @@ class PesterMemo(PesterConvo):
         self.setWindowIcon(PesterIcon(theme["memos/memoicon"]))
 
         t = Template(theme["memos/label/text"])
-        self.channelLabel.setText(t.safe_substitute(channel=self.channel))
+        if self.mainwindow.advanced and hasattr(self, 'modes'):
+            self.channelLabel.setText(t.safe_substitute(channel=self.channel) + "(%s)" % (self.modes))
+        else:
+            self.channelLabel.setText(t.safe_substitute(channel=self.channel))
         self.channelLabel.setStyleSheet(theme["memos/label/style"])
         self.channelLabel.setAlignment(self.aligndict["h"][theme["memos/label/align/h"]] | self.aligndict["v"][theme["memos/label/align/v"]])
         self.channelLabel.setMaximumHeight(theme["memos/label/maxheight"])
