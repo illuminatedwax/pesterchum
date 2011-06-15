@@ -276,7 +276,7 @@
       "style": "background: white; border:2px solid #c2c2c2; font-size: 14px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px; height: 19px;"
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px;"
   },
   "tabwindow" : {
     "style": "background: rgb(190, 19, 4); font-family: 'Arial'"
@@ -319,7 +319,7 @@
       "style": "background: white; border:2px solid #c2c2c2; font-size: 12px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px; height: 19px; margin-bottom: 5px; "
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px; margin-bottom: 5px; "
   },
   "margins": {"top": 22, "bottom": 10, "left": 9, "right": 4 },
   "userlist": { "width": 125,
