@@ -33,11 +33,11 @@ def updateCheck(q,num):
     try:
         f = urllib.urlopen("http://distantsphere.com/pesterchum.php?" + data)
     except:
-        print "Update check Failure: 1"; q.put((False,1))
+        print "Update check Failure: 1"; return q.put((False,1))
     newest = f.read()
     f.close()
     if not newest or newest[0] == "<":
-        print "Update check Failure: 2"; q.put((False,2))
+        print "Update check Failure: 2"; return q.put((False,2))
     try:
         (full, major, minor, status, revision, url) = verStrToNum(newest)
     except TypeError:
