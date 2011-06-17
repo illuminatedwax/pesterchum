@@ -616,7 +616,9 @@ class PesterMemo(PesterConvo):
         if chanmodes and chanmodes[0] == "+": chanmodes = chanmodes[1:]
         modes = str(modes)
         if modes[0] == "+":
-            chanmodes.extend(modes[1:])
+            for m in modes[1:]:
+                if m not in chanmodes:
+                    chanmodes.extend(m)
             if modes.find("s") >= 0: self.chanHide.setChecked(True)
             if modes.find("i") >= 0: self.chanInvite.setChecked(True)
             if modes.find("m") >= 0: self.chanMod.setChecked(True)

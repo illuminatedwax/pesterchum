@@ -385,7 +385,9 @@ class PesterHandler(DefaultCommandHandler):
             modes = list(self.parent.mainwindow.modes)
             if modes and modes[0] == "+": modes = modes[1:]
             if mode[0] == "+":
-                modes.extend(mode[1:])
+                for m in mode[1:]:
+                    if m not in modes:
+                        modes.extend(m)
             elif mode[0] == "-":
                 for i in mode[1:]:
                     try:
