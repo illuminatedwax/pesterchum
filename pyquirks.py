@@ -1,4 +1,5 @@
 import os, sys, imp, re
+from PyQt4 import QtGui, QtCore
 
 class PythonQuirks(object):
     def __init__(self):
@@ -23,6 +24,10 @@ class PythonQuirks(object):
             try: module = imp.load_source(name, filename)
             except Exception, e:
                 print "Error loading %s: %s (in pyquirks.py)" % (name, e)
+                msgbox = QtGui.QMessageBox()
+                msgbox.setWindowTitle("Error!")
+                msgbox.setText("Error loading %s: %s (in pyquirks.py)" % (name, e))
+                msgbox.exec_()
             else:
                 if hasattr(module, 'setup'):
                     module.setup()
@@ -45,6 +50,10 @@ class PythonQuirks(object):
                         raise Exception
                 except:
                     print "Quirk malformed: %s" % (obj.command)
+                    msgbox = QtGui.QMessageBox()
+                    msgbox.setWindowTitle("Error!")
+                    msgbox.setText("Quirk malformed: %s" % (obj.command))
+                    msgbox.exec_()
                 else:
                     self.quirks[obj.command+"("] = obj
 
