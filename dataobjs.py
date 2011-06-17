@@ -230,7 +230,7 @@ class PesterProfile(object):
     def moodmsg(self, mood, syscolor, theme):
         return "<c=%s>-- %s <c=%s>[%s]</c> changed their mood to %s <img src='%s' /> --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), mood.name().upper(), theme["main/chums/moods"][mood.name()]["icon"])
     def idlemsg(self, syscolor, verb):
-        return "<c=%s>-- %s <c=%s>[%s]</c> %s --" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb)
+        return "<c=%s>-- %s <c=%s>[%s]</c> %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb)
     def memoclosemsg(self, syscolor, timeGrammar, verb):
         return "<c=%s><c=%s>%s%s%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), timeGrammar.pcf, self.initials(), timeGrammar.number, verb)
     def memoopenmsg(self, syscolor, td, timeGrammar, verb, channel):
@@ -252,7 +252,7 @@ class PesterProfile(object):
         (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
         timetext = timeDifference(td)
         initials = pcf+self.initials()+timeGrammar.number
-        return "<c=%s><c=%s>%s %s [%s]</c> %s %s." % \
+        return "<c=%s><c=%s>%s %s [%s]</c> %s %s.</c>" % \
             (syscolor.name(), self.colorhtml(), temporal, self.handle,
              initials, timetext, verb)
     def memoopmsg(self, opchum, opgrammar, syscolor):
