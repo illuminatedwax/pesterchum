@@ -206,128 +206,6 @@ class PesterQuirkList(QtGui.QTreeWidget):
             for j in range(self.topLevelItem(index).childCount()):
                 self.topLevelItem(index).child(j).setCheckState(0, state)
 
-class MispellQuirkDialog(QtGui.QDialog):
-    def __init__(self, parent):
-        QtGui.QDialog.__init__(self, parent)
-        self.setWindowTitle("MISPELLER")
-        layout_1 = QtGui.QHBoxLayout()
-        zero = QtGui.QLabel("1%", self)
-        hund = QtGui.QLabel("100%", self)
-        self.current = QtGui.QLabel("50%", self)
-        self.current.setAlignment(QtCore.Qt.AlignHCenter)
-        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
-        self.slider.setMinimum(1)
-        self.slider.setMaximum(100)
-        self.slider.setValue(50)
-        self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'),
-                     self, QtCore.SLOT('printValue(int)'))
-        layout_1.addWidget(zero)
-        layout_1.addWidget(self.slider)
-        layout_1.addWidget(hund)
-
-        self.ok = QtGui.QPushButton("OK", self)
-        self.ok.setDefault(True)
-        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('accept()'))
-        self.cancel = QtGui.QPushButton("CANCEL", self)
-        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('reject()'))
-        layout_ok = QtGui.QHBoxLayout()
-        layout_ok.addWidget(self.cancel)
-        layout_ok.addWidget(self.ok)
-
-        layout_0 = QtGui.QVBoxLayout()
-        layout_0.addLayout(layout_1)
-        layout_0.addWidget(self.current)
-        layout_0.addLayout(layout_ok)
-
-        self.setLayout(layout_0)
-    def getPercentage(self):
-        r = self.exec_()
-        if r == QtGui.QDialog.Accepted:
-            retval = {"percentage": self.slider.value()}
-            return retval
-        else:
-            return None
-
-    @QtCore.pyqtSlot(int)
-    def printValue(self, value):
-        self.current.setText(str(value)+"%")
-
-class RandomQuirkDialog(MultiTextDialog):
-    def __init__(self, parent, values={}):
-        QtGui.QDialog.__init__(self, parent)
-        self.setWindowTitle("RANDOM QUIRK")
-        self.inputs = {}
-        layout_1 = QtGui.QHBoxLayout()
-        regexpl = QtGui.QLabel("REGEXP:", self)
-        self.regexp = QtGui.QLineEdit(values.get("regexp",""), self)
-        layout_1.addWidget(regexpl)
-        layout_1.addWidget(self.regexp)
-        replacewithl = QtGui.QLabel("REPLACE WITH:", self)
-
-        layout_2 = QtGui.QVBoxLayout()
-        layout_3 = QtGui.QHBoxLayout()
-        self.replacelist = QtGui.QListWidget(self)
-        for v in values.get("list", []):
-            item = QtGui.QListWidgetItem(v, self.replacelist)
-        self.replaceinput = QtGui.QLineEdit(self)
-        addbutton = QtGui.QPushButton("ADD", self)
-        self.connect(addbutton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addRandomString()'))
-        removebutton = QtGui.QPushButton("REMOVE", self)
-        self.connect(removebutton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('removeRandomString()'))
-        layout_3.addWidget(addbutton)
-        layout_3.addWidget(removebutton)
-        layout_2.addWidget(self.replacelist)
-        layout_2.addWidget(self.replaceinput)
-        layout_2.addLayout(layout_3)
-        layout_1.addLayout(layout_2)
-
-        self.ok = QtGui.QPushButton("OK", self)
-        self.ok.setDefault(True)
-        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('accept()'))
-        self.cancel = QtGui.QPushButton("CANCEL", self)
-        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('reject()'))
-        layout_ok = QtGui.QHBoxLayout()
-        layout_ok.addWidget(self.cancel)
-        layout_ok.addWidget(self.ok)
-
-        layout_0 = QtGui.QVBoxLayout()
-        layout_0.addLayout(layout_1)
-        layout_0.addLayout(layout_ok)
-
-        self.setLayout(layout_0)
-
-    def getText(self):
-        r = self.exec_()
-        if r == QtGui.QDialog.Accepted:
-            randomlist = [unicode(self.replacelist.item(i).text())
-                          for i in range(0,self.replacelist.count())]
-            retval = {"from": unicode(self.regexp.text()),
-                      "randomlist": randomlist }
-            return retval
-        else:
-            return None
-
-
-    @QtCore.pyqtSlot()
-    def addRandomString(self):
-        text = unicode(self.replaceinput.text())
-        item = QtGui.QListWidgetItem(text, self.replacelist)
-        self.replaceinput.setText("")
-        self.replaceinput.setFocus()
-    @QtCore.pyqtSlot()
-    def removeRandomString(self):
-        if not self.replacelist.currentItem():
-            return
-        else:
-            self.replacelist.takeItem(self.replacelist.currentRow())
-        self.replaceinput.setFocus()
-
 from copy import copy
 from convo import PesterInput, PesterText
 from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley, smiledict
@@ -398,6 +276,293 @@ class QuirkTesterWindow(QtGui.QDialog):
     def closeEvent(self, event):
         self.parent.quirktester = None
 
+class PesterQuirkTypes(QtGui.QDialog):
+    def __init__(self, parent, quirk=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.mainwindow = parent.mainwindow
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+        self.setWindowTitle("Quirk Wizard")
+        self.resize(500,310)
+
+        self.quirk = quirk
+        self.pages = QtGui.QStackedWidget(self)
+
+        self.next = QtGui.QPushButton("Next", self)
+        self.next.setDefault(True)
+        self.connect(self.next, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('nextPage()'))
+        self.back = QtGui.QPushButton("Back", self)
+        self.back.setEnabled(False)
+        self.connect(self.back, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('backPage()'))
+        self.cancel = QtGui.QPushButton("Cancel", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_2 = QtGui.QHBoxLayout()
+        layout_2.setAlignment(QtCore.Qt.AlignRight)
+        layout_2.addWidget(self.back)
+        layout_2.addWidget(self.next)
+        layout_2.addSpacing(5)
+        layout_2.addWidget(self.cancel)
+
+        vr = QtGui.QFrame()
+        vr.setFrameShape(QtGui.QFrame.VLine)
+        vr.setFrameShadow(QtGui.QFrame.Sunken)
+        vr2 = QtGui.QFrame()
+        vr2.setFrameShape(QtGui.QFrame.VLine)
+        vr2.setFrameShadow(QtGui.QFrame.Sunken)
+
+        self.funclist = QtGui.QListWidget(self)
+        self.funclist.setStyleSheet("color: #000000; background-color: #FFFFFF;")
+        self.funclist2 = QtGui.QListWidget(self)
+        self.funclist2.setStyleSheet("color: #000000; background-color: #FFFFFF;")
+
+        from parsetools import quirkloader
+        funcs = [q+")" for q in quirkloader.quirks.keys()]
+        funcs.sort()
+        self.funclist.addItems(funcs)
+        self.funclist2.addItems(funcs)
+
+        self.reloadQuirkFuncButton = QtGui.QPushButton("RELOAD FUNCTIONS", self)
+        self.connect(self.reloadQuirkFuncButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reloadQuirkFuncSlot()'))
+        self.reloadQuirkFuncButton2 = QtGui.QPushButton("RELOAD FUNCTIONS", self)
+        self.connect(self.reloadQuirkFuncButton2, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reloadQuirkFuncSlot()'))
+
+        self.funclist.setMaximumWidth(160)
+        self.funclist.resize(160,50)
+        self.funclist2.setMaximumWidth(160)
+        self.funclist2.resize(160,50)
+        layout_f = QtGui.QVBoxLayout()
+        layout_f.addWidget(QtGui.QLabel("Available Regexp\nFunctions"))
+        layout_f.addWidget(self.funclist)
+        layout_f.addWidget(self.reloadQuirkFuncButton)
+        layout_g = QtGui.QVBoxLayout()
+        layout_g.addWidget(QtGui.QLabel("Available Regexp\nFunctions"))
+        layout_g.addWidget(self.funclist2)
+        layout_g.addWidget(self.reloadQuirkFuncButton2)
+
+        # Pages
+        # Type select
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_select = QtGui.QVBoxLayout(widget)
+        layout_select.setAlignment(QtCore.Qt.AlignTop)
+        self.radios = []
+        self.radios.append(QtGui.QRadioButton("Prefix", self))
+        self.radios.append(QtGui.QRadioButton("Suffix", self))
+        self.radios.append(QtGui.QRadioButton("Simple Replace", self))
+        self.radios.append(QtGui.QRadioButton("Regexp Replace", self))
+        self.radios.append(QtGui.QRadioButton("Random Replace", self))
+        self.radios.append(QtGui.QRadioButton("Mispeller", self))
+
+        layout_select.addWidget(QtGui.QLabel("Select Quirk Type:"))
+        for r in self.radios:
+            layout_select.addWidget(r)
+
+        # Prefix
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_prefix = QtGui.QVBoxLayout(widget)
+        layout_prefix.setAlignment(QtCore.Qt.AlignTop)
+        layout_prefix.addWidget(QtGui.QLabel("Prefix"))
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(QtGui.QLabel("Value:"))
+        layout_3.addWidget(QtGui.QLineEdit())
+        layout_prefix.addLayout(layout_3)
+
+        # Suffix
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_suffix = QtGui.QVBoxLayout(widget)
+        layout_suffix.setAlignment(QtCore.Qt.AlignTop)
+        layout_suffix.addWidget(QtGui.QLabel("Suffix"))
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(QtGui.QLabel("Value:"))
+        layout_3.addWidget(QtGui.QLineEdit())
+        layout_suffix.addLayout(layout_3)
+
+        # Simple Replace
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_replace = QtGui.QVBoxLayout(widget)
+        layout_replace.setAlignment(QtCore.Qt.AlignTop)
+        layout_replace.addWidget(QtGui.QLabel("Simple Replace"))
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(QtGui.QLabel("Replace:"))
+        layout_3.addWidget(QtGui.QLineEdit())
+        layout_replace.addLayout(layout_3)
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(QtGui.QLabel("With:"))
+        layout_3.addWidget(QtGui.QLineEdit())
+        layout_replace.addLayout(layout_3)
+
+        # Regexp Replace
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_all = QtGui.QHBoxLayout(widget)
+        layout_regexp = QtGui.QVBoxLayout()
+        layout_regexp.setAlignment(QtCore.Qt.AlignTop)
+        layout_regexp.addWidget(QtGui.QLabel("Regexp Replace"))
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(QtGui.QLabel("Regexp:"))
+        layout_3.addWidget(QtGui.QLineEdit())
+        layout_regexp.addLayout(layout_3)
+        layout_3 = QtGui.QHBoxLayout()
+        layout_3.addWidget(QtGui.QLabel("Replace With:"))
+        layout_3.addWidget(QtGui.QLineEdit())
+        layout_regexp.addLayout(layout_3)
+        layout_all.addLayout(layout_f)
+        layout_all.addWidget(vr)
+        layout_all.addLayout(layout_regexp)
+
+        # Random Replace
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_all = QtGui.QHBoxLayout(widget)
+        layout_random = QtGui.QVBoxLayout()
+        layout_random.setAlignment(QtCore.Qt.AlignTop)
+        layout_random.addWidget(QtGui.QLabel("Random Replace"))
+        layout_5 = QtGui.QHBoxLayout()
+        regexpl = QtGui.QLabel("Regexp:", self)
+        self.regexp = QtGui.QLineEdit("", self)
+        layout_5.addWidget(regexpl)
+        layout_5.addWidget(self.regexp)
+        replacewithl = QtGui.QLabel("Replace With:", self)
+        layout_all.addLayout(layout_g)
+        layout_all.addWidget(vr2)
+        layout_all.addLayout(layout_random)
+
+        layout_6 = QtGui.QVBoxLayout()
+        layout_7 = QtGui.QHBoxLayout()
+        self.replacelist = QtGui.QListWidget(self)
+        self.replaceinput = QtGui.QLineEdit(self)
+        addbutton = QtGui.QPushButton("ADD", self)
+        self.connect(addbutton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addRandomString()'))
+        removebutton = QtGui.QPushButton("REMOVE", self)
+        self.connect(removebutton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('removeRandomString()'))
+        layout_7.addWidget(addbutton)
+        layout_7.addWidget(removebutton)
+        layout_6.addLayout(layout_5)
+        layout_6.addWidget(replacewithl)
+        layout_6.addWidget(self.replacelist)
+        layout_6.addWidget(self.replaceinput)
+        layout_6.addLayout(layout_7)
+        layout_random.addLayout(layout_6)
+
+        # Misspeller
+        widget = QtGui.QWidget()
+        self.pages.addWidget(widget)
+        layout_mispeller = QtGui.QVBoxLayout(widget)
+        layout_mispeller.setAlignment(QtCore.Qt.AlignTop)
+        layout_mispeller.addWidget(QtGui.QLabel("Mispeller"))
+        layout_1 = QtGui.QHBoxLayout()
+        zero = QtGui.QLabel("1%", self)
+        hund = QtGui.QLabel("100%", self)
+        self.current = QtGui.QLabel("50%", self)
+        self.current.setAlignment(QtCore.Qt.AlignHCenter)
+        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.slider.setMinimum(1)
+        self.slider.setMaximum(100)
+        self.slider.setValue(50)
+        self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'),
+                     self, QtCore.SLOT('printValue(int)'))
+        layout_1.addWidget(zero)
+        layout_1.addWidget(self.slider)
+        layout_1.addWidget(hund)
+        layout_mispeller.addLayout(layout_1)
+        layout_mispeller.addWidget(self.current)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.pages)
+        layout_0.addLayout(layout_2)
+
+        if quirk:
+            types = ["prefix","suffix","replace","regexp","random","spelling"]
+            for (i,r) in enumerate(self.radios):
+                if i == types.index(quirk.quirk.type):
+                    r.setChecked(True)
+            self.changePage(types.index(quirk.quirk.type)+1)
+            page = self.pages.currentWidget().layout()
+            q = quirk.quirk.quirk
+            if q["type"] in ("prefix","suffix"):
+                page.itemAt(1).layout().itemAt(1).widget().setText(q["value"])
+            elif q["type"] == "replace":
+                page.itemAt(1).layout().itemAt(1).widget().setText(q["from"])
+                page.itemAt(2).layout().itemAt(1).widget().setText(q["to"])
+            elif q["type"] == "regexp":
+                page.itemAt(2).layout().itemAt(1).layout().itemAt(1).widget().setText(q["from"])
+                page.itemAt(2).layout().itemAt(2).layout().itemAt(1).widget().setText(q["to"])
+            elif q["type"] == "random":
+                self.regexp.setText(q["from"])
+                for v in q["randomlist"]:
+                    item = QtGui.QListWidgetItem(v, self.replacelist)
+            elif q["type"] == "spelling":
+                self.slider.setValue(q["percentage"])
+
+        self.setLayout(layout_0)
+
+    def closeEvent(self, event):
+        self.parent().quirkadd = None
+
+    def changePage(self, page):
+        c = self.pages.count()
+        if page >= c or page < 0: return
+        self.back.setEnabled(page > 0)
+        if page >= 1 and page <= 6:
+            self.next.setText("Finish")
+        else:
+            self.next.setText("Next")
+        self.pages.setCurrentIndex(page)
+    @QtCore.pyqtSlot()
+    def nextPage(self):
+        if self.next.text() == "Finish":
+            self.accept()
+            return
+        cur = self.pages.currentIndex()
+        if cur == 0:
+            for (i,r) in enumerate(self.radios):
+                if r.isChecked():
+                    self.changePage(i+1)
+        else:
+            self.changePage(cur+1)
+    @QtCore.pyqtSlot()
+    def backPage(self):
+        cur = self.pages.currentIndex()
+        if cur >= 1 and cur <= 6:
+            self.changePage(0)
+
+    @QtCore.pyqtSlot(int)
+    def printValue(self, value):
+        self.current.setText(str(value)+"%")
+    @QtCore.pyqtSlot()
+    def addRandomString(self):
+        text = unicode(self.replaceinput.text())
+        item = QtGui.QListWidgetItem(text, self.replacelist)
+        self.replaceinput.setText("")
+        self.replaceinput.setFocus()
+    @QtCore.pyqtSlot()
+    def removeRandomString(self):
+        if not self.replacelist.currentItem():
+            return
+        else:
+            self.replacelist.takeItem(self.replacelist.currentRow())
+        self.replaceinput.setFocus()
+
+    @QtCore.pyqtSlot()
+    def reloadQuirkFuncSlot(self):
+        from parsetools import reloadQuirkFunctions, quirkloader
+        reloadQuirkFunctions()
+        funcs = [q+")" for q in quirkloader.quirks.keys()]
+        funcs.sort()
+        self.funclist.clear()
+        self.funclist.addItems(funcs)
+        self.funclist2.clear()
+        self.funclist2.addItems(funcs)
+
 class PesterChooseQuirks(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -410,28 +575,9 @@ class PesterChooseQuirks(QtGui.QDialog):
 
         self.quirkList = PesterQuirkList(self.mainwindow, self)
 
-        self.reloadQuirkFuncButton = QtGui.QPushButton("RELOAD FUNCTIONS", self)
-        self.connect(self.reloadQuirkFuncButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('reloadQuirkFuncSlot()'))
-
-        self.addPrefixButton = QtGui.QPushButton("ADD PREFIX", self)
-        self.connect(self.addPrefixButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addPrefixDialog()'))
-        self.addSuffixButton = QtGui.QPushButton("ADD SUFFIX", self)
-        self.connect(self.addSuffixButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addSuffixDialog()'))
-        self.addSimpleReplaceButton = QtGui.QPushButton("SIMPLE REPLACE", self)
-        self.connect(self.addSimpleReplaceButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addSimpleReplaceDialog()'))
-        self.addRegexpReplaceButton = QtGui.QPushButton("REGEXP REPLACE", self)
-        self.connect(self.addRegexpReplaceButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addRegexpDialog()'))
-        self.addRandomReplaceButton = QtGui.QPushButton("RANDOM REPLACE", self)
-        self.connect(self.addRandomReplaceButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addRandomDialog()'))
-        self.addMispellingButton = QtGui.QPushButton("MISPELLER", self)
-        self.connect(self.addMispellingButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('addSpellDialog()'))
+        self.addQuirkButton = QtGui.QPushButton("ADD QUIRK", self)
+        self.connect(self.addQuirkButton, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addQuirkDialog()'))
 
         self.upShiftButton = QtGui.QPushButton("^", self)
         self.downShiftButton = QtGui.QPushButton("v", self)
@@ -447,14 +593,6 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.connect(self.newGroupButton, QtCore.SIGNAL('clicked()'),
                      self.quirkList, QtCore.SLOT('addQuirkGroup()'))
 
-        self.funclist = QtGui.QListWidget(self)
-        self.funclist.setStyleSheet("background-color: #FFFFFF;")
-
-        from parsetools import quirkloader
-        funcs = [q+")" for q in quirkloader.quirks.keys()]
-        funcs.sort()
-        self.funclist.addItems(funcs)
-
         layout_quirklist = QtGui.QHBoxLayout() #the nude layout quirklist
         layout_shiftbuttons = QtGui.QVBoxLayout() #the shift button layout
         layout_shiftbuttons.addWidget(self.upShiftButton)
@@ -464,13 +602,7 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_quirklist.addLayout(layout_shiftbuttons)
 
         layout_1 = QtGui.QHBoxLayout()
-        layout_1.addWidget(self.addPrefixButton)
-        layout_1.addWidget(self.addSuffixButton)
-        layout_1.addWidget(self.addSimpleReplaceButton)
-        layout_2 = QtGui.QHBoxLayout()
-        layout_2.addWidget(self.addRegexpReplaceButton)
-        layout_2.addWidget(self.addRandomReplaceButton)
-        layout_2.addWidget(self.addMispellingButton)
+        layout_1.addWidget(self.addQuirkButton)
 
         self.editSelectedButton = QtGui.QPushButton("EDIT", self)
         self.connect(self.editSelectedButton, QtCore.SIGNAL('clicked()'),
@@ -500,26 +632,11 @@ class PesterChooseQuirks(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addLayout(layout_quirklist)
         layout_0.addLayout(layout_1)
-        layout_0.addLayout(layout_2)
+        #layout_0.addLayout(layout_2)
         layout_0.addLayout(layout_3)
         layout_0.addLayout(layout_ok)
 
-        self.funclist.setMaximumWidth(160)
-        self.funclist.resize(160,50)
-        layout_f = QtGui.QVBoxLayout()
-        layout_f.addWidget(QtGui.QLabel("Avaliable Regexp\nFunctions"))
-        layout_f.addWidget(self.funclist)
-        layout_f.addWidget(self.reloadQuirkFuncButton)
-
-        vr = QtGui.QFrame()
-        vr.setFrameShape(QtGui.QFrame.VLine)
-        vr.setFrameShadow(QtGui.QFrame.Sunken)
-
-        layout_all = QtGui.QHBoxLayout()
-        layout_all.addLayout(layout_f)
-        layout_all.addWidget(vr)
-        layout_all.addLayout(layout_0)
-        self.setLayout(layout_all)
+        self.setLayout(layout_0)
 
     def quirks(self):
         u = []
@@ -547,148 +664,67 @@ class PesterChooseQuirks(QtGui.QDialog):
         self.quirktester.show()
 
     @QtCore.pyqtSlot()
-    def reloadQuirkFuncSlot(self):
-        from parsetools import reloadQuirkFunctions, quirkloader
-        reloadQuirkFunctions()
-        funcs = [q+")" for q in quirkloader.quirks.keys()]
-        funcs.sort()
-        self.funclist.clear()
-        self.funclist.addItems(funcs)
-
-    @QtCore.pyqtSlot()
     def editSelected(self):
         q = self.quirkList.currentQuirk()
         if not q: return
         quirk = q.quirk
-        if quirk.type == "prefix":
-            self.addPrefixDialog(q)
-        elif quirk.type == "suffix":
-            self.addSuffixDialog(q)
-        elif quirk.type == "replace":
-            self.addSimpleReplaceDialog(q)
-        elif quirk.type == "regexp":
-            self.addRegexpDialog(q)
-        elif quirk.type == "random":
-            self.addRandomDialog(q)
-        elif quirk.type == "spelling":
-            self.addSpellDialog(q)
+        self.addQuirkDialog(q)
 
     @QtCore.pyqtSlot()
-    def addPrefixDialog(self, qitem=None):
-        d = {"label": "Value:", "inputname": "value" }
-        if qitem is not None:
-            d["value"] = qitem.quirk.quirk["value"]
-        pdict = MultiTextDialog("ENTER PREFIX", self, d).getText()
-        if pdict is None:
+    def addQuirkDialog(self, quirk=None):
+        if not hasattr(self, 'quirkadd'):
+            self.quirkadd = None
+        if self.quirkadd:
             return
-        pdict["type"] = "prefix"
-        prefix = pesterQuirk(pdict)
-        if qitem is None:
-            pitem = PesterQuirkItem(prefix)
-            self.quirkList.addItem(pitem)
-        else:
-            qitem.update(prefix)
-        #self.quirkList.sortItems()
+        self.quirkadd = PesterQuirkTypes(self, quirk)
+        self.connect(self.quirkadd, QtCore.SIGNAL('accepted()'),
+                     self, QtCore.SLOT('addQuirk()'))
+        self.connect(self.quirkadd, QtCore.SIGNAL('rejected()'),
+                     self, QtCore.SLOT('closeQuirk()'))
+        self.quirkadd.show()
+    @QtCore.pyqtSlot()
+    def addQuirk(self):
+        types = ["prefix","suffix","replace","regexp","random","spelling"]
+        vdict = {}
+        vdict["type"] = types[self.quirkadd.pages.currentIndex()-1]
+        page = self.quirkadd.pages.currentWidget().layout()
+        if vdict["type"] in ("prefix","suffix"):
+            vdict["value"] = unicode(page.itemAt(1).layout().itemAt(1).widget().text())
+        elif vdict["type"] == "replace":
+            vdict["from"] = unicode(page.itemAt(1).layout().itemAt(1).widget().text())
+            vdict["to"] = unicode(page.itemAt(2).layout().itemAt(1).widget().text())
+        elif vdict["type"] == "regexp":
+            vdict["from"] = unicode(page.itemAt(2).layout().itemAt(1).layout().itemAt(1).widget().text())
+            vdict["to"] = unicode(page.itemAt(2).layout().itemAt(2).layout().itemAt(1).widget().text())
+        elif vdict["type"] == "random":
+            vdict["from"] = unicode(self.quirkadd.regexp.text())
+            randomlist = [unicode(self.quirkadd.replacelist.item(i).text())
+                          for i in range(0,self.quirkadd.replacelist.count())]
+            vdict["randomlist"] = randomlist
+        elif vdict["type"] == "spelling":
+            vdict["percentage"] = self.quirkadd.slider.value()
 
-    @QtCore.pyqtSlot()
-    def addSuffixDialog(self, qitem=None):
-        d = {"label": "Value:", "inputname": "value" }
-        if qitem is not None:
-            d["value"] = qitem.quirk.quirk["value"]
-        vdict = MultiTextDialog("ENTER SUFFIX", self, d).getText()
-        if vdict is None:
-            return
-        vdict["type"] = "suffix"
-        newquirk = pesterQuirk(vdict)
-        if qitem is None:
-            item = PesterQuirkItem(newquirk)
-            self.quirkList.addItem(item)
-        else:
-            qitem.update(newquirk)
-        #self.quirkList.sortItems()
+        if vdict["type"] in ("regexp", "random"):
+            try:
+                re.compile(vdict["from"])
+            except re.error, e:
+                quirkWarning = QtGui.QMessageBox(self)
+                quirkWarning.setText("Not a valid regular expression!")
+                quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
+                quirkWarning.exec_()
+                self.quirkadd = None
+                return
 
-    @QtCore.pyqtSlot()
-    def addSimpleReplaceDialog(self, qitem=None):
-        d = [{"label": "Replace:", "inputname": "from"}, {"label": "With:", "inputname": "to"}]
-        if qitem is not None:
-            d[0]["value"] = qitem.quirk.quirk["from"]
-            d[1]["value"] = qitem.quirk.quirk["to"]
-        vdict = MultiTextDialog("REPLACE", self, *d).getText()
-        if vdict is None:
-            return
-        vdict["type"] = "replace"
-        newquirk = pesterQuirk(vdict)
-        if qitem is None:
-            item = PesterQuirkItem(newquirk)
+        quirk = pesterQuirk(vdict)
+        if self.quirkadd.quirk is None:
+            item = PesterQuirkItem(quirk)
             self.quirkList.addItem(item)
         else:
-            qitem.update(newquirk)
-        #self.quirkList.sortItems()
-
+            self.quirkadd.quirk.update(quirk)
+        self.quirkadd = None
     @QtCore.pyqtSlot()
-    def addRegexpDialog(self, qitem=None):
-        d = [{"label": "Regexp:", "inputname": "from"}, {"label": "Replace With:", "inputname": "to"}]
-        if qitem is not None:
-            d[0]["value"] = qitem.quirk.quirk["from"]
-            d[1]["value"] = qitem.quirk.quirk["to"]
-        vdict = MultiTextDialog("REGEXP REPLACE", self, *d).getText()
-        if vdict is None:
-            return
-        vdict["type"] = "regexp"
-        try:
-            re.compile(vdict["from"])
-        except re.error, e:
-            quirkWarning = QtGui.QMessageBox(self)
-            quirkWarning.setText("Not a valid regular expression!")
-            quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
-            quirkWarning.exec_()
-            return
-
-        newquirk = pesterQuirk(vdict)
-        if qitem is None:
-            item = PesterQuirkItem(newquirk)
-            self.quirkList.addItem(item)
-        else:
-            qitem.update(newquirk)
-        #self.quirkList.sortItems()
-    @QtCore.pyqtSlot()
-    def addRandomDialog(self, qitem=None):
-        values = {}
-        if qitem is not None:
-            values["list"] = qitem.quirk.quirk["randomlist"]
-            values["regexp"] = qitem.quirk.quirk["from"]
-        vdict = RandomQuirkDialog(self, values).getText()
-        if vdict is None:
-            return
-        vdict["type"] = "random"
-        try:
-            re.compile(vdict["from"])
-        except re.error, e:
-            quirkWarning = QtGui.QMessageBox(self)
-            quirkWarning.setText("Not a valid regular expression!")
-            quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
-            quirkWarning.exec_()
-            return
-        newquirk = pesterQuirk(vdict)
-        if qitem is None:
-            item = PesterQuirkItem(newquirk)
-            self.quirkList.addItem(item)
-        else:
-            qitem.update(newquirk)
-        #self.quirkList.sortItems()
-    @QtCore.pyqtSlot()
-    def addSpellDialog(self, qitem=None):
-        vdict = MispellQuirkDialog(self).getPercentage()
-        if vdict is None:
-            return
-        vdict["type"] = "spelling"
-        newquirk = pesterQuirk(vdict)
-        if qitem is None:
-            item = PesterQuirkItem(newquirk)
-            self.quirkList.addItem(item)
-        else:
-            qitem.update(newquirk)
-        #self.quirkList.sortItems()
+    def closeQuirk(self):
+        self.quirkadd = None
 
 class PesterChooseTheme(QtGui.QDialog):
     def __init__(self, config, theme, parent):

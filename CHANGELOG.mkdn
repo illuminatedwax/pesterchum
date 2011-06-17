@@ -43,6 +43,7 @@ CHANGELOG
 * Only GETMOOD for people online (less spam!) - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
 * Quirk tester in quirk window - Kiooeht [evacipatedBox] (Idea: [alGore])
 * Show and support giving kick reasons - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Make adding quirks into multi-page wizard - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
