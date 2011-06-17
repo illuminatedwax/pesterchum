@@ -1020,8 +1020,17 @@ class PesterOptions(QtGui.QDialog):
         layout_5.addWidget(QtGui.QLabel("Minutes before Idle:"))
         layout_5.addWidget(self.idleBox)
 
-        self.updatecheck = QtGui.QCheckBox("Check for Updates on Start", self)
-        self.updatecheck.setChecked(self.config.checkForUpdates())
+        self.updateBox = QtGui.QComboBox(self)
+        self.updateBox.addItem("Once a Day")
+        self.updateBox.addItem("Once a Week")
+        self.updateBox.addItem("Only on Start")
+        self.updateBox.addItem("Never")
+        check = self.config.checkForUpdates()
+        if check >= 0 and check < self.updateBox.count():
+            self.updateBox.setCurrentIndex(check)
+        layout_6 = QtGui.QHBoxLayout()
+        layout_6.addWidget(QtGui.QLabel("Check for\nPesterchum Updates:"))
+        layout_6.addWidget(self.updateBox)
 
         if parent.randhandler.running:
             self.randomscheck = QtGui.QCheckBox("Receive Random Encounters")
@@ -1131,7 +1140,7 @@ class PesterOptions(QtGui.QDialog):
         layout_idle = QtGui.QVBoxLayout(widget)
         layout_idle.setAlignment(QtCore.Qt.AlignTop)
         layout_idle.addLayout(layout_5)
-        layout_idle.addWidget(self.updatecheck)
+        layout_idle.addLayout(layout_6)
         self.pages.addWidget(widget)
 
         # Theme

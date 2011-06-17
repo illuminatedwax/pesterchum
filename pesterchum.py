@@ -12,7 +12,7 @@ import codecs
 import re
 import socket
 import platform
-from time import strftime
+from time import strftime, time
 
 missing = []
 try:
@@ -408,7 +408,17 @@ class userConfig(object):
     def animations(self):
         return self.config.get('animations', True)
     def checkForUpdates(self):
-        return self.config.get('checkUpdates', True)
+        u = self.config.get('checkUpdates', 0)
+        if type(u) == type(bool()):
+            if u: u = 2
+            else: u = 3
+        return u
+        # Once a day
+        # Once a week
+        # Only on start
+        # Never
+    def lastUCheck(self):
+        return self.config.get('lastUCheck', 0)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -2629,7 +2639,7 @@ class PesterWindow(MovingWindow):
             self.config.set('animations', animatesetting)
             self.animationSetting.emit(animatesetting)
         # update checked
-        updatechecksetting = self.optionmenu.updatecheck.isChecked()
+        updatechecksetting = self.optionmenu.updateBox.currentIndex()
         curupdatecheck = self.config.checkForUpdates()
         if updatechecksetting != curupdatecheck:
             self.config.set('checkUpdates', updatechecksetting)
@@ -2922,14 +2932,44 @@ class MainProgram(QtCore.QObject):
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
 
-        if self.widget.config.checkForUpdates():
-            import Queue
-            import threading
-            q = Queue.Queue(1)
-            s = threading.Thread(target=version.updateCheck, args=(q,0)) # the 0 is to stop
-            w = threading.Thread(target=self.showUpdate, args=(q,0))     # stupid syntax errors
-            w.start()
-            s.start()
+        # 0 Once a day
+        # 1 Once a week
+        # 2 Only on start
+        # 3 Never
+        check = self.widget.config.checkForUpdates()
+        if check == 2:
+            self.runUpdateSlot()
+        elif check == 0:
+            seconds = 60 * 60 * 24
+            if int(time()) - self.widget.config.lastUCheck() < seconds:
+                seconds -= int(time()) - self.widget.config.lastUCheck()
+            if seconds < 0: seconds = 0
+            QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
+        elif check == 1:
+            seconds = 60 * 60 * 24 * 7
+            if int(time()) - self.widget.config.lastUCheck() < seconds:
+                seconds -= int(time()) - self.widget.config.lastUCheck()
+            if seconds < 0: seconds = 0
+            QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
+
+    @QtCore.pyqtSlot()
+    def runUpdateSlot(self):
+        import Queue
+        import threading
+        q = Queue.Queue(1)
+        s = threading.Thread(target=version.updateCheck, args=(q,0)) # the 0 is to stop
+        w = threading.Thread(target=self.showUpdate, args=(q,0))     # stupid syntax errors
+        w.start()
+        s.start()
+        self.widget.config.set('lastUCheck', int(time()))
+        check = self.widget.config.checkForUpdates()
+        if check == 0:
+            seconds = 60 * 60 * 24
+        elif check == 1:
+            seconds = 60 * 60 * 24 * 7
+        else:
+            return
+        QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
 
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),
