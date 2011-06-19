@@ -321,7 +321,7 @@ class MemoText(PesterText):
             window.chatlog.log(parent.channel, memsg)
             self.append(convertTags(memsg))
         else:
-            self.append(makeSafe(convertTags(lexmsg)))
+            self.append("<span style=\"color:#000000\">" + makeSafe(convertTags(lexmsg)) + "</span>")
             window.chatlog.log(parent.channel, lexmsg)
 
     def changeTheme(self, theme):

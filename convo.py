@@ -337,7 +337,7 @@ class PesterText(QtGui.QTextEdit):
             lexmsg[0:0] = [colorBegin("<c=%s>" % (color), color),
                            "%s: " % (initials)]
             lexmsg.append(colorEnd("</c>"))
-            self.append(time + convertTags(lexmsg))
+            self.append("<span style=\"color:#000000\">" + time + convertTags(lexmsg) + "</span>")
             if chum is me:
                 window.chatlog.log(parent.chum.handle, lexmsg)
             else:

@@ -59,6 +59,7 @@ CHANGELOG
     * Menu bar text colour correct when default system colour isn't black - Kiooeht [evacipatedBox]
     * End all colour tags and restart them on split messages - Kiooeht [evacipatedBox]
     * Chat input box right-click menus - Kiooeht [evacipatedBox]
+    * Don't overflow random colours into colourless messages - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]
