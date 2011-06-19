@@ -12,7 +12,6 @@ Features
 * "someone has friended you" notifier
 * MSPA update notifier option
 * Don't animate emotes not in current tab
-* Humanify times > 24 hours
 * Show true bans?
 
 Bugs

@@ -1737,6 +1737,9 @@ class PesterWindow(MovingWindow):
             memo.times[handle] = time
         if msg[0:3] != "/me" and msg[0:13] != "PESTERCHUM:ME":
             msg = addTimeInitial(msg, memo.times[handle].getGrammar())
+        if handle == "ChanServ":
+            systemColor = QtGui.QColor(self.theme["memos/systemMsgColor"])
+            msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
         memo.addMessage(msg, handle)
         if self.config.soundOn():
             if self.config.memoSound():
