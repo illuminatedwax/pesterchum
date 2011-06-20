@@ -2853,6 +2853,7 @@ class PesterWindow(MovingWindow):
     inviteOnlyChan = QtCore.pyqtSignal(QtCore.QString)
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
+    gainAttention = QtCore.pyqtSignal(QtGui.QWidget)
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -2935,6 +2936,9 @@ class MainProgram(QtCore.QObject):
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
 
+        self.connect(self.widget, QtCore.SIGNAL('gainAttention(QWidget*)'),
+                     self, QtCore.SLOT('alertWindow(QWidget*)'))
+
         # 0 Once a day
         # 1 Once a week
         # 2 Only on start
@@ -2973,6 +2977,10 @@ class MainProgram(QtCore.QObject):
         else:
             return
         QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
+
+    @QtCore.pyqtSlot(QtGui.QWidget)
+    def alertWindow(self, widget):
+        self.app.alert(widget)
 
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),

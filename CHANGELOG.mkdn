@@ -44,6 +44,7 @@ CHANGELOG
 * Quirk tester in quirk window - Kiooeht [evacipatedBox] (Idea: [alGore])
 * Show and support giving kick reasons - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
 * Make adding quirks into multi-page wizard - Kiooeht [evacipatedBox]
+* Flash the taskbar on new messages - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
