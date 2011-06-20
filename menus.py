@@ -941,11 +941,14 @@ class PesterOptions(QtGui.QDialog):
         self.chatsoundcheck.setChecked(self.config.chatSound())
         self.memosoundcheck = QtGui.QCheckBox("Memo Sounds", self)
         self.memosoundcheck.setChecked(self.config.memoSound())
+        self.namesoundcheck = QtGui.QCheckBox("Memo Mention (initials)", self)
+        self.namesoundcheck.setChecked(self.config.nameSound())
         if self.config.soundOn():
             self.soundcheck.setChecked(True)
         else:
             self.chatsoundcheck.setEnabled(False)
             self.memosoundcheck.setEnabled(False)
+            self.namesoundcheck.setEnabled(False)
 
 
         self.timestampcheck = QtGui.QCheckBox("Time Stamps", self)
@@ -1121,6 +1124,7 @@ class PesterOptions(QtGui.QDialog):
         layout_indent = QtGui.QVBoxLayout()
         layout_indent.addWidget(self.chatsoundcheck)
         layout_indent.addWidget(self.memosoundcheck)
+        layout_indent.addWidget(self.namesoundcheck)
         layout_indent.setContentsMargins(22,0,0,0)
         layout_sound.addLayout(layout_indent)
         self.pages.addWidget(widget)
@@ -1182,9 +1186,11 @@ class PesterOptions(QtGui.QDialog):
         if state == 0:
             self.chatsoundcheck.setEnabled(False)
             self.memosoundcheck.setEnabled(False)
+            self.namesoundcheck.setEnabled(False)
         else:
             self.chatsoundcheck.setEnabled(True)
             self.memosoundcheck.setEnabled(True)
+            self.namesoundcheck.setEnabled(True)
 
 class PesterUserlist(QtGui.QDialog):
     def __init__(self, config, theme, parent):

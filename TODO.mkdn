@@ -13,6 +13,7 @@ Features
 * MSPA update notifier option
 * Don't animate emotes not in current tab
 * Show true bans?
+* Colour saving boxes things?
 
 Bugs
 ----

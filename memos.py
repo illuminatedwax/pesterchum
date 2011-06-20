@@ -315,13 +315,13 @@ class MemoText(PesterText):
             if msg.count("<c") > msg.count("</c>"):
                 for i in range(msg.count("<c") - msg.count("</c>")):
                     msg = msg + "</c>"
-            return msg
+            return "<span style=\"color:#000000\">" + msg + "</span>"
         if type(lexmsg[0]) is mecmd:
             memsg = chum.memsg(systemColor, lexmsg, time=time.getGrammar())
             window.chatlog.log(parent.channel, memsg)
             self.append(convertTags(memsg))
         else:
-            self.append("<span style=\"color:#000000\">" + makeSafe(convertTags(lexmsg)) + "</span>")
+            self.append(makeSafe(convertTags(lexmsg)))
             window.chatlog.log(parent.channel, lexmsg)
 
     def changeTheme(self, theme):

@@ -503,6 +503,8 @@ class userConfig(object):
         return self.config.get('chatSound', True)
     def memoSound(self):
         return self.config.get('memoSound', True)
+    def nameSound(self):
+        return self.config.get('nameSound', True)
     def set(self, item, setting):
         self.config[item] = setting
         try:
@@ -1742,6 +1744,12 @@ class PesterWindow(MovingWindow):
             msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
         memo.addMessage(msg, handle)
         if self.config.soundOn():
+            if self.config.nameSound():
+                initials = self.userprofile.chat.initials()
+                search = r"\b[%s%s][%s%s]\b" % (initials[0].lower(), initials[0], initials[1].lower(), initials[1])
+                if re.search(search, convertTags(msg, "text")):
+                    self.namesound.play()
+                    return
             if self.config.memoSound():
                 self.memosound.play()
 
@@ -1981,10 +1989,12 @@ class PesterWindow(MovingWindow):
             try:
                 self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
                 self.memosound = pygame.mixer.Sound(theme["main/sounds/memosound"])
+                self.namesound = pygame.mixer.Sound("themes/namealarm.wav")
                 self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
             except Exception, e:
                 self.alarm = NoneSound()
                 self.memosound = NoneSound()
+                self.namesound = NoneSound()
                 self.ceasesound = NoneSound()
 
     def changeTheme(self, theme):
@@ -2558,6 +2568,10 @@ class PesterWindow(MovingWindow):
         curmemosound = self.config.memoSound()
         if memosoundsetting != curmemosound:
             self.config.set('memoSound', memosoundsetting)
+        namesoundsetting = self.optionmenu.namesoundcheck.isChecked()
+        curnamesound = self.config.nameSound()
+        if namesoundsetting != curnamesound:
+            self.config.set('nameSound', namesoundsetting)
         # timestamps
         timestampsetting = self.optionmenu.timestampcheck.isChecked()
         self.config.set("showTimeStamps", timestampsetting)
