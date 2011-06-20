@@ -1751,7 +1751,10 @@ class PesterWindow(MovingWindow):
                     self.namesound.play()
                     return
             if self.config.memoSound():
-                self.memosound.play()
+                if re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
+                    self.honksound.play()
+                else:
+                    self.memosound.play()
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
@@ -1991,11 +1994,13 @@ class PesterWindow(MovingWindow):
                 self.memosound = pygame.mixer.Sound(theme["main/sounds/memosound"])
                 self.namesound = pygame.mixer.Sound("themes/namealarm.wav")
                 self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
+                self.honksound = pygame.mixer.Sound("themes/honk.wav")
             except Exception, e:
                 self.alarm = NoneSound()
                 self.memosound = NoneSound()
                 self.namesound = NoneSound()
                 self.ceasesound = NoneSound()
+                self.honksound = NoneSound()
 
     def changeTheme(self, theme):
         # check theme
