@@ -46,6 +46,7 @@ CHANGELOG
 * Make adding quirks into multi-page wizard - Kiooeht [evacipatedBox]
 * Flash the taskbar on new messages - Kiooeht [evacipatedBox]
 * Third beep sound for when your initials are mentioned in memos - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Ctrl + click to copy links - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
@@ -62,6 +63,7 @@ CHANGELOG
     * End all colour tags and restart them on split messages - Kiooeht [evacipatedBox]
     * Chat input box right-click menus - Kiooeht [evacipatedBox]
     * Don't overflow random colours into colourless messages - Kiooeht [evacipatedBox]
+    * Only open links on left click - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]

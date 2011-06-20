@@ -368,15 +368,19 @@ class PesterText(QtGui.QTextEdit):
         QtGui.QTextEdit.keyPressEvent(self, event)
 
     def mousePressEvent(self, event):
-        url = self.anchorAt(event.pos())
-        if url != "":
-            if url[0] == "#" and url != "#pesterchum":
-                self.parent().mainwindow.showMemos(url[1:])
-            elif url[0] == "@":
-                handle = unicode(url[1:])
-                self.parent().mainwindow.newConversation(handle)
-            else:
-                QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
+        if event.button() == QtCore.Qt.LeftButton:
+            url = self.anchorAt(event.pos())
+            if url != "":
+                if url[0] == "#" and url != "#pesterchum":
+                    self.parent().mainwindow.showMemos(url[1:])
+                elif url[0] == "@":
+                    handle = unicode(url[1:])
+                    self.parent().mainwindow.newConversation(handle)
+                else:
+                    if event.modifiers() == QtCore.Qt.ControlModifier:
+                        QtGui.QApplication.clipboard().setText(url)
+                    else:
+                        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
     def mouseMoveEvent(self, event):
         QtGui.QTextEdit.mouseMoveEvent(self, event)
