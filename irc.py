@@ -283,6 +283,7 @@ class PesterIRC(QtCore.QThread):
     userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
                                    QtCore.QString)
     cannotSendToChan = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    tooManyPeeps = QtCore.pyqtSignal()
 
 class PesterHandler(DefaultCommandHandler):
     def notice(self, nick, chan, msg):
@@ -467,6 +468,8 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.modesUpdated.emit(channel, modes)
     def cannotsendtochan(self, server, handle, channel, msg):
         self.parent.cannotSendToChan.emit(channel, msg)
+    def toomanypeeps(self, *stuff):
+        self.parent.tooManyPeeps.emit()
 
     def getMood(self, *chums):
         chumglub = "GETMOOD "

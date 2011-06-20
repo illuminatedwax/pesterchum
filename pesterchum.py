@@ -2843,6 +2843,13 @@ class PesterWindow(MovingWindow):
             # show context menu i guess
             #self.showTrayContext.emit()
 
+    @QtCore.pyqtSlot()
+    def tooManyPeeps(self):
+        msg = QtGui.QMessageBox(self)
+        msg.setText("D: TOO MANY PEOPLE!!!")
+        msg.setInformativeText("The server has hit max capacity. Please try again later.")
+        msg.show()
+
     pcUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     closeToTraySignal = QtCore.pyqtSignal()
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
@@ -3064,7 +3071,9 @@ class MainProgram(QtCore.QObject):
                   ('modesUpdated(QString, QString)',
                    'modesUpdated(QString, QString)'),
                   ('cannotSendToChan(QString, QString)',
-                   'cannotSendToChan(QString, QString)')
+                   'cannotSendToChan(QString, QString)'),
+                  ('tooManyPeeps()',
+                   'tooManyPeeps()')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),
