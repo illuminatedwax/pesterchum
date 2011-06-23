@@ -1641,6 +1641,12 @@ class PesterWindow(MovingWindow):
         self.connect(self, QtCore.SIGNAL('pcUpdate(QString, QString)'),
                      self, QtCore.SLOT('updateMsg(QString, QString)'))
 
+        self.pingtimer = QtCore.QTimer()
+        self.connect(self.pingtimer, QtCore.SIGNAL('timeout()'),
+                self, QtCore.SLOT('checkPing()'))
+        self.lastping = int(time())
+        self.pingtimer.start(1000*10)
+
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def updateMsg(self, ver, url):
         if not hasattr(self, 'updatemenu'):
@@ -1662,6 +1668,12 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def noUpdatePC(self):
         self.updatemenu = None
+
+    @QtCore.pyqtSlot()
+    def checkPing(self):
+        curtime = int(time())
+        if curtime - self.lastping > 300:
+            self.pingServer.emit()
 
     def profile(self):
         return self.userprofile.chat
@@ -2880,6 +2892,7 @@ class PesterWindow(MovingWindow):
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
     gainAttention = QtCore.pyqtSignal(QtGui.QWidget)
+    pingServer = QtCore.pyqtSignal()
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -3038,6 +3051,8 @@ class MainProgram(QtCore.QObject):
                    'channelNames(QString)'),
                   ('inviteChum(QString, QString)',
                    'inviteChum(QString, QString)'),
+                  ('pingServer()',
+                   'pingServer()'),
                   ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window

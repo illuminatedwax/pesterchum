@@ -5,6 +5,7 @@ from oyoyo import helpers
 import logging
 import random
 import socket
+from time import time
 
 from dataobjs import Mood, PesterProfile
 from generic import PesterList
@@ -266,6 +267,13 @@ class PesterIRC(QtCore.QThread):
         except socket.error:
             self.setConnectionBroken()
 
+    @QtCore.pyqtSlot()
+    def pingServer(self):
+        try:
+            self.cli.send("PING %s" % int(time()))
+        except socket.error:
+            self.setConnectionBroken()
+
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
@@ -470,6 +478,10 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.cannotSendToChan.emit(channel, msg)
     def toomanypeeps(self, *stuff):
         self.parent.tooManyPeeps.emit()
+
+    def ping(self, prefix, server):
+        self.parent.mainwindow.lastping = int(time())
+        self.client.send('PONG', server)
 
     def getMood(self, *chums):
         chumglub = "GETMOOD "
