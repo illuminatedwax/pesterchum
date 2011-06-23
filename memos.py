@@ -256,7 +256,9 @@ class MemoText(PesterText):
                      self, QtCore.SLOT('textReady(bool)'))
         self.urls = {}
         for k in smiledict:
-            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]));
+            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]))
+        self.connect(self.mainwindow, QtCore.SIGNAL('animationSetting(bool)'),
+                     self, QtCore.SLOT('animateChanged(bool)'))
 
     def initTheme(self, theme):
         if theme.has_key("memos/scrollbar"):
@@ -272,6 +274,11 @@ class MemoText(PesterText):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        if self.mainwindow.config.animations():
+            for m in self.urls:
+                if convertTags(lexmsg).find(self.urls[m].toString()) != -1:
+                    if m.state() == QtGui.QMovie.NotRunning:
+                        m.start()
         chumdb = window.chumdb
         if chum is not me: # SO MUCH WH1T3SP4C3 >:]
             if type(lexmsg[0]) is colorBegin: # get color tag

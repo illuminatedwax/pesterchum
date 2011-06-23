@@ -259,13 +259,13 @@ class PesterText(QtGui.QTextEdit):
             for m in self.urls:
                 html = unicode(self.toHtml())
                 if html.find(self.urls[m].toString()) != -1:
-                    if movie.frameCount() > 1:
+                    if m.frameCount() > 1:
                         m.start()
         else:
             for m in self.urls:
                 html = unicode(self.toHtml())
                 if html.find(self.urls[m].toString()) != -1:
-                    if movie.frameCount() > 1:
+                    if m.frameCount() > 1:
                         m.stop()
 
     @QtCore.pyqtSlot(bool)
