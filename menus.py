@@ -1035,6 +1035,9 @@ class PesterOptions(QtGui.QDialog):
         layout_6.addWidget(QtGui.QLabel("Check for\nPesterchum Updates:"))
         layout_6.addWidget(self.updateBox)
 
+        self.mspaCheck = QtGui.QCheckBox("Check for MSPA Updates", self)
+        self.mspaCheck.setChecked(self.config.checkMSPA())
+
         if parent.randhandler.running:
             self.randomscheck = QtGui.QCheckBox("Receive Random Encounters")
             self.randomscheck.setChecked(parent.userprofile.randoms)
@@ -1145,6 +1148,7 @@ class PesterOptions(QtGui.QDialog):
         layout_idle.setAlignment(QtCore.Qt.AlignTop)
         layout_idle.addLayout(layout_5)
         layout_idle.addLayout(layout_6)
+        layout_idle.addWidget(self.mspaCheck)
         self.pages.addWidget(widget)
 
         # Theme
@@ -1437,7 +1441,9 @@ Art by:\n\
 \n\
 Special Thanks:\n\
   ABT\n\
-  gamblingGenocider")
+  gamblingGenocider\n\
+  Lexi (lexicalNuance)\n\
+  Eco-Mono")
 
         self.ok = QtGui.QPushButton("OK", self)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),

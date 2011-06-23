@@ -8,3 +8,4 @@ irctest.log
 pesterchum.js
 quirks/*
 !quirks/defaults.py
+*.pkl

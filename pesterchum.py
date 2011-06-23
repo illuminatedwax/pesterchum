@@ -54,6 +54,7 @@ from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
 from randomer import RandomHandler
+from updatecheck import MSPAChecker
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
 canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
@@ -419,6 +420,8 @@ class userConfig(object):
         # Never
     def lastUCheck(self):
         return self.config.get('lastUCheck', 0)
+    def checkMSPA(self):
+        return self.config.get('mspa', False)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -1638,6 +1641,8 @@ class PesterWindow(MovingWindow):
         if not self.config.defaultprofile():
             self.changeProfile()
 
+        QtCore.QTimer.singleShot(1000, self, QtCore.SLOT('mspacheck()'))
+
         self.connect(self, QtCore.SIGNAL('pcUpdate(QString, QString)'),
                      self, QtCore.SLOT('updateMsg(QString, QString)'))
 
@@ -1646,6 +1651,10 @@ class PesterWindow(MovingWindow):
                 self, QtCore.SLOT('checkPing()'))
         self.lastping = int(time())
         self.pingtimer.start(1000*10)
+
+    @QtCore.pyqtSlot()
+    def mspacheck(self):
+        checker = MSPAChecker(self)
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def updateMsg(self, ver, url):
@@ -2677,6 +2686,11 @@ class PesterWindow(MovingWindow):
         curupdatecheck = self.config.checkForUpdates()
         if updatechecksetting != curupdatecheck:
             self.config.set('checkUpdates', updatechecksetting)
+        # mspa update check
+        mspachecksetting = self.optionmenu.mspaCheck.isChecked()
+        curmspacheck = self.config.checkMSPA()
+        if mspachecksetting != curmspacheck:
+            self.config.set('mspa', mspachecksetting)
         # advanced
         ## user mode
         if self.advanced:

@@ -10,9 +10,9 @@ Features
 * Spy mode
 * Turn @ and # links on/off?
 * "someone has friended you" notifier
-* MSPA update notifier option
 * Show true bans?
 * Colour saving boxes things?
+* Chum notes?
 
 Bugs
 ----
