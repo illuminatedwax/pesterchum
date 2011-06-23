@@ -66,7 +66,7 @@ userlist.
 and plain text.
 - Logviewer for easy log reading inside Pesterchum
 - Idling. You can set yourself idle manually, and the computer will
-set it for you after 10 minutes.
+set it for you after a configurable amount of time.
 - Improved /me. Any letters immediately following /me will be
 processed correctly. e.g. /me'd rather be fishing -> -- ghostDunk'd
 [GD'D] rather be fishing --
@@ -145,14 +145,12 @@ lot easier to make themes that look canon this way.
 ------------------------------------------------------------------------------------
 
 <b>Q:</b> Can we have different chum rolls for different users?<br>
-<b>A:</b> No. Instead what we're going to do in a later update is make chum
-groups to organize people in your list.
+<b>A:</b> No. Instead what we now have crum groups to organize people.
 
 ------------------------------------------------------------------------------------
 
 <b>Q:</b> Can we delete profiles?<br>
-<b>A:</b> Yes. Go to the profiles directory and delete the corresponding
-username file.
+<b>A:</b> Yes. Go to the profile switcher, choose a profile and press DELETE.
 
 ------------------------------------------------------------------------------------
 
@@ -216,15 +214,14 @@ While pestering your chum, here are some useful features:
     add the extra tags for you.
 
 * URLS (anything with http:// in front of it) will automatically be
-  detected and made into a link you can CLIPK.
+  detected and made into a link you can CLICK.
 
 * You can also link people to memos by typing "#" and the name of the
   menu like so: #R41NBOW_RUMPUS_P4RTYTOWN
   Clicking the link will open up the memo select menu.
 
 * Smilies! There are a list of smilies at the end of this document;
-  they are based on the MSPA Forum smilies. They don't animate, though
-  :(
+  they are based on the MSPA Forum smilies.
 
 * Don't worry about your quirks screwing up any of the above: PC will
   apply your quirks AFTER it figures out color codes, links, smilies, etc.
@@ -296,23 +293,67 @@ CLIENT MENU
 -----------
 
 ###OPTIONS:
-* <b>Tabbed Conversations:</b> Turns tabbed conversations on and off. Don't
-worry if you do this in the middle of a conversation, PC will save
-them for you.
+* <b>Chum List</b>
+    * <b>Hide Offline Chums:</b> Turning this option on will hide all offline chums
+    off your chumroll.
 
-* <b>Sounds On:</b> Uncheck to shut it the fuck up.
+    * <b>Show Empty Groups:</b> Turning this option on will show empty groups.
 
-* <b>Hide Offline Chums:</b> Turning this option on will hide all offline chums
-off your chumroll.
+    * <b>Show Number of Online Chums:</b> Show number of online chums in each group.
 
-* <b>Show Empty Groups:</b> Turning this option of will show empty groups.
+    * <b>Sort Chums:</b> How would you like your chums sorted?
 
-* <b>Time Stamps:</b> Turning this on will show timestamps in your chats.
+* <b>Conversations</b>
+    * <b>Time Stamps:</b> Turning this on will show timestamps in your chats.
 
-* <b>12/24 hour:</b> Formatting for timestamps. Whether you want them in 12 or
-24 hour time.
+    * <b>12/24 hour:</b> Formatting for timestamps. Whether you want them in 12 or
+    24 hour time.
 
-* <b>Show Seconds:</b> Turning this on will show the seconds in your timestamps.
+    * <b>Show Seconds:</b> Turning this on will show the seconds in your timestamps.
+
+    * <b>Show OP and Voice Messages in Memos:</b> Whether or not you would like
+    to see messages when people gain/lose OP or Voice.
+
+    * <b>Use animated smilies:</b> To animate or not to animate.
+
+* <b>Interface</b>
+    * <b>Tabbed Conversations:</b> Turns tabbed conversations on and off. Don't
+    worry if you do this in the middle of a conversation, PC will save
+    them for you.
+
+    * <b>Minimize:</b> What do you want the minimize button to do?
+
+    * <b>Close:</b> What do you want the close button to do?
+
+* <b>Sound</b>
+    * <b>Sounds On:</b> Uncheck to shut it the fuck up.
+
+    * <b>Pester Sounds:</b> Uncheck to only turn off Pester sounds.
+
+    * <b>Memo Sounds:</b> Uncheck to only turn off Memo sounds.
+
+    * <b>Memo Mentions:</b> Check to have a separate noise when your initials
+    get mentioned in a memo.
+
+* <b>Logging</b>
+    * <b>Log all Pesters:</b> Log one-on-one chats.
+
+    * <b>Log all Memos:</b> Log everything said in memos.
+
+    * <b>Log Time Stamps for Pesters</b>
+
+    * <b>Log Time Stamps for Memos</b>
+
+* <b>Idle/Updates</b>
+    * <b>Minutes before Idle:</b> How long before you should be considered idle.
+
+    * <b>Check for Pesterchum Updates:</b> How often to check for updates
+    to Pesterchum.
+
+    * <b>Check for MSPA Updates:</b> Check the MSPA site for updates to comics.
+
+* <b>Theme</b>
+    * <b>Pick a Theme</b>
 
 ###MEMOS:
 Opens the Memo list as above.
@@ -340,10 +381,6 @@ noooooooooooooooooooooooo
 PROFILE MENU
 ------------
 
-###THEME:
-Select a new theme! Be warned that switching themes will change
-the user interface, so just... look out for that I guess!
-
 ###QUIRKS:
 Opens the quirks menu. More on that below!
 
@@ -359,6 +396,26 @@ Switch your profile! You can have any number of profiles, and
 PC will save your color, quirks, and theme for that profile. Chumrolls
 and block lists are the same for all profiles. Feel free to have
 multiple instances of PC running on two or more handles!
+
+HELP MENU
+---------
+
+###HELP:
+Get taken to a handy dandy tutorial for Pesterchum!
+
+###CALSPRITE:
+Open a chat with calSprite (learn more about calSprite below).
+
+###NICKSERV:
+Open a chat with NickServ. If you don't know what NickServ is, you don't need to.
+
+###ABOUT:
+See which version of Pesterchum you have. Learn about all the awesome people
+that helped bring Pesterchum 3.14 to you!
+
+###REPORT BUG:
+Report any bugs you come across so we can fix them and make Pesterchum
+even better!
 
 CALSPRITE
 ---------
