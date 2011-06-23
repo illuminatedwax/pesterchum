@@ -243,9 +243,16 @@ class PesterText(QtGui.QTextEdit):
             url = self.urls[movie].toString()
             html = unicode(self.toHtml())
             if html.find(url) != -1:
-                self.document().addResource(QtGui.QTextDocument.ImageResource,
-                                   self.urls[movie], movie.currentPixmap())
-                self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+                if self.parent().parent():
+                    i = self.parent().parent().tabIndices[self.parent().title()]
+                    if self.parent().parent().tabs.currentIndex() == i:
+                        self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                          self.urls[movie], movie.currentPixmap())
+                        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+                else:
+                    self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                       self.urls[movie], movie.currentPixmap())
+                    self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
     @QtCore.pyqtSlot(bool)
     def animateChanged(self, animate):
         if animate:

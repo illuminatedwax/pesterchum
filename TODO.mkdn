@@ -11,7 +11,6 @@ Features
 * Turn @ and # links on/off?
 * "someone has friended you" notifier
 * MSPA update notifier option
-* Don't animate emotes not in current tab
 * Show true bans?
 * Colour saving boxes things?
 
