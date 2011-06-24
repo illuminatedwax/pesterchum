@@ -110,6 +110,7 @@ class waitingMessageHolder(object):
 
 class NoneSound(object):
     def play(self): pass
+    def set_volume(self, v): pass
 
 class PesterLog(object):
     def __init__(self, handle, parent=None):
@@ -508,6 +509,8 @@ class userConfig(object):
         return self.config.get('memoSound', True)
     def nameSound(self):
         return self.config.get('nameSound', True)
+    def volume(self):
+        return self.config.get('volume', 100)
     def set(self, item, setting):
         self.config[item] = setting
         try:
@@ -2023,6 +2026,15 @@ class PesterWindow(MovingWindow):
                 self.ceasesound = NoneSound()
                 self.honksound = NoneSound()
 
+    def setVolume(self, vol):
+        vol = vol/100.0
+        print vol
+        self.alarm.set_volume(vol)
+        self.memosound.set_volume(vol)
+        self.namesound.set_volume(vol)
+        self.ceasesound.set_volume(vol)
+        self.honksound.set_volume(vol)
+
     def changeTheme(self, theme):
         # check theme
         try:
@@ -2598,6 +2610,11 @@ class PesterWindow(MovingWindow):
         curnamesound = self.config.nameSound()
         if namesoundsetting != curnamesound:
             self.config.set('nameSound', namesoundsetting)
+        volumesetting = self.optionmenu.volume.value()
+        curvolume = self.config.volume()
+        if volumesetting != curvolume:
+            self.config.set('volume', volumesetting)
+            self.setVolume(volumesetting)
         # timestamps
         timestampsetting = self.optionmenu.timestampcheck.isChecked()
         self.config.set("showTimeStamps", timestampsetting)

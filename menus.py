@@ -949,6 +949,14 @@ class PesterOptions(QtGui.QDialog):
             self.chatsoundcheck.setEnabled(False)
             self.memosoundcheck.setEnabled(False)
             self.namesoundcheck.setEnabled(False)
+        self.volume = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.volume.setMinimum(0)
+        self.volume.setMaximum(100)
+        self.volume.setValue(self.config.volume())
+        self.connect(self.volume, QtCore.SIGNAL('valueChanged(int)'),
+                     self, QtCore.SLOT('printValue(int)'))
+        self.currentVol = QtGui.QLabel(str(self.config.volume())+"%", self)
+        self.currentVol.setAlignment(QtCore.Qt.AlignHCenter)
 
 
         self.timestampcheck = QtGui.QCheckBox("Time Stamps", self)
@@ -1130,6 +1138,10 @@ class PesterOptions(QtGui.QDialog):
         layout_indent.addWidget(self.namesoundcheck)
         layout_indent.setContentsMargins(22,0,0,0)
         layout_sound.addLayout(layout_indent)
+        layout_sound.addSpacing(15)
+        layout_sound.addWidget(QtGui.QLabel("Master Volume:", self))
+        layout_sound.addWidget(self.volume)
+        layout_sound.addWidget(self.currentVol)
         self.pages.addWidget(widget)
 
         # Logging
@@ -1195,6 +1207,9 @@ class PesterOptions(QtGui.QDialog):
             self.chatsoundcheck.setEnabled(True)
             self.memosoundcheck.setEnabled(True)
             self.namesoundcheck.setEnabled(True)
+    @QtCore.pyqtSlot(int)
+    def printValue(self, v):
+        self.currentVol.setText(str(v)+"%")
 
 class PesterUserlist(QtGui.QDialog):
     def __init__(self, config, theme, parent):
