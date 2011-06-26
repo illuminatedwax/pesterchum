@@ -251,7 +251,7 @@
       "style": "background: white;  font-size: 14px; border:2px solid #c48a00;text-align:center; margin-right:10px; margin-left:10px; margin-bottom:5px;"
   },
   "input": {
-      "style": "background: white; border:2px solid #c48a00; margin-right:10px; margin-left:10px; font-size: 14px; height: 20px"
+      "style": "background: white; border:2px solid #c48a00; margin-right:10px; margin-left:10px; font-size: 14px;"
   },
   "tabs": {
       "style": "",
