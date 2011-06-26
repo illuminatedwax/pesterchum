@@ -1,9 +1,9 @@
 
 ; The name of the installer
-Name "PESTERCHUM3.14a"
+Name "PESTERCHUM3.418"
 
 ; The file to write
-OutFile "pesterchum3.14a.3update.exe"
+OutFile "pesterchum3.418.update.exe"
 
 RequestExecutionLevel admin
 
@@ -29,7 +29,9 @@ Section "Pesterchum"
   File pesterchum.exe
   
   Delete "$SMPROGRAMS\Pesterchum\Pesterchum.lnk"
+  Delete "$SMPROGRAMS\Pesterchum\PesterChumDebug.lnk"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
+  CreateShortcut "$SMPROGRAMS\Pesterchum\PesterchumDebug.lnk" "$INSTDIR\pesterchum_debug.exe"
    
   Goto done
   error:
