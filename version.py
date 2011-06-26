@@ -4,8 +4,8 @@ import time
 
 USER_TYPE = "dev"
 
-_pcMajor = "3.14"
-_pcMinor = "2"
+_pcMajor = "3.41"
+_pcMinor = "0"
 _pcStatus = "B" # A  = alpha
                 # B  = beta
                 # RC = release candidate
