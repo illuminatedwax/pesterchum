@@ -49,8 +49,16 @@ class pesterQuirk(object):
             raise ValueError("Quirks must be given a dictionary")
         self.quirk = quirk
         self.type = self.quirk["type"]
+        if "on" not in self.quirk:
+            self.quirk["on"] = True
+        self.on = self.quirk["on"]
+        if "group" not in self.quirk:
+            self.quirk["group"] = "Miscellaneous"
+        self.group = self.quirk["group"]
     def apply(self, string, first=False, last=False):
-        if self.type == "prefix":
+        if not self.on:
+            return string
+        elif self.type == "prefix":
             return self.quirk["value"] + string
         elif self.type == "suffix":
             return string + self.quirk["value"]
@@ -119,10 +127,6 @@ class pesterQuirks(object):
     def apply(self, lexed, first=False, last=False):
         prefix = [q for q in self.quirklist if q.type=='prefix']
         suffix = [q for q in self.quirklist if q.type=='suffix']
-        replace = [q for q in self.quirklist if
-                   q.type=='replace' or q.type=='regexp']
-        randomrep = [q for q in self.quirklist if q.type=='random']
-        spelling = [q for q in self.quirklist if q.type=='spelling']
 
         newlist = []
         for (i, o) in enumerate(lexed):
@@ -136,20 +140,16 @@ class pesterQuirks(object):
                 continue
             lastStr = (i == len(lexed)-1)
             string = o
-            for s in spelling:
-                string = s.apply(string)
-            for r in randomrep:
-                string = r.apply(string, first=(i==0), last=lastStr)
-            for r in replace:
-                string = r.apply(string, first=(i==0), last=lastStr)
-            if i == 0:
-                if len(prefix) >= 1:
-                    myprefix = random.choice(prefix)
-                    string = myprefix.apply(string)
-            if lastStr:
-                if len(suffix) >= 1:
-                    mysuffix = random.choice(suffix)
-                    string = mysuffix.apply(string)
+            for q in self.quirklist:
+                if q.type != 'prefix' and q.type != 'suffix':
+                    if q.type == 'regexp' or q.type == 'random':
+                        string = q.apply(string, first=(i==0), last=lastStr)
+                    else:
+                        string = q.apply(string)
+                elif q.type == 'prefix' and i == 0:
+                    string = q.apply(string)
+                elif q.type == 'suffix' and lastStr:
+                    string = q.apply(string)
             newlist.append(string)
 
         final = []
@@ -165,7 +165,7 @@ class pesterQuirks(object):
             yield q
 
 class PesterProfile(object):
-    def __init__(self, handle, color=None, mood=Mood("offline"), chumdb=None):
+    def __init__(self, handle, color=None, mood=Mood("offline"), group=None, chumdb=None):
         self.handle = handle
         if color is None:
             if chumdb:
@@ -174,6 +174,12 @@ class PesterProfile(object):
                 color = QtGui.QColor("black")
         self.color = color
         self.mood = mood
+        if group is None:
+            if chumdb:
+                group = chumdb.getGroup(handle, "Chums")
+            else:
+                group = "Chums"
+        self.group = group
     def initials(self, time=None):
         handle = self.handle
         caps = [l for l in handle if l.isupper()]
@@ -203,7 +209,8 @@ class PesterProfile(object):
     def plaindict(self):
         return (self.handle, {"handle": self.handle,
                               "mood": self.mood.name(),
-                              "color": unicode(self.color.name())})
+                              "color": unicode(self.color.name()),
+                              "group": unicode(self.group)})
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 
@@ -223,7 +230,7 @@ class PesterProfile(object):
     def moodmsg(self, mood, syscolor, theme):
         return "<c=%s>-- %s <c=%s>[%s]</c> changed their mood to %s <img src='%s' /> --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), mood.name().upper(), theme["main/chums/moods"][mood.name()]["icon"])
     def idlemsg(self, syscolor, verb):
-        return "<c=%s>-- %s <c=%s>[%s]</c> %s --" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb)
+        return "<c=%s>-- %s <c=%s>[%s]</c> %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb)
     def memoclosemsg(self, syscolor, timeGrammar, verb):
         return "<c=%s><c=%s>%s%s%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), timeGrammar.pcf, self.initials(), timeGrammar.number, verb)
     def memoopenmsg(self, syscolor, td, timeGrammar, verb, channel):
@@ -232,18 +239,38 @@ class PesterProfile(object):
         initials = pcf+self.initials()
         return "<c=%s><c=%s>%s</c> %s %s %s.</c>" % \
             (syscolor.name(), self.colorhtml(), initials, timetext, verb, channel[1:].upper().replace("_", " "))
-    def memobanmsg(self, opchum, opgrammar, syscolor, timeGrammar):
+    def memobanmsg(self, opchum, opgrammar, syscolor, timeGrammar, reason):
         initials = timeGrammar.pcf+self.initials()+timeGrammar.number
         opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
-        return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo." % \
-            (opchum.colorhtml(), opinit, self.colorhtml(), initials)
+        if opchum.handle == reason:
+            return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo." % \
+                (opchum.colorhtml(), opinit, self.colorhtml(), initials)
+        else:
+            return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo: <c=black>[%s]</c>." % \
+                (opchum.colorhtml(), opinit, self.colorhtml(), initials, unicode(reason))
     def memojoinmsg(self, syscolor, td, timeGrammar, verb):
         (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
         timetext = timeDifference(td)
         initials = pcf+self.initials()+timeGrammar.number
-        return "<c=%s><c=%s>%s %s [%s]</c> %s %s." % \
+        return "<c=%s><c=%s>%s %s [%s]</c> %s %s.</c>" % \
             (syscolor.name(), self.colorhtml(), temporal, self.handle,
              initials, timetext, verb)
+    def memoopmsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> made <c=%s>%s</c> an OP." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memodeopmsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> took away <c=%s>%s</c>'s OP powers." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memovoicemsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> gave <c=%s>%s</c> voice." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memodevoicemsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s>%s</c> took away <c=%s>%s</c>'s voice." % \
+            (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
 
     @staticmethod
     def checkLength(handle):

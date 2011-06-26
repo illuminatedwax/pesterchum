@@ -9,7 +9,7 @@ from PyQt4 import QtGui, QtCore
 
 from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon
-from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley
+from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley, smiledict
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -19,11 +19,14 @@ class PesterTabWindow(QtGui.QFrame):
         self.mainwindow = mainwindow
 
         self.tabs = QtGui.QTabBar(self)
+        self.tabs.setMovable(True)
         self.tabs.setTabsClosable(True)
         self.connect(self.tabs, QtCore.SIGNAL('currentChanged(int)'),
                      self, QtCore.SLOT('changeTab(int)'))
         self.connect(self.tabs, QtCore.SIGNAL('tabCloseRequested(int)'),
                      self, QtCore.SLOT('tabClose(int)'))
+        self.connect(self.tabs, QtCore.SIGNAL('tabMoved(int, int)'),
+                     self, QtCore.SLOT('tabMoved(int, int)'))
 
         self.initTheme(self.mainwindow.theme)
         self.layout = QtGui.QVBoxLayout()
@@ -194,17 +197,77 @@ class PesterTabWindow(QtGui.QFrame):
         self.raise_()
         convo.raiseChat()
 
+    @QtCore.pyqtSlot(int, int)
+    def tabMoved(self, to, fr):
+        l = self.tabIndices
+        for i in l:
+            if l[i] == fr:
+                oldpos = i
+            if l[i] == to:
+                newpos = i
+        l[oldpos] = to
+        l[newpos] = fr
+
     windowClosed = QtCore.pyqtSignal()
 
 class PesterText(QtGui.QTextEdit):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        if hasattr(self.parent(), 'mainwindow'):
+            self.mainwindow = self.parent().mainwindow
+        else:
+            self.mainwindow = self.parent()
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
         self.textSelected = False
         self.connect(self, QtCore.SIGNAL('copyAvailable(bool)'),
                      self, QtCore.SLOT('textReady(bool)'))
+        self.urls = {}
+        for k in smiledict:
+            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]))
+        self.connect(self.mainwindow, QtCore.SIGNAL('animationSetting(bool)'),
+                     self, QtCore.SLOT('animateChanged(bool)'))
+    def addAnimation(self, url, fileName):
+        movie = QtGui.QMovie(self)
+        movie.setFileName(fileName)
+        if movie.frameCount() > 1:
+            self.urls[movie] = url
+            self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
+                         self, QtCore.SLOT('animate(int)'))
+            #movie.start()
+    @QtCore.pyqtSlot(int)
+    def animate(self, frame):
+        if self.mainwindow.config.animations():
+            movie = self.sender()
+            url = self.urls[movie].toString()
+            html = unicode(self.toHtml())
+            if html.find(url) != -1:
+                if self.parent().parent():
+                    i = self.parent().parent().tabIndices[self.parent().title()]
+                    if self.parent().parent().tabs.currentIndex() == i:
+                        self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                          self.urls[movie], movie.currentPixmap())
+                        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+                else:
+                    self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                       self.urls[movie], movie.currentPixmap())
+                    self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+    @QtCore.pyqtSlot(bool)
+    def animateChanged(self, animate):
+        if animate:
+            for m in self.urls:
+                html = unicode(self.toHtml())
+                if html.find(self.urls[m].toString()) != -1:
+                    if m.frameCount() > 1:
+                        m.start()
+        else:
+            for m in self.urls:
+                html = unicode(self.toHtml())
+                if html.find(self.urls[m].toString()) != -1:
+                    if m.frameCount() > 1:
+                        m.stop()
+
     @QtCore.pyqtSlot(bool)
     def textReady(self, ready):
         self.textSelected = ready
@@ -222,6 +285,11 @@ class PesterText(QtGui.QTextEdit):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        if self.mainwindow.config.animations():
+            for m in self.urls:
+                if convertTags(lexmsg).find(self.urls[m].toString()) != -1:
+                    if m.state() == QtGui.QMovie.NotRunning:
+                        m.start()
         if self.parent().mainwindow.config.showTimeStamps():
             if self.parent().mainwindow.config.time12Format():
                 time = strftime("[%I:%M")
@@ -276,7 +344,7 @@ class PesterText(QtGui.QTextEdit):
             lexmsg[0:0] = [colorBegin("<c=%s>" % (color), color),
                            "%s: " % (initials)]
             lexmsg.append(colorEnd("</c>"))
-            self.append(time + convertTags(lexmsg))
+            self.append("<span style=\"color:#000000\">" + time + convertTags(lexmsg) + "</span>")
             if chum is me:
                 window.chatlog.log(parent.chum.handle, lexmsg)
             else:
@@ -299,16 +367,27 @@ class PesterText(QtGui.QTextEdit):
         self.parent().clearNewMessage()
         QtGui.QTextEdit.focusInEvent(self, event)
 
+    def keyPressEvent(self, event):
+        if hasattr(self.parent(), 'textInput'):
+            if event.key() not in [QtCore.Qt.Key_PageUp, QtCore.Qt.Key_PageDown, \
+                                   QtCore.Qt.Key_Up, QtCore.Qt.Key_Down]:
+                self.parent().textInput.keyPressEvent(event)
+        QtGui.QTextEdit.keyPressEvent(self, event)
+
     def mousePressEvent(self, event):
-        url = self.anchorAt(event.pos())
-        if url != "":
-            if url[0] == "#" and url != "#pesterchum":
-                self.parent().mainwindow.showMemos(url[1:])
-            elif url[0] == "@":
-                handle = unicode(url[1:])
-                self.parent().mainwindow.newConversation(handle)
-            else:
-                QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
+        if event.button() == QtCore.Qt.LeftButton:
+            url = self.anchorAt(event.pos())
+            if url != "":
+                if url[0] == "#" and url != "#pesterchum":
+                    self.parent().mainwindow.showMemos(url[1:])
+                elif url[0] == "@":
+                    handle = unicode(url[1:])
+                    self.parent().mainwindow.newConversation(handle)
+                else:
+                    if event.modifiers() == QtCore.Qt.ControlModifier:
+                        QtGui.QApplication.clipboard().setText(url)
+                    else:
+                        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
     def mouseMoveEvent(self, event):
         QtGui.QTextEdit.mouseMoveEvent(self, event)
@@ -449,8 +528,12 @@ class PesterConvo(QtGui.QFrame):
         self.reportchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/report"], self)
         self.connect(self.reportchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('reportThisChum()'))
+        self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
+        self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openChumLogs()'))
 
         self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.addChumAction)
         self.optionsMenu.addAction(self.blockAction)
         self.optionsMenu.addAction(self.reportchum)
@@ -533,6 +616,7 @@ class PesterConvo(QtGui.QFrame):
             # ok if it has a tabconvo parent, send that the notify.
             if self.parent():
                 self.parent().notifyNewMessage(self.title())
+                self.mainwindow.gainAttention.emit(self.parent())
             # if not change the window title and update system tray
             else:
                 self.newmessage = True
@@ -540,6 +624,7 @@ class PesterConvo(QtGui.QFrame):
                 def func():
                     self.showChat()
                 self.mainwindow.waitingMessages.addMessage(self.title(), func)
+                self.mainwindow.gainAttention.emit(self)
 
     def clearNewMessage(self):
         if self.parent():
@@ -591,6 +676,7 @@ class PesterConvo(QtGui.QFrame):
         self.addChumAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/addchum"])
         self.blockAction.setText(self.mainwindow.theme["main/menus/rclickchumlist/blockchum"])
         self.unblockchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"])
+        self.logchum.setText(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"])
 
         self.textArea.changeTheme(theme)
         self.textInput.changeTheme(theme)
@@ -605,7 +691,14 @@ class PesterConvo(QtGui.QFrame):
         quirks = self.mainwindow.userprofile.quirks
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd and self.applyquirks:
-            lexmsg = quirks.apply(lexmsg)
+            try:
+                lexmsg = quirks.apply(lexmsg)
+            except:
+                msgbox = QtGui.QMessageBox()
+                msgbox.setText("Whoa there! There seems to be a problem.")
+                msgbox.setInformativeText("A quirk seems to be having a problem. (Possibly you're trying to capture a non-existant group?)")
+                msgbox.exec_()
+                return
         lexmsgs = splitMessage(lexmsg)
 
         for lm in lexmsgs:
@@ -634,6 +727,15 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot(bool)
     def toggleQuirks(self, toggled):
         self.applyquirks = not toggled
+    @QtCore.pyqtSlot()
+    def openChumLogs(self):
+        currentChum = self.chum.handle
+        self.mainwindow.chumList.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
+        self.connect(self.mainwindow.chumList.pesterlogviewer, QtCore.SIGNAL('rejected()'),
+                     self.mainwindow.chumList, QtCore.SLOT('closeActiveLog()'))
+        self.mainwindow.chumList.pesterlogviewer.show()
+        self.mainwindow.chumList.pesterlogviewer.raise_()
+        self.mainwindow.chumList.pesterlogviewer.activateWindow()
 
     messageSent = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     windowClosed = QtCore.pyqtSignal(QtCore.QString)
@@ -644,3 +746,6 @@ class PesterConvo(QtGui.QFrame):
                  "v": {"center": QtCore.Qt.AlignVCenter,
                        "top": QtCore.Qt.AlignTop,
                        "bottom": QtCore.Qt.AlignBottom } }
+
+# the import is way down here to avoid recursive imports
+from logviewer import PesterLogViewer

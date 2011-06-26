@@ -6,23 +6,27 @@
   "newmsgicon": "$path/trayicon2.png",
   "windowtitle": "TROLLIAN",
   "close": { "image": "$path/x.png",
-             "loc": [635, 2]},
+             "loc": [639, 4]},
   "minimize": { "image": "$path/m.png",
-                "loc": [621, 8]},
+                "loc": [625, 10]},
   "menubar": { "style": "font-family: 'Arial'; font-size: 11px; color: rgba(0,0,0,0);" },
-  "menu" : { "style": "font-family: 'Arial'; font-size: 11px; background-color: #c2c2c2; border:1px solid #545454;",
+  "menu" : { "style": "font-family: 'Arial'; font-size: 11px; color: #000000; background-color: #c2c2c2; border:1px solid #545454;",
              "selected": "background-color: #545454",
              "menuitem": "margin-right:14px;",
              "loc": [14,90]
            },
-  "sounds": { "alertsound": "$path/alarm.wav" },
+  "sounds": { "alertsound": "$path/alarm.wav",
+              "memosound": "$path/alarm2.wav"},
   "menus": {"client": {"_name": "Trollian",
                        "options": "Options",
                        "memos": "Memos",
                        "logviewer": "Pesterlogs",
+                       "randen": "Random Encounter",
                        "userlist": "Fresh Targets",
+                       "addgroup": "Add Group",
                        "import": "import U2;",
-	     "idle": "Idle",
+                       "reconnect": "Reconnect",
+       "idle": "Idle",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
@@ -31,7 +35,10 @@
                         "block": "Chumpdump",
                         "quirks": "Annoying" },
             "help": { "_name": "Help",
-                      "about": "About" },
+                      "about": "About",
+                      "help": "Help",
+                      "calsprite": "CalSprite",
+                      "nickserv": "NickServ" },
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
                                "report": "Remove",
@@ -39,9 +46,14 @@
                                "addchum": "Add Chump",
                                "viewlog": "View Pesterlog",
                                "unblockchum": "Mercy",
+                               "removegroup": "Remove Group",
+                               "renamegroup": "Rename Group",
+                               "movechum": "Move To",
                                "banuser": "Ban",
                                "opuser": "Promote",
-                               "quirksoff": "Quirks Off" }
+                               "voiceuser": "Let Speak",
+                               "quirksoff": "Quirks Off",
+                               "invitechum": "Invite Chump" }
            },
   "chums": { "style": "font-size: 12px; background: white; border:0px; font-family: 'Arial';selection-background-color:rgb(200,200,200); ",
              "scrollbar": { "style" : "background-color:#c2c2c2;",
@@ -55,50 +67,50 @@
              "size": [171, 357],
              "userlistcolor": "black",
              "moods": {
-                 
+
                  "chummy": { "icon": "$path/chummy.png", "color": "#63ea00" },
-                 
+
                  "rancorous": { "icon": "$path/rancorous.png", "color": "#7f7f7f" },
-                 
+
                  "offline": { "icon": "$path/offline.png", "color": "black"},
-                 
-                 
+
+
                  "pleasant": { "icon": "$path/pleasant.png", "color": "#d69df8" },
-                 
+
                  "distraught": { "icon": "$path/distraught.png", "color": "#706eba" },
-                 
+
                  "pranky": { "icon": "$path/pranky.png", "color": "blue" },
-                 
-                 
+
+
                  "smooth": { "icon": "$path/smooth.png", "color": "red" },
-                 
-                 
+
+
                  "ecstatic": { "icon": "$path/ecstatic.png", "color": "#99004d" },
-                 
+
                  "relaxed": { "icon": "$path/relaxed.png", "color": "#078446" },
-                 
+
                  "discontent": { "icon": "$path/discontent.png", "color": "#a75403" },
-                 
+
                  "devious": { "icon": "$path/devious.png", "color": "#008282" },
-                 
+
                  "sleek": { "icon": "$path/sleek.png", "color": "#a1a100" },
-                 
+
                  "detestful": { "icon": "$path/detestful.png", "color": "#6a006a" },
-                 
+
                  "mirthful": { "icon": "$path/mirthful.png", "color": "#450077" },
-                 
+
                  "manipulative": { "icon": "$path/manipulative.png", "color": "#004182" },
-                 
+
                  "vigorous": { "icon": "$path/vigorous.png", "color": "#0021cb" },
-                 
+
                  "perky": { "icon": "$path/perky.png", "color": "#406600" },
-                 
+
                  "acceptant": { "icon": "$path/acceptant.png", "color": "#a10000" },
-                 
+
                  "protective": { "icon": "$path/protective.png", "color": "white" },
-                 
+
                  "blocked": { "icon": "$path/blocked.png", "color": "black" }
-                 
+
              }
            },
   "trollslum": {
@@ -143,101 +155,101 @@
   "moods": [
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck1.png); border:0px;",
-        "loc": [25, 141],
-        "size": [20, 270],
+        "loc": [16, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 17
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck2.png); border:0px;",
-        "loc": [60, 141],
-        "size": [20, 270],
+        "loc": [51, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 9
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck3.png); border:0px;",
-        "loc": [95, 141],
-        "size": [20, 270],
+        "loc": [86, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 11
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck4.png); border:0px;",
-        "loc": [130, 141],
-        "size": [20, 270],
+        "loc": [121, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 1
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck5.png); border:0px;",
-        "loc": [165, 141],
-        "size": [20, 270],
+        "loc": [156, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 16
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck6.png); border:0px;",
-        "loc": [200, 141],
-        "size": [20, 270],
+        "loc": [191, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 8
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck7.png); border:0px;",
-        "loc": [235, 141],
-        "size": [20, 270],
+        "loc": [226, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 10
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck8.png); border:0px;",
-        "loc": [270, 141],
-        "size": [20, 270],
+        "loc": [261, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 14
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck9.png); border:0px;",
-        "loc": [305, 141],
-        "size": [20, 270],
+        "loc": [296, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 15
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck10.png); border:0px;",
-        "loc": [340, 141],
-        "size": [20, 270],
+        "loc": [331, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 13
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck11.png); border:0px;",
-        "loc": [375, 141],
-        "size": [20, 270],
+        "loc": [366, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 12
       },
       { "style": "border:0px;",
         "selected": "background-image:url($path/moodcheck12.png); border:0px;",
-        "loc": [410, 141],
-        "size": [20, 270],
+        "loc": [401, 141],
+        "size": [38, 270],
         "text": "",
         "icon": "",
         "mood": 7
       },
-      
+
       { "style": "border:0px;color: rgba(0, 0, 0, 0%);",
         "selected": "border:0px; color: rgba(0, 0, 0, 0%);",
         "loc": [12, 117],
@@ -264,10 +276,10 @@
       "style": "background: white; border:2px solid #c2c2c2; font-size: 14px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px; height: 19px;"
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; margin-right: 54px; font-size: 12px;"
   },
   "tabwindow" : {
-	  "style": "background: rgb(190, 19, 4); font-family: 'Arial'"
+    "style": "background: rgb(190, 19, 4); font-family: 'Arial'"
   },
   "tabs": {
       "style": "",
@@ -307,26 +319,27 @@
       "style": "background: white; border:2px solid #c2c2c2; font-size: 12px;"
   },
   "input": {
-      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px; height: 19px; margin-bottom: 5px; "
+      "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px; margin-bottom: 5px; "
   },
   "margins": {"top": 22, "bottom": 10, "left": 9, "right": 4 },
   "userlist": { "width": 125,
                 "style": "font-size: 12px; background: white; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
-  "time": { "text": { "width": 75, 
-                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;" 
+  "time": { "text": { "width": 75,
+                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;"
                     },
             "slider": { "style": " border:1px solid #c2c2c2;",
                         "groove": "border-image:url($path/timeslider.png);",
                         "handle": "image:url($path/acceptant.png);"
                       },
-            "buttons": { "style": "border:1px solid #a68168; height: 17px; width: 50px; color: #cd8f9d; font-family: 'Arial'; background: rgb(190, 19, 4); margin-left: 2px;" }, 
-            "arrows": { "left": "$path/leftarrow.png", 
+            "buttons": { "style": "border:1px solid #a68168; height: 17px; width: 50px; color: #cd8f9d; font-family: 'Arial'; background: rgb(190, 19, 4); margin-left: 2px;" },
+            "arrows": { "left": "$path/leftarrow.png",
                         "right": "$path/rightarrow.png",
                         "style": "width: 19px; height: 19px; border:0px; margin-left: 2px;"
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/op.png" }
+  "op": { "icon": "$path/op.png" },
+  "voice": { "icon": "$path/voice.png" }
  }
 }

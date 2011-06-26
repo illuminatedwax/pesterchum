@@ -5,6 +5,7 @@ from datetime import timedelta
 from PyQt4 import QtGui
 
 from generic import mysteryTime
+from pyquirks import PythonQuirks
 
 _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _gtag_begin = re.compile(r'(?i)<g[a-f]>')
@@ -16,8 +17,14 @@ _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 
-_functionre = re.compile(r"(upper\(|lower\(|scramble\(|reverse\(|\)|\\[0-9]+)")
+quirkloader = PythonQuirks()
+_functionre = re.compile(r"%s" % quirkloader.funcre())
 _groupre = re.compile(r"\\([0-9]+)")
+
+def reloadQuirkFunctions():
+    quirkloader.load()
+    global _functionre
+    _functionre = re.compile(r"%s" % quirkloader.funcre())
 
 def lexer(string, objlist):
     """objlist is a list: [(objecttype, re),...] list is in order of preference"""
@@ -247,8 +254,8 @@ def splitMessage(msg, format="ctag"):
     if len(okmsg) > 0:
         output.append(okmsg)
     return output
-            
-    
+
+
 
 def addTimeInitial(string, grammar):
     endofi = string.find(":")
@@ -289,7 +296,7 @@ def timeDifference(td):
     elif atd < timedelta(0,3600):
         if minutes == 1:
             timetext = "%d MINUTE %s" % (minutes, when)
-        else: 
+        else:
             timetext = "%d MINUTES %s" % (minutes, when)
     elif atd < timedelta(0,3600*100):
         if hours == 1 and leftoverminutes == 0:
@@ -300,14 +307,6 @@ def timeDifference(td):
         timetext = "%d HOURS %s" % (hours, when)
     return timetext
 
-def upperrep(text):
-    return text.upper()
-def lowerrep(text):
-    return text.lower()
-def scramblerep(text):
-    return "".join(random.sample(text, len(text)))
-def reverserep(text):
-    return text[::-1]
 def nonerep(text):
     return text
 
@@ -339,8 +338,7 @@ def parseRegexpFunctions(to):
     parsed = parseLeaf(nonerep, None)
     current = parsed
     curi = 0
-    functiondict = {"upper(": upperrep, "lower(": lowerrep,
-                    "scramble(": scramblerep, "reverse(": reverserep}
+    functiondict = quirkloader.quirks
     while curi < len(to):
         tmp = to[curi:]
         mo = _functionre.search(tmp)
@@ -364,7 +362,7 @@ def parseRegexpFunctions(to):
             current.append(to[curi:])
             curi = len(to)
     return parsed
-    
+
 
 def img2smiley(string):
     string = unicode(string)
@@ -374,7 +372,7 @@ def img2smiley(string):
     return string
 
 smiledict = {
-    ":rancorous:": "pc_rancorous.gif",  
+    ":rancorous:": "pc_rancorous.gif",
     ":apple:": "apple.gif",
     ":bathearst:": "bathearst.gif",
     ":cathearst:": "cathearst.png",
@@ -384,7 +382,7 @@ smiledict = {
     ":blueghost:": "blueslimer.gif",
     ":slimer:": "slimer.gif",
     ":candycorn:": "candycorn.gif",
-    ":cheer:": "cheer.gif", 
+    ":cheer:": "cheer.gif",
     ":duhjohn:": "confusedjohn.gif",
     ":datrump:": "datrump.gif",
     ":facepalm:": "facepalm.gif",
@@ -424,8 +422,79 @@ smiledict = {
     ":manipulative:": "manipulative.png",
     ":vigorous:": "vigorous.png",
     ":perky:": "perky.png",
-    ":acceptant:": "acceptant.png",
+    ":acceptant:": "acceptant.gif",
     }
 
 reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
 _smilere = re.compile("|".join(smiledict.keys()))
+
+class ThemeException(Exception):
+    def __init__(self, value):
+        self.parameter = value
+    def __str__(self):
+        return repr(self.parameter)
+
+def themeChecker(theme):
+    needs = ["main/size", "main/icon", "main/windowtitle", "main/style", \
+    "main/background-image", "main/menubar/style", "main/menu/menuitem", \
+    "main/menu/style", "main/menu/selected", "main/close/image", \
+    "main/close/loc", "main/minimize/image", "main/minimize/loc", \
+    "main/menu/loc", "main/menus/client/logviewer", \
+    "main/menus/client/addgroup", "main/menus/client/options", \
+    "main/menus/client/exit", "main/menus/client/userlist", \
+    "main/menus/client/memos", "main/menus/client/import", \
+    "main/menus/client/idle", "main/menus/client/reconnect", \
+    "main/menus/client/_name", "main/menus/profile/quirks", \
+    "main/menus/profile/block", "main/menus/profile/color", \
+    "main/menus/profile/switch", "main/menus/profile/_name", \
+    "main/menus/help/about", "main/menus/help/_name", "main/moodlabel/text", \
+    "main/moodlabel/loc", "main/moodlabel/style", "main/moods", \
+    "main/addchum/style", "main/addchum/text", "main/addchum/size", \
+    "main/addchum/loc", "main/pester/text", "main/pester/size", \
+    "main/pester/loc", "main/block/text", "main/block/size", "main/block/loc", \
+    "main/mychumhandle/label/text", "main/mychumhandle/label/loc", \
+    "main/mychumhandle/label/style", "main/mychumhandle/handle/loc", \
+    "main/mychumhandle/handle/size", "main/mychumhandle/handle/style", \
+    "main/mychumhandle/colorswatch/size", "main/mychumhandle/colorswatch/loc", \
+    "main/defaultmood", "main/chums/size", "main/chums/loc", \
+    "main/chums/style", "main/menus/rclickchumlist/pester", \
+    "main/menus/rclickchumlist/removechum", \
+    "main/menus/rclickchumlist/blockchum", "main/menus/rclickchumlist/viewlog", \
+    "main/menus/rclickchumlist/removegroup", \
+    "main/menus/rclickchumlist/renamegroup", \
+    "main/menus/rclickchumlist/movechum", "convo/size", \
+    "convo/tabwindow/style", "convo/tabs/tabstyle", "convo/tabs/style", \
+    "convo/tabs/selectedstyle", "convo/style", "convo/margins", \
+    "convo/chumlabel/text", "convo/chumlabel/style", "convo/chumlabel/align/h", \
+    "convo/chumlabel/align/v", "convo/chumlabel/maxheight", \
+    "convo/chumlabel/minheight", "main/menus/rclickchumlist/quirksoff", \
+    "main/menus/rclickchumlist/addchum", "main/menus/rclickchumlist/blockchum", \
+    "main/menus/rclickchumlist/unblockchum", \
+    "main/menus/rclickchumlist/viewlog", "main/trollslum/size", \
+    "main/trollslum/style", "main/trollslum/label/text", \
+    "main/trollslum/label/style", "main/menus/profile/block", \
+    "main/chums/moods/blocked/icon", "convo/systemMsgColor", \
+    "convo/textarea/style", "convo/text/beganpester", "convo/text/ceasepester", \
+    "convo/text/blocked", "convo/text/unblocked", "convo/text/blockedmsg", \
+    "convo/text/idle", "convo/input/style", "memos/memoicon", \
+    "memos/textarea/style", "memos/systemMsgColor", "convo/text/joinmemo", \
+    "memos/input/style", "main/menus/rclickchumlist/banuser", \
+    "main/menus/rclickchumlist/opuser", "main/menus/rclickchumlist/voiceuser", \
+    "memos/margins", "convo/text/openmemo", "memos/size", "memos/style", \
+    "memos/label/text", "memos/label/style", "memos/label/align/h", \
+    "memos/label/align/v", "memos/label/maxheight", "memos/label/minheight", \
+    "memos/userlist/style", "memos/userlist/width", "memos/time/text/width", \
+    "memos/time/text/style", "memos/time/arrows/left", \
+    "memos/time/arrows/style", "memos/time/buttons/style", \
+    "memos/time/arrows/right", "memos/op/icon", "memos/voice/icon", \
+    "convo/text/closememo", "convo/text/kickedmemo", \
+    "main/chums/userlistcolor", "main/defaultwindow/style", \
+    "main/chums/moods", "main/chums/moods/chummy/icon", "main/menus/help/help", \
+    "main/menus/help/calsprite", "main/menus/help/nickserv", \
+    "main/menus/rclickchumlist/invitechum", "main/menus/client/randen"]
+
+    for n in needs:
+        try:
+            theme[n]
+        except KeyError:
+            raise ThemeException("Missing theme requirement: %s" % (n))

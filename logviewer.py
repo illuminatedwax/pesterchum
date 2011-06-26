@@ -3,9 +3,35 @@ import codecs
 import re
 from time import strftime, strptime
 from PyQt4 import QtGui, QtCore
-from generic import RightClickList
+from generic import RightClickList, RightClickTree
 from parsetools import convertTags
 from convo import PesterText
+
+class PesterLogSearchInput(QtGui.QLineEdit):
+    def __init__(self, theme, parent=None):
+        QtGui.QLineEdit.__init__(self, parent)
+        self.setStyleSheet(theme["convo/input/style"] + "margin-right:0px;")
+    def keyPressEvent(self, event):
+        QtGui.QLineEdit.keyPressEvent(self, event)
+        if hasattr(self.parent(), 'textArea'):
+            if event.key() == QtCore.Qt.Key_Return:
+                self.parent().logSearch(self.text())
+                if self.parent().textArea.find(self.text()):
+                    self.parent().textArea.ensureCursorVisible()
+        else:
+            self.parent().logSearch(self.text())
+
+class PesterLogHighlighter(QtGui.QSyntaxHighlighter):
+    def __init__(self, parent):
+        QtGui.QSyntaxHighlighter.__init__(self, parent)
+        self.searchTerm = ""
+        self.hilightstyle = QtGui.QTextCharFormat()
+        self.hilightstyle.setBackground(QtGui.QBrush(QtCore.Qt.green))
+        self.hilightstyle.setForeground(QtGui.QBrush(QtCore.Qt.black))
+    def highlightBlock(self, text):
+        for i in range(0, len(text)-(len(self.searchTerm)-1)):
+            if unicode(text[i:i+len(self.searchTerm)]).lower() == unicode(self.searchTerm).lower():
+                self.setFormat(i, len(self.searchTerm), self.hilightstyle)
 
 class PesterLogUserSelect(QtGui.QDialog):
     def __init__(self, config, theme, parent):
@@ -44,6 +70,9 @@ class PesterLogUserSelect(QtGui.QDialog):
             item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
             self.chumsBox.addItem(item)
 
+        self.search = PesterLogSearchInput(theme, self)
+        self.search.setFocus()
+
         self.cancel = QtGui.QPushButton("CANCEL", self)
         self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('reject()'))
@@ -58,12 +87,18 @@ class PesterLogUserSelect(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(instructions)
         layout_0.addWidget(self.chumsBox)
+        layout_0.addWidget(self.search)
         layout_0.addLayout(layout_ok)
 
         self.setLayout(layout_0)
 
     def selectedchum(self):
         return self.chumsBox.currentItem()
+
+    def logSearch(self, search):
+        found = self.chumsBox.findItems(search, QtCore.Qt.MatchStartsWith)
+        if len(found) > 0 and len(found) < self.chumsBox.count():
+            self.chumsBox.setCurrentItem(found[0])
 
     @QtCore.pyqtSlot()
     def viewActivatedLog(self):
@@ -91,6 +126,7 @@ class PesterLogViewer(QtGui.QDialog):
         self.config = config
         self.theme = theme
         self.parent = parent
+        self.mainwindow = parent
         global _datadir
         self.handle = parent.profile().handle
         self.chum = chum
@@ -138,7 +174,8 @@ class PesterLogViewer(QtGui.QDialog):
             self.logList.sort()
             self.logList.reverse()
 
-            self.tree = QtGui.QTreeWidget()
+            self.tree = RightClickTree()
+            self.tree.optionsMenu = QtGui.QMenu(self)
             self.tree.setFixedSize(260, 300)
             self.tree.header().hide()
             if theme.has_key("convo/scrollbar"):
@@ -148,6 +185,7 @@ class PesterLogViewer(QtGui.QDialog):
             self.connect(self.tree, QtCore.SIGNAL('itemSelectionChanged()'),
                              self, QtCore.SLOT('loadSelectedLog()'))
             self.tree.setSortingEnabled(False)
+
             child_1 = None
             last = ["",""]
             for (i,l) in enumerate(self.logList):
@@ -160,20 +198,40 @@ class PesterLogViewer(QtGui.QDialog):
                 child_1.addChild(QtGui.QTreeWidgetItem([self.fileToTime(l)]))
                 last = self.fileToMonthYear(l)
 
+            self.hilight = PesterLogHighlighter(self.textArea)
             if len(self.logList) > 0: self.loadLog(self.logList[0])
 
+            self.search = PesterLogSearchInput(theme, self)
+            self.search.setFocus()
+            self.find = QtGui.QPushButton("Find", self)
+            font = self.find.font()
+            font.setPointSize(8)
+            self.find.setFont(font)
+            self.find.setDefault(True)
+            self.find.setFixedSize(40, 20)
+            layout_search = QtGui.QHBoxLayout()
+            layout_search.addWidget(self.search)
+            layout_search.addWidget(self.find)
+
+            self.qdb = QtGui.QPushButton("Pesterchum QDB", self)
+            self.qdb.setFixedWidth(260)
+            self.connect(self.qdb, QtCore.SIGNAL('clicked()'),
+                         self, QtCore.SLOT('openQDB()'))
             self.ok = QtGui.QPushButton("CLOSE", self)
-            self.ok.setDefault(True)
             self.ok.setFixedWidth(80)
             self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                          self, QtCore.SLOT('reject()'))
             layout_ok = QtGui.QHBoxLayout()
+            layout_ok.addWidget(self.qdb)
             layout_ok.addWidget(self.ok)
             layout_ok.setAlignment(self.ok, QtCore.Qt.AlignRight)
 
             layout_logs = QtGui.QHBoxLayout()
             layout_logs.addWidget(self.tree)
-            layout_logs.addWidget(self.textArea)
+            layout_right = QtGui.QVBoxLayout()
+            layout_right.addWidget(self.textArea)
+            layout_right.addLayout(layout_search)
+            layout_logs.addLayout(layout_right)
 
             layout_0 = QtGui.QVBoxLayout()
             layout_0.addWidget(self.instructions)
@@ -187,6 +245,10 @@ class PesterLogViewer(QtGui.QDialog):
         if len(self.tree.currentItem().text(0)) > len("September 2011"):
             self.loadLog(self.timeToFile(self.tree.currentItem().text(0)))
 
+    @QtCore.pyqtSlot()
+    def openQDB(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://qdb.pesterchum.net/index.php?p=browse", QtCore.QUrl.TolerantMode))
+
     def loadLog(self, fname):
         fp = codecs.open("%s/%s/%s/%s/%s" % (self.logpath, self.handle, self.chum, self.format, fname), encoding='utf-8', mode='r')
         self.textArea.clear()
@@ -198,6 +260,10 @@ class PesterLogViewer(QtGui.QDialog):
         textCur.movePosition(1)
         self.textArea.setTextCursor(textCur)
         self.instructions.setText("Pesterlog with " +self.chum+ " on " + self.fileToTime(str(fname)))
+
+    def logSearch(self, search):
+        self.hilight.searchTerm = search
+        self.hilight.rehighlight()
 
     def fileToMonthYear(self, fname):
         time = strptime(fname[(fname.index(".")+1):fname.index(".txt")], "%Y-%m-%d.%H.%M")
@@ -217,15 +283,30 @@ class PesterLogText(PesterText):
     def mousePressEvent(self, event):
         url = self.anchorAt(event.pos())
         if url != "":
-            if url[0] != "#":
+            if url[0] == "#" and url != "#pesterchum":
+                self.parent().parent.showMemos(url[1:])
+            elif url[0] == "@":
+                handle = unicode(url[1:])
+                self.parent().parent.newConversation(handle)
+            else:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
     def mouseMoveEvent(self, event):
         QtGui.QTextEdit.mouseMoveEvent(self, event)
         if self.anchorAt(event.pos()):
             if self.viewport().cursor().shape != QtCore.Qt.PointingHandCursor:
-                url = self.anchorAt(event.pos())
-                if url != "" and url[0] != "#":
-                    self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         else:
             self.viewport().setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+
+    def contextMenuEvent(self, event):
+        textMenu = self.createStandardContextMenu()
+        if self.textSelected:
+            self.submitLogAction = QtGui.QAction("Submit to Pesterchum QDB", self)
+            self.connect(self.submitLogAction, QtCore.SIGNAL('triggered()'),
+                         self, QtCore.SLOT('submitLog()'))
+            textMenu.addAction(self.submitLogAction)
+        a = textMenu.actions()
+        a[0].setText("Copy Plain Text")
+        a[0].setShortcut(self.tr("Ctrl+C"))
+        textMenu.exec_(event.globalPos())

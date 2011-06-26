@@ -38,8 +38,8 @@ def names(cli, *channels):
 def channel_list(cli):
     cli.send("LIST")
 
-def kick(cli, handle, channel):
-    cli.send("KICK %s %s" % (channel, handle))
+def kick(cli, handle, channel, reason=""):
+    cli.send("KICK %s %s %s" % (channel, handle, reason))
 
 def mode(cli, channel, mode, options=None):
     cmd = "MODE %s %s" % (channel, mode)
@@ -76,7 +76,7 @@ def quit(cli, msg='gone'):
     cli._end = 1
 
 def user(cli, username, realname=None):
-    cli.send("USER", realname or username, cli.host, cli.host, 
+    cli.send("USER", realname or username, cli.host, cli.host,
         realname or username)
 
 _simple = (
@@ -84,6 +84,7 @@ _simple = (
     'part',
     'nick',
     'notice',
+    'invite',
 )
 def _addsimple():
     import sys
@@ -106,6 +107,6 @@ def _addNumerics():
     m = sys.modules[__name__]
     for num, name in ircevents.numeric_events.iteritems():
         setattr(m, name, numericcmd(num, name))
-        
+
 _addNumerics()
 

@@ -1,6 +1,8 @@
 # pesterchum
+import version
+version.pcVerCalc()
 import logging
-import os, sys
+import os, sys, getopt
 import os.path
 from datetime import *
 from string import Template
@@ -10,23 +12,55 @@ import codecs
 import re
 import socket
 import platform
-from PyQt4 import QtGui, QtCore
-import pygame
-from time import strftime
+from time import strftime, time
+
+missing = []
+try:
+    from PyQt4 import QtGui, QtCore
+except ImportError, e:
+    module = str(e)
+    if module[:16] == "No module named ": missing.append(module[16:])
+    else: print e
+try:
+    import pygame
+except ImportError, e:
+    module = str(e)
+    if module[:16] == "No module named ": missing.append(module[16:])
+    else: print e
+if missing:
+    print "ERROR: The following modules are required for Pesterchum to run and are missing on your system:"
+    for m in missing: print "* "+m
+    exit()
+vnum = QtCore.qVersion()
+major = int(vnum[:vnum.find(".")])
+if vnum.find(".", vnum.find(".")+1) != -1:
+    minor = int(vnum[vnum.find(".")+1:vnum.find(".", vnum.find(".")+1)])
+else:
+    minor = int(vnum[vnum.find(".")+1:])
+if not ((major > 4) or (major == 4 and minor >= 6)):
+    print "ERROR: Pesterchum requires Qt version >= 4.6"
+    print "You currently have version " + vnum + ". Please ungrade Qt"
+    exit()
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
-    LoadingScreen, AboutPesterchum
+    LoadingScreen, AboutPesterchum, UpdatePesterchum
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
-from generic import PesterIcon, RightClickList, MultiTextDialog, PesterList, CaseInsensitiveDict
+from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList, CaseInsensitiveDict
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
-from parsetools import convertTags, addTimeInitial
+from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
 from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
+from bugreport import BugReporter
+from randomer import RandomHandler
+from updatecheck import MSPAChecker
 
 _datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
-canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
+canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
+                 "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
+                 "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
+                 "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
 
 if sys.platform == "darwin":
     if not os.path.exists(_datadir):
@@ -35,6 +69,15 @@ if sys.platform == "darwin":
         os.mkdir(_datadir+"profiles")
     if not os.path.exists(_datadir+"pesterchum.js"):
         f = open(_datadir+"pesterchum.js", 'w')
+        f.close()
+else:
+    if not os.path.exists("logs"):
+        os.mkdir("logs")
+    if not os.path.exists("profiles"):
+        os.mkdir("profiles")
+    if not os.path.exists("pesterchum.js"):
+        f = open("pesterchum.js", 'w')
+        f.write("{}")
         f.close()
 
 class waitingMessageHolder(object):
@@ -67,10 +110,12 @@ class waitingMessageHolder(object):
 
 class NoneSound(object):
     def play(self): pass
+    def set_volume(self, v): pass
 
 class PesterLog(object):
-    def __init__(self, handle):
+    def __init__(self, handle, parent=None):
         global _datadir
+        self.parent = parent
         self.handle = handle
         self.convos = {}
         if sys.platform != "darwin":
@@ -79,13 +124,28 @@ class PesterLog(object):
             self.logpath = _datadir+"logs"
 
     def log(self, handle, msg):
+        if self.parent.config.time12Format():
+            time = strftime("[%I:%M")
+        else:
+            time = strftime("[%H:%M")
+        if self.parent.config.showSeconds():
+            time += strftime(":%S] ")
+        else:
+            time += "] "
+        if handle[0] == '#':
+            if not self.parent.config.logMemos() & self.parent.config.LOG: return
+            if not self.parent.config.logMemos() & self.parent.config.STAMP:
+                time = ""
+        else:
+            if not self.parent.config.logPesters() & self.parent.config.LOG: return
+            if not self.parent.config.logPesters() & self.parent.config.STAMP:
+                time = ""
+        if str(handle).upper() == "NICKSERV": return
         #watch out for illegal characters
         handle = re.sub(r'[<>:"/\\|?*]', "_", handle)
-        #time = strftime("[%H:%M:%S] ")
-        # no time codes in logs
-        bbcodemsg = convertTags(msg, "bbcode")
-        html = convertTags(msg, "html")+"<br />"
-        msg = convertTags(msg, "text")
+        bbcodemsg = time + convertTags(msg, "bbcode")
+        html = time + convertTags(msg, "html")+"<br />"
+        msg = time +convertTags(msg, "text")
         modes = {"bbcode": bbcodemsg, "html": html, "text": msg}
         if not self.convos.has_key(handle):
             time = datetime.now().strftime("%Y-%m-%d.%H.%M")
@@ -120,6 +180,8 @@ class PesterProfileDB(dict):
         else:
             self.logpath = _datadir+"logs"
 
+        if not os.path.exists(self.logpath):
+            os.makedirs(self.logpath)
         try:
             fp = open("%s/chums.js" % (self.logpath), 'r')
             chumdict = json.load(fp)
@@ -135,7 +197,14 @@ class PesterProfileDB(dict):
             json.dump(chumdict, fp)
             fp.close()
 
-        converted = dict([(handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))) for (handle, c) in chumdict.iteritems()])
+        u = []
+        for (handle, c) in chumdict.iteritems():
+            try:
+                g = c['group']
+                u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']), group=g)))
+            except KeyError:
+                u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))))
+        converted = dict(u)
         self.update(converted)
 
     def save(self):
@@ -156,6 +225,17 @@ class PesterProfileDB(dict):
             self[handle].color = color
         else:
             self[handle] = PesterProfile(handle, color)
+    def getGroup(self, handle, default="Chums"):
+        if not self.has_key(handle):
+            return default
+        else:
+            return self[handle].group
+    def setGroup(self, handle, theGroup):
+        if self.has_key(handle):
+            self[handle].group = theGroup
+        else:
+            self[handle] = PesterProfile(handle, group=theGroup)
+        self.save()
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
         self.save()
@@ -231,7 +311,11 @@ class pesterTheme(dict):
                 return False
 
 class userConfig(object):
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
+        # Use for bit flag log setting
+        self.LOG = 1
+        self.STAMP = 2
         if sys.platform != "darwin":
             self.filename = "pesterchum.js"
         else:
@@ -243,6 +327,29 @@ class userConfig(object):
             self.userprofile = userProfile(self.config["defaultprofile"])
         else:
             self.userprofile = None
+
+        if sys.platform != "darwin":
+            self.logpath = "logs"
+        else:
+            self.logpath = _datadir+"logs"
+
+        if not os.path.exists(self.logpath):
+            os.makedirs(self.logpath)
+        try:
+            fp = open("%s/groups.js" % (self.logpath), 'r')
+            self.groups = json.load(fp)
+            fp.close()
+        except IOError:
+            self.groups = {}
+            fp = open("%s/groups.js" % (self.logpath), 'w')
+            json.dump(self.groups, fp)
+            fp.close()
+        except ValueError:
+            self.groups = {}
+            fp = open("%s/groups.js" % (self.logpath), 'w')
+            json.dump(self.groups, fp)
+            fp.close()
+
     def chums(self):
         if not self.config.has_key('chums'):
             self.set("chums", [])
@@ -268,6 +375,54 @@ class userConfig(object):
         if not self.config.has_key('showSeconds'):
             self.set("showSeconds", False)
         return self.config.get('showSeconds', False)
+    def sortMethod(self):
+        return self.config.get('sortMethod', 0)
+    def useGroups(self):
+        return self.config.get('useGroups', False)
+    def openDefaultGroup(self):
+        groups = self.getGroups()
+        for g in groups:
+            if g[0] == "Chums":
+                return g[1]
+        return True
+    def showEmptyGroups(self):
+        if not self.config.has_key('emptyGroups'):
+            self.set("emptyGroups", False)
+        return self.config.get('emptyGroups', False)
+    def showOnlineNumbers(self):
+        if not self.config.has_key('onlineNumbers'):
+            self.set("onlineNumbers", False)
+        return self.config.get('onlineNumbers', False)
+    def logPesters(self):
+        return self.config.get('logPesters', self.LOG | self.STAMP)
+    def logMemos(self):
+        return self.config.get('logMemos', self.LOG)
+    def disableUserLinks(self):
+        return not self.config.get('userLinks', True)
+    def idleTime(self):
+        return self.config.get('idleTime', 10)
+    def minimizeAction(self):
+        return self.config.get('miniAction', 0)
+    def closeAction(self):
+        return self.config.get('closeAction', 1)
+    def opvoiceMessages(self):
+        return self.config.get('opvMessages', True)
+    def animations(self):
+        return self.config.get('animations', True)
+    def checkForUpdates(self):
+        u = self.config.get('checkUpdates', 0)
+        if type(u) == type(bool()):
+            if u: u = 2
+            else: u = 3
+        return u
+        # Once a day
+        # Once a week
+        # Only on start
+        # Never
+    def lastUCheck(self):
+        return self.config.get('lastUCheck', 0)
+    def checkMSPA(self):
+        return self.config.get('mspa', False)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -295,14 +450,67 @@ class userConfig(object):
         l = self.getBlocklist()
         l.pop(l.index(handle))
         self.set('block', l)
+    def getGroups(self):
+        if not self.groups.has_key('groups'):
+            self.saveGroups([["Chums", True]])
+        return self.groups.get('groups', [["Chums", True]])
+    def addGroup(self, group, open=True):
+        l = self.getGroups()
+        exists = False
+        for g in l:
+            if g[0] == group:
+                exists = True
+                break
+        if not exists:
+            l.append([group,open])
+            l.sort()
+            self.saveGroups(l)
+    def delGroup(self, group):
+        l = self.getGroups()
+        i = 0
+        for g in l:
+            if g[0] == group: break
+            i = i+1
+        l.pop(i)
+        l.sort()
+        self.saveGroups(l)
+    def expandGroup(self, group, open=True):
+        l = self.getGroups()
+        for g in l:
+            if g[0] == group:
+                g[1] = open
+                break
+        self.saveGroups(l)
+    def saveGroups(self, groups):
+        self.groups['groups'] = groups
+        try:
+            jsonoutput = json.dumps(self.groups)
+        except ValueError, e:
+            raise e
+        fp = open("%s/groups.js" % (self.logpath), 'w')
+        fp.write(jsonoutput)
+        fp.close()
+
     def server(self):
+        if hasattr(self.parent, 'serverOverride'):
+            return self.parent.serverOverride
         return self.config.get('server', 'irc.mindfang.org')
     def port(self):
+        if hasattr(self.parent, 'portOverride'):
+            return self.parent.portOverride
         return self.config.get('port', '6667')
     def soundOn(self):
         if not self.config.has_key('soundon'):
             self.set('soundon', True)
         return self.config['soundon']
+    def chatSound(self):
+        return self.config.get('chatSound', True)
+    def memoSound(self):
+        return self.config.get('memoSound', True)
+    def nameSound(self):
+        return self.config.get('nameSound', True)
+    def volume(self):
+        return self.config.get('volume', 100)
     def set(self, item, setting):
         self.config[item] = setting
         try:
@@ -345,6 +553,7 @@ class userProfile(object):
             self.chat.mood = Mood(self.theme["main/defaultmood"])
             self.lastmood = self.chat.mood.value()
             self.quirks = pesterQuirks([])
+            self.randoms = False
         else:
             fp = open("%s/%s.js" % (self.profiledir, user))
             self.userprofile = json.load(fp)
@@ -358,6 +567,9 @@ class userProfile(object):
                                       QtGui.QColor(self.userprofile["color"]),
                                       Mood(self.lastmood))
             self.quirks = pesterQuirks(self.userprofile["quirks"])
+            if "randoms" not in self.userprofile:
+                self.userprofile["randoms"] = False
+            self.randoms = self.userprofile["randoms"]
 
     def setMood(self, mood):
         self.chat.mood = mood
@@ -372,6 +584,10 @@ class userProfile(object):
     def setQuirks(self, quirks):
         self.quirks = quirks
         self.userprofile["quirks"] = self.quirks.plainList()
+        self.save()
+    def setRandom(self, random):
+        self.randoms = random
+        self.userprofile["randoms"] = random
         self.save()
     def getLastMood(self):
         return self.lastmood
@@ -407,13 +623,14 @@ class WMButton(QtGui.QPushButton):
     def __init__(self, icon, parent=None):
         QtGui.QPushButton.__init__(self, icon, "", parent)
         self.setIconSize(icon.realsize())
+        self.resize(icon.realsize())
         self.setFlat(True)
         self.setStyleSheet("QPushButton { padding: 0px; }")
         self.setAutoDefault(False)
 
-class chumListing(QtGui.QListWidgetItem):
+class chumListing(QtGui.QTreeWidgetItem):
     def __init__(self, chum, window):
-        QtGui.QListWidgetItem.__init__(self, chum.handle)
+        QtGui.QTreeWidgetItem.__init__(self, [chum.handle])
         self.mainwindow = window
         self.chum = chum
         self.handle = chum.handle
@@ -427,33 +644,40 @@ class chumListing(QtGui.QListWidgetItem):
         mood = self.chum.mood
         self.mood = mood
         icon = self.mood.icon(self.mainwindow.theme)
-        self.setIcon(icon)
+        self.setIcon(0, icon)
         try:
-            self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
+            self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
         except KeyError:
-            self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods/chummy/color"]))
+            self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods/chummy/color"]))
     def changeTheme(self, theme):
         icon = self.mood.icon(theme)
-        self.setIcon(icon)
+        self.setIcon(0, icon)
         try:
-            self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
+            self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
         except KeyError:
-            self.setTextColor(QtGui.QColor(self.mainwindow.theme["main/chums/moods/chummy/color"]))
+            self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods/chummy/color"]))
     def __lt__(self, cl):
         h1 = self.handle.lower()
         h2 = cl.handle.lower()
         return (h1 < h2)
 
-class chumArea(RightClickList):
+class chumArea(RightClickTree):
     def __init__(self, chums, parent=None):
-        QtGui.QListWidget.__init__(self, parent)
+        QtGui.QTreeWidget.__init__(self, parent)
         self.mainwindow = parent
         theme = self.mainwindow.theme
         self.chums = chums
+        gTemp = self.mainwindow.config.getGroups()
+        self.groups = [g[0] for g in gTemp]
+        self.openGroups = [g[1] for g in gTemp]
+        self.showAllGroups(True)
         if not self.mainwindow.config.hideOfflineChums():
             self.showAllChums()
-        self.optionsMenu = QtGui.QMenu(self)
+        if not self.mainwindow.config.showEmptyGroups():
+            self.hideEmptyGroups()
+        self.groupMenu = QtGui.QMenu(self)
         self.canonMenu = QtGui.QMenu(self)
+        self.optionsMenu = QtGui.QMenu(self)
         self.pester = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/pester"], self)
         self.connect(self.pester, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('activateChum()'))
@@ -472,29 +696,158 @@ class chumArea(RightClickList):
         self.findalts = QtGui.QAction("Find Alts", self)
         self.connect(self.findalts, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('findAlts()'))
+        self.removegroup = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/removegroup"], self)
+        self.connect(self.removegroup, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('removeGroup()'))
+        self.renamegroup = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/renamegroup"], self)
+        self.connect(self.renamegroup, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('renameGroup()'))
 
         self.optionsMenu.addAction(self.pester)
         self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.blockchum)
         self.optionsMenu.addAction(self.removechum)
+        self.moveMenu = QtGui.QMenu(self.mainwindow.theme["main/menus/rclickchumlist/movechum"], self)
+        self.optionsMenu.addMenu(self.moveMenu)
         self.optionsMenu.addAction(self.reportchum)
+        self.moveGroupMenu()
 
-        
+        self.groupMenu.addAction(self.renamegroup)
+        self.groupMenu.addAction(self.removegroup)
+
         self.canonMenu.addAction(self.pester)
         self.canonMenu.addAction(self.logchum)
         self.canonMenu.addAction(self.blockchum)
         self.canonMenu.addAction(self.removechum)
+        self.canonMenu.addMenu(self.moveMenu)
         self.canonMenu.addAction(self.reportchum)
         self.canonMenu.addAction(self.findalts)
 
         self.initTheme(theme)
-        self.sortItems()
+        #self.sortItems()
+        #self.sortItems(1, QtCore.Qt.AscendingOrder)
+        self.setSortingEnabled(False)
+        self.header().hide()
+        self.setDropIndicatorShown(True)
+        self.setIndentation(4)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.setAnimated(True)
+        self.setRootIsDecorated(False)
+
+        self.connect(self, QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
+                     self, QtCore.SLOT('expandGroup()'))
+
     def getOptionsMenu(self):
-        currenthandle = self.currentItem().chum.handle
-        if currenthandle in canon_handles:
-            return self.canonMenu
+        text = str(self.currentItem().text(0))
+        if text.rfind(" (") != -1:
+            text = text[0:text.rfind(" (")]
+        if text == "Chums":
+            return None
+        elif text in self.groups:
+            return self.groupMenu
         else:
-            return self.optionsMenu
+            currenthandle = self.currentItem().chum.handle
+            if currenthandle in canon_handles:
+                return self.canonMenu
+            else:
+                return self.optionsMenu
+
+    def startDrag(self, dropAction):
+        # create mime data object
+        mime = QtCore.QMimeData()
+        mime.setData('application/x-item', '???')
+        # start drag
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(mime)
+        drag.start(QtCore.Qt.MoveAction)
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasFormat("application/x-item"):
+            event.setDropAction(QtCore.Qt.MoveAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragEnterEvent(self, event):
+        if (event.mimeData().hasFormat('application/x-item')):
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if (event.mimeData().hasFormat('application/x-item')):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+            return
+        thisitem = str(event.source().currentItem().text(0))
+        if thisitem.rfind(" ") != -1:
+            thisitem = thisitem[0:thisitem.rfind(" ")]
+        if thisitem == "Chums" or thisitem in self.groups:
+            droppos = self.itemAt(event.pos())
+            if not droppos: return
+            droppos = str(droppos.text(0))
+            if droppos.rfind(" ") != -1:
+                droppos = droppos[0:droppos.rfind(" ")]
+            if droppos == "Chums" or droppos in self.groups:
+                saveOpen = event.source().currentItem().isExpanded()
+                saveDrop = self.itemAt(event.pos())
+                saveItem = self.takeTopLevelItem(self.indexOfTopLevelItem(event.source().currentItem()))
+                self.insertTopLevelItems(self.indexOfTopLevelItem(saveDrop)+1, [saveItem])
+                if saveOpen:
+                    saveItem.setExpanded(True)
+
+                gTemp = []
+                for i in range(self.topLevelItemCount()):
+                    text = str(self.topLevelItem(i).text(0))
+                    if text.rfind(" (") != -1:
+                        text = text[0:text.rfind(" (")]
+                    gTemp.append([unicode(text), self.topLevelItem(i).isExpanded()])
+                self.mainwindow.config.saveGroups(gTemp)
+        else:
+            item = self.itemAt(event.pos())
+            if item:
+                text = str(item.text(0))
+                if text.rfind(" (") != -1:
+                    text = text[0:text.rfind(" (")]
+                if text == "Chums" or text in self.groups:
+                    group = text
+                else:
+                    ptext = str(item.parent().text(0))
+                    if ptext.rfind(" ") != -1:
+                        ptext = ptext[0:ptext.rfind(" ")]
+                    group = ptext
+                chumLabel = event.source().currentItem()
+                chumLabel.chum.group = group
+                self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
+                self.takeItem(chumLabel)
+                self.addItem(chumLabel)
+                if self.mainwindow.config.showOnlineNumbers():
+                    self.showOnlineNumbers()
+
+    def moveGroupMenu(self):
+        currentGroup = self.currentItem()
+        if currentGroup:
+            if currentGroup.parent():
+                text = str(currentGroup.parent().text(0))
+            else:
+                text = str(currentGroup.text(0))
+            if text.rfind(" (") != -1:
+                text = text[0:text.rfind(" (")]
+            currentGroup = text
+        self.moveMenu.clear()
+        actGroup = QtGui.QActionGroup(self)
+
+        groups = self.groups[:]
+        for gtext in groups:
+            if gtext == currentGroup:
+                continue
+            movegroup = self.moveMenu.addAction(gtext)
+            actGroup.addAction(movegroup)
+        self.connect(actGroup, QtCore.SIGNAL('triggered(QAction *)'),
+                     self, QtCore.SLOT('moveToGroup(QAction *)'))
+
     def addChum(self, chum):
         if len([c for c in self.chums if c.handle == chum.handle]) != 0:
             return
@@ -503,29 +856,163 @@ class chumArea(RightClickList):
                 chum.mood.name() == "offline"):
             chumLabel = chumListing(chum, self.mainwindow)
             self.addItem(chumLabel)
-            self.sortItems()
+            #self.topLevelItem(0).addChild(chumLabel)
+            #self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
 
     def getChums(self, handle):
-        chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
+        chums = self.findItems(handle, QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive)
         return chums
 
     def showAllChums(self):
         for c in self.chums:
             chandle = c.handle
-            if not self.findItems(chandle, QtCore.Qt.MatchFlags(0)):
+            if not len(self.findItems(chandle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive)):
                 chumLabel = chumListing(c, self.mainwindow)
                 self.addItem(chumLabel)
-        self.sortItems()
+        self.sort()
     def hideOfflineChums(self):
+        for j in range(self.topLevelItemCount()):
+            i = 0
+            listing = self.topLevelItem(j).child(i)
+            while listing is not None:
+                if listing.chum.mood.name() == "offline":
+                    self.topLevelItem(j).takeChild(i)
+                else:
+                    i += 1
+                listing = self.topLevelItem(j).child(i)
+            self.sort()
+    def showAllGroups(self, first=False):
+        if first:
+            for i,g in enumerate(self.groups):
+                child_1 = QtGui.QTreeWidgetItem(["%s" % (g)])
+                self.addTopLevelItem(child_1)
+                if self.openGroups[i]:
+                    child_1.setExpanded(True)
+            return
+        curgroups = []
+        for i in range(self.topLevelItemCount()):
+            text = str(self.topLevelItem(i).text(0))
+            if text.rfind(" (") != -1:
+                text = text[0:text.rfind(" (")]
+            curgroups.append(text)
+        for i,g in enumerate(self.groups):
+            if g not in curgroups:
+                child_1 = QtGui.QTreeWidgetItem(["%s" % (g)])
+                j = 0
+                for h in self.groups:
+                    if h == g:
+                        self.insertTopLevelItem(j, child_1)
+                        break
+                    if h in curgroups:
+                        j += 1
+                if self.openGroups[i]:
+                    child_1.setExpanded(True)
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
+    def showOnlineNumbers(self):
+        if hasattr(self, 'groups'):
+          self.hideOnlineNumbers()
+          totals = {'Chums': 0}
+          online = {'Chums': 0}
+          for g in self.groups:
+              totals[str(g)] = 0
+              online[str(g)] = 0
+          for c in self.chums:
+              yes = c.mood.name() != "offline"
+              if c.group == "Chums":
+                  totals[str(c.group)] = totals[str(c.group)]+1
+                  if yes:
+                      online[str(c.group)] = online[str(c.group)]+1
+              elif c.group in totals:
+                  totals[str(c.group)] = totals[str(c.group)]+1
+                  if yes:
+                      online[str(c.group)] = online[str(c.group)]+1
+              else:
+                  totals["Chums"] = totals["Chums"]+1
+                  if yes:
+                      online["Chums"] = online["Chums"]+1
+          for i in range(self.topLevelItemCount()):
+              text = str(self.topLevelItem(i).text(0))
+              if text.rfind(" (") != -1:
+                  text = text[0:text.rfind(" (")]
+              self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
+    def hideOnlineNumbers(self):
+        for i in range(self.topLevelItemCount()):
+            text = str(self.topLevelItem(i).text(0))
+            if text.rfind(" (") != -1:
+                text = text[0:text.rfind(" (")]
+            self.topLevelItem(i).setText(0, "%s" % (text))
+    def hideEmptyGroups(self):
         i = 0
-        listing = self.item(i)
+        listing = self.topLevelItem(i)
         while listing is not None:
-            if listing.chum.mood.name() == "offline":
-                self.takeItem(i)
+            if listing.childCount() == 0:
+                self.takeTopLevelItem(i)
             else:
                 i += 1
-            listing = self.item(i)
-        self.sortItems()
+            listing = self.topLevelItem(i)
+    @QtCore.pyqtSlot()
+    def expandGroup(self):
+        item = self.currentItem()
+        text = str(item.text(0))
+        if text.rfind(" (") != -1:
+            text = text[0:text.rfind(" (")]
+
+        if text in self.groups:
+            expand = item.isExpanded()
+            self.mainwindow.config.expandGroup(text, not expand)
+    def addItem(self, chumLabel):
+        if hasattr(self, 'groups'):
+            if chumLabel.chum.group not in self.groups:
+                chumLabel.chum.group = "Chums"
+            if "Chums" not in self.groups:
+                self.mainwindow.config.addGroup("Chums")
+            curgroups = []
+            for i in range(self.topLevelItemCount()):
+                text = str(self.topLevelItem(i).text(0))
+                if text.rfind(" (") != -1:
+                    text = text[0:text.rfind(" (")]
+                curgroups.append(text)
+            if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+                if chumLabel.chum.group not in curgroups:
+                    child_1 = QtGui.QTreeWidgetItem(["%s" % (chumLabel.chum.group)])
+                    i = 0
+                    for g in self.groups:
+                        if g == chumLabel.chum.group:
+                            self.insertTopLevelItem(i, child_1)
+                            break
+                        if g in curgroups:
+                            i += 1
+                    if self.openGroups[self.groups.index("%s" % (chumLabel.chum.group))]:
+                        child_1.setExpanded(True)
+                for i in range(self.topLevelItemCount()):
+                    text = str(self.topLevelItem(i).text(0))
+                    if text.rfind(" (") != -1:
+                        text = text[0:text.rfind(" (")]
+                    if text == chumLabel.chum.group:
+                        break
+                self.topLevelItem(i).addChild(chumLabel)
+                self.sort()
+                if self.mainwindow.config.showOnlineNumbers():
+                    self.showOnlineNumbers()
+        else: # usually means this is now the trollslum
+            if not self.findItems(chumLabel.handle, QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+                self.topLevelItem(0).addChild(chumLabel)
+                self.topLevelItem(0).sortChildren(0, QtCore.Qt.AscendingOrder)
+    def takeItem(self, chumLabel):
+        r = None
+        if not hasattr(chumLabel, 'chum'):
+            return r
+        for i in range(self.topLevelItemCount()):
+            for j in range(self.topLevelItem(i).childCount()):
+                if self.topLevelItem(i).child(j).text(0) == chumLabel.chum.handle:
+                    r = self.topLevelItem(i).takeChild(j)
+                    break
+        if not self.mainwindow.config.showEmptyGroups():
+            self.hideEmptyGroups()
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
+        return r
     def updateMood(self, handle, mood):
         hideoff = self.mainwindow.config.hideOfflineChums()
         chums = self.getChums(handle)
@@ -536,16 +1023,26 @@ class chumArea(RightClickList):
                     handle in [p.handle for p in self.chums]:
                 newLabel = chumListing([p for p in self.chums if p.handle == handle][0], self.mainwindow)
                 self.addItem(newLabel)
-                self.sortItems()
+                #self.sortItems()
                 chums = [newLabel]
             elif mood.name() == "offline" and \
                     len(chums) > 0:
                 for c in chums:
-                    self.takeItem(self.row(c))
+                    if (hasattr(c, 'mood')):
+                        c.setMood(mood)
+                    self.takeItem(c)
                 chums = []
         for c in chums:
-            oldmood = c.mood
-            c.setMood(mood)
+            if (hasattr(c, 'mood')):
+                oldmood = c.mood
+                c.setMood(mood)
+        if self.mainwindow.config.sortMethod() == 1:
+            for i in range(self.topLevelItemCount()):
+                saveCurrent = self.currentItem()
+                self.moodSort(i)
+                self.setCurrentItem(saveCurrent)
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
         return oldmood
     def updateColor(self, handle, color):
         chums = self.findItems(handle, QtCore.Qt.MatchFlags(0))
@@ -562,14 +1059,47 @@ class chumArea(RightClickList):
         self.removechum.setText(theme["main/menus/rclickchumlist/removechum"])
         self.blockchum.setText(theme["main/menus/rclickchumlist/blockchum"])
         self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
+        self.removegroup.setText(theme["main/menus/rclickchumlist/removegroup"])
+        self.renamegroup.setText(theme["main/menus/rclickchumlist/renamegroup"])
+        self.moveMenu.setTitle(theme["main/menus/rclickchumlist/movechum"])
     def changeTheme(self, theme):
         self.initTheme(theme)
-        chumlistings = [self.item(i) for i in range(0, self.count())]
+        chumlistings = []
+        for i in range(self.topLevelItemCount()):
+            for j in range(self.topLevelItem(i).childCount()):
+                chumlistings.append(self.topLevelItem(i).child(j))
+        #chumlistings = [self.item(i) for i in range(0, self.count())]
         for c in chumlistings:
             c.changeTheme(theme)
+
+    def count(self):
+        c = 0
+        for i in range(self.topLevelItemCount()):
+            c = c + self.topLevelItem(i).childCount()
+        return c
+
+    def sort(self):
+        if self.mainwindow.config.sortMethod() == 1:
+            for i in range(self.topLevelItemCount()):
+                self.moodSort(i)
+        else:
+            for i in range(self.topLevelItemCount()):
+                self.topLevelItem(i).sortChildren(0, QtCore.Qt.AscendingOrder)
+    def moodSort(self, group):
+        scrollPos = self.verticalScrollBar().sliderPosition()
+        chums = []
+        listing = self.topLevelItem(group).child(0)
+        while listing is not None:
+            chums.append(self.topLevelItem(group).takeChild(0))
+            listing = self.topLevelItem(group).child(0)
+        chums.sort(key=lambda x: ((999 if x.chum.mood.value() == 2 else x.chum.mood.value()), x.chum.handle), reverse=False)
+        for c in chums:
+            self.topLevelItem(group).addChild(c)
+        self.verticalScrollBar().setSliderPosition(scrollPos)
+
     @QtCore.pyqtSlot()
     def activateChum(self):
-        self.itemActivated.emit(self.currentItem())
+        self.itemActivated.emit(self.currentItem(), 0)
     @QtCore.pyqtSlot()
     def removeChum(self, handle = None):
         if handle:
@@ -581,7 +1111,7 @@ class chumArea(RightClickList):
         currentChum = self.currentItem().chum
         self.chums = [c for c in self.chums if c.handle != currentChum.handle]
         self.removeChumSignal.emit(self.currentItem().chum.handle)
-        oldlist = self.takeItem(self.currentRow())
+        oldlist = self.takeItem(self.currentItem())
         del oldlist
     @QtCore.pyqtSlot()
     def blockChum(self):
@@ -603,7 +1133,7 @@ class chumArea(RightClickList):
         self.mainwindow.sendMessage.emit("ALT %s" % (currentChum.chum.handle) , "calSprite")
     @QtCore.pyqtSlot()
     def openChumLogs(self):
-        currentChum = self.currentItem().text()
+        currentChum = self.currentItem().text(0)
         if not currentChum:
             return
         self.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
@@ -618,20 +1148,67 @@ class chumArea(RightClickList):
         self.pesterlogviewer = None
     @QtCore.pyqtSlot()
     def renameGroup(self):
-        (gname, ok) = QtGui.QInputDialog.getText(self, "Rename Group", "Enter a new name for the group:")
-        if ok:
-            pass
-            #rename group
-
+        if not hasattr(self, 'renamegroupdialog'):
+            self.renamegroupdialog = None
+        if not self.renamegroupdialog:
+            (gname, ok) = QtGui.QInputDialog.getText(self, "Rename Group", "Enter a new name for the group:")
+            if ok:
+                gname = unicode(gname)
+                currentGroup = self.currentItem()
+                if not currentGroup:
+                    return
+                index = self.indexOfTopLevelItem(currentGroup)
+                if index != -1:
+                    expanded = currentGroup.isExpanded()
+                    text = str(currentGroup.text(0))
+                    if text.rfind(" (") != -1:
+                        text = text[0:text.rfind(" (")]
+                    self.mainwindow.config.delGroup(text)
+                    self.mainwindow.config.addGroup(gname, expanded)
+                    gTemp = self.mainwindow.config.getGroups()
+                    self.groups = [g[0] for g in gTemp]
+                    self.openGroups = [g[1] for g in gTemp]
+                    for i in range(currentGroup.childCount()):
+                        currentGroup.child(i).chum.group = gname
+                        self.mainwindow.chumdb.setGroup(currentGroup.child(i).chum.handle, gname)
+                    currentGroup.setText(0, gname)
+        if self.mainwindow.config.showOnlineNumbers():
+            self.showOnlineNumbers()
+        self.renamegroupdialog = None
     @QtCore.pyqtSlot()
     def removeGroup(self):
-        pass
-        #remove group
-
+        currentGroup = self.currentItem()
+        if not currentGroup:
+            return
+        text = str(currentGroup.text(0))
+        if text.rfind(" (") != -1:
+            text = text[0:text.rfind(" (")]
+        self.mainwindow.config.delGroup(text)
+        gTemp = self.mainwindow.config.getGroups()
+        self.groups = [g[0] for g in gTemp]
+        self.openGroups = [g[1] for g in gTemp]
+        for i in range(self.topLevelItemCount()):
+            if self.topLevelItem(i).text(0) == currentGroup.text(0):
+                break
+        while self.topLevelItem(i) and self.topLevelItem(i).child(0):
+            chumLabel = self.topLevelItem(i).child(0)
+            chumLabel.chum.group = "Chums"
+            self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, "Chums")
+            self.takeItem(chumLabel)
+            self.addItem(chumLabel)
+        self.takeTopLevelItem(i)
     @QtCore.pyqtSlot(QtGui.QAction)
     def moveToGroup(self, item):
-        pass
-        #move to group
+        if not item:
+            return
+        group = str(item.text())
+        chumLabel = self.currentItem()
+        if not chumLabel:
+            return
+        chumLabel.chum.group = group
+        self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
+        self.takeItem(chumLabel)
+        self.addItem(chumLabel)
 
     removeChumSignal = QtCore.pyqtSignal(QtCore.QString)
     blockChumSignal = QtCore.pyqtSignal(QtCore.QString)
@@ -643,11 +1220,19 @@ class trollSlum(chumArea):
         theme = self.mainwindow.theme
         self.setStyleSheet(theme["main/trollslum/chumroll/style"])
         self.chums = trolls
+        child_1 = QtGui.QTreeWidgetItem([""])
+        self.addTopLevelItem(child_1)
+        child_1.setExpanded(True)
         for c in self.chums:
             chandle = c.handle
             if not self.findItems(chandle, QtCore.Qt.MatchFlags(0)):
                 chumLabel = chumListing(c, self.mainwindow)
                 self.addItem(chumLabel)
+
+        self.setSortingEnabled(False)
+        self.header().hide()
+        self.setDropIndicatorShown(False)
+        self.setIndentation(0)
 
         self.optionsMenu = QtGui.QMenu(self)
         self.unblockchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
@@ -655,7 +1240,14 @@ class trollSlum(chumArea):
                      self, QtCore.SIGNAL('unblockChumSignal()'))
         self.optionsMenu.addAction(self.unblockchum)
 
-        self.sortItems()
+        #self.sortItems()
+    def contextMenuEvent(self, event):
+        #fuckin Qt
+        if event.reason() == QtGui.QContextMenuEvent.Mouse:
+            listing = self.itemAt(event.pos())
+            self.setCurrentItem(listing)
+            if self.currentItem().text(0) != "":
+                self.optionsMenu.popup(event.globalPos())
     def changeTheme(self, theme):
         self.setStyleSheet(theme["main/trollslum/chumroll/style"])
         self.removechum.setText(theme["main/menus/rclickchumlist/removechum"])
@@ -718,7 +1310,7 @@ class TrollSlumWindow(QtGui.QFrame):
     @QtCore.pyqtSlot()
     def removeCurrentTroll(self):
         currentListing = self.trollslum.currentItem()
-        if not currentListing:
+        if not currentListing or not hasattr(currentListing, 'chum'):
             return
         self.unblockChumSignal.emit(currentListing.chum.handle)
     @QtCore.pyqtSlot()
@@ -845,26 +1437,45 @@ class MovingWindow(QtGui.QFrame):
 
 
 class PesterWindow(MovingWindow):
-    def __init__(self, parent=None):
-        MovingWindow.__init__(self, parent, 
-                              (QtCore.Qt.CustomizeWindowHint | 
+    def __init__(self, options, parent=None):
+        MovingWindow.__init__(self, parent,
+                              (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
         self.convos = CaseInsensitiveDict()
         self.memos = CaseInsensitiveDict()
         self.tabconvo = None
         self.tabmemo = None
+        if "advanced" in options:
+              self.advanced = options["advanced"]
+        else: self.advanced = False
+        if "server" in options:
+            self.serverOverride = options["server"]
+        if "port" in options:
+            self.portOverride = options["port"]
 
         self.setAutoFillBackground(True)
         self.setObjectName("main")
-        self.config = userConfig()
+        self.config = userConfig(self)
         if self.config.defaultprofile():
             self.userprofile = userProfile(self.config.defaultprofile())
             self.theme = self.userprofile.getTheme()
         else:
             self.userprofile = userProfile(PesterProfile("pesterClient%d" % (random.randint(100,999)), QtGui.QColor("black"), Mood(0)))
             self.theme = self.userprofile.getTheme()
+        self.modes = ""
 
-        self.chatlog = PesterLog(self.profile().handle)
+        self.randhandler = RandomHandler(self)
+
+        try:
+            themeChecker(self.theme)
+        except ThemeException, (inst):
+            print "Caught: "+inst.parameter
+            themeWarning = QtGui.QMessageBox(self)
+            themeWarning.setText("Theme Error: %s" % (inst))
+            themeWarning.exec_()
+            self.theme = pesterTheme("pesterchum")
+
+        self.chatlog = PesterLog(self.profile().handle, self)
 
         self.move(100, 100)
 
@@ -872,6 +1483,13 @@ class PesterWindow(MovingWindow):
         self.logv = logv
         self.connect(logv, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('openLogv()'))
+        grps = QtGui.QAction(self.theme["main/menus/client/addgroup"], self)
+        self.grps = grps
+        self.connect(grps, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('addGroupWindow()'))
+        self.rand = QtGui.QAction(self.theme["main/menus/client/randen"], self)
+        self.connect(self.rand, QtCore.SIGNAL('triggered()'),
+                     self.randhandler, QtCore.SLOT('getEncounter()'))
         opts = QtGui.QAction(self.theme["main/menus/client/options"], self)
         self.opts = opts
         self.connect(opts, QtCore.SIGNAL('triggered()'),
@@ -900,22 +1518,22 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SIGNAL('reconnectIRC()'))
 
         self.menu = QtGui.QMenuBar(self)
+        self.menu.setNativeMenuBar(False)
 
         filemenu = self.menu.addMenu(self.theme["main/menus/client/_name"])
         self.filemenu = filemenu
         filemenu.addAction(opts)
         filemenu.addAction(memoaction)
         filemenu.addAction(logv)
+        if self.randhandler.running:
+            filemenu.addAction(self.rand)
         filemenu.addAction(userlistaction)
         filemenu.addAction(self.idleaction)
+        filemenu.addAction(grps)
         filemenu.addAction(self.importaction)
         filemenu.addAction(self.reconnectAction)
         filemenu.addAction(exitaction)
 
-        changetheme = QtGui.QAction(self.theme["main/menus/profile/theme"], self)
-        self.changetheme = changetheme
-        self.connect(changetheme, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('pickTheme()'))
         changequirks = QtGui.QAction(self.theme["main/menus/profile/quirks"], self)
         self.changequirks = changequirks
         self.connect(changequirks, QtCore.SIGNAL('triggered()'),
@@ -937,33 +1555,38 @@ class PesterWindow(MovingWindow):
 
         profilemenu = self.menu.addMenu(self.theme["main/menus/profile/_name"])
         self.profilemenu = profilemenu
-        profilemenu.addAction(changetheme)
         profilemenu.addAction(changequirks)
         profilemenu.addAction(loadslum)
         profilemenu.addAction(changecoloraction)
         profilemenu.addAction(switch)
 
+        self.helpAction = QtGui.QAction(self.theme["main/menus/help/help"], self)
+        self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('launchHelp()'))
+        self.botAction = QtGui.QAction(self.theme["main/menus/help/calsprite"], self)
+        self.connect(self.botAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('loadCalsprite()'))
+        self.nickServAction = QtGui.QAction(self.theme["main/menus/help/nickserv"], self)
+        self.connect(self.nickServAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('loadNickServ()'))
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
         self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('aboutPesterchum()'))
-        self.botAction = QtGui.QAction("CALSPRITE", self)
-        self.connect(self.botAction, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('loadCalsprite()'))
-        self.helpAction = QtGui.QAction("HELP", self)
-        self.connect(self.helpAction, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('launchHelp()'))
+        self.reportBugAction = QtGui.QAction("REPORT BUG", self)
+        self.connect(self.reportBugAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('reportBug()'))
         helpmenu = self.menu.addMenu(self.theme["main/menus/help/_name"])
         self.helpmenu = helpmenu
         self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.botAction)
+        self.helpmenu.addAction(self.nickServAction)
         self.helpmenu.addAction(self.aboutAction)
+        self.helpmenu.addAction(self.reportBugAction)
 
         self.closeButton = WMButton(PesterIcon(self.theme["main/close/image"]), self)
-        self.connect(self.closeButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('closeToTray()'))
+        self.setButtonAction(self.closeButton, self.config.closeAction(), -1)
         self.miniButton = WMButton(PesterIcon(self.theme["main/minimize/image"]), self)
-        self.connect(self.miniButton, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('showMinimized()'))
+        self.setButtonAction(self.miniButton, self.config.minimizeAction(), -1)
 
         self.namesdb = CaseInsensitiveDict()
         self.chumdb = PesterProfileDB()
@@ -971,7 +1594,7 @@ class PesterWindow(MovingWindow):
         chums = [PesterProfile(c, chumdb=self.chumdb) for c in set(self.config.chums())]
         self.chumList = chumArea(chums, self)
         self.connect(self.chumList,
-                     QtCore.SIGNAL('itemActivated(QListWidgetItem *)'),
+                     QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
                      self,
                      QtCore.SLOT('pesterSelectedChum()'))
         self.connect(self.chumList,
@@ -1010,7 +1633,7 @@ class PesterWindow(MovingWindow):
         self.waitingMessages = waitingMessageHolder(self)
 
         self.autoidle = False
-        self.idlethreshold = 600
+        self.idlethreshold = 60*self.config.idleTime()
         self.idletimer = QtCore.QTimer(self)
         self.idleposition = QtGui.QCursor.pos()
         self.idletime = 0
@@ -1021,9 +1644,52 @@ class PesterWindow(MovingWindow):
         if not self.config.defaultprofile():
             self.changeProfile()
 
+        QtCore.QTimer.singleShot(1000, self, QtCore.SLOT('mspacheck()'))
+
+        self.connect(self, QtCore.SIGNAL('pcUpdate(QString, QString)'),
+                     self, QtCore.SLOT('updateMsg(QString, QString)'))
+
+        self.pingtimer = QtCore.QTimer()
+        self.connect(self.pingtimer, QtCore.SIGNAL('timeout()'),
+                self, QtCore.SLOT('checkPing()'))
+        self.lastping = int(time())
+        self.pingtimer.start(1000*10)
+
+    @QtCore.pyqtSlot()
+    def mspacheck(self):
+        checker = MSPAChecker(self)
+
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def updateMsg(self, ver, url):
+        if not hasattr(self, 'updatemenu'):
+            self.updatemenu = None
+        if not self.updatemenu:
+            self.updatemenu = UpdatePesterchum(ver, url, self)
+            self.connect(self.updatemenu, QtCore.SIGNAL('accepted()'),
+                         self, QtCore.SLOT('updatePC()'))
+            self.connect(self.updatemenu, QtCore.SIGNAL('rejected()'),
+                         self, QtCore.SLOT('noUpdatePC()'))
+            self.updatemenu.show()
+            self.updatemenu.raise_()
+            self.updatemenu.activateWindow()
+
+    @QtCore.pyqtSlot()
+    def updatePC(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(self.updatemenu.url, QtCore.QUrl.TolerantMode))
+        self.updatemenu = None
+    @QtCore.pyqtSlot()
+    def noUpdatePC(self):
+        self.updatemenu = None
+
+    @QtCore.pyqtSlot()
+    def checkPing(self):
+        curtime = int(time())
+        if curtime - self.lastping > 300:
+            self.pingServer.emit()
+
     def profile(self):
         return self.userprofile.chat
-    def closeConversations(self):
+    def closeConversations(self, switch=False):
         if not hasattr(self, 'tabconvo'):
             self.tabconvo = None
         if self.tabconvo:
@@ -1032,10 +1698,17 @@ class PesterWindow(MovingWindow):
             for c in self.convos.values():
                 c.close()
         if self.tabmemo:
-            self.tabmemo.close()
+            if not switch:
+                self.tabmemo.close()
+            else:
+                for m in self.tabmemo.convos:
+                    self.tabmemo.convos[m].sendtime()
         else:
             for m in self.memos.values():
-                m.close()
+                if not switch:
+                    m.close()
+                else:
+                    m.sendtime()
     def paintEvent(self, event):
         palette = QtGui.QPalette()
         palette.setBrush(QtGui.QPalette.Window, QtGui.QBrush(self.backgroundImage))
@@ -1072,10 +1745,11 @@ class PesterWindow(MovingWindow):
         convo.addMessage(msg, False)
         # play sound here
         if self.config.soundOn():
-            if msg in ["PESTERCHUM:CEASE", "PESTERCHUM:BLOCK"]:
-                self.ceasesound.play()
-            else:
-                self.alarm.play()
+            if self.config.chatSound():
+                if msg in ["PESTERCHUM:CEASE", "PESTERCHUM:BLOCK"]:
+                    self.ceasesound.play()
+                else:
+                    self.alarm.play()
     def newMemoMsg(self, chan, handle, msg):
         if not self.memos.has_key(chan):
             # silently ignore in case we forgot to /part
@@ -1089,9 +1763,22 @@ class PesterWindow(MovingWindow):
             memo.times[handle] = time
         if msg[0:3] != "/me" and msg[0:13] != "PESTERCHUM:ME":
             msg = addTimeInitial(msg, memo.times[handle].getGrammar())
+        if handle == "ChanServ":
+            systemColor = QtGui.QColor(self.theme["memos/systemMsgColor"])
+            msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
         memo.addMessage(msg, handle)
         if self.config.soundOn():
-            self.alarm.play()
+            if self.config.nameSound():
+                initials = self.userprofile.chat.initials()
+                search = r"\b[%s%s][%s%s]\b" % (initials[0].lower(), initials[0], initials[1].lower(), initials[1])
+                if re.search(search, convertTags(msg, "text")):
+                    self.namesound.play()
+                    return
+            if self.config.memoSound():
+                if re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
+                    self.honksound.play()
+                else:
+                    self.memosound.play()
 
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
@@ -1133,7 +1820,19 @@ class PesterWindow(MovingWindow):
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
-        self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
+        if str(chum.handle).upper() == "NICKSERV" or \
+           str(chum.handle).upper() == "CHANSERV" or \
+           str(chum.handle).upper() == "MEMOSERV" or \
+           str(chum.handle).upper() == "OPERSERV" or \
+           str(chum.handle).upper() == "HELPSERV":
+            convoWindow.toggleQuirks(True)
+            convoWindow.quirksOff.setChecked(True)
+        else:
+            if str(chum.handle).upper() == "CALSPRITE" or \
+               str(chum.handle).upper() == "RANDOMENCOUNTER":
+                convoWindow.toggleQuirks(True)
+                convoWindow.quirksOff.setChecked(True)
+            self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
 
     def createTabWindow(self):
@@ -1145,7 +1844,7 @@ class PesterWindow(MovingWindow):
         self.connect(self.tabmemo, QtCore.SIGNAL('windowClosed()'),
                      self, QtCore.SLOT('memoTabsClosed()'))
 
-    def newMemo(self, channel, timestr, secret=False):
+    def newMemo(self, channel, timestr, secret=False, invite=False):
         if channel == "#pesterchum":
             return
         if self.memos.has_key(channel):
@@ -1160,12 +1859,16 @@ class PesterWindow(MovingWindow):
         else:
             memoWindow = PesterMemo(channel, timestr, self, None)
         # connect signals
+        self.connect(self, QtCore.SIGNAL('inviteOnlyChan(QString)'),
+                     memoWindow, QtCore.SLOT('closeInviteOnly(QString)'))
         self.connect(memoWindow, QtCore.SIGNAL('messageSent(QString, QString)'),
                      self, QtCore.SIGNAL('sendMessage(QString, QString)'))
         self.connect(memoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeMemo(QString)'))
         self.connect(self, QtCore.SIGNAL('namesUpdated()'),
                      memoWindow, QtCore.SLOT('namesUpdated()'))
+        self.connect(self, QtCore.SIGNAL('modesUpdated(QString, QString)'),
+                     memoWindow, QtCore.SLOT('modesUpdated(QString, QString)'))
         self.connect(self,
                      QtCore.SIGNAL('userPresentSignal(QString, QString, QString)'),
                      memoWindow, QtCore.SLOT('userPresentChange(QString, QString, QString)'))
@@ -1176,6 +1879,8 @@ class PesterWindow(MovingWindow):
         if self.secret:
             self.secret = True
             self.setChannelMode.emit(channel, "+s", "")
+        if invite:
+            self.setChannelMode.emit(channel, "+i", "")
         memoWindow.sendTimeInfo()
         memoWindow.show()
 
@@ -1209,14 +1914,18 @@ class PesterWindow(MovingWindow):
         newcloseicon = PesterIcon(theme["main/close/image"])
         self.closeButton.setIcon(newcloseicon)
         self.closeButton.setIconSize(newcloseicon.realsize())
+        self.closeButton.resize(newcloseicon.realsize())
         self.closeButton.move(*theme["main/close/loc"])
         newminiicon = PesterIcon(theme["main/minimize/image"])
         self.miniButton.setIcon(newminiicon)
         self.miniButton.setIconSize(newminiicon.realsize())
+        self.miniButton.resize(newminiicon.realsize())
         self.miniButton.move(*theme["main/minimize/loc"])
         # menus
         self.menu.move(*theme["main/menu/loc"])
         self.logv.setText(theme["main/menus/client/logviewer"])
+        self.grps.setText(theme["main/menus/client/addgroup"])
+        self.rand.setText(self.theme["main/menus/client/randen"])
         self.opts.setText(theme["main/menus/client/options"])
         self.exitaction.setText(theme["main/menus/client/exit"])
         self.userlistaction.setText(theme["main/menus/client/userlist"])
@@ -1225,7 +1934,6 @@ class PesterWindow(MovingWindow):
         self.idleaction.setText(theme["main/menus/client/idle"])
         self.reconnectAction.setText(theme["main/menus/client/reconnect"])
         self.filemenu.setTitle(theme["main/menus/client/_name"])
-        self.changetheme.setText(theme["main/menus/profile/theme"])
         self.changequirks.setText(theme["main/menus/profile/quirks"])
         self.loadslum.setText(theme["main/menus/profile/block"])
         self.changecoloraction.setText(theme["main/menus/profile/color"])
@@ -1302,16 +2010,41 @@ class PesterWindow(MovingWindow):
         # sounds
         if not pygame.mixer:
             self.alarm = NoneSound()
+            self.memosound = NoneSound()
             self.ceasesound = NoneSound()
         else:
             try:
                 self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
+                self.memosound = pygame.mixer.Sound(theme["main/sounds/memosound"])
+                self.namesound = pygame.mixer.Sound("themes/namealarm.wav")
                 self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
+                self.honksound = pygame.mixer.Sound("themes/honk.wav")
             except Exception, e:
                 self.alarm = NoneSound()
+                self.memosound = NoneSound()
+                self.namesound = NoneSound()
                 self.ceasesound = NoneSound()
+                self.honksound = NoneSound()
+
+    def setVolume(self, vol):
+        vol = vol/100.0
+        print vol
+        self.alarm.set_volume(vol)
+        self.memosound.set_volume(vol)
+        self.namesound.set_volume(vol)
+        self.ceasesound.set_volume(vol)
+        self.honksound.set_volume(vol)
 
     def changeTheme(self, theme):
+        # check theme
+        try:
+            themeChecker(theme)
+        except ThemeException, (inst):
+            themeWarning = QtGui.QMessageBox(self)
+            themeWarning.setText("Theme Error: %s" % (inst))
+            themeWarning.exec_()
+            theme = pesterTheme("pesterchum")
+            return
         self.theme = theme
         # do self
         self.initTheme(theme)
@@ -1371,7 +2104,12 @@ class PesterWindow(MovingWindow):
     def pesterSelectedChum(self):
         curChum = self.chumList.currentItem()
         if curChum:
-            self.newConversationWindow(curChum)
+            text = str(curChum.text(0))
+            if text.rfind(" (") != -1:
+                text = text[0:text.rfind(" (")]
+            if text not in self.chumList.groups and \
+               text != "Chums":
+                self.newConversationWindow(curChum)
     @QtCore.pyqtSlot(QtGui.QListWidgetItem)
     def newConversationWindow(self, chumlisting):
         # check chumdb
@@ -1424,6 +2162,29 @@ class PesterWindow(MovingWindow):
     def deliverMemo(self, chan, handle, msg):
         (c, h, m) = (unicode(chan), unicode(handle), unicode(msg))
         self.newMemoMsg(c,h,m)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def deliverNotice(self, handle, msg):
+        h = unicode(handle)
+        m = unicode(msg)
+        if h == self.randhandler.randNick:
+            self.randhandler.incoming(msg)
+        elif self.convos.has_key(h):
+            self.newMessage(h, m)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def deliverInvite(self, handle, channel):
+        msgbox = QtGui.QMessageBox()
+        msgbox.setText("You're invited!")
+        msgbox.setInformativeText("%s has invited you to the memo: %s\nWould you like to join them?" % (handle, channel))
+        msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+        ret = msgbox.exec_()
+        if ret == QtGui.QMessageBox.Ok:
+            self.newMemo(unicode(channel), "+0:00")
+    @QtCore.pyqtSlot(QtCore.QString)
+    def chanInviteOnly(self, channel):
+        self.inviteOnlyChan.emit(channel)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def cannotSendToChan(self, channel, msg):
+        self.deliverMemo(channel, "ChanServ", msg)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def timeCommand(self, chan, handle, command):
         (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
@@ -1503,7 +2264,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def removeChum(self, chumlisting):
         self.config.removeChum(chumlisting)
-    def reportChum(self, handle):        
+    def reportChum(self, handle):
         (reason, ok) = QtGui.QInputDialog.getText(self, "Report User", "Enter the reason you are reporting this user (optional):")
         if ok:
             self.sendMessage.emit("REPORT %s %s" % (handle, reason) , "calSprite")
@@ -1636,16 +2397,14 @@ class PesterWindow(MovingWindow):
         selectedmemo = self.memochooser.selectedmemo()
         time = unicode(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
+        invite = self.memochooser.inviteChannel.isChecked()
         if newmemo:
             channel = "#"+unicode(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
-            self.newMemo(channel, time, secret=secret)
+            self.newMemo(channel, time, secret=secret, invite=invite)
         elif selectedmemo:
             channel = "#"+unicode(selectedmemo.target)
             self.newMemo(channel, time)
-        self.memochooser = None
-    @QtCore.pyqtSlot()
-    def memoChooserClose(self):
         self.memochooser = None
     @QtCore.pyqtSlot()
     def memoChooserClose(self):
@@ -1700,11 +2459,21 @@ class PesterWindow(MovingWindow):
             self.quirkmenu.activateWindow()
     @QtCore.pyqtSlot()
     def updateQuirks(self):
+        for i in range(self.quirkmenu.quirkList.topLevelItemCount()):
+            curgroup = unicode(self.quirkmenu.quirkList.topLevelItem(i).text(0))
+            for j in range(self.quirkmenu.quirkList.topLevelItem(i).childCount()):
+                item = self.quirkmenu.quirkList.topLevelItem(i).child(j)
+                item.quirk.quirk["on"] = item.quirk.on = (item.checkState(0) == QtCore.Qt.Checked)
+                item.quirk.quirk["group"] = item.quirk.group = curgroup
         quirks = pesterQuirks(self.quirkmenu.quirks())
         self.userprofile.setQuirks(quirks)
+        if hasattr(self.quirkmenu, 'quirktester') and self.quirkmenu.quirktester:
+            self.quirkmenu.quirktester.close()
         self.quirkmenu = None
     @QtCore.pyqtSlot()
     def closeQuirks(self):
+        if hasattr(self.quirkmenu, 'quirktester') and self.quirkmenu.quirktester:
+            self.quirkmenu.quirktester.close()
         self.quirkmenu = None
     @QtCore.pyqtSlot()
     def openLogv(self):
@@ -1723,6 +2492,35 @@ class PesterWindow(MovingWindow):
     def closeLogUsers(self):
         self.logusermenu.close()
         self.logusermenu = None
+
+    @QtCore.pyqtSlot()
+    def addGroupWindow(self):
+        if not hasattr(self, 'addgroupdialog'):
+            self.addgroupdialog = None
+        if not self.addgroupdialog:
+            (gname, ok) = QtGui.QInputDialog.getText(self, "Add Group", "Enter a name for the new group:")
+            if ok:
+                gname = unicode(gname)
+                if re.search("[^A-Za-z0-9_\s]", gname) is not None:
+                    msgbox = QtGui.QMessageBox()
+                    msgbox.setInformativeText("THIS IS NOT A VALID GROUP NAME")
+                    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                    ret = msgbox.exec_()
+                    self.addgroupdialog = None
+                    return
+                self.config.addGroup(gname)
+                gTemp = self.config.getGroups()
+                self.chumList.groups = [g[0] for g in gTemp]
+                self.chumList.openGroups = [g[1] for g in gTemp]
+                self.chumList.moveGroupMenu()
+                self.chumList.showAllGroups()
+                if not self.config.showEmptyGroups():
+                    self.chumList.hideEmptyGroups()
+                if self.config.showOnlineNumbers():
+                    self.chumList.showOnlineNumbers()
+
+            self.addgroupdialog = None
+
     @QtCore.pyqtSlot()
     def openOpts(self):
         if not hasattr(self, 'optionmenu'):
@@ -1791,9 +2589,32 @@ class PesterWindow(MovingWindow):
         elif chumsetting and not curchum:
             self.chumList.hideOfflineChums()
         self.config.set("hideOfflineChums", chumsetting)
+        # sorting method
+        sortsetting = self.optionmenu.sortBox.currentIndex()
+        cursort = self.config.sortMethod()
+        self.config.set("sortMethod", sortsetting)
+        if sortsetting != cursort:
+            self.chumList.sort()
         # sound
         soundsetting = self.optionmenu.soundcheck.isChecked()
         self.config.set("soundon", soundsetting)
+        chatsoundsetting = self.optionmenu.chatsoundcheck.isChecked()
+        curchatsound = self.config.chatSound()
+        if chatsoundsetting != curchatsound:
+            self.config.set('chatSound', chatsoundsetting)
+        memosoundsetting = self.optionmenu.memosoundcheck.isChecked()
+        curmemosound = self.config.memoSound()
+        if memosoundsetting != curmemosound:
+            self.config.set('memoSound', memosoundsetting)
+        namesoundsetting = self.optionmenu.namesoundcheck.isChecked()
+        curnamesound = self.config.nameSound()
+        if namesoundsetting != curnamesound:
+            self.config.set('nameSound', namesoundsetting)
+        volumesetting = self.optionmenu.volume.value()
+        curvolume = self.config.volume()
+        if volumesetting != curvolume:
+            self.config.set('volume', volumesetting)
+            self.setVolume(volumesetting)
         # timestamps
         timestampsetting = self.optionmenu.timestampcheck.isChecked()
         self.config.set("showTimeStamps", timestampsetting)
@@ -1804,11 +2625,121 @@ class PesterWindow(MovingWindow):
           self.config.set("time12Format", False)
         secondssetting = self.optionmenu.secondscheck.isChecked()
         self.config.set("showSeconds", secondssetting)
+        # groups
+        #groupssetting = self.optionmenu.groupscheck.isChecked()
+        #self.config.set("useGroups", groupssetting)
+        emptygroupssetting = self.optionmenu.showemptycheck.isChecked()
+        curemptygroup = self.config.showEmptyGroups()
+        if curemptygroup and not emptygroupssetting:
+            self.chumList.hideEmptyGroups()
+        elif emptygroupssetting and not curemptygroup:
+            self.chumList.showAllGroups()
+        self.config.set("emptyGroups", emptygroupssetting)
+        # online numbers
+        onlinenumsetting = self.optionmenu.showonlinenumbers.isChecked()
+        curonlinenum = self.config.showOnlineNumbers()
+        if onlinenumsetting and not curonlinenum:
+            self.chumList.showOnlineNumbers()
+        elif curonlinenum and not onlinenumsetting:
+            self.chumList.hideOnlineNumbers()
+        self.config.set("onlineNumbers", onlinenumsetting)
+        # logging
+        logpesterssetting = 0
+        if self.optionmenu.logpesterscheck.isChecked():
+            logpesterssetting = logpesterssetting | self.config.LOG
+        if self.optionmenu.stamppestercheck.isChecked():
+            logpesterssetting = logpesterssetting | self.config.STAMP
+        curlogpesters = self.config.logPesters()
+        if logpesterssetting != curlogpesters:
+            self.config.set('logPesters', logpesterssetting)
+        logmemossetting = 0
+        if self.optionmenu.logmemoscheck.isChecked():
+            logmemossetting = logmemossetting | self.config.LOG
+        if self.optionmenu.stampmemocheck.isChecked():
+            logmemossetting = logmemossetting | self.config.STAMP
+        curlogmemos = self.config.logMemos()
+        if logmemossetting != curlogmemos:
+            self.config.set('logMemos', logmemossetting)
+        # memo and user links
+        linkssetting = self.optionmenu.userlinkscheck.isChecked()
+        curlinks = self.config.disableUserLinks()
+        if linkssetting != curlinks:
+            self.config.set('userLinks', not linkssetting)
+        # idle time
+        idlesetting = self.optionmenu.idleBox.value()
+        curidle = self.config.idleTime()
+        if idlesetting != curidle:
+            self.config.set('idleTime', idlesetting)
+            self.idlethreshold = 60*idlesetting
+        # theme
+        self.themeSelected()
+        # randoms
+        if self.randhandler.running:
+            self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
+        # button actions
+        minisetting = self.optionmenu.miniBox.currentIndex()
+        curmini = self.config.minimizeAction()
+        if minisetting != curmini:
+            self.config.set('miniAction', minisetting)
+            self.setButtonAction(self.miniButton, minisetting, curmini)
+        closesetting = self.optionmenu.closeBox.currentIndex()
+        curclose = self.config.closeAction()
+        if closesetting != curclose:
+            self.config.set('closeAction', closesetting)
+            self.setButtonAction(self.closeButton, closesetting, curclose)
+        # op and voice messages
+        opvmesssetting = self.optionmenu.memomessagecheck.isChecked()
+        curopvmess = self.config.opvoiceMessages()
+        if opvmesssetting != curopvmess:
+            self.config.set('opvMessages', opvmesssetting)
+        # animated smiles
+        animatesetting = self.optionmenu.animationscheck.isChecked()
+        curanimate = self.config.animations()
+        if animatesetting != curanimate:
+            self.config.set('animations', animatesetting)
+            self.animationSetting.emit(animatesetting)
+        # update checked
+        updatechecksetting = self.optionmenu.updateBox.currentIndex()
+        curupdatecheck = self.config.checkForUpdates()
+        if updatechecksetting != curupdatecheck:
+            self.config.set('checkUpdates', updatechecksetting)
+        # mspa update check
+        mspachecksetting = self.optionmenu.mspaCheck.isChecked()
+        curmspacheck = self.config.checkMSPA()
+        if mspachecksetting != curmspacheck:
+            self.config.set('mspa', mspachecksetting)
+        # advanced
+        ## user mode
+        if self.advanced:
+            newmodes = self.optionmenu.modechange.text()
+            if newmodes:
+                self.setChannelMode.emit(self.profile().handle, newmodes, "")
         self.optionmenu = None
+
+    def setButtonAction(self, button, setting, old):
+        if old == 0: # minimize to taskbar
+            self.disconnect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('showMinimized()'));
+        elif old == 1: # minimize to tray
+            self.disconnect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('closeToTray()'));
+        elif old == 2: # quit
+            self.disconnect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('close()'));
+
+        if setting == 0: # minimize to taskbar
+            self.connect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('showMinimized()'));
+        elif setting == 1: # minimize to tray
+            self.connect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('closeToTray()'));
+        elif setting == 2: # quit
+            self.connect(button, QtCore.SIGNAL('clicked()'),
+                          self, QtCore.SLOT('close()'));
 
     @QtCore.pyqtSlot()
     def themeSelected(self):
-        themename = unicode(self.choosetheme.themeBox.currentText())
+        themename = unicode(self.optionmenu.themeBox.currentText())
         if themename != self.theme.name:
             try:
                 self.changeTheme(pesterTheme(themename))
@@ -1845,13 +2776,11 @@ class PesterWindow(MovingWindow):
             self.changeTheme(self.userprofile.getTheme())
 
         self.chatlog.close()
-        self.chatlog = PesterLog(handle)
+        self.chatlog = PesterLog(handle, self)
 
         # is default?
         if self.chooseprofile.defaultcheck.isChecked():
             self.config.set("defaultprofile", self.userprofile.chat.handle)
-        # this may have to be fixed
-        self.closeConversations()
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.close()
         self.chooseprofile = None
@@ -1914,8 +2843,18 @@ class PesterWindow(MovingWindow):
     def loadCalsprite(self):
         self.newConversation("calSprite")
     @QtCore.pyqtSlot()
+    def loadNickServ(self):
+        self.newConversation("nickServ")
+    @QtCore.pyqtSlot()
     def launchHelp(self):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl("http://nova.xzibition.com/~illuminatedwax/help.html", QtCore.QUrl.TolerantMode))
+    @QtCore.pyqtSlot()
+    def reportBug(self):
+        if hasattr(self, 'bugreportwindow') and self.bugreportwindow:
+            return
+        self.bugreportwindow = BugReporter(self)
+        self.bugreportwindow.exec_()
+        self.bugreportwindow = None
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def nickCollision(self, handle, tmphandle):
@@ -1947,17 +2886,28 @@ class PesterWindow(MovingWindow):
             # show context menu i guess
             #self.showTrayContext.emit()
 
+    @QtCore.pyqtSlot()
+    def tooManyPeeps(self):
+        msg = QtGui.QMessageBox(self)
+        msg.setText("D: TOO MANY PEOPLE!!!")
+        msg.setInformativeText("The server has hit max capacity. Please try again later.")
+        msg.show()
+
+    pcUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     closeToTraySignal = QtCore.pyqtSignal()
     newConvoStarted = QtCore.pyqtSignal(QtCore.QString, bool, name="newConvoStarted")
     sendMessage = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    sendNotice = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     convoClosed = QtCore.pyqtSignal(QtCore.QString)
     profileChanged = QtCore.pyqtSignal()
+    animationSetting = QtCore.pyqtSignal(bool)
     moodRequest = QtCore.pyqtSignal(PesterProfile)
     moodsRequest = QtCore.pyqtSignal(PesterList)
     moodUpdated = QtCore.pyqtSignal()
     requestChannelList = QtCore.pyqtSignal()
     requestNames = QtCore.pyqtSignal(QtCore.QString)
     namesUpdated = QtCore.pyqtSignal()
+    modesUpdated = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     userPresentSignal = QtCore.pyqtSignal(QtCore.QString,QtCore.QString,QtCore.QString)
     mycolorUpdated = QtCore.pyqtSignal()
     trayIconSignal = QtCore.pyqtSignal(int)
@@ -1967,8 +2917,13 @@ class PesterWindow(MovingWindow):
     joinChannel = QtCore.pyqtSignal(QtCore.QString)
     leftChannel = QtCore.pyqtSignal(QtCore.QString)
     setChannelMode = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
+    channelNames = QtCore.pyqtSignal(QtCore.QString)
+    inviteChum = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    inviteOnlyChan = QtCore.pyqtSignal(QtCore.QString)
     closeSignal = QtCore.pyqtSignal()
     reconnectIRC = QtCore.pyqtSignal()
+    gainAttention = QtCore.pyqtSignal(QtGui.QWidget)
+    pingServer = QtCore.pyqtSignal()
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -1989,7 +2944,10 @@ class MainProgram(QtCore.QObject):
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
-        self.app.setApplicationName("Pesterchum 3.14");
+        self.app.setApplicationName("Pesterchum 3.14")
+
+        options = self.oppts(sys.argv[1:])
+
         if pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
             try:
@@ -1998,7 +2956,7 @@ class MainProgram(QtCore.QObject):
                 print "Warning: No sound! %s" % (e)
         else:
             print "Warning: No sound!"
-        self.widget = PesterWindow()
+        self.widget = PesterWindow(options)
         self.widget.show()
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
@@ -2048,8 +3006,56 @@ class MainProgram(QtCore.QObject):
         self.irc = PesterIRC(self.widget.config, self.widget)
         self.connectWidgets(self.irc, self.widget)
 
+        self.connect(self.widget, QtCore.SIGNAL('gainAttention(QWidget*)'),
+                     self, QtCore.SLOT('alertWindow(QWidget*)'))
+
+        # 0 Once a day
+        # 1 Once a week
+        # 2 Only on start
+        # 3 Never
+        check = self.widget.config.checkForUpdates()
+        if check == 2:
+            self.runUpdateSlot()
+        elif check == 0:
+            seconds = 60 * 60 * 24
+            if int(time()) - self.widget.config.lastUCheck() < seconds:
+                seconds -= int(time()) - self.widget.config.lastUCheck()
+            if seconds < 0: seconds = 0
+            QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
+        elif check == 1:
+            seconds = 60 * 60 * 24 * 7
+            if int(time()) - self.widget.config.lastUCheck() < seconds:
+                seconds -= int(time()) - self.widget.config.lastUCheck()
+            if seconds < 0: seconds = 0
+            QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
+
+    @QtCore.pyqtSlot()
+    def runUpdateSlot(self):
+        import Queue
+        import threading
+        q = Queue.Queue(1)
+        s = threading.Thread(target=version.updateCheck, args=(q,0)) # the 0 is to stop
+        w = threading.Thread(target=self.showUpdate, args=(q,0))     # stupid syntax errors
+        w.start()
+        s.start()
+        self.widget.config.set('lastUCheck', int(time()))
+        check = self.widget.config.checkForUpdates()
+        if check == 0:
+            seconds = 60 * 60 * 24
+        elif check == 1:
+            seconds = 60 * 60 * 24 * 7
+        else:
+            return
+        QtCore.QTimer.singleShot(1000*seconds, self, QtCore.SLOT('runUpdateSlot()'))
+
+    @QtCore.pyqtSlot(QtGui.QWidget)
+    def alertWindow(self, widget):
+        self.app.alert(widget)
+
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),
+                  ('sendNotice(QString, QString)',
+                   'sendNotice(QString, QString)'),
                   ('newConvoStarted(QString, bool)',
                    'startConvo(QString, bool)'),
                   ('convoClosed(QString)',
@@ -2072,6 +3078,12 @@ class MainProgram(QtCore.QObject):
                    'kickUser(QString, QString)'),
                   ('setChannelMode(QString, QString, QString)',
                    'setChannelMode(QString, QString, QString)'),
+                  ('channelNames(QString)',
+                   'channelNames(QString)'),
+                  ('inviteChum(QString, QString)',
+                   'inviteChum(QString, QString)'),
+                  ('pingServer()',
+                   'pingServer()'),
                   ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window
@@ -2084,6 +3096,10 @@ class MainProgram(QtCore.QObject):
                    'deliverMessage(QString, QString)'),
                   ('memoReceived(QString, QString, QString)',
                    'deliverMemo(QString, QString, QString)'),
+                  ('noticeReceived(QString, QString)',
+                   'deliverNotice(QString, QString)'),
+                  ('inviteReceived(QString, QString)',
+                   'deliverInvite(QString, QString)'),
                   ('nickCollision(QString, QString)',
                    'nickCollision(QString, QString)'),
                   ('myHandleChanged(QString)',
@@ -2095,7 +3111,15 @@ class MainProgram(QtCore.QObject):
                   ('channelListReceived(PyQt_PyObject)',
                    'updateChannelList(PyQt_PyObject)'),
                   ('timeCommand(QString, QString, QString)',
-                   'timeCommand(QString, QString, QString)')
+                   'timeCommand(QString, QString, QString)'),
+                  ('chanInviteOnly(QString)',
+                   'chanInviteOnly(QString)'),
+                  ('modesUpdated(QString, QString)',
+                   'modesUpdated(QString, QString)'),
+                  ('cannotSendToChan(QString, QString)',
+                   'cannotSendToChan(QString, QString)'),
+                  ('tooManyPeeps()',
+                   'tooManyPeeps()')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),
@@ -2119,6 +3143,12 @@ class MainProgram(QtCore.QObject):
                      self, QtCore.SLOT('connected()'))
         self.disconnect(self.irc, QtCore.SIGNAL('finished()'),
                         self, QtCore.SLOT('restartIRC()'))
+
+    def showUpdate(self, q,num):
+        new_url = q.get()
+        if new_url[0]:
+            self.widget.pcUpdate.emit(new_url[0], new_url[1])
+        q.task_done()
 
     def showLoading(self, widget, msg="CONN3CT1NG"):
         self.widget.show()
@@ -2145,6 +3175,12 @@ class MainProgram(QtCore.QObject):
             if status == QtGui.QDialog.Rejected:
                 sys.exit(0)
             else:
+                if self.widget.tabmemo:
+                    for c in self.widget.tabmemo.convos:
+                        self.irc.joinChannel(c)
+                else:
+                    for c in self.widget.memos.values():
+                        self.irc.joinChannel(c.channel)
                 return True
 
     @QtCore.pyqtSlot()
@@ -2186,6 +3222,21 @@ class MainProgram(QtCore.QObject):
         else:
             self.reconnectok = True
             self.showLoading(self.widget, "F41L3D: %s" % stop)
+
+    def oppts(self, argv):
+        options = {}
+        try:
+            opts, args = getopt.getopt(argv, "s:p:", ["server=", "port=", "advanced"])
+        except getopt.GetoptError:
+            return options
+        for opt, arg in opts:
+            if opt in ("-s", "--server"):
+                options["server"] = arg
+            elif opt in ("-p", "--port"):
+                options["port"] = arg
+            elif opt in ("--advanced"):
+                options["advanced"] = True
+        return options
 
     def run(self):
         self.irc.start()

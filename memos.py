@@ -8,7 +8,8 @@ from dataobjs import PesterProfile, Mood, PesterHistory
 from generic import PesterIcon, RightClickList, mysteryTime
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, addTimeInitial, timeProtocol, \
-    lexMessage, colorBegin, colorEnd, mecmd
+    lexMessage, colorBegin, colorEnd, mecmd, smiledict
+from logviewer import PesterLogViewer
 
 
 def delta2txt(d, format="pc"):
@@ -122,14 +123,20 @@ class TimeTracker(list):
     def setCurrent(self, timed):
         self.current = self.index(timed)
     def addRecord(self, timed):
-        (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        try:
+            (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        except TypeError:
+            (temporal, pcf, when) = pcfGrammar(mysteryTime())
         if pcf == "C" or pcf == "?":
             return
         if timed in self.timerecord[pcf]:
             return
         self.timerecord[pcf].append(timed)
     def getRecord(self, timed):
-        (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        try:
+            (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
+        except TypeError:
+            (temporal, pcf, when) = pcfGrammar(mysteryTime())
         if pcf == "C" or pcf == "?":
             return 0
         if len(self.timerecord[pcf]) > 1:
@@ -154,7 +161,7 @@ class TimeTracker(list):
         timed = self.getTime()
         return not self.open[timed]
     def getTime(self):
-        if self.current >= 0: 
+        if self.current >= 0:
             return self[self.current]
         else:
             return None
@@ -163,7 +170,10 @@ class TimeTracker(list):
         return self.getGrammarTime(timed)
     def getGrammarTime(self, timed):
         mytime = timedelta(0)
-        (temporal, pcf, when) = pcfGrammar(timed - mytime)
+        try:
+            (temporal, pcf, when) = pcfGrammar(timed - mytime)
+        except TypeError:
+            (temporal, pcf, when) = pcfGrammar(mysteryTime())
         if timed == mytime:
             return TimeGrammar(temporal, pcf, when, 0)
         return TimeGrammar(temporal, pcf, when, self.getRecord(timed))
@@ -234,12 +244,21 @@ _ctag_begin = re.compile(r'<c=(.*?)>')
 class MemoText(PesterText):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        if hasattr(self.parent(), 'mainwindow'):
+            self.mainwindow = self.parent().mainwindow
+        else:
+            self.mainwindow = self.parent()
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
         self.textSelected = False
         self.connect(self, QtCore.SIGNAL('copyAvailable(bool)'),
                      self, QtCore.SLOT('textReady(bool)'))
+        self.urls = {}
+        for k in smiledict:
+            self.addAnimation(QtCore.QUrl("smilies/%s" % (smiledict[k])), "smilies/%s" % (smiledict[k]))
+        self.connect(self.mainwindow, QtCore.SIGNAL('animationSetting(bool)'),
+                     self, QtCore.SLOT('animateChanged(bool)'))
 
     def initTheme(self, theme):
         if theme.has_key("memos/scrollbar"):
@@ -255,6 +274,11 @@ class MemoText(PesterText):
         parent = self.parent()
         window = parent.mainwindow
         me = window.profile()
+        if self.mainwindow.config.animations():
+            for m in self.urls:
+                if convertTags(lexmsg).find(self.urls[m].toString()) != -1:
+                    if m.state() == QtGui.QMovie.NotRunning:
+                        m.start()
         chumdb = window.chumdb
         if chum is not me: # SO MUCH WH1T3SP4C3 >:]
             if type(lexmsg[0]) is colorBegin: # get color tag
@@ -294,14 +318,19 @@ class MemoText(PesterText):
             parent.mainwindow.chatlog.log(parent.channel, joinmsg)
             time.openCurrentTime()
 
+        def makeSafe(msg):
+            if msg.count("<c") > msg.count("</c>"):
+                for i in range(msg.count("<c") - msg.count("</c>")):
+                    msg = msg + "</c>"
+            return "<span style=\"color:#000000\">" + msg + "</span>"
         if type(lexmsg[0]) is mecmd:
             memsg = chum.memsg(systemColor, lexmsg, time=time.getGrammar())
             window.chatlog.log(parent.channel, memsg)
             self.append(convertTags(memsg))
         else:
-            self.append(convertTags(lexmsg))
+            self.append(makeSafe(convertTags(lexmsg)))
             window.chatlog.log(parent.channel, lexmsg)
-        
+
     def changeTheme(self, theme):
         self.initTheme(theme)
     def submitLogTitle(self):
@@ -342,6 +371,9 @@ class PesterMemo(PesterConvo):
         self.opAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/opuser"], self)
         self.connect(self.opAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('opSelectedUser()'))
+        self.voiceAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/voiceuser"], self)
+        self.connect(self.voiceAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('voiceSelectedUser()'))
         self.userlist.optionsMenu.addAction(self.addchumAction)
         # ban & op list added if we are op
 
@@ -350,7 +382,32 @@ class PesterMemo(PesterConvo):
         self.quirksOff.setCheckable(True)
         self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('toggleQuirks(bool)'))
+        self.logchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/viewlog"], self)
+        self.connect(self.logchum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openChumLogs()'))
+        self.invitechum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/invitechum"], self)
+        self.connect(self.invitechum, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('inviteChums()'))
         self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.logchum)
+        self.optionsMenu.addAction(self.invitechum)
+
+        self.chanModeMenu = QtGui.QMenu("Memo Settings", self)
+        self.chanHide = QtGui.QAction("Hidden", self)
+        self.chanHide.setCheckable(True)
+        self.connect(self.chanHide, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('hideChan(bool)'))
+        self.chanInvite = QtGui.QAction("Invite-Only", self)
+        self.chanInvite.setCheckable(True)
+        self.connect(self.chanInvite, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('inviteChan(bool)'))
+        self.chanMod = QtGui.QAction("Mute", self)
+        self.chanMod.setCheckable(True)
+        self.connect(self.chanMod, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('modChan(bool)'))
+        self.chanModeMenu.addAction(self.chanHide)
+        self.chanModeMenu.addAction(self.chanInvite)
+        self.chanModeMenu.addAction(self.chanMod)
 
         self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
         self.timeinput = TimeInput(self.timeslider, self)
@@ -405,7 +462,7 @@ class PesterMemo(PesterConvo):
         margins = self.mainwindow.theme["memos/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
                                   margins["right"], margins["bottom"])
-        
+
         self.setLayout(self.layout)
 
         if parent:
@@ -459,23 +516,35 @@ class PesterMemo(PesterConvo):
         self.setWindowIcon(PesterIcon(theme["memos/memoicon"]))
 
         t = Template(theme["memos/label/text"])
-        self.channelLabel.setText(t.safe_substitute(channel=self.channel))
+        if self.mainwindow.advanced and hasattr(self, 'modes'):
+            self.channelLabel.setText(t.safe_substitute(channel=self.channel) + "(%s)" % (self.modes))
+        else:
+            self.channelLabel.setText(t.safe_substitute(channel=self.channel))
         self.channelLabel.setStyleSheet(theme["memos/label/style"])
         self.channelLabel.setAlignment(self.aligndict["h"][theme["memos/label/align/h"]] | self.aligndict["v"][theme["memos/label/align/v"]])
         self.channelLabel.setMaximumHeight(theme["memos/label/maxheight"])
         self.channelLabel.setMinimumHeight(theme["memos/label/minheight"])
 
         self.userlist.optionsMenu.setStyleSheet(theme["main/defaultwindow/style"])
-        self.userlist.setStyleSheet(theme["memos/userlist/style"])
+        scrolls = "width: 12px; height: 12px; border: 0; padding: 0;"
+        if theme.has_key("main/chums/scrollbar"):
+            self.userlist.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["memos/userlist/style"], theme["main/chums/scrollbar/style"] + scrolls, theme["main/chums/scrollbar/handle"], theme["main/chums/scrollbar/downarrow"], theme["main/chums/scrollbar/uparrow"], theme["main/chums/scrollbar/uarrowstyle"], theme["main/chums/scrollbar/darrowstyle"] ))
+        elif theme.has_key("convo/scrollbar"):
+            self.userlist.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["memos/userlist/style"], theme["convo/scrollbar/style"] + scrolls, theme["convo/scrollbar/handle"], "display:none;", "display:none;", "display:none;", "display:none;" ))
+        else:
+            self.userlist.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s }" % (theme["memos/userlist/style"], scrolls, "background-color: black;"))
         self.userlist.setFixedWidth(theme["memos/userlist/width"])
         self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
         self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])
+        self.voiceAction.setText(theme["main/menus/rclickchumlist/voiceuser"])
+        self.quirksOff.setText(theme["main/menus/rclickchumlist/quirksoff"])
+        self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
 
         self.timeinput.setFixedWidth(theme["memos/time/text/width"])
         self.timeinput.setStyleSheet(theme["memos/time/text/style"])
         slidercss = "QSlider { %s } QSlider::groove { %s } QSlider::handle { %s }" % (theme["memos/time/slider/style"], theme["memos/time/slider/groove"], theme["memos/time/slider/handle"])
-        self.timeslider.setStyleSheet(slidercss) 
+        self.timeslider.setStyleSheet(slidercss)
 
         larrow = PesterIcon(self.mainwindow.theme["memos/time/arrows/left"])
         self.timeswitchl.setIcon(larrow)
@@ -501,18 +570,26 @@ class PesterMemo(PesterConvo):
             if item.op:
                 icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
                 item.setIcon(icon)
+            elif item.voice:
+                icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                item.setIcon(icon)
 
     def addUser(self, handle):
         chumdb = self.mainwindow.chumdb
         defaultcolor = QtGui.QColor("black")
         op = False
+        voice = False
         if handle[0] == '@':
             op = True
             handle = handle[1:]
             if handle == self.mainwindow.profile().handle:
                 self.userlist.optionsMenu.addAction(self.opAction)
                 self.userlist.optionsMenu.addAction(self.banuserAction)
+                self.optionsMenu.addMenu(self.chanModeMenu)
                 self.op = True
+        elif handle[0] == '+':
+            voice = True
+            handle = handle[1:]
         item = QtGui.QListWidgetItem(handle)
         if handle == self.mainwindow.profile().handle:
             color = self.mainwindow.profile().color
@@ -520,10 +597,52 @@ class PesterMemo(PesterConvo):
             color = chumdb.getColor(handle, defaultcolor)
         item.setTextColor(color)
         item.op = op
+        item.voice = voice
         if op:
             icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
             item.setIcon(icon)
+        elif voice:
+            icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+            item.setIcon(icon)
         self.userlist.addItem(item)
+        self.sortUsers()
+
+    def sortUsers(self):
+        users = []
+        listing = self.userlist.item(0)
+        while listing is not None:
+            users.append(self.userlist.takeItem(0))
+            listing = self.userlist.item(0)
+        users.sort(key=lambda x: ((0 if x.op else 1), (0 if x.voice else 1), x.text()))
+        for u in users:
+            self.userlist.addItem(u)
+
+    def updateChanModes(self, modes):
+        if not hasattr(self, 'modes'): self.modes = ""
+        chanmodes = list(str(self.modes))
+        if chanmodes and chanmodes[0] == "+": chanmodes = chanmodes[1:]
+        modes = str(modes)
+        if modes[0] == "+":
+            for m in modes[1:]:
+                if m not in chanmodes:
+                    chanmodes.extend(m)
+            if modes.find("s") >= 0: self.chanHide.setChecked(True)
+            if modes.find("i") >= 0: self.chanInvite.setChecked(True)
+            if modes.find("m") >= 0: self.chanMod.setChecked(True)
+        elif modes[0] == "-":
+            for i in modes[1:]:
+                try:
+                    chanmodes.remove(i)
+                except ValueError:
+                    pass
+            if modes.find("s") >= 0: self.chanHide.setChecked(False)
+            if modes.find("i") >= 0: self.chanInvite.setChecked(False)
+            if modes.find("m") >= 0: self.chanMod.setChecked(False)
+        chanmodes.sort()
+        self.modes = "+" + "".join(chanmodes)
+        if self.mainwindow.advanced:
+            t = Template(self.mainwindow.theme["memos/label/text"])
+            self.channelLabel.setText(t.safe_substitute(channel=self.channel) + "(%s)" % (self.modes))
 
     def timeUpdate(self, handle, cmd):
         window = self.mainwindow
@@ -603,6 +722,29 @@ class PesterMemo(PesterConvo):
         self.userlist.clear()
         for n in self.mainwindow.namesdb[self.channel]:
             self.addUser(n)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def modesUpdated(self, channel, modes):
+        c = unicode(channel)
+        if c == self.channel:
+            self.updateChanModes(modes)
+
+    @QtCore.pyqtSlot(QtCore.QString)
+    def closeInviteOnly(self, channel):
+        c = unicode(channel)
+        if c == self.channel:
+            self.disconnect(self.mainwindow, QtCore.SIGNAL('inviteOnlyChan(QString)'),
+                     self, QtCore.SLOT('closeInviteOnly(QString)'))
+            if self.parent():
+                print self.channel
+                i = self.parent().tabIndices[self.channel]
+                self.parent().tabClose(i)
+            else:
+                self.close()
+            msgbox = QtGui.QMessageBox()
+            msgbox.setText("%s: Invites only!" % (c))
+            msgbox.setInformativeText("This channel is invite-only. You must get an invitation from someone on the inside before entering.")
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            ret = msgbox.exec_()
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
@@ -613,12 +755,17 @@ class PesterMemo(PesterConvo):
             l = update.split(":")
             update = l[0]
             op = l[1]
+            reason = l[2]
         if update == "nick":
             l = h.split(":")
             oldnick = l[0]
             newnick = l[1]
             h = oldnick
-        if (update in ["join","left", "kick", "+o"]) \
+        if update[0:1] in ["+", "-"]:
+            l = update.split(":")
+            update = l[0]
+            op = l[1]
+        if (update in ["join","left", "kick", "+o", "-o", "+v", "-v"]) \
                 and channel != self.channel:
             return
         chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
@@ -639,6 +786,18 @@ class PesterMemo(PesterConvo):
                     self.times[h].removeTime(t.getTime())
                 if update == "nick":
                     self.addUser(newnick)
+                    newchums = self.userlist.findItems(newnick, QtCore.Qt.MatchFlags(0))
+                    for nc in newchums:
+                        for c in chums:
+                            if c.op:
+                                nc.op = True
+                                icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+                                nc.setIcon(icon)
+                            if c.voice:
+                                nc.voice = True
+                                icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                                nc.setIcon(icon)
+                    self.sortUsers()
         elif update == "kick":
             if len(chums) == 0:
                 return
@@ -661,7 +820,7 @@ class PesterMemo(PesterConvo):
                     opgrammar = self.time.getGrammar()
                 else:
                     opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
-                msg = chum.memobanmsg(opchum, opgrammar, systemColor, grammar)
+                msg = chum.memobanmsg(opchum, opgrammar, systemColor, grammar, reason)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
                 ttracker.removeTime(ttracker.getTime())
@@ -698,13 +857,131 @@ class PesterMemo(PesterConvo):
             serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
             self.messageSent.emit(serverText, self.title())
         elif update == "+o":
-            chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
+            if self.mainwindow.config.opvoiceMessages():
+                chum = PesterProfile(h)
+                if h == self.mainwindow.profile().handle:
+                    chum = self.mainwindow.profile()
+                    ttracker = self.time
+                    curtime = self.time.getTime()
+                elif self.times.has_key(h):
+                    ttracker = self.times[h]
+                else:
+                    ttracker = TimeTracker(timedelta(0))
+                opchum = PesterProfile(op)
+                if self.times.has_key(op):
+                    opgrammar = self.times[op].getGrammar()
+                elif op == self.mainwindow.profile().handle:
+                    opgrammar = self.time.getGrammar()
+                else:
+                    opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
+                msg = chum.memoopmsg(opchum, opgrammar, systemColor)
+                self.textArea.append(convertTags(msg))
+                self.mainwindow.chatlog.log(self.channel, msg)
             for c in chums:
+                c.op = True
                 icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
                 c.setIcon(icon)
                 if unicode(c.text()) == self.mainwindow.profile().handle:
                     self.userlist.optionsMenu.addAction(self.opAction)
+                    self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
+                    self.optionsMenu.addMenu(self.chanModeMenu)
+            self.sortUsers()
+        elif update == "-o":
+            self.mainwindow.channelNames.emit(self.channel)
+            if self.mainwindow.config.opvoiceMessages():
+                chum = PesterProfile(h)
+                if h == self.mainwindow.profile().handle:
+                    chum = self.mainwindow.profile()
+                    ttracker = self.time
+                    curtime = self.time.getTime()
+                elif self.times.has_key(h):
+                    ttracker = self.times[h]
+                else:
+                    ttracker = TimeTracker(timedelta(0))
+                opchum = PesterProfile(op)
+                if self.times.has_key(op):
+                    opgrammar = self.times[op].getGrammar()
+                elif op == self.mainwindow.profile().handle:
+                    opgrammar = self.time.getGrammar()
+                else:
+                    opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
+                msg = chum.memodeopmsg(opchum, opgrammar, systemColor)
+                self.textArea.append(convertTags(msg))
+                self.mainwindow.chatlog.log(self.channel, msg)
+            for c in chums:
+                c.op = False
+                if c.voice:
+                    icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                    c.setIcon(icon)
+                else:
+                    icon = QtGui.QIcon()
+                    c.setIcon(icon)
+                if unicode(c.text()) == self.mainwindow.profile().handle:
+                    self.userlist.optionsMenu.removeAction(self.opAction)
+                    self.userlist.optionsMenu.removeAction(self.voiceAction)
+                    self.userlist.optionsMenu.removeAction(self.banuserAction)
+                    self.optionsMenu.removeAction(self.chanModeMenu.menuAction())
+            self.sortUsers()
+        elif update == "+v":
+            if self.mainwindow.config.opvoiceMessages():
+                chum = PesterProfile(h)
+                if h == self.mainwindow.profile().handle:
+                    chum = self.mainwindow.profile()
+                    ttracker = self.time
+                    curtime = self.time.getTime()
+                elif self.times.has_key(h):
+                    ttracker = self.times[h]
+                else:
+                    ttracker = TimeTracker(timedelta(0))
+                opchum = PesterProfile(op)
+                if self.times.has_key(op):
+                    opgrammar = self.times[op].getGrammar()
+                elif op == self.mainwindow.profile().handle:
+                    opgrammar = self.time.getGrammar()
+                else:
+                    opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
+                msg = chum.memovoicemsg(opchum, opgrammar, systemColor)
+                self.textArea.append(convertTags(msg))
+                self.mainwindow.chatlog.log(self.channel, msg)
+            for c in chums:
+                c.voice = True
+                if not c.op:
+                    icon = PesterIcon(self.mainwindow.theme["memos/voice/icon"])
+                    c.setIcon(icon)
+            self.sortUsers()
+        elif update == "-v":
+            if self.mainwindow.config.opvoiceMessages():
+                chum = PesterProfile(h)
+                if h == self.mainwindow.profile().handle:
+                    chum = self.mainwindow.profile()
+                    ttracker = self.time
+                    curtime = self.time.getTime()
+                elif self.times.has_key(h):
+                    ttracker = self.times[h]
+                else:
+                    ttracker = TimeTracker(timedelta(0))
+                opchum = PesterProfile(op)
+                if self.times.has_key(op):
+                    opgrammar = self.times[op].getGrammar()
+                elif op == self.mainwindow.profile().handle:
+                    opgrammar = self.time.getGrammar()
+                else:
+                    opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
+                msg = chum.memodevoicemsg(opchum, opgrammar, systemColor)
+                self.textArea.append(convertTags(msg))
+                self.mainwindow.chatlog.log(self.channel, msg)
+            for c in chums:
+                c.voice = False
+                if c.op:
+                    icon = PesterIcon(self.mainwindow.theme["memos/op/icon"])
+                    c.setIcon(icon)
+                else:
+                    icon = QtGui.QIcon()
+                    c.setIcon(icon)
+            self.sortUsers()
+        elif c == self.channel and h == "" and update[0] in ["+","-"]:
+            self.updateChanModes(update)
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):
@@ -717,18 +994,60 @@ class PesterMemo(PesterConvo):
         if not self.userlist.currentItem():
             return
         currentHandle = unicode(self.userlist.currentItem().text())
-        self.mainwindow.kickUser.emit(currentHandle, self.channel)
+        (reason, ok) = QtGui.QInputDialog.getText(self, "Ban User", "Enter the reason you are banning this user (optional):")
+        if ok:
+            self.mainwindow.kickUser.emit("%s:%s" % (currentHandle, reason), self.channel)
     @QtCore.pyqtSlot()
     def opSelectedUser(self):
         if not self.userlist.currentItem():
             return
         currentHandle = unicode(self.userlist.currentItem().text())
         self.mainwindow.setChannelMode.emit(self.channel, "+o", currentHandle)
+    @QtCore.pyqtSlot()
+    def voiceSelectedUser(self):
+        if not self.userlist.currentItem():
+            return
+        currentHandle = unicode(self.userlist.currentItem().text())
+        self.mainwindow.setChannelMode.emit(self.channel, "+v", currentHandle)
     def resetSlider(self, time, send=True):
         self.timeinput.setText(delta2txt(time))
         self.timeinput.setSlider()
         if send:
             self.sendtime()
+
+    @QtCore.pyqtSlot()
+    def openChumLogs(self):
+        currentChum = self.channel
+        self.mainwindow.chumList.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
+        self.connect(self.mainwindow.chumList.pesterlogviewer, QtCore.SIGNAL('rejected()'),
+                     self.mainwindow.chumList, QtCore.SLOT('closeActiveLog()'))
+        self.mainwindow.chumList.pesterlogviewer.show()
+        self.mainwindow.chumList.pesterlogviewer.raise_()
+        self.mainwindow.chumList.pesterlogviewer.activateWindow()
+
+    @QtCore.pyqtSlot()
+    def inviteChums(self):
+        if not hasattr(self, 'invitechums'):
+            self.invitechums = None
+        if not self.invitechums:
+            (chum, ok) = QtGui.QInputDialog.getText(self, "Invite to Chat", "Enter the chumhandle of the user you'd like to invite:")
+            if ok:
+                chum = unicode(chum)
+                self.mainwindow.inviteChum.emit(chum, self.channel)
+            self.invitechums = None
+
+    @QtCore.pyqtSlot(bool)
+    def hideChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"s", "")
+    @QtCore.pyqtSlot(bool)
+    def inviteChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"i", "")
+    @QtCore.pyqtSlot(bool)
+    def modChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"m", "")
 
     @QtCore.pyqtSlot()
     def sendtime(self):

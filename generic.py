@@ -26,7 +26,7 @@ class PesterList(list):
 
 class PesterIcon(QtGui.QIcon):
     def __init__(self, *x, **y):
-        QtGui.QIcon.__init__(self, *x, **y)
+        QtGui.QIcon.__init__(self, x[0])
         if type(x[0]) in [str, unicode]:
             self.icon_pixmap = QtGui.QPixmap(x[0])
         else:
@@ -43,6 +43,15 @@ class PesterIcon(QtGui.QIcon):
 class RightClickList(QtGui.QListWidget):
     def contextMenuEvent(self, event):
         #fuckin Qt
+        if event.reason() == QtGui.QContextMenuEvent.Mouse:
+            listing = self.itemAt(event.pos())
+            self.setCurrentItem(listing)
+            self.getOptionsMenu().popup(event.globalPos())
+    def getOptionsMenu(self):
+        return self.optionsMenu
+
+class RightClickTree(QtGui.QTreeWidget):
+    def contextMenuEvent(self, event):
         if event.reason() == QtGui.QContextMenuEvent.Mouse:
             listing = self.itemAt(event.pos())
             self.setCurrentItem(listing)

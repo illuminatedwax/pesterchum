@@ -5,9 +5,11 @@ from oyoyo import helpers
 import logging
 import random
 import socket
+from time import time
 
 from dataobjs import Mood, PesterProfile
 from generic import PesterList
+from version import _pcVersion
 
 logging.basicConfig(level=logging.INFO)
 
@@ -53,7 +55,7 @@ class PesterIRC(QtCore.QThread):
                 if not res:
                     logging.debug("false Yield: %s, returning" % res)
                     return
-                
+
     def setConnected(self):
         self.registeredIRC = True
         self.connected.emit()
@@ -87,18 +89,49 @@ class PesterIRC(QtCore.QThread):
         self.cli.command_handler.getMood(*chums)
     @QtCore.pyqtSlot(PesterList)
     def getMoods(self, chums):
-        self.cli.command_handler.getMood(*chums)        
+        self.cli.command_handler.getMood(*chums)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def sendNotice(self, text, handle):
+        h = unicode(handle)
+        t = unicode(text)
+        try:
+            helpers.notice(self.cli, h, t)
+        except socket.error:
+            self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def sendMessage(self, text, handle):
         h = unicode(handle)
         textl = [unicode(text)]
         def splittext(l):
             if len(l[0]) > 450:
-                space = l[0].rfind(" ", 0,450)
+                space = l[0].rfind(" ", 0,430)
                 if space == -1:
                     space = 450
+                elif l[0][space+1:space+5] == "</c>":
+                    space = space+4
                 a = l[0][0:space+1]
                 b = l[0][space+1:]
+                if a.count("<c") > a.count("</c>"):
+                    # oh god ctags will break!! D=
+                    hanging = []
+                    usedends = []
+                    c = a.rfind("<c")
+                    while c != -1:
+                        d = a.find("</c>", c)
+                        while d in usedends:
+                            d = a.find("</c>", d+1)
+                        if d != -1: usedends.append(d)
+                        else:
+                            f = a.find(">", c)+1
+                            hanging.append(a[c:f])
+                        c = a.rfind("<c",0,c)
+
+                    # end all ctags in first part
+                    for i in range(a.count("<c")-a.count("</c>")):
+                        a = a + "</c>"
+                    #start them up again in the second part
+                    for c in hanging:
+                        b = c + b
                 if len(b) > 0:
                     return [a] + splittext([b])
                 else:
@@ -135,6 +168,7 @@ class PesterIRC(QtCore.QThread):
             helpers.nick(self.cli, handle)
         except socket.error:
             self.setConnectionBroken()
+        self.mainwindow.closeConversations(True)
         self.updateMood()
     @QtCore.pyqtSlot()
     def updateMood(self):
@@ -183,6 +217,7 @@ class PesterIRC(QtCore.QThread):
         c = unicode(channel)
         try:
             helpers.join(self.cli, c)
+            helpers.mode(self.cli, c, "", None)
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString)
@@ -194,10 +229,15 @@ class PesterIRC(QtCore.QThread):
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def kickUser(self, handle, channel):
+        l = handle.split(":")
         c = unicode(channel)
-        h = unicode(handle)
+        h = unicode(l[0])
+        if len(l) > 1:
+            reason = unicode(l[1])
+        else:
+            reason = ""
         try:
-            helpers.kick(self.cli, h, c)
+            helpers.kick(self.cli, h, c, reason)
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
@@ -211,21 +251,60 @@ class PesterIRC(QtCore.QThread):
             helpers.mode(self.cli, c, m, cmd)
         except socket.error:
             self.setConnectionBroken()
+    @QtCore.pyqtSlot(QtCore.QString)
+    def channelNames(self, channel):
+        c = unicode(channel)
+        try:
+            helpers.names(self.cli, c)
+        except socket.error:
+            self.setConnectionBroken()
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def inviteChum(self, handle, channel):
+        h = unicode(handle)
+        c = unicode(channel)
+        try:
+            helpers.invite(self.cli, h, c)
+        except socket.error:
+            self.setConnectionBroken()
+
+    @QtCore.pyqtSlot()
+    def pingServer(self):
+        try:
+            self.cli.send("PING %s" % int(time()))
+        except socket.error:
+            self.setConnectionBroken()
 
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     memoReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
+    noticeReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    inviteReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     timeCommand = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
     namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
     channelListReceived = QtCore.pyqtSignal(PesterList)
     nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     myHandleChanged = QtCore.pyqtSignal(QtCore.QString)
+    chanInviteOnly = QtCore.pyqtSignal(QtCore.QString)
+    modesUpdated = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     connected = QtCore.pyqtSignal()
     userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
                                    QtCore.QString)
+    cannotSendToChan = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    tooManyPeeps = QtCore.pyqtSignal()
 
 class PesterHandler(DefaultCommandHandler):
+    def notice(self, nick, chan, msg):
+        try:
+            msg = msg.decode('utf-8')
+        except UnicodeDecodeError:
+            msg = msg.decode('iso-8859-1', 'ignore')
+        handle = nick[0:nick.find("!")]
+        logging.info("---> recv \"NOTICE %s :%s\"" % (handle, msg))
+        if handle == "ChanServ" and chan == self.parent.mainwindow.profile().handle and msg[0:2] == "[#":
+                self.parent.memoReceived.emit(msg[1:msg.index("]")], handle, msg)
+        else:
+            self.parent.noticeReceived.emit(handle, msg)
     def privmsg(self, nick, chan, msg):
         try:
             msg = msg.decode('utf-8')
@@ -236,6 +315,10 @@ class PesterHandler(DefaultCommandHandler):
             return
         # silently ignore CTCP
         if msg[0] == '\x01':
+            handle = nick[0:nick.find("!")]
+            logging.info("---> recv \"CTCP %s :%s\"" % (handle, msg[1:-1]))
+            if msg[1:-1] == "VERSION":
+                helpers.notice(self.parent.cli, handle, "\x01VERSION Pesterchum %s\x01" % (_pcVersion))
             return
         handle = nick[0:nick.find("!")]
         logging.info("---> recv \"PRIVMSG %s :%s\"" % (handle, msg))
@@ -251,7 +334,7 @@ class PesterHandler(DefaultCommandHandler):
                 mychumhandle = self.mainwindow.profile().handle
                 mymood = self.mainwindow.profile().mood.value()
                 if msg.find(mychumhandle, 8) != -1:
-                    helpers.msg(self.client, "#pesterchum", 
+                    helpers.msg(self.client, "#pesterchum",
                                 "MOOD >%d" % (mymood))
         elif chan[0] == '#':
             if msg[0:16] == "PESTERCHUM:TIME>":
@@ -282,9 +365,6 @@ class PesterHandler(DefaultCommandHandler):
         mymood = self.mainwindow.profile().mood.value()
         helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
-        chums = self.mainwindow.chumList.chums
-        self.getMood(*chums)
-
     def nicknameinuse(self, server, cmd, nick, msg):
         newnick = "pesterClient%d" % (random.randint(100,999))
         helpers.nick(self.client, newnick)
@@ -293,8 +373,9 @@ class PesterHandler(DefaultCommandHandler):
         handle = nick[0:nick.find("!")]
         self.parent.userPresentUpdate.emit(handle, "", "quit")
         self.parent.moodUpdated.emit(handle, Mood("offline"))
-    def kick(self, opnick, channel, handle, op):
-        self.parent.userPresentUpdate.emit(handle, channel, "kick:%s" % (op))
+    def kick(self, opnick, channel, handle, reason):
+        op = opnick[0:opnick.find("!")]
+        self.parent.userPresentUpdate.emit(handle, channel, "kick:%s:%s" % (op, reason))
         # ok i shouldnt be overloading that but am lazy
     def part(self, nick, channel, reason="nanchos"):
         handle = nick[0:nick.find("!")]
@@ -306,8 +387,35 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.userPresentUpdate.emit(handle, channel, "join")
         if channel == "#pesterchum":
             self.parent.moodUpdated.emit(handle, Mood("chummy"))
-    def mode(self, op, channel, mode, handle=""):
-        self.parent.userPresentUpdate.emit(handle, channel, mode)
+    def mode(self, op, channel, mode, *handles):
+        if len(handles) <= 0: handles = [""]
+        opnick = op[0:op.find("!")]
+        if op == channel or channel == self.parent.mainwindow.profile().handle:
+            modes = list(self.parent.mainwindow.modes)
+            if modes and modes[0] == "+": modes = modes[1:]
+            if mode[0] == "+":
+                for m in mode[1:]:
+                    if m not in modes:
+                        modes.extend(m)
+            elif mode[0] == "-":
+                for i in mode[1:]:
+                    try:
+                        modes.remove(i)
+                    except ValueError:
+                        pass
+            modes.sort()
+            self.parent.mainwindow.modes = "+" + "".join(modes)
+        modes = []
+        cur = "+"
+        for l in mode:
+            if l in ["+","-"]: cur = l
+            else:
+                modes.append("%s%s" % (cur, l))
+        for (i,m) in enumerate(modes):
+            try:
+                self.parent.userPresentUpdate.emit(handles[i], channel, m+":%s" % (op))
+            except IndexError:
+                self.parent.userPresentUpdate.emit("", channel, m+":%s" % (op))
     def nick(self, oldnick, newnick):
         oldhandle = oldnick[0:oldnick.find("!")]
         if oldhandle == self.mainwindow.profile().handle:
@@ -322,7 +430,7 @@ class PesterHandler(DefaultCommandHandler):
         logging.info("---> recv \"NAMES %s: %d names\"" % (channel, len(namelist)))
         if not hasattr(self, 'channelnames'):
             self.channelnames = {}
-        if not self.channelnames.has_key(channel):
+        if channel not in self.channelnames:
             self.channelnames[channel] = []
         self.channelnames[channel].extend(namelist)
     def endofnames(self, server, nick, channel, msg):
@@ -330,6 +438,15 @@ class PesterHandler(DefaultCommandHandler):
         pl = PesterList(namelist)
         del self.channelnames[channel]
         self.parent.namesReceived.emit(channel, pl)
+        if channel == "#pesterchum" and not hasattr(self, "joined"):
+            self.joined = True
+            chums = self.mainwindow.chumList.chums
+            lesschums = []
+            for c in chums:
+                chandle = c.handle
+                if chandle in namelist:
+                    lesschums.append(c)
+            self.getMood(*lesschums)
 
     def liststart(self, server, handle, *info):
         self.channel_list = []
@@ -347,7 +464,25 @@ class PesterHandler(DefaultCommandHandler):
         logging.info("---> recv \"CHANNELS END\"")
         self.parent.channelListReceived.emit(pl)
         self.channel_list = []
-    
+
+    def umodeis(self, server, handle, modes):
+        self.parent.mainwindow.modes = modes
+    def invite(self, sender, you, channel):
+        handle = sender.split('!')[0]
+        self.parent.inviteReceived.emit(handle, channel)
+    def inviteonlychan(self, server, handle, channel, msg):
+        self.parent.chanInviteOnly.emit(channel)
+    def channelmodeis(self, server, handle, channel, modes):
+        self.parent.modesUpdated.emit(channel, modes)
+    def cannotsendtochan(self, server, handle, channel, msg):
+        self.parent.cannotSendToChan.emit(channel, msg)
+    def toomanypeeps(self, *stuff):
+        self.parent.tooManyPeeps.emit()
+
+    def ping(self, prefix, server):
+        self.parent.mainwindow.lastping = int(time())
+        self.client.send('PONG', server)
+
     def getMood(self, *chums):
         chumglub = "GETMOOD "
         for c in chums:
@@ -364,4 +499,4 @@ class PesterHandler(DefaultCommandHandler):
                 helpers.msg(self.client, "#pesterchum", chumglub)
             except socket.error:
                 self.parent.setConnectionBroken()
-            
+

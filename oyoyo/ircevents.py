@@ -23,6 +23,7 @@ numeric_events = {
     "003": "created",
     "004": "myinfo",
     "005": "featurelist",  # XXX
+    "010": "toomanypeeps",
     "200": "tracelink",
     "201": "traceconnecting",
     "202": "tracehandshake",
