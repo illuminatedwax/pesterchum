@@ -1,4 +1,4 @@
-Pesterchum 3.14
+Pesterchum 3.41
 ===============
 
 Visit http://nova.xzibition.com/~illuminatedwax/help.html for tutorial.
@@ -7,7 +7,7 @@ Visit https://github.com/illuminatedwax/pesterchum for git access and source cod
 
 CHANGELOG
 ---------
-### 3.14.2
+### 3.41
 * Individually turn quirks on and off - Kiooeht [evacipatedBox]
 * More canon trollian theme timeline indicators - [binaryCabalist]
 * By mood chum sorting - Kiooeht [evacipatedBox]

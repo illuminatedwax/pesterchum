@@ -2,7 +2,11 @@ import urllib
 import re
 import time
 
-USER_TYPE = "dev"
+USER_TYPE = "edge"
+                  # user - for normal people
+                  # beta - for the original beta testers
+                  # dev  - used to be for git users, now it's anyone with the 3.41 beta
+                  # edge - new git stuff. bleeding edge, do not try at home (kiooeht version)
 
 _pcMajor = "3.41"
 _pcMinor = "0"
