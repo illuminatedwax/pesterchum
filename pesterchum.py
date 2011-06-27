@@ -1110,6 +1110,7 @@ class chumArea(RightClickTree):
     def removeChum(self, handle = None):
         if handle:
             clistings = self.getChums(handle)
+            if len(clistings) <= 0: return
             for c in clistings:
                 self.setCurrentItem(c)
         if not self.currentItem():
