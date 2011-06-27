@@ -616,7 +616,12 @@ class PesterConvo(QtGui.QFrame):
             # ok if it has a tabconvo parent, send that the notify.
             if self.parent():
                 self.parent().notifyNewMessage(self.title())
-                self.mainwindow.gainAttention.emit(self.parent())
+                if type(self.parent()).__name__ == "PesterTabWindow":
+                  if self.mainwindow.config.blink() & self.mainwindow.config.PBLINK:
+                    self.mainwindow.gainAttention.emit(self.parent())
+                elif type(self.parent()).__name__ == "MemoTabWindow":
+                  if self.mainwindow.config.blink() & self.mainwindow.config.MBLINK:
+                    self.mainwindow.gainAttention.emit(self.parent())
             # if not change the window title and update system tray
             else:
                 self.newmessage = True
@@ -624,7 +629,12 @@ class PesterConvo(QtGui.QFrame):
                 def func():
                     self.showChat()
                 self.mainwindow.waitingMessages.addMessage(self.title(), func)
-                self.mainwindow.gainAttention.emit(self)
+                if type(self).__name__ == "PesterConvo":
+                  if self.mainwindow.config.blink() & self.mainwindow.config.PBLINK:
+                    self.mainwindow.gainAttention.emit(self)
+                elif type(self).__name__ == "PesterMemo":
+                  if self.mainwindow.config.blink() & self.mainwindow.config.MBLINK:
+                    self.mainwindow.gainAttention.emit(self)
 
     def clearNewMessage(self):
         if self.parent():

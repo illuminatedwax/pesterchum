@@ -316,6 +316,9 @@ class userConfig(object):
         # Use for bit flag log setting
         self.LOG = 1
         self.STAMP = 2
+        # Use for bit flag blink
+        self.PBLINK = 1
+        self.MBLINK = 2
         if sys.platform != "darwin":
             self.filename = "pesterchum.js"
         else:
@@ -423,6 +426,8 @@ class userConfig(object):
         return self.config.get('lastUCheck', 0)
     def checkMSPA(self):
         return self.config.get('mspa', False)
+    def blink(self):
+        return self.config.get('blink', self.PBLINK | self.MBLINK)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -2709,6 +2714,15 @@ class PesterWindow(MovingWindow):
         curmspacheck = self.config.checkMSPA()
         if mspachecksetting != curmspacheck:
             self.config.set('mspa', mspachecksetting)
+        # Taskbar blink
+        blinksetting = 0
+        if self.optionmenu.pesterBlink.isChecked():
+          blinksetting = blinksetting | self.config.PBLINK
+        if self.optionmenu.memoBlink.isChecked():
+          blinksetting = blinksetting | self.config.MBLINK
+        curblink = self.config.blink()
+        if blinksetting != curblink:
+          self.config.set('blink', blinksetting)
         # advanced
         ## user mode
         if self.advanced:

@@ -1071,6 +1071,13 @@ class PesterOptions(QtGui.QDialog):
         layout_close.addWidget(QtGui.QLabel("Close"))
         layout_close.addWidget(self.closeBox)
 
+        self.pesterBlink = QtGui.QCheckBox("Blink Taskbar on Pesters", self)
+        if self.config.blink() & self.config.PBLINK:
+            self.pesterBlink.setChecked(True)
+        self.memoBlink = QtGui.QCheckBox("Blink Taskbar on Memos", self)
+        if self.config.blink() & self.config.MBLINK:
+            self.memoBlink.setChecked(True)
+
         if parent.advanced:
             self.modechange = QtGui.QLineEdit(self)
             layout_change = QtGui.QHBoxLayout()
@@ -1125,6 +1132,8 @@ class PesterOptions(QtGui.QDialog):
         layout_interface.addWidget(self.tabcheck)
         layout_interface.addLayout(layout_mini)
         layout_interface.addLayout(layout_close)
+        layout_interface.addWidget(self.pesterBlink)
+        layout_interface.addWidget(self.memoBlink)
         self.pages.addWidget(widget)
 
         # Sound
