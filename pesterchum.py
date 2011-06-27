@@ -1059,6 +1059,7 @@ class chumArea(RightClickTree):
         self.removechum.setText(theme["main/menus/rclickchumlist/removechum"])
         self.blockchum.setText(theme["main/menus/rclickchumlist/blockchum"])
         self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
+        self.reportchum.setText(theme["main/menus/rclickchumlist/report"])
         self.removegroup.setText(theme["main/menus/rclickchumlist/removegroup"])
         self.renamegroup.setText(theme["main/menus/rclickchumlist/renamegroup"])
         self.moveMenu.setTitle(theme["main/menus/rclickchumlist/movechum"])
