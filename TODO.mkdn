@@ -17,6 +17,7 @@ Features
 * Remote quirk disable
 * Tab completion of two letter names
 * Compress exit dumps into one line (eg. FTC, CTC, PTC1-12 ceased responding to memo)
+* Customizable name alerts
 
 Bugs
 ----
@@ -29,6 +30,7 @@ Bugs
 * right clicking an offline chum and choosing remove asks you why you're reporting someone, and if you hit cancel the menus stop working
 * Closing a timeclone doesn't actually cease for everyone else
 * Alt characters break quirks
+* +q(~) and +a(&) do weird things
 
 Windows Bugs
 ------------

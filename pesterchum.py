@@ -2318,6 +2318,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(bool)
     def toggleIdle(self, idle):
         if idle:
+            self.setAway.emit(True)
             sysColor = QtGui.QColor(self.theme["convo/systemMsgColor"])
             verb = self.theme["convo/text/idle"]
             for (h, convo) in self.convos.iteritems():
@@ -2327,6 +2328,7 @@ class PesterWindow(MovingWindow):
                     self.chatlog.log(h, msg)
                     self.sendMessage.emit("PESTERCHUM:IDLE", h)
         else:
+            self.setAway.emit(False)
             self.idletime = 0
     @QtCore.pyqtSlot()
     def checkIdle(self):
@@ -2943,6 +2945,7 @@ class PesterWindow(MovingWindow):
     reconnectIRC = QtCore.pyqtSignal()
     gainAttention = QtCore.pyqtSignal(QtGui.QWidget)
     pingServer = QtCore.pyqtSignal()
+    setAway = QtCore.pyqtSignal(bool)
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -3101,8 +3104,8 @@ class MainProgram(QtCore.QObject):
                    'channelNames(QString)'),
                   ('inviteChum(QString, QString)',
                    'inviteChum(QString, QString)'),
-                  ('pingServer()',
-                   'pingServer()'),
+                  ('pingServer()', 'pingServer()'),
+                  ('setAway(bool)', 'setAway(bool)'),
                   ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window

@@ -277,6 +277,16 @@ class PesterIRC(QtCore.QThread):
         except socket.error:
             self.setConnectionBroken()
 
+    @QtCore.pyqtSlot(bool)
+    def setAway(self, away=True):
+        try:
+            if away:
+                self.cli.send("AWAY Idle")
+            else:
+                self.cli.send("AWAY")
+        except socket.error:
+            self.setConnectionBroken()
+
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
