@@ -564,13 +564,13 @@ class PesterConvo(QtGui.QFrame):
 
     def updateMood(self, mood, unblocked=False, old=None):
         syscolor = QtGui.QColor(self.mainwindow.theme["convo/systemMsgColor"])
-        if mood.name() == "offline" and self.chumopen == True and not unblocked:
-            self.mainwindow.ceasesound.play()
-            msg = self.chum.pestermsg(self.mainwindow.profile(), syscolor, self.mainwindow.theme["convo/text/ceasepester"])
-            self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.title(), msg)
-            self.chumopen = False
-        elif old and old.name() != mood.name():
+        #~ if mood.name() == "offline" and self.chumopen == True and not unblocked:
+            #~ self.mainwindow.ceasesound.play()
+            #~ msg = self.chum.pestermsg(self.mainwindow.profile(), syscolor, self.mainwindow.theme["convo/text/ceasepester"])
+            #~ self.textArea.append(convertTags(msg))
+            #~ self.mainwindow.chatlog.log(self.title(), msg)
+            #~ self.chumopen = False
+        if old and old.name() != mood.name():
             msg = self.chum.moodmsg(mood, syscolor, self.mainwindow.theme)
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.title(), msg)
