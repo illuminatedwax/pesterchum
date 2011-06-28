@@ -757,7 +757,7 @@ class PesterMemo(PesterConvo):
             l = update.split(":")
             update = l[0]
             op = l[1]
-            reason = l[2]
+            reason = ":".join(l[2:])
         if update == "nick":
             l = h.split(":")
             oldnick = l[0]

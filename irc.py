@@ -234,6 +234,9 @@ class PesterIRC(QtCore.QThread):
         h = unicode(l[0])
         if len(l) > 1:
             reason = unicode(l[1])
+            if len(l) > 2:
+              for x in l[2:]:
+                reason += unicode(":") + unicode(x)
         else:
             reason = ""
         try:
