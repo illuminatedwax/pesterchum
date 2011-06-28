@@ -1875,8 +1875,8 @@ class PesterWindow(MovingWindow):
                      self, QtCore.SIGNAL('sendMessage(QString, QString)'))
         self.connect(memoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeMemo(QString)'))
-        self.connect(self, QtCore.SIGNAL('namesUpdated()'),
-                     memoWindow, QtCore.SLOT('namesUpdated()'))
+        self.connect(self, QtCore.SIGNAL('namesUpdated(QString)'),
+                     memoWindow, QtCore.SLOT('namesUpdated(QString)'))
         self.connect(self, QtCore.SIGNAL('modesUpdated(QString, QString)'),
                      memoWindow, QtCore.SLOT('modesUpdated(QString, QString)'))
         self.connect(self,
@@ -2207,7 +2207,7 @@ class PesterWindow(MovingWindow):
         # update name DB
         self.namesdb[c] = names
         # warn interested party of names
-        self.namesUpdated.emit()
+        self.namesUpdated.emit(c)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentUpdate(self, handle, channel, update):
         c = unicode(channel)
@@ -2925,7 +2925,7 @@ class PesterWindow(MovingWindow):
     moodUpdated = QtCore.pyqtSignal()
     requestChannelList = QtCore.pyqtSignal()
     requestNames = QtCore.pyqtSignal(QtCore.QString)
-    namesUpdated = QtCore.pyqtSignal()
+    namesUpdated = QtCore.pyqtSignal(QtCore.QString)
     modesUpdated = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     userPresentSignal = QtCore.pyqtSignal(QtCore.QString,QtCore.QString,QtCore.QString)
     mycolorUpdated = QtCore.pyqtSignal()

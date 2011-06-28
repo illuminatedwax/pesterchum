@@ -714,8 +714,10 @@ class PesterMemo(PesterConvo):
         self.messageSent.emit(serverText, self.title())
 
         self.textInput.setText("")
-    @QtCore.pyqtSlot()
-    def namesUpdated(self):
+    @QtCore.pyqtSlot(QtCore.QString)
+    def namesUpdated(self, channel):
+        c = unicode(channel)
+        if c != self.channel: return
         # get namesdb
         namesdb = self.mainwindow.namesdb
         # reload names
