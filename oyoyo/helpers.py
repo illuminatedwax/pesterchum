@@ -47,6 +47,12 @@ def mode(cli, channel, mode, options=None):
         cmd += " %s" % (options)
     cli.send(cmd)
 
+def ctcp(cli, handle, cmd, msg=""):
+    cli.send("PRIVMSG", handle, "\x01%s %s\x01" % (cmd, msg))
+
+def ctcp_reply(cli, handle, cmd, msg=""):
+    notice(cli, str(handle), "\x01%s %s\x01" % (cmd.upper(), msg))
+
 def msgrandom(cli, choices, dest, user=None):
     o = "%s: " % user if user else ""
     o += random.choice(choices)

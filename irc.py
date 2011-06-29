@@ -287,6 +287,15 @@ class PesterIRC(QtCore.QThread):
         except socket.error:
             self.setConnectionBroken()
 
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def killSomeQuirks(self, channel, handle):
+        c = unicode(channel)
+        h = unicode(handle)
+        try:
+            helpers.ctcp(self.cli, c, "NOQUIRKS", h)
+        except socket.error:
+            self.setConnectionBroken()
+
     moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
     colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
     messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
@@ -305,6 +314,7 @@ class PesterIRC(QtCore.QThread):
                                    QtCore.QString)
     cannotSendToChan = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     tooManyPeeps = QtCore.pyqtSignal()
+    quirkDisable = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
 
 class PesterHandler(DefaultCommandHandler):
     def notice(self, nick, chan, msg):
@@ -331,7 +341,10 @@ class PesterHandler(DefaultCommandHandler):
             handle = nick[0:nick.find("!")]
             logging.info("---> recv \"CTCP %s :%s\"" % (handle, msg[1:-1]))
             if msg[1:-1] == "VERSION":
-                helpers.notice(self.parent.cli, handle, "\x01VERSION Pesterchum %s\x01" % (_pcVersion))
+                helpers.ctcp_reply(self.parent.cli, handle, "VERSION", "Pesterchum %s\x01" % (_pcVersion))
+            elif msg[1:-1].startswith("NOQUIRKS") and chan[0] == "#":
+                op = nick[0:nick.find("!")]
+                self.parent.quirkDisable.emit(chan, msg[10:-1], op)
             return
         handle = nick[0:nick.find("!")]
         logging.info("---> recv \"PRIVMSG %s :%s\"" % (handle, msg))

@@ -2201,6 +2201,14 @@ class PesterWindow(MovingWindow):
         if self.memos[c]:
             self.memos[c].timeUpdate(h, cmd)
 
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
+    def quirkDisable(self, channel, msg, op):
+        (c, msg, op) = (unicode(channel), unicode(msg), unicode(op))
+        if not self.memos.has_key(c):
+            return
+        memo = self.memos[c]
+        memo.quirkDisable(op, msg)
+
     @QtCore.pyqtSlot(QtCore.QString, PesterList)
     def updateNames(self, channel, names):
         c = unicode(channel)
@@ -2946,6 +2954,7 @@ class PesterWindow(MovingWindow):
     gainAttention = QtCore.pyqtSignal(QtGui.QWidget)
     pingServer = QtCore.pyqtSignal()
     setAway = QtCore.pyqtSignal(bool)
+    killSomeQuirks = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
 
 class PesterTray(QtGui.QSystemTrayIcon):
     def __init__(self, icon, mainwindow, parent):
@@ -3106,6 +3115,8 @@ class MainProgram(QtCore.QObject):
                    'inviteChum(QString, QString)'),
                   ('pingServer()', 'pingServer()'),
                   ('setAway(bool)', 'setAway(bool)'),
+                  ('killSomeQuirks(QString, QString)',
+                   'killSomeQuirks(QString, QString)'),
                   ('reconnectIRC()', 'reconnectIRC()')
                   ]
 # IRC --> Main window
@@ -3141,7 +3152,9 @@ class MainProgram(QtCore.QObject):
                   ('cannotSendToChan(QString, QString)',
                    'cannotSendToChan(QString, QString)'),
                   ('tooManyPeeps()',
-                   'tooManyPeeps()')
+                   'tooManyPeeps()'),
+                   ('quirkDisable(QString, QString, QString)',
+                    'quirkDisable(QString, QString, QString)')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),

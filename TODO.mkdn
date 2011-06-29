@@ -14,7 +14,6 @@ Features
 * Colour saving boxes things?
 * Chum notes?
 * whowas for last seen online?
-* Remote quirk disable
 * Tab completion of two letter names
 * Compress exit dumps into one line (eg. FTC, CTC, PTC1-12 ceased responding to memo)
 * Customizable name alerts

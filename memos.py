@@ -374,6 +374,9 @@ class PesterMemo(PesterConvo):
         self.voiceAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/voiceuser"], self)
         self.connect(self.voiceAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('voiceSelectedUser()'))
+        self.quirkDisableAction = QtGui.QAction("Kill Quirk", self)
+        self.connect(self.quirkDisableAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('killQuirkUser()'))
         self.userlist.optionsMenu.addAction(self.addchumAction)
         # ban & op list added if we are op
 
@@ -538,6 +541,7 @@ class PesterMemo(PesterConvo):
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
         self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])
         self.voiceAction.setText(theme["main/menus/rclickchumlist/voiceuser"])
+        self.quirkDisableAction.setText("Kill Quirk")
         self.quirksOff.setText(theme["main/menus/rclickchumlist/quirksoff"])
         self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
 
@@ -748,6 +752,14 @@ class PesterMemo(PesterConvo):
             msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
             ret = msgbox.exec_()
 
+    def quirkDisable(self, op, msg):
+        chums = self.userlist.findItems(op, QtCore.Qt.MatchFlags(0))
+        for c in chums:
+            if c.op:
+                if msg == self.mainwindow.profile().handle:
+                    self.quirksOff.setChecked(True)
+                    self.applyquirks = False
+
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
         h = unicode(handle)
@@ -887,6 +899,7 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.addAction(self.opAction)
                     self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
+                    self.userlist.optionsMenu.addAction(self.quirkDisableAction)
                     self.optionsMenu.addMenu(self.chanModeMenu)
             self.sortUsers()
         elif update == "-o":
@@ -923,6 +936,7 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.removeAction(self.opAction)
                     self.userlist.optionsMenu.removeAction(self.voiceAction)
                     self.userlist.optionsMenu.removeAction(self.banuserAction)
+                    self.userlist.optionsMenu.removeAction(self.quirkDisableAction)
                     self.optionsMenu.removeAction(self.chanModeMenu.menuAction())
             self.sortUsers()
         elif update == "+v":
@@ -1011,6 +1025,13 @@ class PesterMemo(PesterConvo):
             return
         currentHandle = unicode(self.userlist.currentItem().text())
         self.mainwindow.setChannelMode.emit(self.channel, "+v", currentHandle)
+    @QtCore.pyqtSlot()
+    def killQuirkUser(self):
+        if not self.userlist.currentItem():
+            return
+        currentHandle = unicode(self.userlist.currentItem().text())
+        self.mainwindow.killSomeQuirks.emit(self.channel, currentHandle)
+
     def resetSlider(self, time, send=True):
         self.timeinput.setText(delta2txt(time))
         self.timeinput.setSlider()
