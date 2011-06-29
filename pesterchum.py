@@ -56,7 +56,7 @@ from bugreport import BugReporter
 from randomer import RandomHandler
 from updatecheck import MSPAChecker
 
-_datadir = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)+"Pesterchum/"
+_datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
 canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
                  "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
                  "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
@@ -69,6 +69,7 @@ if sys.platform == "darwin":
         os.mkdir(_datadir+"profiles")
     if not os.path.exists(_datadir+"pesterchum.js"):
         f = open(_datadir+"pesterchum.js", 'w')
+        f.write("{}")
         f.close()
 else:
     if not os.path.exists("logs"):
