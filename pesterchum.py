@@ -2984,6 +2984,7 @@ class MainProgram(QtCore.QObject):
             # we could set the frequency higher but i love how cheesy it sounds
             try:
                 pygame.mixer.init()
+                pygame.mixer.init()
             except pygame.error, e:
                 print "Warning: No sound! %s" % (e)
         else:
