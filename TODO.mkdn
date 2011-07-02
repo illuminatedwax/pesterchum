@@ -15,8 +15,8 @@ Features
 * Chum notes?
 * whowas for last seen online?
 * Tab completion of two letter names
-* Compress exit dumps into one line (eg. FTC, CTC, PTC1-12 ceased responding to memo)
 * Customizable name alerts
+* When 'banned' make impossible to connect using timestamp banned under
 
 Bugs
 ----
