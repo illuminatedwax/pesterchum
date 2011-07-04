@@ -64,12 +64,15 @@ class MSPAChecker(QtGui.QWidget):
             self.status['last_seen'] = {'pubdate':mktime(entries[-1].updated_parsed),'link':entries[-1].link}
             must_save = True
         if self.status['last_seen']['pubdate'] > self.status['last_visited']['pubdate']:
-            self.mspa = MSPAUpdateWindow(self.parent())
-            self.connect(self.mspa, QtCore.SIGNAL('accepted()'),
-                         self, QtCore.SLOT('visit_site()'))
-            self.connect(self.mspa, QtCore.SIGNAL('rejected()'),
-                         self, QtCore.SLOT('nothing()'))
-            self.mspa.show()
+            if not hasattr(self, "mspa"):
+                self.mspa = None
+            if not mspa:
+                self.mspa = MSPAUpdateWindow(self.parent())
+                self.connect(self.mspa, QtCore.SIGNAL('accepted()'),
+                             self, QtCore.SLOT('visit_site()'))
+                self.connect(self.mspa, QtCore.SIGNAL('rejected()'),
+                             self, QtCore.SLOT('nothing()'))
+                self.mspa.show()
         else:
             #print "No new updates :("
             pass
