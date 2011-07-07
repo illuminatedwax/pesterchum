@@ -73,6 +73,7 @@ CHANGELOG
     * Only open links on left click - Kiooeht [evacipatedBox]
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
+    * Alt characters don't break on random replace - Kiooeht [evacipatedBox]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]

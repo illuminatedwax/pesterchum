@@ -28,7 +28,6 @@ Bugs
 * If pesterchum is open but offline due to a network failure and you open the memos screen, it connects you but doesn't fetch the memo list when it finishes connecting
 * right clicking an offline chum and choosing remove asks you why you're reporting someone, and if you hit cancel the menus stop working
 * Closing a timeclone doesn't actually cease for everyone else
-* Alt characters break quirks
 * +q(~) and +a(&) do weird things
 * Kill Zalgo
 

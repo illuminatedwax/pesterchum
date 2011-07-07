@@ -108,7 +108,7 @@ class pesterQuirk(object):
         elif self.type == "regexp":
             return "REGEXP: %s REPLACED WITH %s" % (self.quirk["from"], self.quirk["to"])
         elif self.type == "random":
-            return "REGEXP: %s RANDOMLY REPLACED WITH %s" % (self.quirk["from"], [str(r) for r in self.quirk["randomlist"]])
+            return "REGEXP: %s RANDOMLY REPLACED WITH %s" % (self.quirk["from"], [r for r in self.quirk["randomlist"]])
         elif self.type == "spelling":
             return "MISPELLER: %d%%" % (self.quirk["percentage"])
 
