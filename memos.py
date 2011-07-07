@@ -791,15 +791,11 @@ class PesterMemo(PesterConvo):
                 self.userlist.takeItem(self.userlist.row(c))
                 if not self.times.has_key(h):
                     self.times[h] = TimeTracker(timedelta(0))
-                allinitials = {}
+                allinitials = []
                 while self.times[h].getTime() is not None:
                     t = self.times[h]
                     grammar = t.getGrammar()
-                    #allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
-                    if "%s%s" % (grammar.pcf, chum.initials()) in allinitials:
-                        allinitials["%s%s" % (grammar.pcf, chum.initials())].append(int(grammar.number) if grammar.number.isdigit() else 0)
-                    else:
-                        allinitials["%s%s" % (grammar.pcf, chum.initials())] = [int(grammar.number) if grammar.number.isdigit() else 0]
+                    allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
                     self.times[h].removeTime(t.getTime())
                 msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
                 self.textArea.append(convertTags(msg))

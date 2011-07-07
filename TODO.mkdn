@@ -30,6 +30,7 @@ Bugs
 * Closing a timeclone doesn't actually cease for everyone else
 * Alt characters break quirks
 * +q(~) and +a(&) do weird things
+* Kill Zalgo
 
 Windows Bugs
 ------------

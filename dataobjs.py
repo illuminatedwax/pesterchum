@@ -232,23 +232,10 @@ class PesterProfile(object):
     def idlemsg(self, syscolor, verb):
         return "<c=%s>-- %s <c=%s>[%s]</c> %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb)
     def memoclosemsg(self, syscolor, initials, verb):
-        msg = "<c=%s><c=%s>" % (syscolor.name(), self.colorhtml())
-        for i,n in initials.iteritems():
-            msg += i
-            if len(n) == 1:
-                if n[0] != 0:
-                    msg += str(n[0])
-            elif len(n) > 1:
-                n.sort()
-                msg += str(n[0])
-                last = n[0]
-                pos = 1
-                while n[pos] == last+1:
-
-                    last += 1
-                msg += "%s-%s" % (min(n), max(n))
-            msg += ", "
-        return msg[:-2] + "</c> %s.</c>" % (verb)
+        if type(initials) == type(list()):
+            return "<c=%s><c=%s>%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), ", ".join(initials), verb)
+        else:
+            return "<c=%s><c=%s>%s%s%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), initials.pcf, self.initials(), initials.number, verb)
     def memoopenmsg(self, syscolor, td, timeGrammar, verb, channel):
         (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
         timetext = timeDifference(td)
