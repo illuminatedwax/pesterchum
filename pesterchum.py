@@ -513,6 +513,8 @@ class userConfig(object):
         return self.config.get('chatSound', True)
     def memoSound(self):
         return self.config.get('memoSound', True)
+    def memoPing(self):
+        return self.config.get('pingSound', True)
     def nameSound(self):
         return self.config.get('nameSound', True)
     def volume(self):
@@ -1460,6 +1462,9 @@ class PesterWindow(MovingWindow):
             self.serverOverride = options["server"]
         if "port" in options:
             self.portOverride = options["port"]
+        if "honk" in options:
+              self.honk = options["honk"]
+        else: self.honk = True
 
         self.setAutoFillBackground(True)
         self.setObjectName("main")
@@ -1776,19 +1781,19 @@ class PesterWindow(MovingWindow):
             msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
         memo.addMessage(msg, handle)
         if self.config.soundOn():
-            if self.config.nameSound():
-                initials = self.userprofile.chat.initials()
-                search = r"\b[%s%s][%s%s]\b" % (initials[0].lower(), initials[0], initials[1].lower(), initials[1])
-                m = convertTags(msg, "text")
-                if m.find(":") <= 3:
-                  m = m[m.find(":"):]
-                if re.search(search, m):
-                    self.namesound.play()
-                    return
             if self.config.memoSound():
-                if re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
+                if self.config.nameSound():
+                    initials = self.userprofile.chat.initials()
+                    search = r"\b[%s%s][%s%s]\b" % (initials[0].lower(), initials[0], initials[1].lower(), initials[1])
+                    m = convertTags(msg, "text")
+                    if m.find(":") <= 3:
+                      m = m[m.find(":"):]
+                    if re.search(search, m):
+                        self.namesound.play()
+                        return
+                if self.honk and re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
                     self.honksound.play()
-                else:
+                elif self.config.memoPing():
                     self.memosound.play()
 
     def changeColor(self, handle, color):
@@ -2627,6 +2632,10 @@ class PesterWindow(MovingWindow):
         curmemosound = self.config.memoSound()
         if memosoundsetting != curmemosound:
             self.config.set('memoSound', memosoundsetting)
+        memopingsetting = self.optionmenu.memopingcheck.isChecked()
+        curmemoping = self.config.memoPing()
+        if memopingsetting != curmemoping:
+            self.config.set('pingSound', memopingsetting)
         namesoundsetting = self.optionmenu.namesoundcheck.isChecked()
         curnamesound = self.config.nameSound()
         if namesoundsetting != curnamesound:
@@ -3263,7 +3272,7 @@ class MainProgram(QtCore.QObject):
     def oppts(self, argv):
         options = {}
         try:
-            opts, args = getopt.getopt(argv, "s:p:", ["server=", "port=", "advanced"])
+            opts, args = getopt.getopt(argv, "s:p:", ["server=", "port=", "advanced", "no-honk"])
         except getopt.GetoptError:
             return options
         for opt, arg in opts:
@@ -3273,6 +3282,8 @@ class MainProgram(QtCore.QObject):
                 options["port"] = arg
             elif opt in ("--advanced"):
                 options["advanced"] = True
+            elif opt in ("--no-honk"):
+                options["honk"] = False
         return options
 
     def run(self):

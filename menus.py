@@ -941,14 +941,20 @@ class PesterOptions(QtGui.QDialog):
         self.chatsoundcheck.setChecked(self.config.chatSound())
         self.memosoundcheck = QtGui.QCheckBox("Memo Sounds", self)
         self.memosoundcheck.setChecked(self.config.memoSound())
+        self.connect(self.memosoundcheck, QtCore.SIGNAL('stateChanged(int)'),
+                     self, QtCore.SLOT('memoSoundChange(int)'))
+        self.memopingcheck = QtGui.QCheckBox("Memo Ping", self)
+        self.memopingcheck.setChecked(self.config.memoPing())
         self.namesoundcheck = QtGui.QCheckBox("Memo Mention (initials)", self)
         self.namesoundcheck.setChecked(self.config.nameSound())
         if self.config.soundOn():
             self.soundcheck.setChecked(True)
+            if not self.memosoundcheck.isChecked():
+                self.memoSoundChange(0)
         else:
             self.chatsoundcheck.setEnabled(False)
             self.memosoundcheck.setEnabled(False)
-            self.namesoundcheck.setEnabled(False)
+            self.memoSoundChange(0)
         self.volume = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.volume.setMinimum(0)
         self.volume.setMaximum(100)
@@ -1144,7 +1150,11 @@ class PesterOptions(QtGui.QDialog):
         layout_indent = QtGui.QVBoxLayout()
         layout_indent.addWidget(self.chatsoundcheck)
         layout_indent.addWidget(self.memosoundcheck)
-        layout_indent.addWidget(self.namesoundcheck)
+        layout_doubleindent = QtGui.QVBoxLayout()
+        layout_doubleindent.addWidget(self.memopingcheck)
+        layout_doubleindent.addWidget(self.namesoundcheck)
+        layout_doubleindent.setContentsMargins(22,0,0,0)
+        layout_indent.addLayout(layout_doubleindent)
         layout_indent.setContentsMargins(22,0,0,0)
         layout_sound.addLayout(layout_indent)
         layout_sound.addSpacing(15)
@@ -1211,10 +1221,19 @@ class PesterOptions(QtGui.QDialog):
         if state == 0:
             self.chatsoundcheck.setEnabled(False)
             self.memosoundcheck.setEnabled(False)
-            self.namesoundcheck.setEnabled(False)
+            self.memoSoundChange(0)
         else:
             self.chatsoundcheck.setEnabled(True)
             self.memosoundcheck.setEnabled(True)
+            if self.memosoundcheck.isChecked():
+                self.memoSoundChange(1)
+    @QtCore.pyqtSlot(int)
+    def memoSoundChange(self, state):
+        if state == 0:
+            self.memopingcheck.setEnabled(False)
+            self.namesoundcheck.setEnabled(False)
+        else:
+            self.memopingcheck.setEnabled(True)
             self.namesoundcheck.setEnabled(True)
     @QtCore.pyqtSlot(int)
     def printValue(self, v):
