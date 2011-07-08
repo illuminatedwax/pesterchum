@@ -66,7 +66,7 @@ class MSPAChecker(QtGui.QWidget):
         if self.status['last_seen']['pubdate'] > self.status['last_visited']['pubdate']:
             if not hasattr(self, "mspa"):
                 self.mspa = None
-            if not mspa:
+            if not self.mspa:
                 self.mspa = MSPAUpdateWindow(self.parent())
                 self.connect(self.mspa, QtCore.SIGNAL('accepted()'),
                              self, QtCore.SLOT('visit_site()'))
