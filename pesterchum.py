@@ -2027,7 +2027,9 @@ class PesterWindow(MovingWindow):
         if not pygame.mixer:
             self.alarm = NoneSound()
             self.memosound = NoneSound()
+            self.namesound = NoneSound()
             self.ceasesound = NoneSound()
+            self.honksound = NoneSound()
         else:
             try:
                 self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
@@ -2041,10 +2043,10 @@ class PesterWindow(MovingWindow):
                 self.namesound = NoneSound()
                 self.ceasesound = NoneSound()
                 self.honksound = NoneSound()
+        self.setVolume(self.config.volume())
 
     def setVolume(self, vol):
         vol = vol/100.0
-        print vol
         self.alarm.set_volume(vol)
         self.memosound.set_volume(vol)
         self.namesound.set_volume(vol)
