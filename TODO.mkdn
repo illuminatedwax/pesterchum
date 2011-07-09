@@ -47,7 +47,3 @@ Mac Bugs
 * SS: in the one-on-one pester it resizes with the window
 * SS: but the memo one doesn't resize
 * SS: and the arrows next to the time thing overlap the CLOSE button
-* Make the quirks/ folder be in the data location
-* Make it so data can be loaded from both the data location and the
-  internal location so that built in data (such as default python
-  quirks) can be loaded as well as user defined data (again pyquirx)
