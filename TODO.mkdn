@@ -47,3 +47,6 @@ Mac Bugs
 * SS: in the one-on-one pester it resizes with the window
 * SS: but the memo one doesn't resize
 * SS: and the arrows next to the time thing overlap the CLOSE button
+* Lex: Load quirks from both ./quirks and ~/Library/Application
+   Support/Pesterchum/quirks to allow mac users to add quirks without
+   losing built in ones.
