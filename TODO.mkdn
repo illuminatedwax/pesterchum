@@ -50,3 +50,4 @@ Mac Bugs
 * Lex: Load quirks from both ./quirks and ~/Library/Application
    Support/Pesterchum/quirks to allow mac users to add quirks without
    losing built in ones.
+* Lex: Do the same with themes.

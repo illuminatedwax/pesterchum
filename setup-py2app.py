@@ -9,7 +9,7 @@ from setuptools import setup
 
 APP = ['pesterchum.py']
 #DATA_FILES = ['pesterchum.js', 'profiles', 'themes', 'smilies', 'logs']
-DATA_FILES = ['quirks']
+DATA_FILES = ['quirks', 'themes']
 # TODO: Grep this version out of version.py
 SHORT_VERSION = '3.41.2B5'
 LONG_VERSION =  '3.41.2 Beta 5 Bleeding Edge'
