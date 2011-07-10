@@ -535,11 +535,20 @@ class userConfig(object):
         for dirname, dirnames, filenames in os.walk('themes'):
             for d in dirnames:
                 themes.append(d)
+        if sys.platform == "darwin":
+            for dirname, dirnames, filenames in os.walk(_datadir+'themes'):
+                for d in dirnames:
+                    if d not in themes:
+                        themes.append(d)
         themes.sort()
         return themes
     def availableProfiles(self):
         profs = []
-        for dirname, dirnames, filenames in os.walk('profiles'):
+        if sys.platform == "darwin":
+            profileloc = _datadir+'profiles'
+        else:
+            profileloc = 'profiles'
+        for dirname, dirnames, filenames in os.walk(profileloc):
             for filename in filenames:
                 l = len(filename)
                 if filename[l-3:l] == ".js":
