@@ -6,13 +6,14 @@ Usage:
 """
 
 from setuptools import setup
+from version import lexVersion
 
 APP = ['pesterchum.py']
 #DATA_FILES = ['pesterchum.js', 'profiles', 'themes', 'smilies', 'logs']
 DATA_FILES = ['quirks', 'themes', 'smilies']
 # TODO: Grep this version out of version.py
-SHORT_VERSION = '3.41.2B5'
-LONG_VERSION =  '3.41.2 Beta 5 Bleeding Edge'
+SHORT_VERSION = lexVersion(True) #'3.41.2B5'
+LONG_VERSION =  lexVersion()     #'3.41.2 Beta 5 Bleeding Edge'
 OPTIONS = {
     'argv_emulation': False,
     'prefer_ppc': True,
