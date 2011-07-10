@@ -17,6 +17,7 @@ Features
 * Tab completion of two letter names
 * Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
+* This nickname has been registered; you may not use it.
 
 Bugs
 ----
@@ -30,6 +31,7 @@ Bugs
 * Closing a timeclone doesn't actually cease for everyone else
 * +q(~) and +a(&) do weird things
 * Kill Zalgo
+* Handle netsplits
 
 Windows Bugs
 ------------
@@ -47,4 +49,3 @@ Mac Bugs
 * SS: in the one-on-one pester it resizes with the window
 * SS: but the memo one doesn't resize
 * SS: and the arrows next to the time thing overlap the CLOSE button
-* Lex: Do the same with themes.

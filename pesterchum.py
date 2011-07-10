@@ -247,6 +247,8 @@ class pesterTheme(dict):
             self.path = "themes/%s" % (name)
         else:
             self.path = _datadir+"themes/%s" % (name)
+            if not os.path.exists(self.path):
+                self.path = "themes/%s" % (name)
 
         self.name = name
         fp = open(self.path+"/style.js")
