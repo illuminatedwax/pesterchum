@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 
 class PythonQuirks(object):
     def __init__(self):
-        _datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
+        self._datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
         self.home = os.getcwd()
         self.quirks = {}
         self.last = {}
@@ -19,11 +19,11 @@ class PythonQuirks(object):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(self.home, 'quirks', fn))
         if sys.platform == "darwin":
-            if not os.path.exists(os.path.join(_datadir, 'quirks')):
-                os.mkdir(os.path.join(_datadir, 'quirks'))
-            for fn in os.listdir(os.path.join(_datadir, 'quirks')):
+            if not os.path.exists(os.path.join(self._datadir, 'quirks')):
+                os.mkdir(os.path.join(self._datadir, 'quirks'))
+            for fn in os.listdir(os.path.join(self._datadir, 'quirks')):
                 if fn.endswith('.py') and not fn.startswith('_'):
-                    filenames.append(os.path.join(_datadir, 'quirks', fn))
+                    filenames.append(os.path.join(self._datadir, 'quirks', fn))
 
         modules = []
         for filename in filenames:
