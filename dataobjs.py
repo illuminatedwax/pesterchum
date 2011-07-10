@@ -274,6 +274,12 @@ class PesterProfile(object):
         opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
         return "<c=%s>%s</c> took away <c=%s>%s</c>'s voice." % \
             (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
+    def memomodemsg(self, opchum, opgrammar, syscolor, modeverb, modeon):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        if modeon: modeon = "now"
+        else:      modeon = "no longer"
+        return "<c=%s>Memo is %s <c=black>%s</c> by <c=%s>%s</c></c>" % \
+            (syscolor.name(), modeon, modeverb, opchum.colorhtml(), opinit)
 
     @staticmethod
     def checkLength(handle):

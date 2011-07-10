@@ -621,27 +621,67 @@ class PesterMemo(PesterConvo):
         for u in users:
             self.userlist.addItem(u)
 
-    def updateChanModes(self, modes):
+    def updateChanModes(self, modes, op):
         if not hasattr(self, 'modes'): self.modes = ""
         chanmodes = list(str(self.modes))
         if chanmodes and chanmodes[0] == "+": chanmodes = chanmodes[1:]
         modes = str(modes)
+        if op:
+            systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+            chum = self.mainwindow.profile()
+            opchum = PesterProfile(op)
+            if self.times.has_key(op):
+                opgrammar = self.times[op].getGrammar()
+            elif op == self.mainwindow.profile().handle:
+                opgrammar = self.time.getGrammar()
+            else:
+                opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
         if modes[0] == "+":
             for m in modes[1:]:
                 if m not in chanmodes:
                     chanmodes.extend(m)
-            if modes.find("s") >= 0: self.chanHide.setChecked(True)
-            if modes.find("i") >= 0: self.chanInvite.setChecked(True)
-            if modes.find("m") >= 0: self.chanMod.setChecked(True)
+            if modes.find("s") >= 0:
+                self.chanHide.setChecked(True)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Secret", True)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
+            if modes.find("i") >= 0:
+                self.chanInvite.setChecked(True)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Invite-Only", True)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
+            if modes.find("m") >= 0:
+                self.chanMod.setChecked(True)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Mute", True)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
         elif modes[0] == "-":
             for i in modes[1:]:
                 try:
                     chanmodes.remove(i)
                 except ValueError:
                     pass
-            if modes.find("s") >= 0: self.chanHide.setChecked(False)
-            if modes.find("i") >= 0: self.chanInvite.setChecked(False)
-            if modes.find("m") >= 0: self.chanMod.setChecked(False)
+            if modes.find("s") >= 0:
+                self.chanHide.setChecked(False)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Secret", False)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
+            if modes.find("i") >= 0:
+                self.chanInvite.setChecked(False)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Invite-Only", False)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
+            if modes.find("m") >= 0:
+                self.chanMod.setChecked(False)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Mute", False)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
         chanmodes.sort()
         self.modes = "+" + "".join(chanmodes)
         if self.mainwindow.advanced:
@@ -732,7 +772,7 @@ class PesterMemo(PesterConvo):
     def modesUpdated(self, channel, modes):
         c = unicode(channel)
         if c == self.channel:
-            self.updateChanModes(modes)
+            self.updateChanModes(modes, None)
 
     @QtCore.pyqtSlot(QtCore.QString)
     def closeInviteOnly(self, channel):
@@ -999,7 +1039,7 @@ class PesterMemo(PesterConvo):
                     c.setIcon(icon)
             self.sortUsers()
         elif c == self.channel and h == "" and update[0] in ["+","-"]:
-            self.updateChanModes(update)
+            self.updateChanModes(update, op)
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):

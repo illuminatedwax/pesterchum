@@ -2203,6 +2203,9 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def cannotSendToChan(self, channel, msg):
         self.deliverMemo(channel, "ChanServ", msg)
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    def modesUpdated(self, channel, modes):
+        self.modesUpdated.emit(channel, modes)
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def timeCommand(self, chan, handle, command):
         (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
