@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## Cleanup
 rm -rf build/ dist/
@@ -13,7 +13,7 @@ touch dist/Pesterchum.app/Contents/Resources/qt.conf
 find dist/Pesterchum.app -iname "*_debug" -exec rm -f '{}' \;
 
 ## Create a dmg file to hold everything
-VERSION="3.41.2 Beta 5"
+VERSION=$(python version.py)    #"3.41.2 Beta 5"
 SIZE=2000
 name="Pesterchum"
 title="${name} ${VERSION}"

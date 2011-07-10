@@ -9,7 +9,7 @@ USER_TYPE = "edge"
                   # edge - new git stuff. bleeding edge, do not try at home (kiooeht version)
 
 _pcMajor = "3.41"
-_pcMinor = "0"
+_pcMinor = "2"
 _pcStatus = "B" # A  = alpha
                 # B  = beta
                 # RC = release candidate
@@ -23,6 +23,34 @@ def pcVerCalc():
         _pcVersion = "%s.%s-%s%s" % (_pcMajor, _pcMinor, _pcStatus, _pcRevision)
     else:
         _pcVersion = "%s.%s.%s" % (_pcMajor, _pcMinor, _pcRevision)
+
+def lexVersion(short=False):
+    if not _pcStatus:
+        return "%s.%s" % (_pcMajor, _pcMinor)
+
+    utype = ""
+    if USER_TYPE == "edge":
+        utype = "E"
+
+    if short:
+        return "%s.%s%s%s%s" % (_pcMajor, _pcMinor, _pcStatus, _pcRevision, utype);
+
+    stype = ""
+    if _pcStatus == "A":
+        stype = "Alpha"
+    elif _pcStatus == "B":
+        stype = "Beta"
+    elif _pcStatus == "RC":
+        stype = "Release Candidate"
+
+    if utype == "E":
+        utype = " Bleeding Edge"
+
+    return "%s.%s %s %s%s" % (_pcMajor, _pcMinor, stype, _pcRevision, utype);
+
+# Naughty I know, but it lets me grab it from the bash script.
+if __name__ == "__main__":
+    print lexVersion()
 
 def verStrToNum(ver):
     w = re.match("(\d+\.?\d+)\.(\d+)-?([A-Za-z]{0,2})\.?(\d*):(\S+)", ver)
