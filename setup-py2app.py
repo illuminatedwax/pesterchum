@@ -8,14 +8,50 @@ Usage:
 from setuptools import setup
 
 APP = ['pesterchum.py']
-DATA_FILES = ['pesterchum.js', 'profiles', 'themes', 'smilies', 'logs']
-OPTIONS = {'argv_emulation': False, 'includes': ['sip', 'PyQt4', 'PyQt4.QtCore', 'PyQt4.QtGui'],
-			'excludes': ['PyQt4.QtDesigner', 'PyQt4.QtNetwork', 'PyQt4.QtOpenGL', 'PyQt4.QtScript', 'PyQt4.QtSql', 'PyQt4.QtTest', 'PyQt4.QtWebKit', 'PyQt4.QtXml', 'PyQt4.phonon'],
-			'iconfile': 'trayicon32.icns'}
- 
+#DATA_FILES = ['pesterchum.js', 'profiles', 'themes', 'smilies', 'logs']
+DATA_FILES = ['quirks', 'themes']
+# TODO: Grep this version out of version.py
+SHORT_VERSION = '3.41.2B5'
+LONG_VERSION =  '3.41.2 Beta 5 Bleeding Edge'
+OPTIONS = {
+    'argv_emulation': False,
+    'prefer_ppc': True,
+    'includes': [
+        'sip',
+        'PyQt4',
+        'PyQt4.QtCore',
+        'PyQt4.QtGui'
+    ],
+	'excludes': [
+        'PyQt4.QtDesigner',
+        'PyQt4.QtNetwork',
+        'PyQt4.QtOpenGL',
+        'PyQt4.QtScript',
+        'PyQt4.QtSql',
+        'PyQt4.QtTest',
+        'PyQt4.QtWebKit',
+        'PyQt4.QtXml',
+        'PyQt4.phonon'
+    ],
+	'iconfile': 'trayicon32.icns'
+#    ,
+#    'plist': {
+#        'CFBundleDisplayName':        'Pesterchum v3',
+#        'NSHumanReadableCopyright':   'GPLv3',
+#        'CFBundleGetInfoString':      'o_O???',
+#        'CFBundleIdentifier':         'org.pythonmac.pesterchum',
+#        'CFBundleVersion':            LONG_VERSION,
+#        'CFBundleShortVersionString': SHORT_VERSION
+#    }
+}
 setup(
+    name='Pesterchum',
+    description='A client for the pesterchum network',
+    version=LONG_VERSION,
+    license='GPL v3',
     app=APP,
     data_files=DATA_FILES,
+    platforms=['i386', 'x86_64'],
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
 )
