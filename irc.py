@@ -405,11 +405,13 @@ class PesterHandler(DefaultCommandHandler):
         # ok i shouldnt be overloading that but am lazy
     def part(self, nick, channel, reason="nanchos"):
         handle = nick[0:nick.find("!")]
+        logging.info("---> recv \"PART %s: %s\"" % (handle, channel))
         self.parent.userPresentUpdate.emit(handle, channel, "left")
         if channel == "#pesterchum":
             self.parent.moodUpdated.emit(handle, Mood("offline"))
     def join(self, nick, channel):
         handle = nick[0:nick.find("!")]
+        logging.info("---> recv \"JOIN %s: %s\"" % (handle, channel))
         self.parent.userPresentUpdate.emit(handle, channel, "join")
         if channel == "#pesterchum":
             self.parent.moodUpdated.emit(handle, Mood("chummy"))
