@@ -1713,7 +1713,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def checkPing(self):
         curtime = int(time())
-        if curtime - self.lastping > 300:
+        if curtime - self.lastping > 600:
             self.pingServer.emit()
 
     def profile(self):
@@ -2200,7 +2200,14 @@ class PesterWindow(MovingWindow):
     def deliverNotice(self, handle, msg):
         h = unicode(handle)
         m = unicode(msg)
-        if h == self.randhandler.randNick:
+        if m.startswith("Your nickname is now being changed to"):
+            changedto = m[39:-1]
+            msgbox = QtGui.QMessageBox()
+            msgbox.setText("This chumhandle has been registered; you may not use it.")
+            msgbox.setInformativeText("Your handle is now being changed to %s." % (changedto))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            ret = msgbox.exec_()
+        elif h == self.randhandler.randNick:
             self.randhandler.incoming(msg)
         elif self.convos.has_key(h):
             self.newMessage(h, m)
