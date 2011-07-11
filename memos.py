@@ -396,6 +396,10 @@ class PesterMemo(PesterConvo):
         self.optionsMenu.addAction(self.invitechum)
 
         self.chanModeMenu = QtGui.QMenu("Memo Settings", self)
+        self.chanNoquirks = QtGui.QAction("Disable Quirks", self)
+        self.chanNoquirks.setCheckable(True)
+        self.connect(self.chanNoquirks, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('noquirksChan(bool)'))
         self.chanHide = QtGui.QAction("Hidden", self)
         self.chanHide.setCheckable(True)
         self.connect(self.chanHide, QtCore.SIGNAL('toggled(bool)'),
@@ -408,6 +412,7 @@ class PesterMemo(PesterConvo):
         self.chanMod.setCheckable(True)
         self.connect(self.chanMod, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('modChan(bool)'))
+        self.chanModeMenu.addAction(self.chanNoquirks)
         self.chanModeMenu.addAction(self.chanHide)
         self.chanModeMenu.addAction(self.chanInvite)
         self.chanModeMenu.addAction(self.chanMod)
@@ -640,6 +645,15 @@ class PesterMemo(PesterConvo):
             for m in modes[1:]:
                 if m not in chanmodes:
                     chanmodes.extend(m)
+            # Make +c (disable ANSI colours) disable quirks.
+            if modes.find("c") >= 0:
+                self.chanNoquirks.setChecked(True)
+                self.quirksOff.setChecked(True)
+                self.applyquirks = False
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "A No-Quirk zone", True)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("s") >= 0:
                 self.chanHide.setChecked(True)
                 if op:
@@ -655,7 +669,7 @@ class PesterMemo(PesterConvo):
             if modes.find("m") >= 0:
                 self.chanMod.setChecked(True)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Mute", True)
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Muted", True)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
         elif modes[0] == "-":
@@ -664,6 +678,12 @@ class PesterMemo(PesterConvo):
                     chanmodes.remove(i)
                 except ValueError:
                     pass
+            if modes.find("c") >= 0:
+                self.chanNoquirks.setChecked(False)
+                if op:
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "A No-Quirk zone", False)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("s") >= 0:
                 self.chanHide.setChecked(False)
                 if op:
@@ -679,7 +699,7 @@ class PesterMemo(PesterConvo):
             if modes.find("m") >= 0:
                 self.chanMod.setChecked(False)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Mute", False)
+                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Muted", False)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
         chanmodes.sort()
@@ -799,6 +819,7 @@ class PesterMemo(PesterConvo):
                 if msg == self.mainwindow.profile().handle:
                     self.quirksOff.setChecked(True)
                     self.applyquirks = False
+                    # TODO: Politely notify the client
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
@@ -1101,6 +1122,10 @@ class PesterMemo(PesterConvo):
                 self.mainwindow.inviteChum.emit(chum, self.channel)
             self.invitechums = None
 
+    @QtCore.pyqtSlot(bool)
+    def noquirksChan(self, on):
+        x = ["-","+"][on]
+        self.mainwindow.setChannelMode.emit(self.channel, x+"c", "")
     @QtCore.pyqtSlot(bool)
     def hideChan(self, on):
         x = ["-","+"][on]
