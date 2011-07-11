@@ -819,7 +819,18 @@ class PesterMemo(PesterConvo):
                 if msg == self.mainwindow.profile().handle:
                     self.quirksOff.setChecked(True)
                     self.applyquirks = False
-                    # TODO: Politely notify the client
+                    systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+                    chum = self.mainwindow.profile()
+                    opchum = PesterProfile(op)
+                    if self.times.has_key(op):
+                        opgrammar = self.times[op].getGrammar()
+                    elif op == self.mainwindow.profile().handle:
+                        opgrammar = self.time.getGrammar()
+                    else:
+                        opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
+                    msg = chum.memoquirkkillmsg(opchum, opgrammar, systemColor)
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
