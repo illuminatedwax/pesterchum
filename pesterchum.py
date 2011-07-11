@@ -42,26 +42,11 @@ if not ((major > 4) or (major == 4 and minor >= 6)):
     print "You currently have version " + vnum + ". Please ungrade Qt"
     exit()
 
-from menus import PesterChooseQuirks, PesterChooseTheme, \
-    PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
-    LoadingScreen, AboutPesterchum, UpdatePesterchum
-from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
-from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList, CaseInsensitiveDict
-from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
-from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
-from memos import PesterMemo, MemoTabWindow, TimeTracker
-from irc import PesterIRC
-from logviewer import PesterLogUserSelect, PesterLogViewer
-from bugreport import BugReporter
-from randomer import RandomHandler
-from updatecheck import MSPAChecker
-
+# Placed here before importing the rest of pesterchum, since bits of it need
+#  OSX's data directory and it doesn't hurt to have everything set up before
+#  plowing on. :o)
+# ~Lex
 _datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
-canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
-                 "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
-                 "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
-                 "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
-
 if sys.platform == "darwin":
     if not os.path.exists(_datadir):
         os.mkdir(_datadir)
@@ -80,6 +65,26 @@ else:
         f = open("pesterchum.js", 'w')
         f.write("{}")
         f.close()
+
+from menus import PesterChooseQuirks, PesterChooseTheme, \
+    PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
+    LoadingScreen, AboutPesterchum, UpdatePesterchum
+from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
+from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList, CaseInsensitiveDict
+from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
+from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
+from memos import PesterMemo, MemoTabWindow, TimeTracker
+from irc import PesterIRC
+from logviewer import PesterLogUserSelect, PesterLogViewer
+from bugreport import BugReporter
+from randomer import RandomHandler
+from updatecheck import MSPAChecker
+
+canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
+                 "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
+                 "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
+                 "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
+
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
