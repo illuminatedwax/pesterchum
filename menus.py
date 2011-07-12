@@ -1476,6 +1476,7 @@ class AboutPesterchum(QtGui.QDialog):
         self.credits = QtGui.QLabel("Programming by:\n\
   illuminatedwax (ghostDunk)\n\
   Kiooeht (evacipatedBox)\n\
+  Lexi (lexicalNuance)\n\
   alGore\n\
 \n\
 Art by:\n\
@@ -1485,7 +1486,6 @@ Art by:\n\
 Special Thanks:\n\
   ABT\n\
   gamblingGenocider\n\
-  Lexi (lexicalNuance)\n\
   Eco-Mono")
 
         self.ok = QtGui.QPushButton("OK", self)
