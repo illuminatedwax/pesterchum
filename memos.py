@@ -374,7 +374,7 @@ class PesterMemo(PesterConvo):
         self.voiceAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/voiceuser"], self)
         self.connect(self.voiceAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('voiceSelectedUser()'))
-        self.quirkDisableAction = QtGui.QAction("Kill Quirk", self)
+        self.quirkDisableAction = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/quirkkill"], self)
         self.connect(self.quirkDisableAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('killQuirkUser()'))
         self.userlist.optionsMenu.addAction(self.addchumAction)
@@ -395,20 +395,20 @@ class PesterMemo(PesterConvo):
         self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.invitechum)
 
-        self.chanModeMenu = QtGui.QMenu("Memo Settings", self)
-        self.chanNoquirks = QtGui.QAction("Disable Quirks", self)
+        self.chanModeMenu = QtGui.QMenu(self.mainwindow.theme["main/menus/rclickchumlist/memosetting"], self)
+        self.chanNoquirks = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/memonoquirk"], self)
         self.chanNoquirks.setCheckable(True)
         self.connect(self.chanNoquirks, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('noquirksChan(bool)'))
-        self.chanHide = QtGui.QAction("Hidden", self)
+        self.chanHide = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/memohidden"], self)
         self.chanHide.setCheckable(True)
         self.connect(self.chanHide, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('hideChan(bool)'))
-        self.chanInvite = QtGui.QAction("Invite-Only", self)
+        self.chanInvite = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/memoinvite"], self)
         self.chanInvite.setCheckable(True)
         self.connect(self.chanInvite, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('inviteChan(bool)'))
-        self.chanMod = QtGui.QAction("Mute", self)
+        self.chanMod = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/memomute"], self)
         self.chanMod.setCheckable(True)
         self.connect(self.chanMod, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('modChan(bool)'))
@@ -546,9 +546,15 @@ class PesterMemo(PesterConvo):
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
         self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])
         self.voiceAction.setText(theme["main/menus/rclickchumlist/voiceuser"])
-        self.quirkDisableAction.setText("Kill Quirk")
+        self.quirkDisableAction.setText(theme["main/menus/rclickchumlist/quirkkill"])
         self.quirksOff.setText(theme["main/menus/rclickchumlist/quirksoff"])
         self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
+        self.invitechum.setText(theme["main/menus/rclickchumlist/invitechum"])
+        self.chanModeMenu.setTitle(theme["main/menus/rclickchumlist/memosetting"])
+        self.chanNoquirks.setText(theme["main/menus/rclickchumlist/memonoquirk"])
+        self.chanHide.setText(theme["main/menus/rclickchumlist/memohidden"])
+        self.chanInvite.setText(theme["main/menus/rclickchumlist/memoinvite"])
+        self.chanMod.setText(theme["main/menus/rclickchumlist/memomute"])
 
         self.timeinput.setFixedWidth(theme["memos/time/text/width"])
         self.timeinput.setStyleSheet(theme["memos/time/text/style"])

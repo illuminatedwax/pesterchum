@@ -53,8 +53,14 @@
                                "banuser": "BAN USER",
                                "opuser": "MAKE OP",
                                "voiceuser": "GIVE VOICE",
+                               "quirkkill": "KILL QUIRK",
                                "quirksoff": "QUIRKS OFF",
-                               "invitechum": "INVITE CHUM"
+                               "invitechum": "INVITE CHUM",
+                               "memosetting": "MEMO SETTINGS",
+                               "memonoquirk": "DISABLE QUIRKS",
+                               "memohidden": "HIDDEN",
+                               "memoinvite": "INVITE-ONLY",
+                               "memomute": "MUTE"
                               }
            },
   "chums": { "style": "border:2px solid yellow; background-color: black;color: white;font: bold;font-family: 'Courier';selection-background-color:#646464; ",

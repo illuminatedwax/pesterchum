@@ -491,7 +491,10 @@ def themeChecker(theme):
     "main/chums/userlistcolor", "main/defaultwindow/style", \
     "main/chums/moods", "main/chums/moods/chummy/icon", "main/menus/help/help", \
     "main/menus/help/calsprite", "main/menus/help/nickserv", \
-    "main/menus/rclickchumlist/invitechum", "main/menus/client/randen"]
+    "main/menus/rclickchumlist/invitechum", "main/menus/client/randen", \
+    "main/menus/rclickchumlist/memosetting", "main/menus/rclickchumlist/memonoquirk", \
+    "main/menus/rclickchumlist/memohidden", "main/menus/rclickchumlist/memoinvite", \
+    "main/menus/rclickchumlist/memomute"]
 
     for n in needs:
         try:

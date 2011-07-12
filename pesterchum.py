@@ -1972,6 +1972,9 @@ class PesterWindow(MovingWindow):
         self.switch.setText(theme["main/menus/profile/switch"])
         self.profilemenu.setTitle(theme["main/menus/profile/_name"])
         self.aboutAction.setText(self.theme["main/menus/help/about"])
+        self.helpAction.setText(self.theme["main/menus/help/help"])
+        self.botAction.setText(self.theme["main/menus/help/calsprite"])
+        self.nickServAction.setText(self.theme["main/menus/help/nickserv"])
         self.helpmenu.setTitle(self.theme["main/menus/help/_name"])
 
         # moods

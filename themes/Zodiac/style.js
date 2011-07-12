@@ -16,15 +16,17 @@
              "loc": [225,133]
            },
   "sounds": { "alertsound": "$path/alarm.wav",
-	      "ceasesound": "$path/cease.wav" },
+              "ceasesound": "$path/cease.wav" },
   "menus": {"client": {"_name": "Client",
                        "options": "Options",
                        "memos": "Memos",
                        "logviewer": "Pesterlogs",
+                       "randen": "Random Encounter",
                        "userlist": "Userlist",
+                       "addgroup": "Add Group",
                        "import": "Import",
-					   "reconnect": "Reconnect",
-	     "idle": "Idle",
+                       "reconnect": "Reconnect",
+                       "idle": "Idle",
                        "exit": "Exit"},
             "profile": {"_name": "Profile",
                         "switch": "Chumhandle",
@@ -34,77 +36,88 @@
                         "quirks": "Quirks" },
             "help": { "_name": "Help",
                       "help": "Help",
-                      "calsprite": "Calsprite",				
+                      "calsprite": "Calsprite",
+                      "nickserv": "NickServ",
                       "about": "About" },
             "rclickchumlist": {"pester": "Pester",
                                "removechum": "Remove",
                                "report": "Report",
                                "blockchum": "Block",
-							   "report": "Report",
                                "addchum": "Add Chum",
                                "viewlog": "View Pesterlog",
                                "unblockchum": "Unblock",
+                               "removegroup": "Remove Group",
+                               "renamegroup": "Rename Group",
+                               "movechum": "Move To",
                                "banuser": "Ban",
                                "opuser": "Promote",
-                               "quirksoff": "Quirks Off" }
+                               "voiceuser": "Give Voice",
+                               "quirkkill": "Kill Quirk",
+                               "quirksoff": "Quirks Off",
+                               "invitechum": "Invite Chump",
+                               "memosetting": "Memo Settings",
+                               "memonoquirk": "Disable Quirks",
+                               "memohidden": "Hidden",
+                               "memoinvite": "Invite-Only",
+                               "memomute": "Mute" }
            },
   "chums": { "style": "font-size: 12px; background: black; border: 3px solid white; font:bold; font-family: 'Arial';selection-background-color:rgb(100,100,100); color: white;",
              "loc": [225, 150],
              "size": [202, 294],
              "userlistcolor": "white",
              "moods": {
-                 
+
                  "chummy": { "icon": "$path/chummy.png", "color": "#63ea00" },
-                 
+
                  "rancorous": { "icon": "$path/rancorous.png", "color": "#7f7f7f" },
-                 
+
                  "offline": { "icon": "$path/offline.png", "color": "white"},
-                 
-                 
+
+
                  "pleasant": { "icon": "$path/pleasant.png", "color": "#d69df8" },
-                 
+
                  "distraught": { "icon": "$path/distraught.png", "color": "#706eba" },
-                 
+
                  "pranky": { "icon": "$path/pranky.png", "color": "blue" },
-                 
+
                  "smooth": { "icon": "$path/smooth.png", "color": "red" },
-				 
-                 
+
+
                  "mystified": { "icon": "$path/mystified.png", "color": "red" },
-                 
+
                  "amazed": { "icon": "$path/amazed.png", "color": "red" },
-                 
+
                  "insolent": { "icon": "$path/insolent.png", "color": "white" },
-				 
-				 "bemused": { "icon": "$path/bemused.png", "color": "white" },
-                 
-                 
+
+         "bemused": { "icon": "$path/bemused.png", "color": "white" },
+
+
                  "ecstatic": { "icon": "$path/ecstatic.png", "color": "#99004d" },
-                 
+
                  "relaxed": { "icon": "$path/relaxed.png", "color": "#078446" },
-                 
+
                  "discontent": { "icon": "$path/discontent.png", "color": "#a75403" },
-                 
+
                  "devious": { "icon": "$path/devious.png", "color": "#008282" },
-                 
+
                  "sleek": { "icon": "$path/sleek.png", "color": "#a1a100" },
-                 
+
                  "detestful": { "icon": "$path/detestful.png", "color": "#6a006a" },
-                 
+
                  "mirthful": { "icon": "$path/mirthful.png", "color": "#450077" },
-                 
+
                  "manipulative": { "icon": "$path/manipulative.png", "color": "#004182" },
-                 
+
                  "vigorous": { "icon": "$path/vigorous.png", "color": "#0021cb" },
-                 
+
                  "perky": { "icon": "$path/perky.png", "color": "#406600" },
-                 
+
                  "acceptant": { "icon": "$path/acceptant.png", "color": "#a10000" },
-                 
+
                  "protective": { "icon": "$path/protective.png", "color": "white" },
-                 
+
                  "blocked": { "icon": "$path/blocked.png", "color": "white" }
-                 
+
              }
            },
   "trollslum": {
@@ -127,14 +140,14 @@
                   },
   "defaultwindow": { "style": "color: black; background: rgb(210,0,0); font-family: 'Arial'; font: bold; selection-background-color: rgb(100,100,100);"
                    },
-  "addchum": 
+  "addchum":
       { "style": "background-image:url($path/addchum1.png); border:0px;",
         "pressed": "background-image:url($path/addchum2.png); border:0px;",
         "loc": [225, 564],
         "size": [50, 50],
                "text": ""
              },
-  "pester": 
+  "pester":
       { "style": "background-image:url($path/pester1.png); border:0px;",
         "pressed": "background-image:url($path/pester2.png); border:0px;",
         "loc": [367, 564],
@@ -248,8 +261,8 @@
         "icon": "",
         "mood": 7
       },
-	  
-	        { "style": "background-image:url($path/john1.png); border:0px;",
+
+          { "style": "background-image:url($path/john1.png); border:0px;",
         "selected": "background-image:url($path/john2.png); border:0px;",
         "loc": [367, 27],
         "size": [50, 50],
@@ -257,7 +270,7 @@
         "icon": "",
         "mood": 5
       },
-	        { "style": "background-image:url($path/rose1.png); border:0px;",
+          { "style": "background-image:url($path/rose1.png); border:0px;",
         "selected": "background-image:url($path/rose2.png); border:0px;",
         "loc": [30, 369],
         "size": [50, 50],
@@ -265,7 +278,7 @@
         "icon": "",
         "mood": 3
       },
-	        { "style": "background-image:url($path/dave1.png); border:0px;",
+          { "style": "background-image:url($path/dave1.png); border:0px;",
         "selected": "background-image:url($path/dave2.png); border:0px;",
         "loc": [99, 494],
         "size": [50, 50],
@@ -273,7 +286,7 @@
         "icon": "",
         "mood": 6
       },
-	        { "style": "background-image:url($path/jade1.png); border:0px;",
+          { "style": "background-image:url($path/jade1.png); border:0px;",
         "selected": "background-image:url($path/jade2.png); border:0px;",
         "loc": [566, 369],
         "size": [50, 50],
@@ -281,7 +294,7 @@
         "icon": "",
         "mood": 0
       },
-	  	        { "style": "background-image:url($path/bec1.png); border:0px;",
+              { "style": "background-image:url($path/bec1.png); border:0px;",
         "selected": "background-image:url($path/bec2.png); border:0px;",
         "loc": [492, 494],
         "size": [50, 50],
@@ -289,8 +302,8 @@
         "icon": "",
         "mood": 18
       },
-      
-	  	        { "style": "background-image:url($path/hearts1.png); border:0px;",
+
+              { "style": "background-image:url($path/hearts1.png); border:0px;",
         "selected": "background-image:url($path/hearts2.png); border:0px;",
         "loc": [492, 101],
         "size": [50, 50],
@@ -298,7 +311,7 @@
         "icon": "",
         "mood": 20
       },
-	        { "style": "background-image:url($path/spades1.png); border:0px;",
+          { "style": "background-image:url($path/spades1.png); border:0px;",
         "selected": "background-image:url($path/spades2.png); border:0px;",
         "loc": [99, 101],
         "size": [50, 50],
@@ -306,7 +319,7 @@
         "icon": "",
         "mood": 21
       },
-	        { "style": "background-image:url($path/diamonds1.png); border:0px;",
+          { "style": "background-image:url($path/diamonds1.png); border:0px;",
         "selected": "background-image:url($path/diamonds2.png); border:0px;",
         "loc": [30, 225],
         "size": [50, 50],
@@ -314,7 +327,7 @@
         "icon": "",
         "mood": 19
       },
-	  	        { "style": "background-image:url($path/clubs1.png); border:0px;",
+              { "style": "background-image:url($path/clubs1.png); border:0px;",
         "selected": "background-image:url($path/clubs2.png); border:0px;",
         "loc": [566, 225],
         "size": [50, 50],
@@ -322,7 +335,7 @@
         "icon": "",
         "mood": 22
       },
-	  
+
       { "style": "background-image:url($path/offline1.png); border:0px;",
         "selected": "background-image:url($path/offline2.png); border:0px;",
         "loc": [223, 27],
@@ -352,7 +365,7 @@
       "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px;"
   },
   "tabwindow" : {
-	  "style": "background: black; font-family: 'Arial'"
+    "style": "background: black; font-family: 'Arial'"
   },
   "tabs": {
       "style": "border: 2px solid white; background: black; color: white;",
@@ -398,15 +411,15 @@
   "userlist": { "width": 125,
                 "style": "font-size: 12px; background: white; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
-  "time": { "text": { "width": 75, 
-                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;" 
+  "time": { "text": { "width": 75,
+                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;"
                     },
             "slider": { "style": " border:1px solid #c2c2c2;",
                         "groove": "border-image:url($path/timeslider.png);",
                         "handle": "image:url($path/timeicon.png);"
                       },
-            "buttons": { "style": "border:1px solid rgb(166,166,166); height: 17px; width: 50px; color: white; font-family: 'Arial'; background: black; margin-left: 2px;" }, 
-            "arrows": { "left": "$path/leftarrow.png", 
+            "buttons": { "style": "border:1px solid rgb(166,166,166); height: 17px; width: 50px; color: white; font-family: 'Arial'; background: black; margin-left: 2px;" },
+            "arrows": { "left": "$path/leftarrow.png",
                         "right": "$path/rightarrow.png",
                         "style": "width: 19px; height: 19px; border:0px; margin-left: 2px;"
                       }

@@ -53,8 +53,14 @@
                                "banuser": "Expel User",
                                "opuser": "Promote",
                                "voiceuser": "Let Speak",
+                               "quirkkill": "Kill Quirk",
                                "quirksoff": "Quirks Off",
-                               "invitechum": "Invite User"
+                               "invitechum": "Invite User",
+                               "memosetting": "Memo Settings",
+                               "memonoquirk": "Disable Quirks",
+                               "memohidden": "Hidden",
+                               "memoinvite": "Invite-Only",
+                               "memomute": "Mute"
                               }
            },
   "chums": { "style": "border:0px; background-color: white; font: bold;font-family: 'Courier';selection-background-color: black; ",
