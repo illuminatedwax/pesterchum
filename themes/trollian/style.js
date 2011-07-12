@@ -26,7 +26,7 @@
                        "addgroup": "Add Group",
                        "import": "import U2;",
                        "reconnect": "Reconnect",
-       "idle": "Idle",
+                       "idle": "Idle",
                        "exit": "Abscond"},
             "profile": {"_name": "View",
                         "switch": "Trolltag",
