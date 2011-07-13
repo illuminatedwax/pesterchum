@@ -17,7 +17,6 @@ Features
 * Tab completion of two letter names
 * Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
-* This nickname has been registered; you may not use it.
 
 Bugs
 ----
@@ -29,7 +28,6 @@ Bugs
 * If pesterchum is open but offline due to a network failure and you open the memos screen, it connects you but doesn't fetch the memo list when it finishes connecting
 * right clicking an offline chum and choosing remove asks you why you're reporting someone, and if you hit cancel the menus stop working
 * Closing a timeclone doesn't actually cease for everyone else
-* +q(~) and +a(&) do weird things
 * Kill Zalgo
 * Handle netsplits
 
@@ -37,9 +35,6 @@ Windows Bugs
 ------------
 * XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * On reconnect and nick change, momentary theme change causes menu items to stop working
-* Is using the 3.41 beta update, sending messages to memos freezes Pesterchum
-* After adding quirks, test quirks freezes
-* Using regexp replace quirks and trying to send messages freezes Pesterchum
 * Random chums won't show up on chumroll
 
 Mac Bugs
