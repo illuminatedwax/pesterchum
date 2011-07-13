@@ -57,6 +57,7 @@ CHANGELOG
 * Compress exit dumps into one line - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
 * Display channel mode change message - Kiooeht [evacipatedBox]
 * Disable quirks in +c memos - Lexi [lexicalNuance]
+* Founder, admin, and halfop support - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
