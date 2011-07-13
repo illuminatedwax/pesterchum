@@ -346,6 +346,7 @@
           },
   "systemMsgColor": "#646464",
   "op": { "icon": "$path/op.png" },
+  "halfop": { "icon": "$path/halfop.png" },
   "voice": { "icon": "$path/voice.png" }
  }
 }
