@@ -639,7 +639,7 @@ class PesterMemo(PesterConvo):
         while listing is not None:
             users.append(self.userlist.takeItem(0))
             listing = self.userlist.item(0)
-        users.sort(key=lambda x: ((0 if x.founder else (1 if x.op else (2 if x.halfop else (3 if x.admin else (4 if x.voice else 4))))), x.text()))
+        users.sort(key=lambda x: ((0 if x.founder else (1 if x.op else (2 if x.halfop else (3 if x.admin else (4 if x.voice else 5))))), x.text()))
         for u in users:
             self.userlist.addItem(u)
 
