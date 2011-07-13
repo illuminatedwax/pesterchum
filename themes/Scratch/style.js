@@ -16,15 +16,17 @@
              "loc": [175,53]
            },
   "sounds": { "alertsound": "$path/scratch.wav",
-	      "ceasesound": "$path/scratch2.wav" },
+              "ceasesound": "$path/scratch2.wav" },
  "menus": {"client": {"_name": "Album",
                        "options": "Remix",
                        "memos": "Memos",
                        "logviewer": "Pesterlogs",
+                       "randen": "Random Encounter",
                        "userlist": "Cronies",
+                       "addgroup": "New Crew",
                        "import": "Import",
-					   "reconnect": "Reconnect",
-	     "idle": "Idle",
+                       "reconnect": "Reconnect",
+                       "idle": "Idle",
                        "exit": "Exit"},
             "profile": {"_name": "Track",
                         "switch": "Rap Name",
@@ -34,77 +36,88 @@
                         "quirks": "Lingo" },
             "help": { "_name": "Info",
                       "help": "Info",
-                      "calsprite": "Calsprite",				
+                      "calsprite": "Calsprite",
+                      "nickserv": "NickServ",
                       "about": "The Deal" },
             "rclickchumlist": {"pester": "Patronize",
                                "removechum": "Forget",
                                "report": "Tell a Coppa",
                                "blockchum": "Slam",
-							   "report": "Report",
                                "addchum": "Add to Crew",
                                "viewlog": "View Pesterlog",
                                "unblockchum": "Rectify",
+                               "removegroup": "Forget Crew",
+                               "renamegroup": "Rename Crew",
+                               "movechum": "Change Crew",
                                "banuser": "Banish",
                                "opuser": "Hype",
-                               "quirksoff": "Lingo Off" }
+                               "voiceuser": "Let Rap",
+                               "quirkkill": "Kill Quirk",
+                               "quirksoff": "Lingo Off",
+                               "invitechum": "Invite Crew",
+                               "memosetting": "Memo Settings",
+                               "memonoquirk": "Disable Quirks",
+                               "memohidden": "Hidden",
+                               "memoinvite": "Invite-Only",
+                               "memomute": "Mute" }
            },
   "chums": { "style": "font-size: 16px; background: black; border: 3px solid white; font-family: 'Arial';selection-background-color:rgb(100,100,100); color: white;",
              "loc": [175, 70],
              "size": [302, 500],
              "userlistcolor": "white",
              "moods": {
-                 
+
                  "chummy": { "icon": "$path/chummy.png", "color": "white" },
-                 
+
                  "rancorous": { "icon": "$path/rancorous.png", "color": "white" },
-                 
+
                  "offline": { "icon": "$path/offline.png", "color": "grey"},
-                 
-                 
+
+
                  "pleasant": { "icon": "$path/pleasant.png", "color": "white" },
-                 
+
                  "distraught": { "icon": "$path/distraught.png", "color": "white" },
-                 
+
                  "pranky": { "icon": "$path/pranky.png", "color": "white" },
-                 
+
                  "smooth": { "icon": "$path/smooth.png", "color": "white" },
-				 
-                 
+
+
                  "mystified": { "icon": "$path/mystified.png", "color": "white" },
-                 
+
                  "amazed": { "icon": "$path/amazed.png", "color": "white" },
-                 
+
                  "insolent": { "icon": "$path/insolent.png", "color": "white" },
-				 
-				 "bemused": { "icon": "$path/bemused.png", "color": "white" },
-                 
-                 
+
+                 "bemused": { "icon": "$path/bemused.png", "color": "white" },
+
+
                  "ecstatic": { "icon": "$path/ecstatic.png", "color": "red" },
-                 
+
                  "relaxed": { "icon": "$path/relaxed.png", "color": "red" },
-                 
+
                  "discontent": { "icon": "$path/discontent.png", "color": "red" },
-                 
+
                  "devious": { "icon": "$path/devious.png", "color": "red" },
-                 
+
                  "sleek": { "icon": "$path/sleek.png", "color": "red" },
-                 
+
                  "detestful": { "icon": "$path/detestful.png", "color": "red" },
-                 
+
                  "mirthful": { "icon": "$path/mirthful.png", "color": "red" },
-                 
+
                  "manipulative": { "icon": "$path/manipulative.png", "color": "red" },
-                 
+
                  "vigorous": { "icon": "$path/vigorous.png", "color": "red" },
-                 
+
                  "perky": { "icon": "$path/perky.png", "color": "red" },
-                 
+
                  "acceptant": { "icon": "$path/acceptant.png", "color": "red" },
-                 
+
                  "protective": { "icon": "$path/protective.png", "color": "lime" },
-                 
+
                  "blocked": { "icon": "$path/blocked.png", "color": "red" }
-                 
+
              }
            },
   "trollslum": {
@@ -127,13 +140,13 @@
                   },
   "defaultwindow": { "style": "color: black; background: rgb(210,0,0); font-family: 'Arial'; font: bold; selection-background-color: rgb(100,100,100);"
                    },
-  "addchum": 
+  "addchum":
       { "style": "background-image:url($path/a.png); border:0px;",
         "loc": [434, 55],
         "size": [8, 8],
                "text": ""
              },
-  "pester": 
+  "pester":
       { "style": "background: rgba(0,0,0,0); border:0px;",
         "loc": [0, 0],
         "size": [0, 0],
@@ -150,14 +163,14 @@
                  "text": ""
                },
   "moods": [
-	        { "style": "background-image:url($path/shades1.png); border:0px;",
+          { "style": "background-image:url($path/shades1.png); border:0px;",
         "selected": "background-image:url($path/shades2.png); border:0px;",
         "loc": [268, 580],
         "size": [104, 37],
         "text": "",
         "icon": "",
         "mood": 6
-      },  
+      },
       { "style": "background-image:url($path/offline1.png); border:0px;",
         "selected": "background-image:url($path/offline1.png); border:0px;",
         "loc": [382, 580],
@@ -187,7 +200,7 @@
       "style": "background: white;margin-top:5px; border:1px solid #c2c2c2; font-size: 12px;"
   },
   "tabwindow" : {
-	  "style": "background: black; font-family: 'Arial'"
+    "style": "background: black; font-family: 'Arial'"
   },
   "tabs": {
       "style": "border: 2px solid white; background: black; color: white;",
@@ -233,15 +246,15 @@
   "userlist": { "width": 125,
                 "style": "font-size: 12px; background: white; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
-  "time": { "text": { "width": 75, 
-                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;" 
+  "time": { "text": { "width": 75,
+                      "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;"
                     },
             "slider": { "style": " border:1px solid #c2c2c2;",
                         "groove": "border-image:url($path/timeslider.png);",
                         "handle": "image:url($path/timeicon.png);"
                       },
-            "buttons": { "style": "border:1px solid rgb(166,166,166); height: 17px; width: 50px; color: white; font-family: 'Arial'; background: black; margin-left: 2px;" }, 
-            "arrows": { "left": "$path/leftarrow.png", 
+            "buttons": { "style": "border:1px solid rgb(166,166,166); height: 17px; width: 50px; color: white; font-family: 'Arial'; background: black; margin-left: 2px;" },
+            "arrows": { "left": "$path/leftarrow.png",
                         "right": "$path/rightarrow.png",
                         "style": "width: 19px; height: 19px; border:0px; margin-left: 2px;"
                       }

@@ -341,7 +341,7 @@ class PesterHandler(DefaultCommandHandler):
             handle = nick[0:nick.find("!")]
             logging.info("---> recv \"CTCP %s :%s\"" % (handle, msg[1:-1]))
             if msg[1:-1] == "VERSION":
-                helpers.ctcp_reply(self.parent.cli, handle, "VERSION", "Pesterchum %s\x01" % (_pcVersion))
+                helpers.ctcp_reply(self.parent.cli, handle, "VERSION", "Pesterchum %s" % (_pcVersion))
             elif msg[1:-1].startswith("NOQUIRKS") and chan[0] == "#":
                 op = nick[0:nick.find("!")]
                 self.parent.quirkDisable.emit(chan, msg[10:-1], op)

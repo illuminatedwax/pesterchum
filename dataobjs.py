@@ -280,6 +280,10 @@ class PesterProfile(object):
         else:      modeon = "no longer"
         return "<c=%s>Memo is %s <c=black>%s</c> by <c=%s>%s</c></c>" % \
             (syscolor.name(), modeon, modeverb, opchum.colorhtml(), opinit)
+    def memoquirkkillmsg(self, opchum, opgrammar, syscolor):
+        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+        return "<c=%s><c=%s>%s</c> turned off you quirk.</c>" % \
+            (syscolor.name(), opchum.colorhtml(), opinit)
 
     @staticmethod
     def checkLength(handle):

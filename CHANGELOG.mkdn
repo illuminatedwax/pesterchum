@@ -56,6 +56,7 @@ CHANGELOG
 * Remote quirk shutoff in memos - Kiooeht [evacipatedBox]
 * Compress exit dumps into one line - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
 * Display channel mode change message - Kiooeht [evacipatedBox]
+* Disable quirks in +c memos - Lexi [lexicalNuance]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
@@ -76,6 +77,9 @@ CHANGELOG
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
     * Alt characters don't break on random replace - Kiooeht [evacipatedBox]
+    * Trollian 2.5 tray icon is now Trollian icon - Kiooeht [evacipatedBox]
+* Mac Bug fixes
+    * Create all datadir stuff - Lexi [lexicalNuance]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]

@@ -24,7 +24,7 @@
                        "addgroup": "Add Group",
                        "import": "Import",
                        "reconnect": "Reconnect",
-                                           "idle": "Idle",
+                       "idle": "Idle",
                        "exit": "Exit"},
             "profile": {"_name": "Profile",
                         "switch": "Switch",
@@ -50,8 +50,14 @@
                                "banuser": "Ban User",
                                "opuser": "Make OP",
                                "voiceuser": "Give Voice",
+                               "quirkkill": "Kill Quirk",
                                "quirksoff": "Quirks Off",
-                               "invitechum": "Invite Chum"
+                               "invitechum": "Invite Chum",
+                               "memosetting": "Memo Settings",
+                               "memonoquirk": "Disable Quirks",
+                               "memohidden": "Hidden",
+                               "memoinvite": "Invite-Only",
+                               "memomute": "Mute"
                               }
            },
   "chums": { "style": "text-align: center; border:0px; background-image:url($path/chumbg.png); background-color: #ffe400; background-repeat: no-repeat; color: white; font-family: 'Century Gothic';selection-background-color:#646464; font-size:18px; ",
