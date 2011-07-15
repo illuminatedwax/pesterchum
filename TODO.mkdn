@@ -17,6 +17,11 @@ Features
 * Tab completion of two letter names
 * Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
+* Explain why a chumhandle is invalid
+* Make some kind of notification when the program is 'closed' but is
+  still running in the system tray, like how MSN does it. ("MSN is still
+  running in the system tray. Right click it to close it. Click here not
+  to show this message again.")
 
 Bugs
 ----
@@ -44,3 +49,6 @@ Mac Bugs
 * SS: in the one-on-one pester it resizes with the window
 * SS: but the memo one doesn't resize
 * SS: and the arrows next to the time thing overlap the CLOSE button
+* Lex: Emotes show up as errors
+* Lex: INFO logging shows up in OSX's error console
+* Lex: There seems to be a faint outline around most non-square themes.
