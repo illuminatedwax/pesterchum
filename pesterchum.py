@@ -2208,7 +2208,7 @@ class PesterWindow(MovingWindow):
             msgbox = QtGui.QMessageBox()
             msgbox.setText("This chumhandle has been registered; you may not use it.")
             msgbox.setInformativeText("Your handle is now being changed to %s." % (changedto))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
             ret = msgbox.exec_()
         elif h == self.randhandler.randNick:
             self.randhandler.incoming(msg)
@@ -3195,8 +3195,8 @@ class MainProgram(QtCore.QObject):
                    'cannotSendToChan(QString, QString)'),
                   ('tooManyPeeps()',
                    'tooManyPeeps()'),
-                   ('quirkDisable(QString, QString, QString)',
-                    'quirkDisable(QString, QString, QString)')
+                  ('quirkDisable(QString, QString, QString)',
+                   'quirkDisable(QString, QString, QString)')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),
