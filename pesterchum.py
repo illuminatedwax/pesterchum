@@ -2261,7 +2261,7 @@ class PesterWindow(MovingWindow):
             l = n.split(":")
             oldnick = l[0]
             newnick = l[1]
-        if update == "quit":
+        if update in ("quit", "netsplit"):
             for c in self.namesdb.keys():
                 try:
                     i = self.namesdb[c].index(n)
