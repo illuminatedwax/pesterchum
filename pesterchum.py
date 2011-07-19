@@ -609,6 +609,8 @@ class userProfile(object):
         self.quirks = quirks
         self.userprofile["quirks"] = self.quirks.plainList()
         self.save()
+    def getRandom(self):
+        return self.randoms
     def setRandom(self, random):
         self.randoms = random
         self.userprofile["randoms"] = random
