@@ -878,13 +878,12 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot()
     def dumpNetsplit(self):
-        self.splitTimer.stop()
         chum = self.mainwindow.profile()
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         msg = chum.memonetsplitmsg(systemColor, self.netsplit)
         self.textArea.append(convertTags(msg))
         self.mainwindow.chatlog.log(self.channel, msg)
-        self.netsplit = []
+        del self.netsplit
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
@@ -917,9 +916,7 @@ class PesterMemo(PesterConvo):
             if update == "netsplit":
                 if not hasattr(self, "netsplit"):
                     self.netsplit = []
-                    self.splitTimer = QtCore.QTimer(self)
-                    self.connect(self.splitTimer, QtCore.SIGNAL('timeout()'),
-                                 self, QtCore.SLOT('dumpNetsplit()'))
+                    QtCore.QTimer.singleShot(1500, self, QtCore.SLOT('dumpNetsplit()'))
             for c in chums:
                 chum = PesterProfile(h)
                 self.userlist.takeItem(self.userlist.row(c))
@@ -933,9 +930,6 @@ class PesterMemo(PesterConvo):
                     self.times[h].removeTime(t.getTime())
                 if update == "netsplit":
                     self.netsplit.extend(initials)
-                    if self.splitTimer.isActive():
-                        self.splitTimer.stop()
-                    self.splitTimer.start(1000)
                 else:
                     msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
                     self.textArea.append(convertTags(msg))
