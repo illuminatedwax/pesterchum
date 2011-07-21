@@ -1802,7 +1802,8 @@ class PesterWindow(MovingWindow):
             if self.config.memoSound():
                 if self.config.nameSound():
                     initials = self.userprofile.chat.initials()
-                    search = r"\b[%s%s][%s%s]\b" % (initials[0].lower(), initials[0], initials[1].lower(), initials[1])
+                    initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
+                    search = r"\b%s\b" % ("|".join(initials))
                     m = convertTags(msg, "text")
                     if m.find(":") <= 3:
                       m = m[m.find(":"):]
