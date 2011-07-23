@@ -17,6 +17,7 @@ class MSPAChecker(QtGui.QWidget):
                 self, QtCore.SLOT('check_site()'))
         self.check_site()
         self.timer.start(1000*self.refreshRate)
+        self.lock = False
 
     def save_state(self):
         try:
@@ -45,12 +46,18 @@ class MSPAChecker(QtGui.QWidget):
     def check_site(self):
         if not self.mainwindow.config.checkMSPA():
             return
+        if self.lock:
+            return
+        print "Checking MSPA updates..."
         rss = None
         must_save = False
         try:
+            self.lock = True
             rss = feedparser.parse("http://www.mspaintadventures.com/rss/rss.xml")
         except:
             return
+        finally:
+            self.lock = False
         if len(rss.entries) == 0:
             return
         entries = sorted(rss.entries,key=(lambda x: mktime(x.updated_parsed)))
