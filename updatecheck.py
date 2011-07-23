@@ -3,6 +3,7 @@
 import feedparser
 import pickle
 import os
+import threading
 from time import mktime
 from PyQt4 import QtCore, QtGui
 
@@ -12,12 +13,11 @@ class MSPAChecker(QtGui.QWidget):
         self.mainwindow = parent
         self.refreshRate = 30 # seconds
         self.status = None
+        self.lock = False
         self.timer = QtCore.QTimer(self)
         self.connect(self.timer, QtCore.SIGNAL('timeout()'),
-                self, QtCore.SLOT('check_site()'))
-        self.check_site()
+                self, QtCore.SLOT('check_site_wrapper()'))
         self.timer.start(1000*self.refreshRate)
-        self.lock = False
 
     def save_state(self):
         try:
@@ -43,12 +43,16 @@ class MSPAChecker(QtGui.QWidget):
             msg.show()
 
     @QtCore.pyqtSlot()
-    def check_site(self):
+    def check_site_wrapper(self):
         if not self.mainwindow.config.checkMSPA():
             return
         if self.lock:
             return
         print "Checking MSPA updates..."
+        s = threading.Thread(target=self.check_site)
+        s.start()
+
+    def check_site(self):
         rss = None
         must_save = False
         try:
