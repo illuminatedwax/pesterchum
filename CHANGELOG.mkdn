@@ -58,6 +58,7 @@ CHANGELOG
 * Display channel mode change message - Kiooeht [evacipatedBox]
 * Disable quirks in +c memos - Lexi [lexicalNuance]
 * Founder, admin, and halfop support - Kiooeht [evacipatedBox]
+* Button for direct access to logs directory - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
