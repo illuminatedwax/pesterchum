@@ -876,6 +876,15 @@ class PesterMemo(PesterConvo):
         icon = QtGui.QIcon()
         c.setIcon(icon)
 
+    @QtCore.pyqtSlot()
+    def dumpNetsplit(self):
+        chum = self.mainwindow.profile()
+        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+        msg = chum.memonetsplitmsg(systemColor, self.netsplit)
+        self.textArea.append(convertTags(msg))
+        self.mainwindow.chatlog.log(self.channel, msg)
+        del self.netsplit
+
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def userPresentChange(self, handle, channel, update):
         h = unicode(handle)
@@ -903,7 +912,11 @@ class PesterMemo(PesterConvo):
         chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         # print exit
-        if update == "quit" or update == "left" or update == "nick":
+        if update in ("quit", "left", "nick", "netsplit"):
+            if update == "netsplit":
+                if not hasattr(self, "netsplit"):
+                    self.netsplit = []
+                    QtCore.QTimer.singleShot(1500, self, QtCore.SLOT('dumpNetsplit()'))
             for c in chums:
                 chum = PesterProfile(h)
                 self.userlist.takeItem(self.userlist.row(c))
@@ -915,9 +928,12 @@ class PesterMemo(PesterConvo):
                     grammar = t.getGrammar()
                     allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
                     self.times[h].removeTime(t.getTime())
-                msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, msg)
+                if update == "netsplit":
+                    self.netsplit.extend(initials)
+                else:
+                    msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
+                    self.textArea.append(convertTags(msg))
+                    self.mainwindow.chatlog.log(self.channel, msg)
                 if update == "nick":
                     self.addUser(newnick)
                     newchums = self.userlist.findItems(newnick, QtCore.Qt.MatchFlags(0))

@@ -83,12 +83,16 @@ class PesterLogUserSelect(QtGui.QDialog):
         layout_ok = QtGui.QHBoxLayout()
         layout_ok.addWidget(self.cancel)
         layout_ok.addWidget(self.ok)
+        self.directory = QtGui.QPushButton("LOG DIRECTORY", self)
+        self.connect(self.directory, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('openDir()'))
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(instructions)
         layout_0.addWidget(self.chumsBox)
         layout_0.addWidget(self.search)
         layout_0.addLayout(layout_ok)
+        layout_0.addWidget(self.directory)
 
         self.setLayout(layout_0)
 
@@ -118,6 +122,14 @@ class PesterLogUserSelect(QtGui.QDialog):
     def closeActiveLog(self):
         self.pesterlogviewer.close()
         self.pesterlogviewer = None
+
+    @QtCore.pyqtSlot()
+    def openDir(self):
+        if sys.platform == "darwin":
+            _datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(_datadir, "logs"), QtCore.QUrl.TolerantMode))
+        else:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(os.getcwd(), "logs"), QtCore.QUrl.TolerantMode))
 
 class PesterLogViewer(QtGui.QDialog):
     def __init__(self, chum, config, theme, parent):

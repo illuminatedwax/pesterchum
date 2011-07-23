@@ -14,10 +14,11 @@ class RandomHandler(QtCore.QObject):
         self.mainwindow.sendNotice.emit("?", self.randNick)
 
     def setRandomer(self, r):
-        if r: code = "+"
-        else: code = "-"
-        self.queue.append(code)
-        self.mainwindow.sendNotice.emit(code, self.randNick)
+        if r != self.mainwindow.userprofile.getRandom():
+            if r: code = "+"
+            else: code = "-"
+            self.queue.append(code)
+            self.mainwindow.sendNotice.emit(code, self.randNick)
 
     @QtCore.pyqtSlot()
     def getEncounter(self):

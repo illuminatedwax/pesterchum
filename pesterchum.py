@@ -609,6 +609,8 @@ class userProfile(object):
         self.quirks = quirks
         self.userprofile["quirks"] = self.quirks.plainList()
         self.save()
+    def getRandom(self):
+        return self.randoms
     def setRandom(self, random):
         self.randoms = random
         self.userprofile["randoms"] = random
@@ -1800,7 +1802,8 @@ class PesterWindow(MovingWindow):
             if self.config.memoSound():
                 if self.config.nameSound():
                     initials = self.userprofile.chat.initials()
-                    search = r"\b[%s%s][%s%s]\b" % (initials[0].lower(), initials[0], initials[1].lower(), initials[1])
+                    initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
+                    search = r"\b%s\b" % ("|".join(initials))
                     m = convertTags(msg, "text")
                     if m.find(":") <= 3:
                       m = m[m.find(":"):]
@@ -2208,7 +2211,7 @@ class PesterWindow(MovingWindow):
             msgbox = QtGui.QMessageBox()
             msgbox.setText("This chumhandle has been registered; you may not use it.")
             msgbox.setInformativeText("Your handle is now being changed to %s." % (changedto))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
             ret = msgbox.exec_()
         elif h == self.randhandler.randNick:
             self.randhandler.incoming(msg)
@@ -2261,7 +2264,7 @@ class PesterWindow(MovingWindow):
             l = n.split(":")
             oldnick = l[0]
             newnick = l[1]
-        if update == "quit":
+        if update in ("quit", "netsplit"):
             for c in self.namesdb.keys():
                 try:
                     i = self.namesdb[c].index(n)
@@ -3195,8 +3198,8 @@ class MainProgram(QtCore.QObject):
                    'cannotSendToChan(QString, QString)'),
                   ('tooManyPeeps()',
                    'tooManyPeeps()'),
-                   ('quirkDisable(QString, QString, QString)',
-                    'quirkDisable(QString, QString, QString)')
+                  ('quirkDisable(QString, QString, QString)',
+                   'quirkDisable(QString, QString, QString)')
                   ]
     def connectWidgets(self, irc, widget):
         self.connect(irc, QtCore.SIGNAL('finished()'),

@@ -34,7 +34,6 @@ Bugs
 * right clicking an offline chum and choosing remove asks you why you're reporting someone, and if you hit cancel the menus stop working
 * Closing a timeclone doesn't actually cease for everyone else
 * Kill Zalgo
-* Handle netsplits
 
 Windows Bugs
 ------------

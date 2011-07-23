@@ -396,8 +396,14 @@ class PesterHandler(DefaultCommandHandler):
         helpers.nick(self.client, newnick)
         self.parent.nickCollision.emit(nick, newnick)
     def quit(self, nick, reason):
+        print reason
         handle = nick[0:nick.find("!")]
-        self.parent.userPresentUpdate.emit(handle, "", "quit")
+        server = self.parent.mainwindow.config.server()
+        baseserver = server[server.rfind(".", 0, server.rfind(".")):]
+        if reason.count(baseserver) == 2:
+            self.parent.userPresentUpdate.emit(handle, "", "netsplit")
+        else:
+            self.parent.userPresentUpdate.emit(handle, "", "quit")
         self.parent.moodUpdated.emit(handle, Mood("offline"))
     def kick(self, opnick, channel, handle, reason):
         op = opnick[0:opnick.find("!")]
