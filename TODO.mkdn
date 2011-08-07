@@ -18,10 +18,8 @@ Features
 * Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
 * Explain why a chumhandle is invalid
-* Make some kind of notification when the program is 'closed' but is
-  still running in the system tray, like how MSN does it. ("MSN is still
-  running in the system tray. Right click it to close it. Click here not
-  to show this message again.")
+* Notify on sign on/offs in chumroll (toasts)
+* Resizable memo userlist
 
 Bugs
 ----

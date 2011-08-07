@@ -526,6 +526,8 @@ class userConfig(object):
         return self.config.get('nameSound', True)
     def volume(self):
         return self.config.get('volume', 100)
+    def trayMessage(self):
+        return self.config.get('traymsg', True)
     def set(self, item, setting):
         self.config[item] = setting
         try:
@@ -3070,12 +3072,16 @@ class MainProgram(QtCore.QObject):
                               QtCore.SLOT('changeTrayIcon(int)'))
         self.trayicon.connect(self.widget,
                               QtCore.SIGNAL('closeToTraySignal()'),
-                              self.trayicon,
-                              QtCore.SLOT('show()'))
+                              self,
+                              QtCore.SLOT('trayiconShow()'))
         self.trayicon.connect(self.widget,
                               QtCore.SIGNAL('closeSignal()'),
                               self.trayicon,
                               QtCore.SLOT('mainWindowClosed()'))
+        self.connect(self.trayicon,
+                     QtCore.SIGNAL('messageClicked()'),
+                     self,
+                     QtCore.SLOT('trayMessageClick()'))
 
         self.attempts = 0
 
@@ -3127,6 +3133,18 @@ class MainProgram(QtCore.QObject):
     @QtCore.pyqtSlot(QtGui.QWidget)
     def alertWindow(self, widget):
         self.app.alert(widget)
+
+    @QtCore.pyqtSlot()
+    def trayiconShow(self):
+        self.trayicon.show()
+        if self.widget.config.trayMessage():
+            self.trayicon.showMessage("Pesterchum", "Pesterchum is still running in the system tray.\n\
+Right click to close it.\n\
+Click this message to never see this again.")
+
+    @QtCore.pyqtSlot()
+    def trayMessageClick(self):
+        self.widget.config.set('traymsg', False)
 
     widget2irc = [('sendMessage(QString, QString)',
                    'sendMessage(QString, QString)'),
