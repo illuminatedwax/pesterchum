@@ -1,6 +1,5 @@
 import re
 import random
-from os.path import abspath
 from copy import copy
 from datetime import timedelta
 from PyQt4 import QtGui
@@ -21,8 +20,6 @@ _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 quirkloader = PythonQuirks()
 _functionre = re.compile(r"%s" % quirkloader.funcre())
 _groupre = re.compile(r"\\([0-9]+)")
-
-_path = abspath('.')
 
 def reloadQuirkFunctions():
     quirkloader.load()
@@ -139,7 +136,7 @@ class smiley(object):
         self.string = string
     def convert(self, format):
         if format == "html":
-            return "<img src='%s/smilies/%s' alt='%s' title='%s' />" % (_path, smiledict[self.string], self.string, self.string)
+            return "<img src='smilies/%s' alt='%s' title='%s' />" % (smiledict[self.string], self.string, self.string)
         else:
             return self.string
 class mecmd(object):
@@ -371,7 +368,7 @@ def img2smiley(string):
     string = unicode(string)
     def imagerep(mo):
         return reverse_smiley[mo.group(1)]
-    string = re.sub(r'<img src=".*/smilies/(\S+)" />', imagerep, string)
+    string = re.sub(r'<img src="smilies/(\S+)" />', imagerep, string)
     return string
 
 smiledict = {
