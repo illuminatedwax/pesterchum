@@ -11,7 +11,11 @@ from dataobjs import Mood, PesterProfile
 from generic import PesterList
 from version import _pcVersion
 
-logging.basicConfig(level=logging.INFO)
+import sys, os
+if sys.platform == "darwin" and os.path.abspath('.').find('.app') != -1:
+    logging.basicConfig(level=logging.WARNING)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 class PesterIRC(QtCore.QThread):
     def __init__(self, config, window):
