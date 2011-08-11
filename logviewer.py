@@ -1,6 +1,7 @@
 import os, sys
 import codecs
 import re
+import ostools
 from time import strftime, strptime
 from PyQt4 import QtGui, QtCore
 from generic import RightClickList, RightClickTree
@@ -41,10 +42,7 @@ class PesterLogUserSelect(QtGui.QDialog):
         self.theme = theme
         self.parent = parent
         self.handle = parent.profile().handle
-        if sys.platform != "darwin":
-            self.logpath = "logs"
-        else:
-            self.logpath = _datadir+"logs"
+        self.logpath = _datadir+"logs"
 
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
         self.setWindowTitle("Pesterlogs")
@@ -125,8 +123,8 @@ class PesterLogUserSelect(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def openDir(self):
-        if sys.platform == "darwin":
-            _datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
+        if ostools.isOSX():
+            _datadir = ostools.getDataDir()
             QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(_datadir, "logs"), QtCore.QUrl.TolerantMode))
         else:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(os.getcwd(), "logs"), QtCore.QUrl.TolerantMode))
@@ -143,10 +141,7 @@ class PesterLogViewer(QtGui.QDialog):
         self.handle = parent.profile().handle
         self.chum = chum
         self.convos = {}
-        if sys.platform != "darwin":
-            self.logpath = "logs"
-        else:
-            self.logpath = _datadir+"logs"
+        self.logpath = _datadir+"logs"
 
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
         self.setWindowTitle("Pesterlogs with " + self.chum)

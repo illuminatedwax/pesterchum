@@ -11,8 +11,8 @@ from dataobjs import Mood, PesterProfile
 from generic import PesterList
 from version import _pcVersion
 
-import sys, os
-if sys.platform == "darwin" and os.path.abspath('.').find('.app') != -1:
+import ostools
+if ostools.isOSXBundle():
     logging.basicConfig(level=logging.WARNING)
 else:
     logging.basicConfig(level=logging.INFO)
