@@ -1,5 +1,5 @@
 from PyQt4 import QtGui, QtCore
-import re
+import re, ostools
 
 from os import remove
 from generic import RightClickList, RightClickTree, MultiTextDialog
@@ -984,13 +984,14 @@ class PesterOptions(QtGui.QDialog):
         if self.config.opvoiceMessages():
             self.memomessagecheck.setChecked(True)
 
-        self.animationscheck = QtGui.QCheckBox("Use animated smilies", self)
-        if self.config.animations():
-            self.animationscheck.setChecked(True)
-        animateLabel = QtGui.QLabel("(Disable if you leave chats open for LOOOONG periods of time)")
-        font = animateLabel.font()
-        font.setPointSize(8)
-        animateLabel.setFont(font)
+        if not ostools.isOSXBundle():
+            self.animationscheck = QtGui.QCheckBox("Use animated smilies", self)
+            if self.config.animations():
+                self.animationscheck.setChecked(True)
+            animateLabel = QtGui.QLabel("(Disable if you leave chats open for LOOOONG periods of time)")
+            font = animateLabel.font()
+            font.setPointSize(8)
+            animateLabel.setFont(font)
 
         self.userlinkscheck = QtGui.QCheckBox("Disable #Memo and @User Links", self)
         self.userlinkscheck.setChecked(self.config.disableUserLinks())
@@ -1121,8 +1122,9 @@ class PesterOptions(QtGui.QDialog):
         layout_chat.addWidget(self.timestampBox)
         layout_chat.addWidget(self.secondscheck)
         layout_chat.addWidget(self.memomessagecheck)
-        layout_chat.addWidget(self.animationscheck)
-        layout_chat.addWidget(animateLabel)
+        if not ostools.isOSXBundle():
+            layout_chat.addWidget(self.animationscheck)
+            layout_chat.addWidget(animateLabel)
         if parent.randhandler.running:
             layout_chat.addWidget(self.randomscheck)
         # Re-enable these when it's possible to disable User and Memo links

@@ -9,7 +9,7 @@ def isWin32():
     return platform == "win32"
 
 def isOSXBundle():
-    return isOSX() and path.abspath('.').find(".app")
+    return isOSX() and (path.abspath('.').find(".app") != -1)
 
 def getDataDir():
     if isOSX():

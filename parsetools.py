@@ -1,5 +1,6 @@
 import re
 import random
+import ostools
 from copy import copy
 from datetime import timedelta
 from PyQt4 import QtGui
@@ -424,6 +425,16 @@ smiledict = {
     ":perky:": "perky.png",
     ":acceptant:": "acceptant.png",
     }
+
+if ostools.isOSXBundle():
+    for emote in smiledict:
+        graphic = smiledict[emote]
+        if graphic.find(".gif"):
+            graphic = graphic.replace(".gif", ".png")
+            smiledict[emote] = graphic
+
+
+
 
 reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
 _smilere = re.compile("|".join(smiledict.keys()))
