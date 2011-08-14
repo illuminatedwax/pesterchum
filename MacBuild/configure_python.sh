@@ -10,7 +10,7 @@ then
     exit 1
 fi
 cd python
-if [! -d python ]
+if [ ! -d python ]
 then
     echo "Rename your python folder to python."
     exit 1
@@ -19,5 +19,5 @@ if [ -e makefile ]
 then
     make clean
 fi
-./configure --enable-framework --enable-universalsdk=/ --with-universal-archs=intel MACOSX_DEPLOYMENT_TARGET=10.6 
+./configure --enable-framework --enable-universalsdk=/ --with-universal-archs=intel MACOSX_DEPLOYMENT_TARGET=10.5 
 echo "---~ Done ~---"
