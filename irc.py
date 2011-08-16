@@ -11,7 +11,11 @@ from dataobjs import Mood, PesterProfile
 from generic import PesterList
 from version import _pcVersion
 
-logging.basicConfig(level=logging.INFO)
+import ostools
+if ostools.isOSXBundle():
+    logging.basicConfig(level=logging.WARNING)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 class PesterIRC(QtCore.QThread):
     def __init__(self, config, window):
@@ -396,7 +400,7 @@ class PesterHandler(DefaultCommandHandler):
         helpers.nick(self.client, newnick)
         self.parent.nickCollision.emit(nick, newnick)
     def quit(self, nick, reason):
-        print reason
+        #print reason
         handle = nick[0:nick.find("!")]
         server = self.parent.mainwindow.config.server()
         baseserver = server[server.rfind(".", 0, server.rfind(".")):]

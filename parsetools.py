@@ -1,5 +1,6 @@
 import re
 import random
+import ostools
 from copy import copy
 from datetime import timedelta
 from PyQt4 import QtGui
@@ -372,45 +373,45 @@ def img2smiley(string):
     return string
 
 smiledict = {
-    ":rancorous:": "pc_rancorous.gif",
-    ":apple:": "apple.gif",
-    ":bathearst:": "bathearst.gif",
+    ":rancorous:": "pc_rancorous.png",
+    ":apple:": "apple.png",
+    ":bathearst:": "bathearst.png",
     ":cathearst:": "cathearst.png",
-    ":woeful:": "pc_bemused.gif",
-    ":sorrow:": "blacktear.gif",
-    ":pleasant:": "pc_pleasant.gif",
+    ":woeful:": "pc_bemused.png",
+    ":sorrow:": "blacktear.png",
+    ":pleasant:": "pc_pleasant.png",
     ":blueghost:": "blueslimer.gif",
     ":slimer:": "slimer.gif",
-    ":candycorn:": "candycorn.gif",
+    ":candycorn:": "candycorn.png",
     ":cheer:": "cheer.gif",
     ":duhjohn:": "confusedjohn.gif",
-    ":datrump:": "datrump.gif",
-    ":facepalm:": "facepalm.gif",
+    ":datrump:": "datrump.png",
+    ":facepalm:": "facepalm.png",
     ":bonk:": "headbonk.gif",
-    ":mspa:": "mspa_face.gif",
+    ":mspa:": "mspa_face.png",
     ":gun:": "mspa_reader.gif",
     ":cal:": "lilcal.png",
-    ":amazedfirman:": "pc_amazedfirman.gif",
-    ":amazed:": "pc_amazed.gif",
-    ":chummy:": "pc_chummy.gif",
-    ":cool:": "pccool.gif",
-    ":smooth:": "pccool.gif",
-    ":distraughtfirman": "pc_distraughtfirman.gif",
-    ":distraught:": "pc_distraught.gif",
-    ":insolent:": "pc_insolent.gif",
-    ":bemused:": "pc_bemused.gif",
-    ":3:": "pckitty.gif",
-    ":mystified:": "pc_mystified.gif",
-    ":pranky:": "pc_pranky.gif",
-    ":tense:": "pc_tense.gif",
+    ":amazedfirman:": "pc_amazedfirman.png",
+    ":amazed:": "pc_amazed.png",
+    ":chummy:": "pc_chummy.png",
+    ":cool:": "pccool.png",
+    ":smooth:": "pccool.png",
+    ":distraughtfirman": "pc_distraughtfirman.png",
+    ":distraught:": "pc_distraught.png",
+    ":insolent:": "pc_insolent.png",
+    ":bemused:": "pc_bemused.png",
+    ":3:": "pckitty.png",
+    ":mystified:": "pc_mystified.png",
+    ":pranky:": "pc_pranky.png",
+    ":tense:": "pc_tense.png",
     ":record:": "record.gif",
     ":squiddle:": "squiddle.gif",
     ":tab:": "tab.gif",
-    ":beetip:": "theprofessor.gif",
+    ":beetip:": "theprofessor.png",
     ":flipout:": "weasel.gif",
-    ":befuddled:": "what.gif",
-    ":pumpkin:": "whatpumpkin.gif",
-    ":trollcool:": "trollcool.gif",
+    ":befuddled:": "what.png",
+    ":pumpkin:": "whatpumpkin.png",
+    ":trollcool:": "trollcool.png",
     ":jadecry:": "jadespritehead.gif",
     ":ecstatic:": "ecstatic.png",
     ":relaxed:": "relaxed.png",
@@ -422,8 +423,18 @@ smiledict = {
     ":manipulative:": "manipulative.png",
     ":vigorous:": "vigorous.png",
     ":perky:": "perky.png",
-    ":acceptant:": "acceptant.gif",
+    ":acceptant:": "acceptant.png",
     }
+
+if ostools.isOSXBundle():
+    for emote in smiledict:
+        graphic = smiledict[emote]
+        if graphic.find(".gif"):
+            graphic = graphic.replace(".gif", ".png")
+            smiledict[emote] = graphic
+
+
+
 
 reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
 _smilere = re.compile("|".join(smiledict.keys()))

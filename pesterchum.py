@@ -12,6 +12,7 @@ import codecs
 import re
 import socket
 import platform
+import ostools
 from time import strftime, time
 import threading, Queue
 
@@ -47,25 +48,19 @@ if not ((major > 4) or (major == 4 and minor >= 6)):
 #  OSX's data directory and it doesn't hurt to have everything set up before
 #  plowing on. :o)
 # ~Lex
-_datadir = os.path.join(str(QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)),"Pesterchum/")
-if sys.platform == "darwin":
-    if not os.path.exists(_datadir):
-        os.mkdir(_datadir)
-    if not os.path.exists(_datadir+"profiles"):
-        os.mkdir(_datadir+"profiles")
-    if not os.path.exists(_datadir+"pesterchum.js"):
-        f = open(_datadir+"pesterchum.js", 'w')
-        f.write("{}")
-        f.close()
-else:
-    if not os.path.exists("logs"):
-        os.mkdir("logs")
-    if not os.path.exists("profiles"):
-        os.mkdir("profiles")
-    if not os.path.exists("pesterchum.js"):
-        f = open("pesterchum.js", 'w')
-        f.write("{}")
-        f.close()
+_datadir = ostools.getDataDir()
+# See, what I've done here is that _datadir is '' if we're not on OSX, so the
+#  concatination is the same as if it wasn't there.
+if not os.path.exists(_datadir):
+    os.mkdir(_datadir)
+if not os.path.exists(_datadir+"profiles"):
+    os.mkdir(_datadir+"profiles")
+if not os.path.exists(_datadir+"pesterchum.js"):
+    f = open(_datadir+"pesterchum.js", 'w')
+    f.write("{}")
+    f.close()
+if not os.path.exists(_datadir+"logs"):
+    os.mkdir(_datadir+"logs")
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
@@ -126,10 +121,7 @@ class PesterLog(object):
         self.parent = parent
         self.handle = handle
         self.convos = {}
-        if sys.platform != "darwin":
-            self.logpath = "logs"
-        else:
-            self.logpath = _datadir+"logs"
+        self.logpath = _datadir+"logs"
 
     def log(self, handle, msg):
         if self.parent.config.time12Format():
@@ -183,10 +175,7 @@ class PesterLog(object):
 
 class PesterProfileDB(dict):
     def __init__(self):
-        if sys.platform != "darwin":
-            self.logpath = "logs"
-        else:
-            self.logpath = _datadir+"logs"
+        self.logpath = _datadir+"logs"
 
         if not os.path.exists(self.logpath):
             os.makedirs(self.logpath)
@@ -250,12 +239,9 @@ class PesterProfileDB(dict):
 
 class pesterTheme(dict):
     def __init__(self, name, default=False):
-        if sys.platform != "darwin":
+        self.path = _datadir+"themes/%s" % (name)
+        if not os.path.exists(self.path):
             self.path = "themes/%s" % (name)
-        else:
-            self.path = _datadir+"themes/%s" % (name)
-            if not os.path.exists(self.path):
-                self.path = "themes/%s" % (name)
 
         self.name = name
         fp = open(self.path+"/style.js")
@@ -329,10 +315,7 @@ class userConfig(object):
         # Use for bit flag blink
         self.PBLINK = 1
         self.MBLINK = 2
-        if sys.platform != "darwin":
-            self.filename = "pesterchum.js"
-        else:
-            self.filename = _datadir+"pesterchum.js"
+        self.filename = _datadir+"pesterchum.js"
         fp = open(self.filename)
         self.config = json.load(fp)
         fp.close()
@@ -341,10 +324,7 @@ class userConfig(object):
         else:
             self.userprofile = None
 
-        if sys.platform != "darwin":
-            self.logpath = "logs"
-        else:
-            self.logpath = _datadir+"logs"
+        self.logpath = _datadir+"logs"
 
         if not os.path.exists(self.logpath):
             os.makedirs(self.logpath)
@@ -541,11 +521,13 @@ class userConfig(object):
         fp.close()
     def availableThemes(self):
         themes = []
-        for dirname, dirnames, filenames in os.walk('themes'):
+        # Load user themes.
+        for dirname, dirnames, filenames in os.walk(_datadir+'themes'):
             for d in dirnames:
                 themes.append(d)
-        if sys.platform == "darwin":
-            for dirname, dirnames, filenames in os.walk(_datadir+'themes'):
+        # For OSX, also load embedded themes.
+        if ostools.isOSX():
+            for dirname, dirnames, filenames in os.walk('themes'):
                 for d in dirnames:
                     if d not in themes:
                         themes.append(d)
@@ -553,10 +535,7 @@ class userConfig(object):
         return themes
     def availableProfiles(self):
         profs = []
-        if sys.platform == "darwin":
-            profileloc = _datadir+'profiles'
-        else:
-            profileloc = 'profiles'
+        profileloc = _datadir+'profiles'
         for dirname, dirnames, filenames in os.walk(profileloc):
             for filename in filenames:
                 l = len(filename)
@@ -566,10 +545,7 @@ class userConfig(object):
         return [userProfile(p) for p in profs]
 class userProfile(object):
     def __init__(self, user):
-        if sys.platform != "darwin":
-            self.profiledir = "profiles"
-        else:
-            self.profiledir = _datadir+"profiles"
+        self.profiledir = _datadir+"profiles"
 
         if type(user) is PesterProfile:
             self.chat = user

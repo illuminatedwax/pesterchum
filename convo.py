@@ -345,6 +345,10 @@ class PesterText(QtGui.QTextEdit):
                            "%s: " % (initials)]
             lexmsg.append(colorEnd("</c>"))
             self.append("<span style=\"color:#000000\">" + time + convertTags(lexmsg) + "</span>")
+            #self.append('<img src="/Users/lexi/pesterchum-lex/smilies/tab.gif" />'
+            #            + '<img src="/Users/lexi/pesterchum/smilies/tab.gif" />'
+            #            + '<img src="/Applications/Pesterchum.app/Contents/Resources/smilies/tab.gif" />'
+            #            + '<img src="smilies/tab.gif" />');
             if chum is me:
                 window.chatlog.log(parent.chum.handle, lexmsg)
             else:
