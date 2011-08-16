@@ -79,6 +79,7 @@ from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
 from randomer import RandomHandler
 from updatecheck import MSPAChecker
+from toast import PesterToastMachine, PesterToast
 
 canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
                  "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
@@ -1507,6 +1508,11 @@ class PesterWindow(MovingWindow):
             themeWarning.setText("Theme Error: %s" % (inst))
             themeWarning.exec_()
             self.theme = pesterTheme("pesterchum")
+
+        self.tm = PesterToastMachine(self, lambda: self.theme["main/windowtitle"], "default", extras={'pester': PesterToast})
+        self.tm.run()
+        t = self.tm.Toast(self.tm.appName, "!!---Started up ToastMachine---!!")
+        t.show()
 
         self.chatlog = PesterLog(self.profile().handle, self)
 
