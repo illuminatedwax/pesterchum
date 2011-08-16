@@ -51,7 +51,7 @@ if not ((major > 4) or (major == 4 and minor >= 6)):
 _datadir = ostools.getDataDir()
 # See, what I've done here is that _datadir is '' if we're not on OSX, so the
 #  concatination is the same as if it wasn't there.
-if not os.path.exists(_datadir):
+if _datadir and not os.path.exists(_datadir):
     os.mkdir(_datadir)
 if not os.path.exists(_datadir+"profiles"):
     os.mkdir(_datadir+"profiles")

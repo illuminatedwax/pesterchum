@@ -8,6 +8,8 @@ from generic import RightClickList, RightClickTree
 from parsetools import convertTags
 from convo import PesterText
 
+_datadir = ostools.getDataDir()
+
 class PesterLogSearchInput(QtGui.QLineEdit):
     def __init__(self, theme, parent=None):
         QtGui.QLineEdit.__init__(self, parent)
@@ -124,7 +126,6 @@ class PesterLogUserSelect(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def openDir(self):
         if ostools.isOSX():
-            _datadir = ostools.getDataDir()
             QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(_datadir, "logs"), QtCore.QUrl.TolerantMode))
         else:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(os.getcwd(), "logs"), QtCore.QUrl.TolerantMode))
