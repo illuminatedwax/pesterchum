@@ -1,6 +1,6 @@
 # Adapted from Eco-Mono's F5Stuck RSS Client
 
-import feedparser
+from libs import feedparser
 import pickle
 import os
 import threading
