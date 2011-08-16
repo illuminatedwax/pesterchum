@@ -622,13 +622,14 @@ class PesterMemo(PesterConvo):
             color = self.mainwindow.profile().color
         else:
             color = chumdb.getColor(handle, defaultcolor)
+        item.box = (handle == "evacipatedBox")
         item.setTextColor(color)
         item.founder = founder
         item.op = op
         item.halfop = halfop
         item.admin = admin
         item.voice = voice
-        self.umodes = ["founder", "op", "halfop", "admin", "voice"]
+        self.umodes = ["box", "founder", "op", "halfop", "admin", "voice"]
         self.iconCrap(item)
         self.userlist.addItem(item)
         self.sortUsers()
@@ -639,7 +640,7 @@ class PesterMemo(PesterConvo):
         while listing is not None:
             users.append(self.userlist.takeItem(0))
             listing = self.userlist.item(0)
-        users.sort(key=lambda x: ((0 if x.founder else (1 if x.op else (2 if x.halfop else (3 if x.admin else (4 if x.voice else 5))))), x.text()))
+        users.sort(key=lambda x: ((-1 if x.box else (0 if x.founder else (1 if x.op else (2 if x.halfop else (3 if x.admin else (4 if x.voice else 5)))))), x.text()))
         for u in users:
             self.userlist.addItem(u)
 
@@ -870,7 +871,10 @@ class PesterMemo(PesterConvo):
     def iconCrap(self, c, down=True):
         for m in (self.umodes if down else reversed(self.umodes)):
             if eval("c."+m):
-                icon = PesterIcon(self.mainwindow.theme["memos/"+m+"/icon"])
+                if m == "box":
+                    icon = PesterIcon("smilies/box.png")
+                else:
+                    icon = PesterIcon(self.mainwindow.theme["memos/"+m+"/icon"])
                 c.setIcon(icon)
                 return
         icon = QtGui.QIcon()
