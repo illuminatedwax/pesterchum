@@ -13,6 +13,7 @@ import re
 import socket
 import platform
 from time import strftime, time
+import threading, Queue
 
 missing = []
 try:
@@ -1714,7 +1715,7 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def updatePC(self):
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(self.updatemenu.url, QtCore.QUrl.TolerantMode))
+        version.updateDownload(str(self.updatemenu.url))
         self.updatemenu = None
     @QtCore.pyqtSlot()
     def noUpdatePC(self):
@@ -3119,11 +3120,9 @@ class MainProgram(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def runUpdateSlot(self):
-        import Queue
-        import threading
         q = Queue.Queue(1)
-        s = threading.Thread(target=version.updateCheck, args=(q,0)) # the 0 is to stop
-        w = threading.Thread(target=self.showUpdate, args=(q,0))     # stupid syntax errors
+        s = threading.Thread(target=version.updateCheck, args=(q,))
+        w = threading.Thread(target=self.showUpdate, args=(q,))
         w.start()
         s.start()
         self.widget.config.set('lastUCheck', int(time()))
@@ -3248,7 +3247,7 @@ Click this message to never see this again.")
         self.disconnect(self.irc, QtCore.SIGNAL('finished()'),
                         self, QtCore.SLOT('restartIRC()'))
 
-    def showUpdate(self, q,num):
+    def showUpdate(self, q):
         new_url = q.get()
         if new_url[0]:
             self.widget.pcUpdate.emit(new_url[0], new_url[1])

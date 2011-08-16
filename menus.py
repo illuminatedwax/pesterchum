@@ -1513,7 +1513,7 @@ class UpdatePesterchum(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.title)
 
-        self.ok = QtGui.QPushButton("D0WNL04D N0W", self)
+        self.ok = QtGui.QPushButton("D0WNL04D 4ND 1N5T4LL N0W", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('accept()'))
