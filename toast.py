@@ -5,9 +5,8 @@ from PyQt4 import QtGui, QtCore
 
 try:
     import pynotify
-    pynote = True
 except:
-    pynote = False
+    pynotify = None
 
 class DefaultToast(object):
     def __init__(self, title, msg, icon):
@@ -84,9 +83,12 @@ class ToastMachine(object):
             if self in self.parent.toasts:
                 self.parent.toasts.remove(self)
 
-    def __init__(self, parent, name, type="default", types={'default'  : DefaultToast,
-                                                            'libnotify': pynotify.Notification},
+    def __init__(self, parent, name, type="default", types=({'default'  : DefaultToast,
+                                                            'libnotify': pynotify.Notification}
+                                                            if pynotify else
+                                                            {'default'  : DefaultToast}),
                                                      extras={}):
+        print types
         self.mainwindow = parent
         self.name       = name
         types.update(extras)
@@ -96,7 +98,7 @@ class ToastMachine(object):
 
         if type == "libnotify":
             try:
-                if not pynote or not pynotify.init("ToastMachine"):
+                if not pynotify or not pynotify.init("ToastMachine"):
                     raise Exception
             except:
                 print "Problem initilizing pynotify"
@@ -174,8 +176,10 @@ class PesterToast(QtGui.QFrame, DefaultToast):
 
 class PesterToastMachine(ToastMachine, QtCore.QObject):
     def __init__(self, parent, name, type="default",
-                 types={'default'  : DefaultToast,
-                        'libnotify': pynotify.Notification},
+                 types=({'default'  : DefaultToast,
+                        'libnotify' : pynotify.Notification}
+                        if pynotify else
+                        {'default' : DefaultToast}),
                  extras={}):
         ToastMachine.__init__(self, parent, name, type, types, extras)
         QtCore.QObject.__init__(self, parent)
