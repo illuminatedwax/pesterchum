@@ -88,7 +88,6 @@ class ToastMachine(object):
                                                             if pynotify else
                                                             {'default'  : DefaultToast}),
                                                      extras={}):
-        print types
         self.mainwindow = parent
         self.name       = name
         types.update(extras)

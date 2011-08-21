@@ -359,6 +359,12 @@ class PesterMemo(PesterConvo):
         self.textInput = MemoInput(self.mainwindow.theme, self)
         self.textInput.setFocus()
 
+        self.miniUserlist = QtGui.QPushButton(">\n>", self)
+        #self.miniUserlist.setStyleSheet("border:1px solid #a68168; border-width: 2px 0px 2px 2px; height: 90px; width: 10px; color: #cd8f9d; font-family: 'Arial'; background: white; margin-left: 2px;")
+        self.connect(self.miniUserlist, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('toggleUserlist()'))
+
+
         self.userlist = RightClickList(self)
         self.userlist.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding))
         self.userlist.optionsMenu = QtGui.QMenu(self)
@@ -449,6 +455,7 @@ class PesterMemo(PesterConvo):
 
         layout_1 = QtGui.QHBoxLayout()
         layout_1.addLayout(layout_0)
+        layout_1.addWidget(self.miniUserlist)
         layout_1.addWidget(self.userlist)
 
 #        layout_1 = QtGui.QGridLayout()
@@ -488,6 +495,17 @@ class PesterMemo(PesterConvo):
         self.newmessage = False
         self.history = PesterHistory()
         self.applyquirks = True
+
+    @QtCore.pyqtSlot()
+    def toggleUserlist(self):
+        if self.userlist.isHidden():
+            self.userlist.show()
+            self.miniUserlist.setText(">\n>")
+            self.miniUserlist.setStyleSheet("%s border-width: 2px 0px 2px 2px;" % self.miniUserlist.styleSheet())
+        else:
+            self.userlist.hide()
+            self.miniUserlist.setText("<\n<")
+            self.miniUserlist.setStyleSheet("%s border-width: 2px;" % self.miniUserlist.styleSheet())
 
     def title(self):
         return self.channel
@@ -542,6 +560,13 @@ class PesterMemo(PesterConvo):
         else:
             self.userlist.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s }" % (theme["memos/userlist/style"], scrolls, "background-color: black;"))
         self.userlist.setFixedWidth(theme["memos/userlist/width"])
+
+        if self.userlist.isHidden():
+            borders = "border-width: 2px;"
+        else:
+            borders = "border-width: 2px 0px 2px 2px;"
+        self.miniUserlist.setStyleSheet("%s padding: 0px; margin: 0px; margin-left: 5px; width: 10px; height: 90px; %s" % (theme["memos/userlist/style"], borders))
+
         self.addchumAction.setText(theme["main/menus/rclickchumlist/addchum"])
         self.banuserAction.setText(theme["main/menus/rclickchumlist/banuser"])
         self.opAction.setText(theme["main/menus/rclickchumlist/opuser"])

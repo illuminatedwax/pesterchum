@@ -247,7 +247,7 @@
   },
   "margins": {"top": 10, "bottom": 10, "left": 9, "right": 4 },
   "userlist": { "width": 125,
-                "style": "font-size: 12px; background: white; margin-left: 5px; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
+                "style": "font-size: 12px; background: white; margin-bottom: 5px; border:2px solid #c2c2c2; padding: 5px; font-family: 'Arial';selection-background-color:rgb(200,200,200);"
               },
   "time": { "text": { "width": 75,
                       "style": "color: black; font:bold;  border:1px solid #c2c2c2; background: white; height: 19px;"
