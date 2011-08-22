@@ -18,7 +18,7 @@ Features
 * Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
 * Explain why a chumhandle is invalid
-* Notify on sign on/offs in chumroll (toasts)
+* Fully working Toasts
 * Auto download/install updates via Windows installer
 
 Bugs

@@ -60,6 +60,7 @@ CHANGELOG
 * Founder, admin, and halfop support - Kiooeht [evacipatedBox]
 * Button for direct access to logs directory - Kiooeht [evacipatedBox]
 * Minimizable memo userlist - Kiooeht [evacipatedBox] (Idea: [alGore], [lostGash])
+* Chumroll notifications on chum sign-in/out - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]

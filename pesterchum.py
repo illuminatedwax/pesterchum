@@ -641,16 +641,42 @@ class chumListing(QtGui.QTreeWidgetItem):
         self.chum = chum
         self.handle = chum.handle
         self.setMood(Mood("offline"))
+        self.status = None
     def setMood(self, mood):
+        if self.mainwindow.chumList.notify:
+            #print "%s -> %s" % (self.chum.mood.name(), mood.name())
+            if mood.name() == "offline" and self.chum.mood.name() != "offline":
+                #print "OFFLINE NOTIFY: " + self.handle
+                uri = "file://" + os.path.abspath(os.path.curdir) + "/themes/enamel/distraught2.gif"
+                n = self.mainwindow.tm.Toast(self.mainwindow.tm.appName,
+                                          "%s is Offline" % (self.handle), uri)
+                #n.show()
+            elif mood.name() != "offline" and self.chum.mood.name() == "offline":
+                #print "ONLINE NOTIFY: " + self.handle
+                uri = "file://" + os.path.abspath(os.path.curdir) + "/themes/enamel/chummy2.gif"
+                n = self.mainwindow.tm.Toast(self.mainwindow.tm.appName,
+                                          "%s is Online" % (self.handle), uri)
+                #n.show()
+        login = False
+        logout = False
+        if mood.name() == "offline" and self.chum.mood.name() != "offline":
+            logout = True
+        elif mood.name() != "offline" and self.chum.mood.name() == "offline":
+            login = True
         self.chum.mood = mood
-        self.updateMood()
+        self.updateMood(login=login, logout=logout)
     def setColor(self, color):
         self.chum.color = color
-    def updateMood(self, unblock=False):
+    def updateMood(self, unblock=False, login=False, logout=False):
         mood = self.chum.mood
         self.mood = mood
         icon = self.mood.icon(self.mainwindow.theme)
-        self.setIcon(0, icon)
+        if login:
+            self.login()
+        elif logout:
+            self.logout()
+        else:
+            self.setIcon(0, icon)
         try:
             self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
         except KeyError:
@@ -662,6 +688,23 @@ class chumListing(QtGui.QTreeWidgetItem):
             self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods"][self.mood.name()]["color"]))
         except KeyError:
             self.setTextColor(0, QtGui.QColor(self.mainwindow.theme["main/chums/moods/chummy/color"]))
+    def login(self):
+        self.setIcon(0, PesterIcon("themes/arrow_right.png"))
+        self.status = "in"
+        QtCore.QTimer.singleShot(5000, self.doneLogin)
+    def doneLogin(self):
+        icon = self.mood.icon(self.mainwindow.theme)
+        self.setIcon(0, icon)
+    def logout(self):
+        self.setIcon(0, PesterIcon("themes/arrow_left.png"))
+        self.status = "out"
+        QtCore.QTimer.singleShot(5000, self.doneLogout)
+    def doneLogout(self):
+        hideoff = self.mainwindow.config.hideOfflineChums()
+        icon = self.mood.icon(self.mainwindow.theme)
+        self.setIcon(0, icon)
+        if hideoff and self.status and self.status == "out":
+            self.mainwindow.chumList.takeItem(self)
     def __lt__(self, cl):
         h1 = self.handle.lower()
         h2 = cl.handle.lower()
@@ -670,6 +713,8 @@ class chumListing(QtGui.QTreeWidgetItem):
 class chumArea(RightClickTree):
     def __init__(self, chums, parent=None):
         QtGui.QTreeWidget.__init__(self, parent)
+        self.notify = False
+        QtCore.QTimer.singleShot(5000, self, QtCore.SLOT('beginNotify()'))
         self.mainwindow = parent
         theme = self.mainwindow.theme
         self.chums = chums
@@ -743,6 +788,11 @@ class chumArea(RightClickTree):
 
         self.connect(self, QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
                      self, QtCore.SLOT('expandGroup()'))
+
+    @QtCore.pyqtSlot()
+    def beginNotify(self):
+        print "BEGIN NOTIFY"
+        self.notify = True
 
     def getOptionsMenu(self):
         text = str(self.currentItem().text(0))
@@ -1036,7 +1086,7 @@ class chumArea(RightClickTree):
                 for c in chums:
                     if (hasattr(c, 'mood')):
                         c.setMood(mood)
-                    self.takeItem(c)
+                    #self.takeItem(c)
                 chums = []
         for c in chums:
             if (hasattr(c, 'mood')):
