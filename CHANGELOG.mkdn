@@ -3,10 +3,35 @@ Pesterchum 3.41
 
 Visit http://nova.xzibition.com/~illuminatedwax/help.html for tutorial.
 
-Visit https://github.com/illuminatedwax/pesterchum for git access and source code.
+**Stable**: Visit https://github.com/illuminatedwax/pesterchum for git access and source code.
+
+**Bleeding Edge**: Visit https://github.com/kiooeht/pesterchum for git access and source code.
+
+**Mac**: For Mac specific git access and source code visit https://github.com/Lexicality/pesterchum.
+
+(Note: Bleeding Edge is up-to-date with all Mac specific changes.)
 
 CHANGELOG
 ---------
+### 3.41.2
+* Set IRC away on idle - Kiooeht [evacipatedBox]
+* Remote quirk shutoff in memos - Kiooeht [evacipatedBox]
+* Compress exit dumps into one line - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Display channel mode change message - Kiooeht [evacipatedBox]
+* Disable quirks in +c memos - Lexi [lexicalNuance]
+* Founder, admin, and halfop support - Kiooeht [evacipatedBox]
+* Button for direct access to logs directory - Kiooeht [evacipatedBox]
+* Auto-update from zip and tar - Kiooeht [evacipatedBox]
+* Minimizable memo userlist - Kiooeht [evacipatedBox] (Idea: [alGore], [lostGash])
+* Chumroll notifications on chum sign-in/out - Kiooeht [evacipatedBox]
+* Bug fixes
+    * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
+    * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
+    * Alt characters don't break on random replace - Kiooeht [evacipatedBox]
+    * Trollian 2.5 tray icon is now Trollian icon - Kiooeht [evacipatedBox]
+* Mac Bug fixes
+    * Create all datadir stuff - Lexi [lexicalNuance]
+
 ### 3.41
 * Individually turn quirks on and off - Kiooeht [evacipatedBox]
 * More canon trollian theme timeline indicators - [binaryCabalist]
@@ -52,15 +77,6 @@ CHANGELOG
 * MSPA comic update notifier - Kiooeht [evacipatedBox]
 * Volume control - Kiooeht [evacipatedBox]
 * Debug mode - illuminatedwax [ghostDunk]
-* Set IRC away on idle - Kiooeht [evacipatedBox]
-* Remote quirk shutoff in memos - Kiooeht [evacipatedBox]
-* Compress exit dumps into one line - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
-* Display channel mode change message - Kiooeht [evacipatedBox]
-* Disable quirks in +c memos - Lexi [lexicalNuance]
-* Founder, admin, and halfop support - Kiooeht [evacipatedBox]
-* Button for direct access to logs directory - Kiooeht [evacipatedBox]
-* Minimizable memo userlist - Kiooeht [evacipatedBox] (Idea: [alGore], [lostGash])
-* Chumroll notifications on chum sign-in/out - Kiooeht [evacipatedBox]
 * Bug fixes
     * Logviewer updates - Kiooeht [evacipatedBox]
     * Memo scrollbar thing - Kiooeht [evacipatedBox]
@@ -78,12 +94,6 @@ CHANGELOG
     * Chat input box right-click menus - Kiooeht [evacipatedBox]
     * Don't overflow random colours into colourless messages - Kiooeht [evacipatedBox]
     * Only open links on left click - Kiooeht [evacipatedBox]
-    * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
-    * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
-    * Alt characters don't break on random replace - Kiooeht [evacipatedBox]
-    * Trollian 2.5 tray icon is now Trollian icon - Kiooeht [evacipatedBox]
-* Mac Bug fixes
-    * Create all datadir stuff - Lexi [lexicalNuance]
 
 ### 3.14.1
 * Pesterchum 3.14 - illuminatedwax [ghostDunk]

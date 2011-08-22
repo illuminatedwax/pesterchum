@@ -4,16 +4,16 @@ Todo
 Features
 --------
 * OOC
-* log viewer needs to have BBCode/HTML/Text copy modes
-* copy quirks between profiles?
+* Log viewer needs to have BBCode/HTML/Text copy modes
+* Copy quirks between profiles?
 * More complex quirks: by-sound
 * Spy mode
 * Turn @ and # links on/off?
-* "someone has friended you" notifier
+* "Someone has friended you" notifier
 * Show true bans?
 * Colour saving boxes things?
 * Chum notes?
-* whowas for last seen online?
+* Whowas for last seen online?
 * Tab completion of two letter names
 * Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
@@ -28,8 +28,6 @@ Bugs
 * Issues with connecting? Client not closing connection right? People keep getting "nick taken" messages
 * When using mood sort, scroll position jumps to last selected chum
 * When left for a really long time, animations slow down pesterchum
-* If pesterchum is open but offline due to a network failure and you open the memos screen, it connects you but doesn't fetch the memo list when it finishes connecting
-* right clicking an offline chum and choosing remove asks you why you're reporting someone, and if you hit cancel the menus stop working
 * Closing a timeclone doesn't actually cease for everyone else
 * Kill Zalgo
 
@@ -46,6 +44,4 @@ Mac Bugs
 * SS: in the one-on-one pester it resizes with the window
 * SS: but the memo one doesn't resize
 * SS: and the arrows next to the time thing overlap the CLOSE button
-* Lex: Emotes show up as errors
-* Lex: INFO logging shows up in OSX's error console
 * Lex: There seems to be a faint outline around most non-square themes.
