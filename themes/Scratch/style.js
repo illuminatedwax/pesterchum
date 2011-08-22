@@ -45,6 +45,7 @@
                                "blockchum": "Slam",
                                "addchum": "Add to Crew",
                                "viewlog": "View Pesterlog",
+                               "notes": "Edit Rhymes...",
                                "unblockchum": "Rectify",
                                "removegroup": "Forget Crew",
                                "renamegroup": "Rename Crew",

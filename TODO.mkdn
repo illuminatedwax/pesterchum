@@ -12,7 +12,6 @@ Features
 * "Someone has friended you" notifier
 * Show true bans?
 * Colour saving boxes things?
-* Chum notes?
 * Whowas for last seen online?
 * Tab completion of two letter names
 * Customizable name alerts

@@ -505,7 +505,7 @@ def themeChecker(theme):
     "main/menus/rclickchumlist/invitechum", "main/menus/client/randen", \
     "main/menus/rclickchumlist/memosetting", "main/menus/rclickchumlist/memonoquirk", \
     "main/menus/rclickchumlist/memohidden", "main/menus/rclickchumlist/memoinvite", \
-    "main/menus/rclickchumlist/memomute"]
+    "main/menus/rclickchumlist/memomute", "main/menus/rclickchumlist/notes"]
 
     for n in needs:
         try:

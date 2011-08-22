@@ -196,11 +196,12 @@ class PesterProfileDB(dict):
 
         u = []
         for (handle, c) in chumdict.iteritems():
-            try:
-                g = c['group']
-                u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']), group=g)))
-            except KeyError:
-                u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']))))
+            options = dict()
+            if 'group' in c:
+                options['group'] = c['group']
+            if 'notes' in c:
+                options['notes'] = c['notes']
+            u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']), **options)))
         converted = dict(u)
         self.update(converted)
 
@@ -232,6 +233,17 @@ class PesterProfileDB(dict):
             self[handle].group = theGroup
         else:
             self[handle] = PesterProfile(handle, group=theGroup)
+        self.save()
+    def getNotes(self, handle, default=""):
+        if not self.has_key(handle):
+            return default
+        else:
+            return self[handle].notes
+    def setNotes(self, handle, notes):
+        if self.has_key(handle):
+            self[handle].notes = notes
+        else:
+            self[handle] = PesterProfile(handle, notes=notes)
         self.save()
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
@@ -642,6 +654,7 @@ class chumListing(QtGui.QTreeWidgetItem):
         self.handle = chum.handle
         self.setMood(Mood("offline"))
         self.status = None
+        self.setToolTip(0, "%s: %s" % (chum.handle, window.chumdb.getNotes(chum.handle)))
     def setMood(self, mood):
         if self.mainwindow.chumList.notify:
             #print "%s -> %s" % (self.chum.mood.name(), mood.name())
@@ -753,9 +766,13 @@ class chumArea(RightClickTree):
         self.renamegroup = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/renamegroup"], self)
         self.connect(self.renamegroup, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('renameGroup()'))
+        self.notes = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/notes"], self)
+        self.connect(self.notes, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('editNotes()'))
 
         self.optionsMenu.addAction(self.pester)
         self.optionsMenu.addAction(self.logchum)
+        self.optionsMenu.addAction(self.notes)
         self.optionsMenu.addAction(self.blockchum)
         self.optionsMenu.addAction(self.removechum)
         self.moveMenu = QtGui.QMenu(self.mainwindow.theme["main/menus/rclickchumlist/movechum"], self)
@@ -1116,6 +1133,7 @@ class chumArea(RightClickTree):
         self.blockchum.setText(theme["main/menus/rclickchumlist/blockchum"])
         self.logchum.setText(theme["main/menus/rclickchumlist/viewlog"])
         self.reportchum.setText(theme["main/menus/rclickchumlist/report"])
+        self.notes.setText(theme["main/menus/rclickchumlist/notes"])
         self.removegroup.setText(theme["main/menus/rclickchumlist/removegroup"])
         self.renamegroup.setText(theme["main/menus/rclickchumlist/renamegroup"])
         self.moveMenu.setTitle(theme["main/menus/rclickchumlist/movechum"])
@@ -1191,9 +1209,10 @@ class chumArea(RightClickTree):
         self.mainwindow.sendMessage.emit("ALT %s" % (currentChum.chum.handle) , "calSprite")
     @QtCore.pyqtSlot()
     def openChumLogs(self):
-        currentChum = self.currentItem().text(0)
+        currentChum = self.currentItem()
         if not currentChum:
             return
+        currentChum = currentChum.text(0)
         self.pesterlogviewer = PesterLogViewer(currentChum, self.mainwindow.config, self.mainwindow.theme, self.mainwindow)
         self.connect(self.pesterlogviewer, QtCore.SIGNAL('rejected()'),
                      self, QtCore.SLOT('closeActiveLog()'))
@@ -1204,6 +1223,16 @@ class chumArea(RightClickTree):
     def closeActiveLog(self):
         self.pesterlogviewer.close()
         self.pesterlogviewer = None
+    @QtCore.pyqtSlot()
+    def editNotes(self):
+        currentChum = self.currentItem()
+        if not currentChum:
+            return
+        (notes, ok) = QtGui.QInputDialog.getText(self, "Notes", "Enter your notes...")
+        if ok:
+            notes = unicode(notes)
+            self.mainwindow.chumdb.setNotes(currentChum.handle, notes)
+            currentChum.setToolTip(0, "%s: %s" % (currentChum.handle, notes))
     @QtCore.pyqtSlot()
     def renameGroup(self):
         if not hasattr(self, 'renamegroupdialog'):

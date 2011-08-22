@@ -165,7 +165,7 @@ class pesterQuirks(object):
             yield q
 
 class PesterProfile(object):
-    def __init__(self, handle, color=None, mood=Mood("offline"), group=None, chumdb=None):
+    def __init__(self, handle, color=None, mood=Mood("offline"), group=None, notes="", chumdb=None):
         self.handle = handle
         if color is None:
             if chumdb:
@@ -180,6 +180,7 @@ class PesterProfile(object):
             else:
                 group = "Chums"
         self.group = group
+        self.notes = notes
     def initials(self, time=None):
         handle = self.handle
         caps = [l for l in handle if l.isupper()]
@@ -210,7 +211,8 @@ class PesterProfile(object):
         return (self.handle, {"handle": self.handle,
                               "mood": self.mood.name(),
                               "color": unicode(self.color.name()),
-                              "group": unicode(self.group)})
+                              "group": unicode(self.group),
+                              "notes": unicode(self.notes)})
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 

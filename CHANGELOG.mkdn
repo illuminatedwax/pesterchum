@@ -24,6 +24,7 @@ CHANGELOG
 * Auto-update from zip and tar - Kiooeht [evacipatedBox]
 * Minimizable memo userlist - Kiooeht [evacipatedBox] (Idea: [alGore], [lostGash])
 * Chumroll notifications on chum sign-in/out - Kiooeht [evacipatedBox]
+* Chum notes - Kiooeht [evacipatedBox]
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]

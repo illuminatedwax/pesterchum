@@ -46,6 +46,7 @@
                                "blockchum": "Condemn",
                                "addchum": "Add User",
                                "viewlog": "View Pesterlog",
+                               "notes": "Edit Notes...",
                                "unblockchum": "Forgive",
                                "removegroup": "Remove Group",
                                "renamegroup": "Rename Group",

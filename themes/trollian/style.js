@@ -45,6 +45,7 @@
                                "blockchum": "Block",
                                "addchum": "Add Chump",
                                "viewlog": "View Pesterlog",
+                               "notes": "Edit Notes...",
                                "unblockchum": "Mercy",
                                "removegroup": "Remove Group",
                                "renamegroup": "Rename Group",
