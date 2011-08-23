@@ -896,6 +896,85 @@ class PesterChooseProfile(QtGui.QDialog):
                     problem.setStandardButtons(QtGui.QMessageBox.Ok)
                     problem.exec_()
 
+class PesterMentions(QtGui.QDialog):
+    def __init__(self, window, theme, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setWindowTitle("Mentions")
+        self.setModal(True)
+        self.mainwindow = window
+        self.theme = theme
+        self.setStyleSheet(self.theme["main/defaultwindow/style"])
+
+        self.mentionlist = QtGui.QListWidget(self)
+        self.mentionlist.addItems(self.mainwindow.userprofile.getMentions())
+
+        self.addBtn = QtGui.QPushButton("ADD MENTION", self)
+        self.connect(self.addBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addMention()'))
+
+        self.editBtn = QtGui.QPushButton("EDIT", self)
+        self.connect(self.editBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('editSelected()'))
+        self.rmBtn = QtGui.QPushButton("REMOVE", self)
+        self.connect(self.rmBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('removeCurrent()'))
+        layout_1 = QtGui.QHBoxLayout()
+        layout_1.addWidget(self.editBtn)
+        layout_1.addWidget(self.rmBtn)
+
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_2 = QtGui.QHBoxLayout()
+        layout_2.addWidget(self.cancel)
+        layout_2.addWidget(self.ok)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.mentionlist)
+        layout_0.addWidget(self.addBtn)
+        layout_0.addLayout(layout_1)
+        layout_0.addLayout(layout_2)
+
+        self.setLayout(layout_0)
+
+    @QtCore.pyqtSlot()
+    def editSelected(self):
+        m = self.mentionlist.currentItem()
+        if not m:
+            return
+        self.addMention(m)
+
+    @QtCore.pyqtSlot()
+    def addMention(self, mitem=None):
+        d = {"label": "Mention:", "inputname": "value" }
+        if mitem is not None:
+            d["value"] = str(mitem.text())
+        pdict = MultiTextDialog("ENTER MENTION", self, d).getText()
+        if pdict is None:
+            return
+        try:
+            re.compile(pdict["value"])
+        except re.error, e:
+            quirkWarning = QtGui.QMessageBox(self)
+            quirkWarning.setText("Not a valid regular expression!")
+            quirkWarning.setInformativeText("H3R3S WHY DUMP4SS: %s" % (e))
+            quirkWarning.exec_()
+        else:
+            if mitem is None:
+                self.mentionlist.addItem(pdict["value"])
+            else:
+                mitem.setText(pdict["value"])
+
+    @QtCore.pyqtSlot()
+    def removeCurrent(self):
+        i = self.mentionlist.currentRow()
+        if i >= 0:
+            self.mentionlist.takeItem(i)
+
 class PesterOptions(QtGui.QDialog):
     def __init__(self, config, theme, parent):
         QtGui.QDialog.__init__(self, parent)
@@ -955,6 +1034,11 @@ class PesterOptions(QtGui.QDialog):
             self.chatsoundcheck.setEnabled(False)
             self.memosoundcheck.setEnabled(False)
             self.memoSoundChange(0)
+
+        self.editMentions = QtGui.QPushButton("Edit Mentions", self)
+        self.connect(self.editMentions, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('openMentions()'))
+
         self.volume = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.volume.setMinimum(0)
         self.volume.setMaximum(100)
@@ -1155,6 +1239,7 @@ class PesterOptions(QtGui.QDialog):
         layout_doubleindent = QtGui.QVBoxLayout()
         layout_doubleindent.addWidget(self.memopingcheck)
         layout_doubleindent.addWidget(self.namesoundcheck)
+        layout_doubleindent.addWidget(self.editMentions)
         layout_doubleindent.setContentsMargins(22,0,0,0)
         layout_indent.addLayout(layout_doubleindent)
         layout_indent.setContentsMargins(22,0,0,0)
@@ -1240,6 +1325,31 @@ class PesterOptions(QtGui.QDialog):
     @QtCore.pyqtSlot(int)
     def printValue(self, v):
         self.currentVol.setText(str(v)+"%")
+
+    @QtCore.pyqtSlot()
+    def openMentions(self):
+        if not hasattr(self, 'mentionmenu'):
+            self.mentionmenu = None
+        if not self.mentionmenu:
+            self.mentionmenu = PesterMentions(self.parent(), self.theme, self)
+            self.connect(self.mentionmenu, QtCore.SIGNAL('accepted()'),
+                         self, QtCore.SLOT('updateMentions()'))
+            self.connect(self.mentionmenu, QtCore.SIGNAL('rejected()'),
+                         self, QtCore.SLOT('closeMentions()'))
+            self.mentionmenu.show()
+            self.mentionmenu.raise_()
+            self.mentionmenu.activateWindow()
+    @QtCore.pyqtSlot()
+    def closeMentions(self):
+        self.mentionmenu.close()
+        self.mentionmenu = None
+    @QtCore.pyqtSlot()
+    def updateMentions(self):
+        m = []
+        for i in range(self.mentionmenu.mentionlist.count()):
+            m.append(str(self.mentionmenu.mentionlist.item(i).text()))
+        self.parent().userprofile.setMentions(m)
+        self.mentionmenu = None
 
 class PesterUserlist(QtGui.QDialog):
     def __init__(self, config, theme, parent):

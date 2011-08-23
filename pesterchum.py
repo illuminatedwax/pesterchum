@@ -570,6 +570,12 @@ class userProfile(object):
             self.lastmood = self.chat.mood.value()
             self.quirks = pesterQuirks([])
             self.randoms = False
+            initials = self.chat.initials()
+            if len(initials) >= 2:
+                initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
+                self.mentions = [r"\b(%s)\b" % ("|".join(initials))]
+            else:
+                self.mentions = []
         else:
             fp = open("%s/%s.js" % (self.profiledir, user))
             self.userprofile = json.load(fp)
@@ -586,6 +592,14 @@ class userProfile(object):
             if "randoms" not in self.userprofile:
                 self.userprofile["randoms"] = False
             self.randoms = self.userprofile["randoms"]
+            if "mentions" not in self.userprofile:
+                initials = self.chat.initials()
+                if len(initials) >= 2:
+                    initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
+                    self.userprofile["mentions"] = [r"\b(%s)\b" % ("|".join(initials))]
+                else:
+                    self.userprofile["mentions"] = []
+            self.mentions = self.userprofile["mentions"]
 
     def setMood(self, mood):
         self.chat.mood = mood
@@ -607,6 +621,18 @@ class userProfile(object):
         self.randoms = random
         self.userprofile["randoms"] = random
         self.save()
+    def getMentions(self):
+        return self.mentions
+    def setMentions(self, mentions):
+        try:
+            for (i,m) in enumerate(mentions):
+                re.compile(m)
+        except re.error, e:
+            logging.error("#%s Not a valid regular expression: %s" % (i, e))
+        else:
+            self.mentions = mentions
+            self.userprofile["mentions"] = mentions
+            self.save()
     def getLastMood(self):
         return self.lastmood
     def setLastMood(self, mood):
@@ -1865,15 +1891,13 @@ class PesterWindow(MovingWindow):
         if self.config.soundOn():
             if self.config.memoSound():
                 if self.config.nameSound():
-                    initials = self.userprofile.chat.initials()
-                    initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
-                    search = r"\b(%s)\b" % ("|".join(initials))
                     m = convertTags(msg, "text")
                     if m.find(":") <= 3:
                       m = m[m.find(":"):]
-                    if re.search(search, m):
-                        self.namesound.play()
-                        return
+                    for search in self.userprofile.getMentions():
+                        if re.search(search, m):
+                            self.namesound.play()
+                            return
                 if self.honk and re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
                     self.honksound.play()
                 elif self.config.memoPing():

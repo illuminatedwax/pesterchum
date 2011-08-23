@@ -14,7 +14,6 @@ Features
 * Colour saving boxes things?
 * Whowas for last seen online?
 * Tab completion of two letter names
-* Customizable name alerts
 * When 'banned' make impossible to connect using timestamp banned under
 * Explain why a chumhandle is invalid
 * Fully working Toasts
@@ -29,6 +28,7 @@ Bugs
 * When left for a really long time, animations slow down pesterchum
 * Closing a timeclone doesn't actually cease for everyone else
 * Kill Zalgo
+* Random invisible, tiny links to last link at end of every message
 
 Windows Bugs
 ------------
