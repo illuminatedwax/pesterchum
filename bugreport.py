@@ -1,5 +1,6 @@
 from PyQt4 import QtGui, QtCore
 import urllib
+import ostools
 import version
 
 class BugReporter(QtGui.QDialog):
@@ -15,10 +16,15 @@ class BugReporter(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.title)
 
-        layout_0.addWidget(QtGui.QLabel("Operating System (ex. Windows 7, Ubuntu 10.10):"))
-        self.os = QtGui.QLineEdit(self)
-        self.os.setStyleSheet("background:white; font-weight:bold; color:black; font-size: 10pt;")
-        layout_0.addWidget(self.os)
+        layout_0.addWidget(QtGui.QLabel("Chumhandle:"))
+        handleLabel = QtGui.QLabel("The best chumhandle to contact you at for further information.")
+        font = handleLabel.font()
+        font.setPointSize(8)
+        handleLabel.setFont(font)
+        layout_0.addWidget(handleLabel)
+        self.name = QtGui.QLineEdit(self)
+        self.name.setStyleSheet("background:white; font-weight:bold; color:black; font-size: 10pt;")
+        layout_0.addWidget(self.name)
 
         layout_0.addWidget(QtGui.QLabel("Description of bug:"))
         descLabel = QtGui.QLabel("Include as much information as possible\n(theme, related options, what you were doing at the time, etc.)")
@@ -50,10 +56,14 @@ class BugReporter(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def sendReport(self):
         name = unicode(self.mainwindow.profile().handle)
-        os = unicode(self.os.text())
+        bestname = unicode(self.name.text())
+        os = ostools.osVer()
+        full = ostools.platform.platform()
+        python = ostools.platform.python_version()
+        qt = QtCore.qVersion()
         msg = unicode(self.textarea.toPlainText())
 
-        if len(os) <= 0 or len(msg) <= 0:
+        if len(bestname) <= 0 or len(msg) <= 0:
             msgbox = QtGui.QMessageBox()
             msgbox.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
             msgbox.setText("You must fill out all fields first!")
@@ -62,7 +72,7 @@ class BugReporter(QtGui.QDialog):
             return
 
         QtGui.QDialog.accept(self)
-        data = urllib.urlencode({"name":name, "version": version._pcVersion, "os":os, "msg":msg})
+        data = urllib.urlencode({"name":name, "version": version._pcVersion, "bestname":bestname, "os":os, "platform":full, "python":python, "qt":qt, "msg":msg})
         print "Sending..."
         f = urllib.urlopen("http://distantsphere.com/pc/reporter.php", data)
         text = f.read()

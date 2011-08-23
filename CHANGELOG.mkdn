@@ -26,6 +26,7 @@ CHANGELOG
 * Chumroll notifications on chum sign-in/out - Kiooeht [evacipatedBox]
 * Chum notes - Kiooeht [evacipatedBox]
 * Customizable name alerts - Kiooeht [evacipatedBox]
+* Update bug reporter - Kiooeht [evacipatedBox]
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
