@@ -958,7 +958,7 @@ class PesterMemo(PesterConvo):
                     allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
                     self.times[h].removeTime(t.getTime())
                 if update == "netsplit":
-                    self.netsplit.extend(initials)
+                    self.netsplit.extend(allinitials)
                 else:
                     msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
                     self.textArea.append(convertTags(msg))

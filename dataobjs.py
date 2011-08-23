@@ -239,7 +239,10 @@ class PesterProfile(object):
         else:
             return "<c=%s><c=%s>%s%s%s</c> %s.</c>" % (syscolor.name(), self.colorhtml(), initials.pcf, self.initials(), initials.number, verb)
     def memonetsplitmsg(self, syscolor, initials):
-        return "<c=%s>Netsplit quits: <c=black>%s</c></c>" % (syscolor.name(), ", ".join(initials))
+        if len(initials) <= 0:
+            return "<c=%s>Netsplit quits: <c=black>None</c></c>" % (syscolor.name())
+        else:
+            return "<c=%s>Netsplit quits: <c=black>%s</c></c>" % (syscolor.name(), ", ".join(initials))
     def memoopenmsg(self, syscolor, td, timeGrammar, verb, channel):
         (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
         timetext = timeDifference(td)
