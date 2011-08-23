@@ -295,11 +295,13 @@ class PesterProfile(object):
     @staticmethod
     def checkValid(handle):
         caps = [l for l in handle if l.isupper()]
-        if len(caps) != 1 or handle[0].isupper():
-            return False
+        if len(caps) != 1:
+            return (False, "Must have exactly 1 uppercase letter")
+        if handle[0].isupper():
+            return (False, "Cannot start with uppercase letter")
         if re.search("[^A-Za-z0-9]", handle) is not None:
-            return False
-        return True
+            return (False, "Only alphanumeric characters allowed")
+        return (True,)
 
 class PesterHistory(object):
     def __init__(self):

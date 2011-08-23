@@ -27,6 +27,7 @@ CHANGELOG
 * Chum notes - Kiooeht [evacipatedBox]
 * Customizable name alerts - Kiooeht [evacipatedBox]
 * Update bug reporter - Kiooeht [evacipatedBox]
+* Explain why a chumhandle is invalid - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]

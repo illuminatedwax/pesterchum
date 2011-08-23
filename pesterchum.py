@@ -1437,7 +1437,7 @@ class TrollSlumWindow(QtGui.QFrame):
         if ok:
             handle = unicode(handle)
             if not (PesterProfile.checkLength(handle) and
-                    PesterProfile.checkValid(handle)):
+                    PesterProfile.checkValid(handle)[0]):
                 errormsg = QtGui.QErrorMessage(self)
                 errormsg.showMessage("THIS IS NOT A VALID CHUMTAG!")
                 self.addchumdialog = None
@@ -2399,7 +2399,7 @@ class PesterWindow(MovingWindow):
             if ok:
                 handle = unicode(handle)
                 if not (PesterProfile.checkLength(handle) and
-                        PesterProfile.checkValid(handle)):
+                        PesterProfile.checkValid(handle)[0]):
                     errormsg = QtGui.QErrorMessage(self)
                     errormsg.showMessage("THIS IS NOT A VALID CHUMTAG!")
                     self.addchumdialog = None

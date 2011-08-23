@@ -862,8 +862,8 @@ class PesterChooseProfile(QtGui.QDialog):
             if not PesterProfile.checkLength(handle):
                 self.errorMsg.setText("PROFILE HANDLE IS TOO LONG")
                 return
-            if not PesterProfile.checkValid(handle):
-                self.errorMsg.setText("NOT A VALID CHUMTAG")
+            if not PesterProfile.checkValid(handle)[0]:
+                self.errorMsg.setText("NOT A VALID CHUMTAG. REASON:\n%s" % (PesterProfile.checkValid(handle)[1]))
                 return
         self.accept()
 

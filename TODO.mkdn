@@ -15,7 +15,6 @@ Features
 * Whowas for last seen online?
 * Tab completion of two letter names
 * When 'banned' make impossible to connect using timestamp banned under
-* Explain why a chumhandle is invalid
 * Fully working Toasts
 * Auto download/install updates via Windows installer
 
