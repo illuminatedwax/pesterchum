@@ -682,7 +682,7 @@ class chumListing(QtGui.QTreeWidgetItem):
         self.status = None
         self.setToolTip(0, "%s: %s" % (chum.handle, window.chumdb.getNotes(chum.handle)))
     def setMood(self, mood):
-        if self.mainwindow.chumList.notify:
+        if hasattr(self.mainwindow, "chumList") and self.mainwindow.chumList.notify:
             #print "%s -> %s" % (self.chum.mood.name(), mood.name())
             if mood.name() == "offline" and self.chum.mood.name() != "offline":
                 #print "OFFLINE NOTIFY: " + self.handle
