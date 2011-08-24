@@ -987,19 +987,21 @@ class PesterMemo(PesterConvo):
                 ttracker = self.times[h]
             else:
                 ttracker = TimeTracker(timedelta(0))
+            allinitials = []
+            opchum = PesterProfile(op)
+            if self.times.has_key(op):
+                opgrammar = self.times[op].getGrammar()
+            elif op == self.mainwindow.profile().handle:
+                opgrammar = self.time.getGrammar()
+            else:
+                opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
             while ttracker.getTime() is not None:
                 grammar = ttracker.getGrammar()
-                opchum = PesterProfile(op)
-                if self.times.has_key(op):
-                    opgrammar = self.times[op].getGrammar()
-                elif op == self.mainwindow.profile().handle:
-                    opgrammar = self.time.getGrammar()
-                else:
-                    opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
-                msg = chum.memobanmsg(opchum, opgrammar, systemColor, grammar, reason)
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, msg)
+                allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
                 ttracker.removeTime(ttracker.getTime())
+            msg = chum.memobanmsg(opchum, opgrammar, systemColor, allinitials, reason)
+            self.textArea.append(convertTags(msg))
+            self.mainwindow.chatlog.log(self.channel, msg)
 
             if chum is self.mainwindow.profile():
                 # are you next?
