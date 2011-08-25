@@ -10,13 +10,14 @@ Features
 * Spy mode
 * Turn @ and # links on/off?
 * "Someone has friended you" notifier
-* Show true bans?
+* Show true bans? COMPRESS QUIT MESSAGES ON BAN
 * Colour saving boxes things?
 * Whowas for last seen online?
 * Tab completion of two letter names
 * When 'banned' make impossible to connect using timestamp banned under
 * Fully working Toasts
 * Auto download/install updates via Windows installer
+* Turn memo notifications on/off from right-click menu on memos (Idea: lostGash)
 
 Bugs
 ----

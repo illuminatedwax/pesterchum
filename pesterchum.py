@@ -76,6 +76,7 @@ from bugreport import BugReporter
 from randomer import RandomHandler
 from updatecheck import MSPAChecker
 from toast import PesterToastMachine, PesterToast
+from libs import pytwmn
 
 canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosToreador", \
                  "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
@@ -430,6 +431,10 @@ class userConfig(object):
         return self.config.get('mspa', False)
     def blink(self):
         return self.config.get('blink', self.PBLINK | self.MBLINK)
+    def notify(self):
+        return self.config.get('notify', True)
+    def notifyType(self):
+        return self.config.get('notifyType', "default")
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -1591,7 +1596,8 @@ class PesterWindow(MovingWindow):
             themeWarning.exec_()
             self.theme = pesterTheme("pesterchum")
 
-        self.tm = PesterToastMachine(self, lambda: self.theme["main/windowtitle"], "default", extras={'pester': PesterToast})
+        self.tm = PesterToastMachine(self, lambda: self.theme["main/windowtitle"], on=self.config.notify(),
+                                     type=self.config.notifyType(), extras={'pester': PesterToast, 'twmn': pytwmn.Notification})
         self.tm.run()
         t = self.tm.Toast(self.tm.appName, "!!---Started up ToastMachine---!!")
         t.show()
@@ -2869,6 +2875,9 @@ class PesterWindow(MovingWindow):
         curblink = self.config.blink()
         if blinksetting != curblink:
           self.config.set('blink', blinksetting)
+        # toast notifications
+        self.tm.setEnabled(self.optionmenu.notifycheck.isChecked())
+        self.tm.setCurrentType(str(self.optionmenu.notifyOptions.currentText()))
         # advanced
         ## user mode
         if self.advanced:

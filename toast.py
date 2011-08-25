@@ -18,9 +18,8 @@ class DefaultToast(object):
 
 class ToastMachine(object):
     class __Toast__(object):
-        def __init__(self, parent, window, title, msg, time=3000, icon="", importance=0):
-            self.parent     = parent
-            self.mainwindow = window
+        def __init__(self, machine, title, msg, time=3000, icon="", importance=0):
+            self.machine    = machine
             self.title      = title
             self.msg        = msg
             self.time       = time
@@ -49,16 +48,20 @@ class ToastMachine(object):
             else:                  return self.importance
 
         def show(self):
-            # Use libnotify's queue if using libnotify
-            if self.parent.toasts and self.parent.type != "libnotify":
-                self.parent.toasts.append(self)
-            else:
-                self.realShow()
+            if self.machine.on:
+                # Use libnotify's queue if using libnotify
+                if self.machine.type == "libnotify" or self.machine.type == "twmn":
+                    self.realShow()
+                elif self.machine.toasts:
+                    self.machine.toasts.append(self)
+                else:
+                    self.machine.toasts.append(self)
+                    self.realShow()
 
         def realShow(self):
             t = None
-            for (k,v) in self.parent.types.iteritems():
-                if self.parent.type == k:
+            for (k,v) in self.machine.types.iteritems():
+                if self.machine.type == k:
                     t = v(self.title, self.msg, self.icon)
                     # Use libnotify's urgency setting
                     if k == "libnotify":
@@ -70,43 +73,65 @@ class ToastMachine(object):
                             t.set_urgency(pynotify.URGENCY_LOW)
                     break
             if not t:
-                if 'default' in self.parent.types:
-                    if 'parent' in inspect.getargspec(self.parent.types['default']).args:
-                        t = self.parent.types['default'](self.title, self.msg, self.icon, self.mainwindow)
+                if 'default' in self.machine.types:
+                    if 'parent' in inspect.getargspec(self.machine.types['default']).args:
+                        t = self.machine.types['default'](self.title, self.msg, self.icon, self.machine.parent)
                     else:
-                        t = self.parent.types['default'](self.title, self.msg, self.icon)
+                        t = self.machine.types['default'](self.title, self.msg, self.icon)
                 else:
                     t = DefaultToast(self.title, self.msg, self.icon)
             t.show()
             print "SLEEPING"
             #time.sleep(self.time/1000)
-            if self in self.parent.toasts:
-                self.parent.toasts.remove(self)
+            if self in self.machine.toasts:
+                self.machine.toasts.remove(self)
 
-    def __init__(self, parent, name, type="default", types=({'default'  : DefaultToast,
-                                                            'libnotify': pynotify.Notification}
-                                                            if pynotify else
-                                                            {'default'  : DefaultToast}),
-                                                     extras={}):
-        self.mainwindow = parent
+    def __init__(self, parent, name, on=True, type="default",
+                                              types=({'default'  : DefaultToast,
+                                                      'libnotify': pynotify.Notification}
+                                                      if pynotify else
+                                                      {'default' : DefaultToast}),
+                                              extras={}):
+        self.parent     = parent
         self.name       = name
+        self.on         = on
         types.update(extras)
         self.types      = types
-        self.type       = type
+        self.type       = "default"
         self.quit       = False
 
-        if type == "libnotify":
-            try:
-                if not pynotify or not pynotify.init("ToastMachine"):
-                    raise Exception
-            except:
-                print "Problem initilizing pynotify"
-                self.type = type = "default"
+        self.setCurrentType(type)
 
         self.toasts = []
 
     def Toast(self, title, msg, icon=""):
-        return self.__Toast__(self, self.mainwindow, title, msg, time=0, icon=icon)
+        return self.__Toast__(self, title, msg, time=0, icon=icon)
+
+    def setEnabled(self, on):
+        self.on = (on is True)
+
+    def currentType(self):
+        return self.type
+
+    def avaliableTypes(self):
+        return sorted(self.types.keys())
+
+    def setCurrentType(self, type):
+        if type in self.types:
+            if type == "libnotify":
+                if not pynotify or not pynotify.init("ToastMachine"):
+                    print "Problem initilizing pynotify"
+                    return
+                    #self.type = type = "default"
+            elif type == "twmn":
+                from libs import pytwmn
+                try:
+                    pytwmn.init()
+                except pytwmn.ERROR,e:
+                    print "Problem initilizing pytwmn: " + str(e)
+                    return
+                    #self.type = type = "default"
+            self.type = type
 
     def appName(self):
         if inspect.ismethod(self.name) or inspect.isfunction(self.name):
@@ -134,7 +159,7 @@ class ToastMachine(object):
 
     def run(self):
         while not self.quit:
-            if self.toasts:
+            if self.on and self.toasts:
                 self.showNext()
 
 
@@ -174,14 +199,30 @@ class PesterToast(QtGui.QFrame, DefaultToast):
         #~ themeWarning.exec_()
 
 class PesterToastMachine(ToastMachine, QtCore.QObject):
-    def __init__(self, parent, name, type="default",
+    def __init__(self, parent, name, on=True, type="default",
                  types=({'default'  : DefaultToast,
                         'libnotify' : pynotify.Notification}
                         if pynotify else
                         {'default' : DefaultToast}),
                  extras={}):
-        ToastMachine.__init__(self, parent, name, type, types, extras)
+        ToastMachine.__init__(self, parent, name, on, type, types, extras)
         QtCore.QObject.__init__(self, parent)
+
+    def setEnabled(self, on):
+        oldon = self.on
+        ToastMachine.setEnabled(self, on)
+        if oldon != self.on:
+            self.parent.config.set('notify', self.on)
+            if self.on:
+                self.timer.start()
+            else:
+                self.timer.stop()
+
+    def setCurrentType(self, type):
+        oldtype = self.type
+        ToastMachine.setCurrentType(self, type)
+        if oldtype != self.type:
+            self.parent.config.set('notifyType', self.type)
 
     @QtCore.pyqtSlot()
     def showNext(self):
@@ -189,6 +230,8 @@ class PesterToastMachine(ToastMachine, QtCore.QObject):
 
     def run(self):
         self.timer = QtCore.QTimer(self)
+        self.timer.setInterval(1000)
         self.connect(self.timer, QtCore.SIGNAL('timeout()'),
                      self, QtCore.SLOT('showNext()'))
-        #self.timer.start(1000)
+        if self.on:
+            pass#self.timer.start()

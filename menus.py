@@ -1169,6 +1169,25 @@ class PesterOptions(QtGui.QDialog):
         if self.config.blink() & self.config.MBLINK:
             self.memoBlink.setChecked(True)
 
+        self.notifycheck = QtGui.QCheckBox("Toast Notifications", self)
+        if self.config.notify():
+            self.notifycheck.setChecked(True)
+        self.connect(self.notifycheck, QtCore.SIGNAL('stateChanged(int)'),
+                     self, QtCore.SLOT('notifyChange(int)'))
+        self.notifyOptions = QtGui.QComboBox(self)
+        types = self.parent().tm.avaliableTypes()
+        cur = self.parent().tm.currentType()
+        self.notifyOptions.addItems(types)
+        for (i,t) in enumerate(types):
+            if t == cur:
+                self.notifyOptions.setCurrentIndex(i)
+                break
+        self.notifyTypeLabel = QtGui.QLabel("Type", self)
+        layout_type = QtGui.QHBoxLayout()
+        layout_type.addWidget(self.notifyTypeLabel)
+        layout_type.addWidget(self.notifyOptions)
+        self.notifyChange(self.notifycheck.checkState())
+
         if parent.advanced:
             self.modechange = QtGui.QLineEdit(self)
             layout_change = QtGui.QHBoxLayout()
@@ -1226,6 +1245,13 @@ class PesterOptions(QtGui.QDialog):
         layout_interface.addLayout(layout_close)
         layout_interface.addWidget(self.pesterBlink)
         layout_interface.addWidget(self.memoBlink)
+        layout_interface.addSpacing(16)
+        layout_interface.addWidget(QtGui.QLabel("NOT FULLY COMPLETE YET:"))
+        layout_interface.addWidget(self.notifycheck)
+        layout_indent = QtGui.QVBoxLayout()
+        layout_indent.addLayout(layout_type)
+        layout_indent.setContentsMargins(22,0,0,0)
+        layout_interface.addLayout(layout_indent)
         self.pages.addWidget(widget)
 
         # Sound
@@ -1303,6 +1329,16 @@ class PesterOptions(QtGui.QDialog):
         # What is this, I don't even. qt, fuck
         page = -page - 2
         self.pages.setCurrentIndex(page)
+
+    @QtCore.pyqtSlot(int)
+    def notifyChange(self, state):
+        if state == 0:
+            self.notifyTypeLabel.setEnabled(False)
+            self.notifyOptions.setEnabled(False)
+        else:
+            self.notifyTypeLabel.setEnabled(True)
+            self.notifyOptions.setEnabled(True)
+
     @QtCore.pyqtSlot(int)
     def soundChange(self, state):
         if state == 0:
