@@ -996,7 +996,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Logging", "Idle/Updates", "Theme"]
+        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Notifications", "Logging", "Idle/Updates", "Theme"]
         if parent.advanced: tabNames.append("Advanced")
         for t in tabNames:
             button = QtGui.QPushButton(t)
@@ -1037,6 +1037,9 @@ class PesterOptions(QtGui.QDialog):
 
         self.editMentions = QtGui.QPushButton("Edit Mentions", self)
         self.connect(self.editMentions, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('openMentions()'))
+        self.editMentions2 = QtGui.QPushButton("Edit Mentions", self)
+        self.connect(self.editMentions2, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('openMentions()'))
 
         self.volume = QtGui.QSlider(QtCore.Qt.Horizontal, self)
@@ -1186,6 +1189,21 @@ class PesterOptions(QtGui.QDialog):
         layout_type = QtGui.QHBoxLayout()
         layout_type.addWidget(self.notifyTypeLabel)
         layout_type.addWidget(self.notifyOptions)
+        self.notifySigninCheck   = QtGui.QCheckBox("Chum signs in", self)
+        if self.config.notifyOptions() & self.config.SIGNIN:
+            self.notifySigninCheck.setChecked(True)
+        self.notifySignoutCheck  = QtGui.QCheckBox("Chum signs out", self)
+        if self.config.notifyOptions() & self.config.SIGNOUT:
+            self.notifySignoutCheck.setChecked(True)
+        self.notifyNewMsgCheck   = QtGui.QCheckBox("New messages", self)
+        if self.config.notifyOptions() & self.config.NEWMSG:
+            self.notifyNewMsgCheck.setChecked(True)
+        self.notifyNewConvoCheck = QtGui.QCheckBox("Only new conversations", self)
+        if self.config.notifyOptions() & self.config.NEWCONVO:
+            self.notifyNewConvoCheck.setChecked(True)
+        self.notifyMentionsCheck = QtGui.QCheckBox("Memo Mentions (initials)", self)
+        if self.config.notifyOptions() & self.config.INITIALS:
+            self.notifyMentionsCheck.setChecked(True)
         self.notifyChange(self.notifycheck.checkState())
 
         if parent.advanced:
@@ -1245,13 +1263,6 @@ class PesterOptions(QtGui.QDialog):
         layout_interface.addLayout(layout_close)
         layout_interface.addWidget(self.pesterBlink)
         layout_interface.addWidget(self.memoBlink)
-        layout_interface.addSpacing(16)
-        layout_interface.addWidget(QtGui.QLabel("NOT FULLY COMPLETE YET:"))
-        layout_interface.addWidget(self.notifycheck)
-        layout_indent = QtGui.QVBoxLayout()
-        layout_indent.addLayout(layout_type)
-        layout_indent.setContentsMargins(22,0,0,0)
-        layout_interface.addLayout(layout_indent)
         self.pages.addWidget(widget)
 
         # Sound
@@ -1274,6 +1285,26 @@ class PesterOptions(QtGui.QDialog):
         layout_sound.addWidget(QtGui.QLabel("Master Volume:", self))
         layout_sound.addWidget(self.volume)
         layout_sound.addWidget(self.currentVol)
+        self.pages.addWidget(widget)
+
+        # Notifications
+        widget = QtGui.QWidget()
+        layout_notify = QtGui.QVBoxLayout(widget)
+        layout_notify.setAlignment(QtCore.Qt.AlignTop)
+        layout_notify.addWidget(self.notifycheck)
+        layout_indent = QtGui.QVBoxLayout()
+        layout_indent.addLayout(layout_type)
+        layout_indent.setContentsMargins(22,0,0,0)
+        layout_indent.addWidget(self.notifySigninCheck)
+        layout_indent.addWidget(self.notifySignoutCheck)
+        layout_indent.addWidget(self.notifyNewMsgCheck)
+        layout_doubleindent = QtGui.QVBoxLayout()
+        layout_doubleindent.addWidget(self.notifyNewConvoCheck)
+        layout_doubleindent.setContentsMargins(22,0,0,0)
+        layout_indent.addLayout(layout_doubleindent)
+        layout_indent.addWidget(self.notifyMentionsCheck)
+        layout_indent.addWidget(self.editMentions2)
+        layout_notify.addLayout(layout_indent)
         self.pages.addWidget(widget)
 
         # Logging
@@ -1335,9 +1366,19 @@ class PesterOptions(QtGui.QDialog):
         if state == 0:
             self.notifyTypeLabel.setEnabled(False)
             self.notifyOptions.setEnabled(False)
+            self.notifySigninCheck.setEnabled(False)
+            self.notifySignoutCheck.setEnabled(False)
+            self.notifyNewMsgCheck.setEnabled(False)
+            self.notifyNewConvoCheck.setEnabled(False)
+            self.notifyMentionsCheck.setEnabled(False)
         else:
             self.notifyTypeLabel.setEnabled(True)
             self.notifyOptions.setEnabled(True)
+            self.notifySigninCheck.setEnabled(True)
+            self.notifySignoutCheck.setEnabled(True)
+            self.notifyNewMsgCheck.setEnabled(True)
+            self.notifyNewConvoCheck.setEnabled(True)
+            self.notifyMentionsCheck.setEnabled(True)
 
     @QtCore.pyqtSlot(int)
     def soundChange(self, state):

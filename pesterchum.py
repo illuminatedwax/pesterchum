@@ -328,6 +328,12 @@ class userConfig(object):
         # Use for bit flag blink
         self.PBLINK = 1
         self.MBLINK = 2
+        # Use for bit flag notfications
+        self.SIGNIN   = 1
+        self.SIGNOUT  = 2
+        self.NEWMSG   = 4
+        self.NEWCONVO = 8
+        self.INITIALS  = 16
         self.filename = _datadir+"pesterchum.js"
         fp = open(self.filename)
         self.config = json.load(fp)
@@ -435,6 +441,8 @@ class userConfig(object):
         return self.config.get('notify', True)
     def notifyType(self):
         return self.config.get('notifyType', "default")
+    def notifyOptions(self):
+        return self.config.get('notifyOptions', self.SIGNIN | self.NEWMSG | self.NEWCONVO | self.INITIALS)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
@@ -689,18 +697,20 @@ class chumListing(QtGui.QTreeWidgetItem):
     def setMood(self, mood):
         if hasattr(self.mainwindow, "chumList") and self.mainwindow.chumList.notify:
             #print "%s -> %s" % (self.chum.mood.name(), mood.name())
-            if mood.name() == "offline" and self.chum.mood.name() != "offline":
+            if self.mainwindow.config.notifyOptions() & self.mainwindow.config.SIGNOUT and \
+               mood.name() == "offline" and self.chum.mood.name() != "offline":
                 #print "OFFLINE NOTIFY: " + self.handle
-                uri = "file://" + os.path.abspath(os.path.curdir) + "/themes/enamel/distraught2.gif"
+                uri = self.mainwindow.theme["toasts/icon/signout"]
                 n = self.mainwindow.tm.Toast(self.mainwindow.tm.appName,
                                           "%s is Offline" % (self.handle), uri)
-                #n.show()
-            elif mood.name() != "offline" and self.chum.mood.name() == "offline":
+                n.show()
+            elif self.mainwindow.config.notifyOptions() & self.mainwindow.config.SIGNIN and \
+                 mood.name() != "offline" and self.chum.mood.name() == "offline":
                 #print "ONLINE NOTIFY: " + self.handle
-                uri = "file://" + os.path.abspath(os.path.curdir) + "/themes/enamel/chummy2.gif"
+                uri = self.mainwindow.theme["toasts/icon/signin"]
                 n = self.mainwindow.tm.Toast(self.mainwindow.tm.appName,
                                           "%s is Online" % (self.handle), uri)
-                #n.show()
+                n.show()
         login = False
         logout = False
         if mood.name() == "offline" and self.chum.mood.name() != "offline":
@@ -1596,11 +1606,12 @@ class PesterWindow(MovingWindow):
             themeWarning.exec_()
             self.theme = pesterTheme("pesterchum")
 
+        extraToasts = {'default': PesterToast}
+        if pytwmn.confExists():
+            extraToasts['twmn'] = pytwmn.Notification
         self.tm = PesterToastMachine(self, lambda: self.theme["main/windowtitle"], on=self.config.notify(),
-                                     type=self.config.notifyType(), extras={'pester': PesterToast, 'twmn': pytwmn.Notification})
+                                     type=self.config.notifyType(), extras=extraToasts)
         self.tm.run()
-        t = self.tm.Toast(self.tm.appName, "!!---Started up ToastMachine---!!")
-        t.show()
 
         self.chatlog = PesterLog(self.profile().handle, self)
 
@@ -1856,6 +1867,25 @@ class PesterWindow(MovingWindow):
             #yeah suck on this
             self.sendMessage.emit("PESTERCHUM:BLOCKED", handle)
             return
+        # notify
+        if self.config.notifyOptions() & self.config.NEWMSG:
+            if not self.convos.has_key(handle):
+                t = self.tm.Toast("New Conversation", "From: %s" % handle)
+                t.show()
+            elif not self.config.notifyOptions() & self.config.NEWCONVO:
+                if msg[:11] != "PESTERCHUM:":
+                    t = self.tm.Toast("From: %s" % handle, re.sub("</?c(=.*?)?>", "", msg))
+                    t.show()
+                else:
+                    if msg == "PESTERCHUM:CEASE":
+                        t = self.tm.Toast("Closed Conversation", handle)
+                        t.show()
+                    elif msg == "PESTERCHUM:BLOCK":
+                        t = self.tm.Toast("Blocked", handle)
+                        t.show()
+                    elif msg == "PESTERCHUM:UNBLOCK":
+                        t = self.tm.Toast("Unblocked", handle)
+                        t.show()
         if not self.convos.has_key(handle):
             if msg == "PESTERCHUM:CEASE": # ignore cease after we hang up
                 return
@@ -1902,6 +1932,9 @@ class PesterWindow(MovingWindow):
                       m = m[m.find(":"):]
                     for search in self.userprofile.getMentions():
                         if re.search(search, m):
+                            if self.config.notifyOptions() & self.config.INITIALS:
+                                t = self.tm.Toast(chan, re.sub("</?c(=.*?)?>", "", msg))
+                                t.show()
                             self.namesound.play()
                             return
                 if self.honk and re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
@@ -2869,15 +2902,29 @@ class PesterWindow(MovingWindow):
         # Taskbar blink
         blinksetting = 0
         if self.optionmenu.pesterBlink.isChecked():
-          blinksetting = blinksetting | self.config.PBLINK
+          blinksetting |= self.config.PBLINK
         if self.optionmenu.memoBlink.isChecked():
-          blinksetting = blinksetting | self.config.MBLINK
+          blinksetting |= self.config.MBLINK
         curblink = self.config.blink()
         if blinksetting != curblink:
           self.config.set('blink', blinksetting)
         # toast notifications
         self.tm.setEnabled(self.optionmenu.notifycheck.isChecked())
         self.tm.setCurrentType(str(self.optionmenu.notifyOptions.currentText()))
+        notifysetting = 0
+        if self.optionmenu.notifySigninCheck.isChecked():
+            notifysetting |= self.config.SIGNIN
+        if self.optionmenu.notifySignoutCheck.isChecked():
+            notifysetting |= self.config.SIGNOUT
+        if self.optionmenu.notifyNewMsgCheck.isChecked():
+            notifysetting |= self.config.NEWMSG
+        if self.optionmenu.notifyNewConvoCheck.isChecked():
+            notifysetting |= self.config.NEWCONVO
+        if self.optionmenu.notifyMentionsCheck.isChecked():
+            notifysetting |= self.config.INITIALS
+        curnotify = self.config.notifyOptions()
+        if notifysetting != curnotify:
+            self.config.set('notifyOptions', notifysetting)
         # advanced
         ## user mode
         if self.advanced:

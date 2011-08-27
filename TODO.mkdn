@@ -18,6 +18,7 @@ Features
 * Fully working Toasts
 * Auto download/install updates via Windows installer
 * Turn memo notifications on/off from right-click menu on memos (Idea: lostGash)
+* Gray out random encounter option when RE is offline
 
 Bugs
 ----

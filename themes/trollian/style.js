@@ -349,5 +349,18 @@
   "op": { "icon": "$path/op.png" },
   "halfop": { "icon": "$path/halfop.png" },
   "voice": { "icon": "$path/voice.png" }
+ },
+ "toasts":
+ {
+   "width": 210,
+   "height": 100,
+   "style": "background: white;",
+   "icon": { "signin": "$path/../enamel/ecstatic2.gif",
+             "signout": "$path/../enamel/discontent2.gif",
+             "style": "border: 2px solid black; border-width: 2px 0px 0px 2px;" },
+   "title": { "minimumheight": 50,
+              "style": "border: 2px solid black; border-width: 2px 2px 0px 0px; padding: 5px; font-weight:bold;"
+            },
+   "content": { "style": "background: black; color: white; padding: 5px;" }
  }
 }
