@@ -232,7 +232,9 @@ class PesterToast(QtGui.QWidget, DefaultToast):
 
         self.msg.setText(PesterToast.wrapText(self.msg.font(), str(self.msg.text()), self.parent().theme["toasts/width"], self.parent().theme["toasts/content/style"]))
 
-        anim.setStartValue(0)
+        p = QtGui.QApplication.desktop().availableGeometry(self).bottomRight()
+        o = QtGui.QApplication.desktop().screenGeometry(self).bottomRight()
+        anim.setStartValue(p.y() - o.y())
         anim.setEndValue(100)
         self.connect(anim, QtCore.SIGNAL('valueChanged(QVariant)'),
                      self, QtCore.SLOT('updateBottomLeftAnimation(QVariant)'))
