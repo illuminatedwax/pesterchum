@@ -6,8 +6,11 @@ class RandomHandler(QtCore.QObject):
         self.randNick = "randomEncounter"
         self.mainwindow = parent
         self.queue = []
-        # Make True when Lex's new randomEncounter bot (C++) is online
-        self.running = True
+        self.running = False
+
+    def setRunning(self, on):
+        self.running = on
+        self.mainwindow.rand.setEnabled(on)
 
     def getRandomer(self):
         self.queue.append("?")

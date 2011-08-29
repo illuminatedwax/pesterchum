@@ -1140,9 +1140,10 @@ class PesterOptions(QtGui.QDialog):
         self.mspaCheck = QtGui.QCheckBox("Check for MSPA Updates", self)
         self.mspaCheck.setChecked(self.config.checkMSPA())
 
-        if parent.randhandler.running:
-            self.randomscheck = QtGui.QCheckBox("Receive Random Encounters")
-            self.randomscheck.setChecked(parent.userprofile.randoms)
+        self.randomscheck = QtGui.QCheckBox("Receive Random Encounters")
+        self.randomscheck.setChecked(parent.userprofile.randoms)
+        if not parent.randhandler.running:
+            self.randomscheck.setEnabled(False)
 
         avail_themes = self.config.availableThemes()
         self.themeBox = QtGui.QComboBox(self)
@@ -1246,8 +1247,7 @@ class PesterOptions(QtGui.QDialog):
         if not ostools.isOSXBundle():
             layout_chat.addWidget(self.animationscheck)
             layout_chat.addWidget(animateLabel)
-        if parent.randhandler.running:
-            layout_chat.addWidget(self.randomscheck)
+        layout_chat.addWidget(self.randomscheck)
         # Re-enable these when it's possible to disable User and Memo links
         #layout_chat.addWidget(hr)
         #layout_chat.addWidget(QtGui.QLabel("User and Memo Links"))

@@ -13,6 +13,7 @@
   "menu" : { "style": "font-family: 'Courier'; font: bold; font-size: 12px; color: black; background-color: #fdb302;border:2px solid #ffff00",
              "menuitem": "margin-right:10px;",
              "selected": "background-color: #ffff00",
+             "disabled": "color: grey",
              "loc": [10,0]
            },
   "sounds": { "alertsound": "$path/alarm.wav",

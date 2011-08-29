@@ -400,8 +400,10 @@ class PesterHandler(DefaultCommandHandler):
         helpers.nick(self.client, newnick)
         self.parent.nickCollision.emit(nick, newnick)
     def quit(self, nick, reason):
-        #print reason
         handle = nick[0:nick.find("!")]
+        logging.info("---> recv \"QUIT %s: %s\"" % (handle, reason))
+        if handle == self.parent.mainwindow.randhandler.randNick:
+            self.parent.mainwindow.randhandler.setRunning(False)
         server = self.parent.mainwindow.config.server()
         baseserver = server[server.rfind(".", 0, server.rfind(".")):]
         if reason.count(baseserver) == 2:
@@ -424,6 +426,8 @@ class PesterHandler(DefaultCommandHandler):
         logging.info("---> recv \"JOIN %s: %s\"" % (handle, channel))
         self.parent.userPresentUpdate.emit(handle, channel, "join")
         if channel == "#pesterchum":
+            if handle == self.parent.mainwindow.randhandler.randNick:
+                self.parent.mainwindow.randhandler.setRunning(True)
             self.parent.moodUpdated.emit(handle, Mood("chummy"))
     def mode(self, op, channel, mode, *handles):
         if len(handles) <= 0: handles = [""]
@@ -463,6 +467,10 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.userPresentUpdate.emit("%s:%s" % (oldhandle, newnick), "", "nick")
         if newnick in self.mainwindow.chumList.chums:
             self.getMood(newchum)
+        if oldhandle == self.parent.mainwindow.randhandler.randNick:
+                self.parent.mainwindow.randhandler.setRunning(False)
+        elif newnick == self.parent.mainwindow.randhandler.randNick:
+                self.parent.mainwindow.randhandler.setRunning(True)
     def namreply(self, server, nick, op, channel, names):
         namelist = names.split(" ")
         logging.info("---> recv \"NAMES %s: %d names\"" % (channel, len(namelist)))
@@ -478,6 +486,7 @@ class PesterHandler(DefaultCommandHandler):
         self.parent.namesReceived.emit(channel, pl)
         if channel == "#pesterchum" and not hasattr(self, "joined"):
             self.joined = True
+            self.parent.mainwindow.randhandler.setRunning(self.parent.mainwindow.randhandler.randNick in namelist)
             chums = self.mainwindow.chumList.chums
             lesschums = []
             for c in chums:

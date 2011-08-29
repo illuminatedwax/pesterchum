@@ -1663,8 +1663,9 @@ class PesterWindow(MovingWindow):
         filemenu.addAction(opts)
         filemenu.addAction(memoaction)
         filemenu.addAction(logv)
-        if self.randhandler.running:
-            filemenu.addAction(self.rand)
+        filemenu.addAction(self.rand)
+        if not self.randhandler.running:
+            self.rand.setEnabled(False)
         filemenu.addAction(userlistaction)
         filemenu.addAction(self.idleaction)
         filemenu.addAction(grps)
@@ -2072,7 +2073,7 @@ class PesterWindow(MovingWindow):
         self.backgroundImage = QtGui.QPixmap(theme["main/background-image"])
         self.backgroundMask = self.backgroundImage.mask()
         self.setMask(self.backgroundMask)
-        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; %s } " % (theme["main/menubar/style"], theme["main/menu/menuitem"]) + "QMenu { background: transparent; %s } QMenu::item::selected { %s }" % (theme["main/menu/style"], theme["main/menu/selected"]))
+        self.menu.setStyleSheet("QMenuBar { background: transparent; %s } QMenuBar::item { background: transparent; %s } " % (theme["main/menubar/style"], theme["main/menu/menuitem"]) + "QMenu { background: transparent; %s } QMenu::item::selected { %s } QMenu::item::disabled { %s }" % (theme["main/menu/style"], theme["main/menu/selected"], theme["main/menu/disabled"]))
         newcloseicon = PesterIcon(theme["main/close/image"])
         self.closeButton.setIcon(newcloseicon)
         self.closeButton.setIconSize(newcloseicon.realsize())

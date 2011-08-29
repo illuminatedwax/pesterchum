@@ -17,7 +17,6 @@ Features
 * When 'banned' make impossible to connect using timestamp banned under
 * Auto download/install updates via Windows installer
 * Turn memo notifications on/off from right-click menu on memos (Idea: lostGash)
-* Gray out random encounter option when RE is offline
 
 Bugs
 ----
