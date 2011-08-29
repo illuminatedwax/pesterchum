@@ -1,6 +1,7 @@
 import inspect
 import threading
 import time, os
+import ostools
 from PyQt4 import QtGui, QtCore
 
 try:
@@ -173,7 +174,10 @@ class ToastMachine(object):
 
 class PesterToast(QtGui.QWidget, DefaultToast):
     def __init__(self, machine, title, msg, icon, time=3000, parent=None):
-        QtGui.QWidget.__init__(self, parent, (QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint))
+        if ostools.isWin32():
+            QtGui.QWidget.__init__(self, parent)
+        else:
+            QtGui.QWidget.__init__(self, parent, (QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint))
 
         self.machine = machine
         self.time = time
