@@ -16,13 +16,20 @@ class TwmnError(Exception):
 
 
 def confExists():
-    return os.path.exists(os.path.expanduser("~/.config/twmn/twmn.conf"))
+    try:
+        from xdg import BaseDirectory
+        return os.path.join(BaseDirectory.xdg_config_home,"twmn/twmn.conf")
+    except:
+        return False
 
 def init(host="127.0.0.1", port=None):
     if not port:
         port = 9797
         try:
-            with open(os.path.expanduser("~/.config/twmn/twmn.conf")) as f:
+            fn = confExists()
+            if not fn:
+                return False
+            with open(fn) as f:
                 for line in f.readlines():
                     if line.startswith("port=") and \
                        line[5:-1].isdigit():
