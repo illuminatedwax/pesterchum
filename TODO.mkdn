@@ -15,7 +15,6 @@ Features
 * Whowas for last seen online?
 * Tab completion of two letter names
 * When 'banned' make impossible to connect using timestamp banned under
-* Fully working Toasts
 * Auto download/install updates via Windows installer
 * Turn memo notifications on/off from right-click menu on memos (Idea: lostGash)
 * Gray out random encounter option when RE is offline
@@ -36,6 +35,7 @@ Windows Bugs
 * XP SP2: sometimes mouse clicks dont register? must be some kinda crash
 * On reconnect and nick change, momentary theme change causes menu items to stop working
 * Random chums won't show up on chumroll
+* Popup toast notifications cause main window to raise
 
 Mac Bugs
 --------

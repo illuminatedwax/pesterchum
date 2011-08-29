@@ -173,7 +173,7 @@ class ToastMachine(object):
 
 class PesterToast(QtGui.QWidget, DefaultToast):
     def __init__(self, machine, title, msg, icon, time=3000, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent, (QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint))
 
         self.machine = machine
         self.time = time
@@ -281,7 +281,6 @@ class PesterToast(QtGui.QWidget, DefaultToast):
         val = float(self.height())/100
         self.move(p.x()-self.width(), p.y() - (value.toInt()[0] * val) +1)
         self.layout().setSpacing(0)
-        self.raise_()
         QtGui.QWidget.show(self)
 
     def mousePressEvent(self, event):
