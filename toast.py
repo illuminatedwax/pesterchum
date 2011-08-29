@@ -174,15 +174,15 @@ class ToastMachine(object):
 
 class PesterToast(QtGui.QWidget, DefaultToast):
     def __init__(self, machine, title, msg, icon, time=3000, parent=None):
-        if ostools.isWin32():
-            QtGui.QWidget.__init__(self, parent)
-        else:
-            QtGui.QWidget.__init__(self, parent, (QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint))
+        QtGui.QWidget.__init__(self, parent)
 
         self.machine = machine
         self.time = time
 
-        self.setWindowFlags(QtCore.Qt.ToolTip)
+        if ostools.isWin32():
+            self.setWindowFlags(QtCore.Qt.ToolTip)
+        else:
+            self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint| QtCore.Qt.ToolTip)
 
         self.m_animation = QtCore.QParallelAnimationGroup()
         anim = QtCore.QPropertyAnimation(self)
