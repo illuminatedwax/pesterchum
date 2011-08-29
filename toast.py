@@ -182,7 +182,7 @@ class PesterToast(QtGui.QWidget, DefaultToast):
         if ostools.isWin32():
             self.setWindowFlags(QtCore.Qt.ToolTip)
         else:
-            self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint| QtCore.Qt.ToolTip)
+            self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.ToolTip)
 
         self.m_animation = QtCore.QParallelAnimationGroup()
         anim = QtCore.QPropertyAnimation(self)
@@ -345,6 +345,14 @@ class PesterToast(QtGui.QWidget, DefaultToast):
             while metric.width(text, curspace) < maxwidth:
                 lastspace = curspace
                 curspace = text.find(" ", lastspace+1)
+                if curspace == -1:
+                    break
+            if (metric.width(text[:lastspace]) > maxwidth) or \
+               len(text[:lastspace]) < 1:
+                for i in xrange(len(text)):
+                    if metric.width(text[:i]) > maxwidth:
+                        lastspace = i-1
+                        break
             ret.append(text[:lastspace])
             text = text[lastspace+1:]
         ret.append(text)
