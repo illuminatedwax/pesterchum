@@ -2728,211 +2728,215 @@ class PesterWindow(MovingWindow):
         self.optionmenu = None
     @QtCore.pyqtSlot()
     def updateOptions(self):
-        # tabs
-        curtab = self.config.tabs()
-        tabsetting = self.optionmenu.tabcheck.isChecked()
-        if curtab and not tabsetting:
-            # split tabs into windows
-            windows = []
-            if self.tabconvo:
-                windows = list(self.tabconvo.convos.values())
-            if self.tabmemo:
-                windows += list(self.tabmemo.convos.values())
+        try:
+            # tabs
+            curtab = self.config.tabs()
+            tabsetting = self.optionmenu.tabcheck.isChecked()
+            if curtab and not tabsetting:
+                # split tabs into windows
+                windows = []
+                if self.tabconvo:
+                    windows = list(self.tabconvo.convos.values())
+                if self.tabmemo:
+                    windows += list(self.tabmemo.convos.values())
 
-            for w in windows:
-                w.setParent(None)
-                w.show()
-                w.raiseChat()
-            if self.tabconvo:
-                self.tabconvo.closeSoft()
-            if self.tabmemo:
-                self.tabmemo.closeSoft()
-            # save options
-            self.config.set("tabs", tabsetting)
-        elif tabsetting and not curtab:
-            # combine
-            self.createTabWindow()
-            newconvos = {}
-            for (h,c) in self.convos.iteritems():
-                c.setParent(self.tabconvo)
-                self.tabconvo.addChat(c)
-                self.tabconvo.show()
-                newconvos[h] = c
-            self.convos = newconvos
-            newmemos = {}
-            self.createMemoTabWindow()
-            for (h,m) in self.memos.iteritems():
-                m.setParent(self.tabmemo)
-                self.tabmemo.addChat(m)
-                self.tabmemo.show()
-                newmemos[h] = m
-            self.memos = newmemos
-            # save options
-            self.config.set("tabs", tabsetting)
-        # hidden chums
-        chumsetting = self.optionmenu.hideOffline.isChecked()
-        curchum = self.config.hideOfflineChums()
-        if curchum and not chumsetting:
-            self.chumList.showAllChums()
-        elif chumsetting and not curchum:
-            self.chumList.hideOfflineChums()
-        self.config.set("hideOfflineChums", chumsetting)
-        # sorting method
-        sortsetting = self.optionmenu.sortBox.currentIndex()
-        cursort = self.config.sortMethod()
-        self.config.set("sortMethod", sortsetting)
-        if sortsetting != cursort:
-            self.chumList.sort()
-        # sound
-        soundsetting = self.optionmenu.soundcheck.isChecked()
-        self.config.set("soundon", soundsetting)
-        chatsoundsetting = self.optionmenu.chatsoundcheck.isChecked()
-        curchatsound = self.config.chatSound()
-        if chatsoundsetting != curchatsound:
-            self.config.set('chatSound', chatsoundsetting)
-        memosoundsetting = self.optionmenu.memosoundcheck.isChecked()
-        curmemosound = self.config.memoSound()
-        if memosoundsetting != curmemosound:
-            self.config.set('memoSound', memosoundsetting)
-        memopingsetting = self.optionmenu.memopingcheck.isChecked()
-        curmemoping = self.config.memoPing()
-        if memopingsetting != curmemoping:
-            self.config.set('pingSound', memopingsetting)
-        namesoundsetting = self.optionmenu.namesoundcheck.isChecked()
-        curnamesound = self.config.nameSound()
-        if namesoundsetting != curnamesound:
-            self.config.set('nameSound', namesoundsetting)
-        volumesetting = self.optionmenu.volume.value()
-        curvolume = self.config.volume()
-        if volumesetting != curvolume:
-            self.config.set('volume', volumesetting)
-            self.setVolume(volumesetting)
-        # timestamps
-        timestampsetting = self.optionmenu.timestampcheck.isChecked()
-        self.config.set("showTimeStamps", timestampsetting)
-        timeformatsetting = unicode(self.optionmenu.timestampBox.currentText())
-        if timeformatsetting == "12 hour":
-          self.config.set("time12Format", True)
-        else:
-          self.config.set("time12Format", False)
-        secondssetting = self.optionmenu.secondscheck.isChecked()
-        self.config.set("showSeconds", secondssetting)
-        # groups
-        #groupssetting = self.optionmenu.groupscheck.isChecked()
-        #self.config.set("useGroups", groupssetting)
-        emptygroupssetting = self.optionmenu.showemptycheck.isChecked()
-        curemptygroup = self.config.showEmptyGroups()
-        if curemptygroup and not emptygroupssetting:
-            self.chumList.hideEmptyGroups()
-        elif emptygroupssetting and not curemptygroup:
-            self.chumList.showAllGroups()
-        self.config.set("emptyGroups", emptygroupssetting)
-        # online numbers
-        onlinenumsetting = self.optionmenu.showonlinenumbers.isChecked()
-        curonlinenum = self.config.showOnlineNumbers()
-        if onlinenumsetting and not curonlinenum:
-            self.chumList.showOnlineNumbers()
-        elif curonlinenum and not onlinenumsetting:
-            self.chumList.hideOnlineNumbers()
-        self.config.set("onlineNumbers", onlinenumsetting)
-        # logging
-        logpesterssetting = 0
-        if self.optionmenu.logpesterscheck.isChecked():
-            logpesterssetting = logpesterssetting | self.config.LOG
-        if self.optionmenu.stamppestercheck.isChecked():
-            logpesterssetting = logpesterssetting | self.config.STAMP
-        curlogpesters = self.config.logPesters()
-        if logpesterssetting != curlogpesters:
-            self.config.set('logPesters', logpesterssetting)
-        logmemossetting = 0
-        if self.optionmenu.logmemoscheck.isChecked():
-            logmemossetting = logmemossetting | self.config.LOG
-        if self.optionmenu.stampmemocheck.isChecked():
-            logmemossetting = logmemossetting | self.config.STAMP
-        curlogmemos = self.config.logMemos()
-        if logmemossetting != curlogmemos:
-            self.config.set('logMemos', logmemossetting)
-        # memo and user links
-        linkssetting = self.optionmenu.userlinkscheck.isChecked()
-        curlinks = self.config.disableUserLinks()
-        if linkssetting != curlinks:
-            self.config.set('userLinks', not linkssetting)
-        # idle time
-        idlesetting = self.optionmenu.idleBox.value()
-        curidle = self.config.idleTime()
-        if idlesetting != curidle:
-            self.config.set('idleTime', idlesetting)
-            self.idlethreshold = 60*idlesetting
-        # theme
-        self.themeSelected()
-        # randoms
-        if self.randhandler.running:
-            self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
-        # button actions
-        minisetting = self.optionmenu.miniBox.currentIndex()
-        curmini = self.config.minimizeAction()
-        if minisetting != curmini:
-            self.config.set('miniAction', minisetting)
-            self.setButtonAction(self.miniButton, minisetting, curmini)
-        closesetting = self.optionmenu.closeBox.currentIndex()
-        curclose = self.config.closeAction()
-        if closesetting != curclose:
-            self.config.set('closeAction', closesetting)
-            self.setButtonAction(self.closeButton, closesetting, curclose)
-        # op and voice messages
-        opvmesssetting = self.optionmenu.memomessagecheck.isChecked()
-        curopvmess = self.config.opvoiceMessages()
-        if opvmesssetting != curopvmess:
-            self.config.set('opvMessages', opvmesssetting)
-        # animated smiles
-        animatesetting = self.optionmenu.animationscheck.isChecked()
-        curanimate = self.config.animations()
-        if animatesetting != curanimate:
-            self.config.set('animations', animatesetting)
-            self.animationSetting.emit(animatesetting)
-        # update checked
-        updatechecksetting = self.optionmenu.updateBox.currentIndex()
-        curupdatecheck = self.config.checkForUpdates()
-        if updatechecksetting != curupdatecheck:
-            self.config.set('checkUpdates', updatechecksetting)
-        # mspa update check
-        mspachecksetting = self.optionmenu.mspaCheck.isChecked()
-        curmspacheck = self.config.checkMSPA()
-        if mspachecksetting != curmspacheck:
-            self.config.set('mspa', mspachecksetting)
-        # Taskbar blink
-        blinksetting = 0
-        if self.optionmenu.pesterBlink.isChecked():
-          blinksetting |= self.config.PBLINK
-        if self.optionmenu.memoBlink.isChecked():
-          blinksetting |= self.config.MBLINK
-        curblink = self.config.blink()
-        if blinksetting != curblink:
-          self.config.set('blink', blinksetting)
-        # toast notifications
-        self.tm.setEnabled(self.optionmenu.notifycheck.isChecked())
-        self.tm.setCurrentType(str(self.optionmenu.notifyOptions.currentText()))
-        notifysetting = 0
-        if self.optionmenu.notifySigninCheck.isChecked():
-            notifysetting |= self.config.SIGNIN
-        if self.optionmenu.notifySignoutCheck.isChecked():
-            notifysetting |= self.config.SIGNOUT
-        if self.optionmenu.notifyNewMsgCheck.isChecked():
-            notifysetting |= self.config.NEWMSG
-        if self.optionmenu.notifyNewConvoCheck.isChecked():
-            notifysetting |= self.config.NEWCONVO
-        if self.optionmenu.notifyMentionsCheck.isChecked():
-            notifysetting |= self.config.INITIALS
-        curnotify = self.config.notifyOptions()
-        if notifysetting != curnotify:
-            self.config.set('notifyOptions', notifysetting)
-        # advanced
-        ## user mode
-        if self.advanced:
-            newmodes = self.optionmenu.modechange.text()
-            if newmodes:
-                self.setChannelMode.emit(self.profile().handle, newmodes, "")
-        self.optionmenu = None
+                for w in windows:
+                    w.setParent(None)
+                    w.show()
+                    w.raiseChat()
+                if self.tabconvo:
+                    self.tabconvo.closeSoft()
+                if self.tabmemo:
+                    self.tabmemo.closeSoft()
+                # save options
+                self.config.set("tabs", tabsetting)
+            elif tabsetting and not curtab:
+                # combine
+                self.createTabWindow()
+                newconvos = {}
+                for (h,c) in self.convos.iteritems():
+                    c.setParent(self.tabconvo)
+                    self.tabconvo.addChat(c)
+                    self.tabconvo.show()
+                    newconvos[h] = c
+                self.convos = newconvos
+                newmemos = {}
+                self.createMemoTabWindow()
+                for (h,m) in self.memos.iteritems():
+                    m.setParent(self.tabmemo)
+                    self.tabmemo.addChat(m)
+                    self.tabmemo.show()
+                    newmemos[h] = m
+                self.memos = newmemos
+                # save options
+                self.config.set("tabs", tabsetting)
+            # hidden chums
+            chumsetting = self.optionmenu.hideOffline.isChecked()
+            curchum = self.config.hideOfflineChums()
+            if curchum and not chumsetting:
+                self.chumList.showAllChums()
+            elif chumsetting and not curchum:
+                self.chumList.hideOfflineChums()
+            self.config.set("hideOfflineChums", chumsetting)
+            # sorting method
+            sortsetting = self.optionmenu.sortBox.currentIndex()
+            cursort = self.config.sortMethod()
+            self.config.set("sortMethod", sortsetting)
+            if sortsetting != cursort:
+                self.chumList.sort()
+            # sound
+            soundsetting = self.optionmenu.soundcheck.isChecked()
+            self.config.set("soundon", soundsetting)
+            chatsoundsetting = self.optionmenu.chatsoundcheck.isChecked()
+            curchatsound = self.config.chatSound()
+            if chatsoundsetting != curchatsound:
+                self.config.set('chatSound', chatsoundsetting)
+            memosoundsetting = self.optionmenu.memosoundcheck.isChecked()
+            curmemosound = self.config.memoSound()
+            if memosoundsetting != curmemosound:
+                self.config.set('memoSound', memosoundsetting)
+            memopingsetting = self.optionmenu.memopingcheck.isChecked()
+            curmemoping = self.config.memoPing()
+            if memopingsetting != curmemoping:
+                self.config.set('pingSound', memopingsetting)
+            namesoundsetting = self.optionmenu.namesoundcheck.isChecked()
+            curnamesound = self.config.nameSound()
+            if namesoundsetting != curnamesound:
+                self.config.set('nameSound', namesoundsetting)
+            volumesetting = self.optionmenu.volume.value()
+            curvolume = self.config.volume()
+            if volumesetting != curvolume:
+                self.config.set('volume', volumesetting)
+                self.setVolume(volumesetting)
+            # timestamps
+            timestampsetting = self.optionmenu.timestampcheck.isChecked()
+            self.config.set("showTimeStamps", timestampsetting)
+            timeformatsetting = unicode(self.optionmenu.timestampBox.currentText())
+            if timeformatsetting == "12 hour":
+              self.config.set("time12Format", True)
+            else:
+              self.config.set("time12Format", False)
+            secondssetting = self.optionmenu.secondscheck.isChecked()
+            self.config.set("showSeconds", secondssetting)
+            # groups
+            #groupssetting = self.optionmenu.groupscheck.isChecked()
+            #self.config.set("useGroups", groupssetting)
+            emptygroupssetting = self.optionmenu.showemptycheck.isChecked()
+            curemptygroup = self.config.showEmptyGroups()
+            if curemptygroup and not emptygroupssetting:
+                self.chumList.hideEmptyGroups()
+            elif emptygroupssetting and not curemptygroup:
+                self.chumList.showAllGroups()
+            self.config.set("emptyGroups", emptygroupssetting)
+            # online numbers
+            onlinenumsetting = self.optionmenu.showonlinenumbers.isChecked()
+            curonlinenum = self.config.showOnlineNumbers()
+            if onlinenumsetting and not curonlinenum:
+                self.chumList.showOnlineNumbers()
+            elif curonlinenum and not onlinenumsetting:
+                self.chumList.hideOnlineNumbers()
+            self.config.set("onlineNumbers", onlinenumsetting)
+            # logging
+            logpesterssetting = 0
+            if self.optionmenu.logpesterscheck.isChecked():
+                logpesterssetting = logpesterssetting | self.config.LOG
+            if self.optionmenu.stamppestercheck.isChecked():
+                logpesterssetting = logpesterssetting | self.config.STAMP
+            curlogpesters = self.config.logPesters()
+            if logpesterssetting != curlogpesters:
+                self.config.set('logPesters', logpesterssetting)
+            logmemossetting = 0
+            if self.optionmenu.logmemoscheck.isChecked():
+                logmemossetting = logmemossetting | self.config.LOG
+            if self.optionmenu.stampmemocheck.isChecked():
+                logmemossetting = logmemossetting | self.config.STAMP
+            curlogmemos = self.config.logMemos()
+            if logmemossetting != curlogmemos:
+                self.config.set('logMemos', logmemossetting)
+            # memo and user links
+            linkssetting = self.optionmenu.userlinkscheck.isChecked()
+            curlinks = self.config.disableUserLinks()
+            if linkssetting != curlinks:
+                self.config.set('userLinks', not linkssetting)
+            # idle time
+            idlesetting = self.optionmenu.idleBox.value()
+            curidle = self.config.idleTime()
+            if idlesetting != curidle:
+                self.config.set('idleTime', idlesetting)
+                self.idlethreshold = 60*idlesetting
+            # theme
+            self.themeSelected()
+            # randoms
+            if self.randhandler.running:
+                self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
+            # button actions
+            minisetting = self.optionmenu.miniBox.currentIndex()
+            curmini = self.config.minimizeAction()
+            if minisetting != curmini:
+                self.config.set('miniAction', minisetting)
+                self.setButtonAction(self.miniButton, minisetting, curmini)
+            closesetting = self.optionmenu.closeBox.currentIndex()
+            curclose = self.config.closeAction()
+            if closesetting != curclose:
+                self.config.set('closeAction', closesetting)
+                self.setButtonAction(self.closeButton, closesetting, curclose)
+            # op and voice messages
+            opvmesssetting = self.optionmenu.memomessagecheck.isChecked()
+            curopvmess = self.config.opvoiceMessages()
+            if opvmesssetting != curopvmess:
+                self.config.set('opvMessages', opvmesssetting)
+            # animated smiles
+            animatesetting = self.optionmenu.animationscheck.isChecked()
+            curanimate = self.config.animations()
+            if animatesetting != curanimate:
+                self.config.set('animations', animatesetting)
+                self.animationSetting.emit(animatesetting)
+            # update checked
+            updatechecksetting = self.optionmenu.updateBox.currentIndex()
+            curupdatecheck = self.config.checkForUpdates()
+            if updatechecksetting != curupdatecheck:
+                self.config.set('checkUpdates', updatechecksetting)
+            # mspa update check
+            mspachecksetting = self.optionmenu.mspaCheck.isChecked()
+            curmspacheck = self.config.checkMSPA()
+            if mspachecksetting != curmspacheck:
+                self.config.set('mspa', mspachecksetting)
+            # Taskbar blink
+            blinksetting = 0
+            if self.optionmenu.pesterBlink.isChecked():
+              blinksetting |= self.config.PBLINK
+            if self.optionmenu.memoBlink.isChecked():
+              blinksetting |= self.config.MBLINK
+            curblink = self.config.blink()
+            if blinksetting != curblink:
+              self.config.set('blink', blinksetting)
+            # toast notifications
+            self.tm.setEnabled(self.optionmenu.notifycheck.isChecked())
+            self.tm.setCurrentType(str(self.optionmenu.notifyOptions.currentText()))
+            notifysetting = 0
+            if self.optionmenu.notifySigninCheck.isChecked():
+                notifysetting |= self.config.SIGNIN
+            if self.optionmenu.notifySignoutCheck.isChecked():
+                notifysetting |= self.config.SIGNOUT
+            if self.optionmenu.notifyNewMsgCheck.isChecked():
+                notifysetting |= self.config.NEWMSG
+            if self.optionmenu.notifyNewConvoCheck.isChecked():
+                notifysetting |= self.config.NEWCONVO
+            if self.optionmenu.notifyMentionsCheck.isChecked():
+                notifysetting |= self.config.INITIALS
+            curnotify = self.config.notifyOptions()
+            if notifysetting != curnotify:
+                self.config.set('notifyOptions', notifysetting)
+            # advanced
+            ## user mode
+            if self.advanced:
+                newmodes = self.optionmenu.modechange.text()
+                if newmodes:
+                    self.setChannelMode.emit(self.profile().handle, newmodes, "")
+        except Exception, e:
+            logging.error(e)
+        finally:
+            self.optionmenu = None
 
     def setButtonAction(self, button, setting, old):
         if old == 0: # minimize to taskbar
