@@ -31,6 +31,7 @@ CHANGELOG
 * Netsplit notification in memos - Kiooeht [evacipatedBox]
 * Toast Notifications - Kiooeht [evacipatedBox]
 * Disable randomEncounter options when it's offline - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
+* Sort list of memos alphabetically or by number of users - Kiooeht [evacipatedBox] (Idea: [lostGash])
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]

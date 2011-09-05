@@ -17,6 +17,11 @@ Features
 * When 'banned' make impossible to connect using timestamp banned under
 * Auto download/install updates via Windows installer
 * Turn memo notifications on/off from right-click menu on memos (Idea: lostGash)
+* Use MemoServ to send offline messages in email-like fashion (Idea: ghostDunk)
+* Use MemoServ to save profiles (Idea: ghostDunk)
+* Better NickServ registering
+* Unified data storage, OS-based user data location
+* Spectation notices (Idea: lexicalNuance)
 
 Bugs
 ----

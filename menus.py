@@ -1530,6 +1530,11 @@ class MemoListItem(QtGui.QTreeWidgetItem):
     def __init__(self, channel, usercount):
         QtGui.QTreeWidgetItem.__init__(self, [channel, str(usercount)])
         self.target = channel
+    def __lt__(self, other):
+        column = self.treeWidget().sortColumn()
+        if str(self.text(column)).isdigit() and str(other.text(column)).isdigit():
+            return int(self.text(column)) < int(other.text(column))
+        return self.text(column) < other.text(column)
 
 class PesterMemoList(QtGui.QDialog):
     def __init__(self, parent, channel=""):
@@ -1549,6 +1554,8 @@ class PesterMemoList(QtGui.QDialog):
         self.channelarea.setIndentation(0)
         self.channelarea.setColumnWidth(0,200)
         self.channelarea.setColumnWidth(1,10)
+        self.channelarea.setSortingEnabled(True)
+        self.channelarea.sortByColumn(0, QtCore.Qt.AscendingOrder)
         self.connect(self.channelarea,
                      QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
                      self, QtCore.SLOT('joinActivatedMemo()'))
