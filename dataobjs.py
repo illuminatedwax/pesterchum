@@ -90,10 +90,20 @@ class pesterQuirk(object):
             percentage = self.quirk["percentage"]/100.0
             words = string.split(" ")
             newl = []
+            ctag = re.compile("(</?c=?.*?>)", re.I)
             for w in words:
                 p = random.random()
-                if p < percentage:
+                if not ctag.search(w) and p < percentage:
                     newl.append(mispeller(w))
+                elif p < percentage:
+                    split = ctag.split(w)
+                    tmp = []
+                    for s in split:
+                        if s and not ctag.search(s):
+                            tmp.append(mispeller(s))
+                        else:
+                            tmp.append(s)
+                    newl.append("".join(tmp))
                 else:
                     newl.append(w)
             return " ".join(newl)

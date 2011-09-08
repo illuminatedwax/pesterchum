@@ -37,6 +37,7 @@ CHANGELOG
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
     * Alt characters don't break on random replace - Kiooeht [evacipatedBox]
     * Trollian 2.5 tray icon is now Trollian icon - Kiooeht [evacipatedBox]
+    * Don't screw up <c> tags with the mispeller - Kiooeht [evacipatedBox]
 * Mac Bug fixes
     * Create all datadir stuff - Lexi [lexicalNuance]
 
