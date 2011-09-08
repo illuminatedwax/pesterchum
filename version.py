@@ -1,7 +1,11 @@
 import urllib
 import re
 import time
-import tarfile, zipfile
+try:
+    import tarfile
+except:
+    tarfile = None
+import zipfile
 import os, sys, shutil
 
 USER_TYPE = "edge"
@@ -127,7 +131,7 @@ def updateExtract(url, extension):
         urllib.urlretrieve(url, fn)
     else:
         fn = urllib.urlretrieve(url)[0]
-        if tarfile.is_tarfile(fn):
+        if tarfile and tarfile.is_tarfile(fn):
             extension = ".tar.gz"
         elif zipfile.is_zipfile(fn):
             extension = ".zip"
@@ -148,9 +152,11 @@ def updateExtract(url, extension):
         if extension == ".zip":
             from zipfile import is_zipfile as is_updatefile, ZipFile as openupdate
             print "Opening .zip"
-        elif extension.startswith(".tar"):
+        elif tarfile and extension.startswith(".tar"):
             from tarfile import is_tarfile as is_updatefile, open as openupdate
             print "Opening .tar"
+        else:
+            return
 
         if is_updatefile(fn):
             update = openupdate(fn, 'r')
