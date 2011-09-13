@@ -229,6 +229,7 @@ class PesterIRC(QtCore.QThread):
         c = unicode(channel)
         try:
             helpers.part(self.cli, c)
+            self.cli.command_handler.joined = False
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
@@ -390,10 +391,11 @@ class PesterHandler(DefaultCommandHandler):
 
     def welcome(self, server, nick, msg):
         self.parent.setConnected()
-        helpers.join(self.client, "#pesterchum")
         mychumhandle = self.mainwindow.profile().handle
         mymood = self.mainwindow.profile().mood.value()
-        helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
+        if not self.mainwindow.config.lowBandwidth():
+            helpers.join(self.client, "#pesterchum")
+            helpers.msg(self.client, "#pesterchum", "MOOD >%d" % (mymood))
 
     def nicknameinuse(self, server, cmd, nick, msg):
         newnick = "pesterClient%d" % (random.randint(100,999))
@@ -484,7 +486,7 @@ class PesterHandler(DefaultCommandHandler):
         pl = PesterList(namelist)
         del self.channelnames[channel]
         self.parent.namesReceived.emit(channel, pl)
-        if channel == "#pesterchum" and not hasattr(self, "joined"):
+        if channel == "#pesterchum" and (not hasattr(self, "joined") or not self.joined):
             self.joined = True
             self.parent.mainwindow.randhandler.setRunning(self.parent.mainwindow.randhandler.randNick in namelist)
             chums = self.mainwindow.chumList.chums

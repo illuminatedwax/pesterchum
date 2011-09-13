@@ -1006,6 +1006,15 @@ class PesterOptions(QtGui.QDialog):
         self.tabs.button(-2).setChecked(True)
         self.pages = QtGui.QStackedWidget(self)
 
+        self.bandwidthcheck = QtGui.QCheckBox("Low Bandwidth", self)
+        if self.config.lowBandwidth():
+            self.bandwidthcheck.setChecked(True)
+        bandwidthLabel = QtGui.QLabel("(Stops you for receiving the flood of MOODS,\n"
+                                      " though stops chumlist from working properly)")
+        font = bandwidthLabel.font()
+        font.setPointSize(8)
+        bandwidthLabel.setFont(font)
+
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
@@ -1234,6 +1243,8 @@ class PesterOptions(QtGui.QDialog):
         layout_chumlist.addWidget(self.showemptycheck)
         layout_chumlist.addWidget(self.showonlinenumbers)
         layout_chumlist.addLayout(layout_3)
+        layout_chumlist.addWidget(self.bandwidthcheck)
+        layout_chumlist.addWidget(bandwidthLabel)
         self.pages.addWidget(widget)
 
         # Conversations

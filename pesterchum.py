@@ -2362,6 +2362,15 @@ class PesterWindow(MovingWindow):
             curnotify = self.config.notifyOptions()
             if notifysetting != curnotify:
                 self.config.set('notifyOptions', notifysetting)
+            # low bandwidth
+            bandwidthsetting = self.optionmenu.bandwidthcheck.isChecked()
+            curbandwidth = self.config.lowBandwidth()
+            if bandwidthsetting != curbandwidth:
+                self.config.set('lowBandwidth', bandwidthsetting)
+                if bandwidthsetting:
+                    self.leftChannel.emit("#pesterchum")
+                else:
+                    self.joinChannel.emit("#pesterchum")
             # advanced
             ## user mode
             if self.advanced:
