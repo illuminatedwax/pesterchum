@@ -458,6 +458,10 @@ class PesterProfileDB(dict):
                 options['group'] = c['group']
             if 'notes' in c:
                 options['notes'] = c['notes']
+            if 'color' not in c:
+                c['color'] = "#000000"
+            if 'mood' not in c:
+                c['mood'] = "offline"
             u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']), **options)))
         converted = dict(u)
         self.update(converted)
