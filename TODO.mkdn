@@ -33,7 +33,6 @@ Bugs
 * Closing a timeclone doesn't actually cease for everyone else
 * Kill Zalgo
 * Random invisible, tiny links to last link at end of every message
-* Profiles using themes you don't have break everything
 
 Windows Bugs
 ------------

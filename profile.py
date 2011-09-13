@@ -517,12 +517,17 @@ class pesterTheme(dict):
         self.path = _datadir+"themes/%s" % (name)
         if not os.path.exists(self.path):
             self.path = "themes/%s" % (name)
+        if not os.path.exists(self.path):
+            self.path = "themes/pesterchum"
 
         self.name = name
-        fp = open(self.path+"/style.js")
-        theme = json.load(fp, object_hook=self.pathHook)
+        try:
+            fp = open(self.path+"/style.js")
+            theme = json.load(fp, object_hook=self.pathHook)
+            fp.close()
+        except IOError:
+            theme = json.loads("{}")
         self.update(theme)
-        fp.close()
         if self.has_key("inherits"):
             self.inheritedTheme = pesterTheme(self["inherits"])
         if not default:

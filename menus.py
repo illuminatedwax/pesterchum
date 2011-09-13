@@ -1156,9 +1156,10 @@ class PesterOptions(QtGui.QDialog):
 
         avail_themes = self.config.availableThemes()
         self.themeBox = QtGui.QComboBox(self)
+        notheme = (theme.name not in avail_themes)
         for (i, t) in enumerate(avail_themes):
             self.themeBox.addItem(t)
-            if t == theme.name:
+            if (not notheme and t == theme.name) or (notheme and t == "pesterchum"):
                 self.themeBox.setCurrentIndex(i)
 
         self.buttonOptions = ["Minimize to Taskbar", "Minimize to Tray", "Quit"]
