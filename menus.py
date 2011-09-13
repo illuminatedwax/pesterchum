@@ -1189,7 +1189,7 @@ class PesterOptions(QtGui.QDialog):
         self.connect(self.notifycheck, QtCore.SIGNAL('stateChanged(int)'),
                      self, QtCore.SLOT('notifyChange(int)'))
         self.notifyOptions = QtGui.QComboBox(self)
-        types = self.parent().tm.avaliableTypes()
+        types = self.parent().tm.availableTypes()
         cur = self.parent().tm.currentType()
         self.notifyOptions.addItems(types)
         for (i,t) in enumerate(types):
@@ -1716,7 +1716,7 @@ class UpdatePesterchum(QtGui.QDialog):
         self.setWindowTitle("Pesterchum v%s Update" % (ver))
         self.setModal(False)
 
-        self.title = QtGui.QLabel("An update to Pesterchum is avaliable!")
+        self.title = QtGui.QLabel("An update to Pesterchum is available!")
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.title)

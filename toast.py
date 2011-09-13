@@ -131,7 +131,7 @@ class ToastMachine(object):
     def currentType(self):
         return self.type
 
-    def avaliableTypes(self):
+    def availableTypes(self):
         return sorted(self.types.keys())
 
     def setCurrentType(self, type):
