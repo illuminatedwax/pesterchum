@@ -199,7 +199,7 @@ class userConfig(object):
     def notifyOptions(self):
         return self.config.get('notifyOptions', self.SIGNIN | self.NEWMSG | self.NEWCONVO | self.INITIALS)
     def lowBandwidth(self):
-        return self.config.get('lowBandwidth', True)
+        return self.config.get('lowBandwidth', False)
     def addChum(self, chum):
         if chum.handle not in self.chums():
             fp = open(self.filename) # what if we have two clients open??
