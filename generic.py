@@ -20,6 +20,7 @@ class CaseInsensitiveDict(dict):
         return super(CaseInsensitiveDict, self).has_key(key.lower())
     def __delitem__(self, key):
         super(CaseInsensitiveDict, self).__delitem__(key.lower())
+
 class PesterList(list):
     def __init__(self, l):
         self.extend(l)
@@ -100,3 +101,37 @@ class MultiTextDialog(QtGui.QDialog):
             return retval
         else:
             return None
+
+class MovingWindow(QtGui.QFrame):
+    def __init__(self, *x, **y):
+        QtGui.QFrame.__init__(self, *x, **y)
+        self.moving = None
+        self.moveupdate = 0
+    def mouseMoveEvent(self, event):
+        if self.moving:
+            move = event.globalPos() - self.moving
+            self.move(move)
+            self.moveupdate += 1
+            if self.moveupdate > 5:
+                self.moveupdate = 0
+                self.update()
+    def mousePressEvent(self, event):
+        if event.button() == 1:
+            self.moving = event.globalPos() - self.pos()
+    def mouseReleaseEvent(self, event):
+        if event.button() == 1:
+            self.update()
+            self.moving = None
+
+class NoneSound(object):
+    def play(self): pass
+    def set_volume(self, v): pass
+
+class WMButton(QtGui.QPushButton):
+    def __init__(self, icon, parent=None):
+        QtGui.QPushButton.__init__(self, icon, "", parent)
+        self.setIconSize(icon.realsize())
+        self.resize(icon.realsize())
+        self.setFlat(True)
+        self.setStyleSheet("QPushButton { padding: 0px; }")
+        self.setAutoDefault(False)

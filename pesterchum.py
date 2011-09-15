@@ -60,7 +60,9 @@ from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
     LoadingScreen, AboutPesterchum, UpdatePesterchum
 from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
-from generic import PesterIcon, RightClickList, RightClickTree, MultiTextDialog, PesterList, CaseInsensitiveDict
+from generic import PesterIcon, RightClickList, RightClickTree, \
+    MultiTextDialog, PesterList, CaseInsensitiveDict, MovingWindow, \
+    NoneSound, WMButton
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
 from memos import PesterMemo, MemoTabWindow, TimeTracker
@@ -106,19 +108,6 @@ class waitingMessageHolder(object):
             self.mainwindow.updateSystemTray()
     def __len__(self):
         return len(self.queue)
-
-class NoneSound(object):
-    def play(self): pass
-    def set_volume(self, v): pass
-
-class WMButton(QtGui.QPushButton):
-    def __init__(self, icon, parent=None):
-        QtGui.QPushButton.__init__(self, icon, "", parent)
-        self.setIconSize(icon.realsize())
-        self.resize(icon.realsize())
-        self.setFlat(True)
-        self.setStyleSheet("QPushButton { padding: 0px; }")
-        self.setAutoDefault(False)
 
 class chumListing(QtGui.QTreeWidgetItem):
     def __init__(self, chum, window):
@@ -975,28 +964,6 @@ class PesterMoodButton(QtGui.QPushButton):
         # updates OUR mood
         self.moodUpdated.emit(self.mood.value())
     moodUpdated = QtCore.pyqtSignal(int)
-
-
-class MovingWindow(QtGui.QFrame):
-    def __init__(self, *x, **y):
-        QtGui.QFrame.__init__(self, *x, **y)
-        self.moving = None
-        self.moveupdate = 0
-    def mouseMoveEvent(self, event):
-        if self.moving:
-            move = event.globalPos() - self.moving
-            self.move(move)
-            self.moveupdate += 1
-            if self.moveupdate > 5:
-                self.moveupdate = 0
-                self.update()
-    def mousePressEvent(self, event):
-        if event.button() == 1:
-            self.moving = event.globalPos() - self.pos()
-    def mouseReleaseEvent(self, event):
-        if event.button() == 1:
-            self.update()
-            self.moving = None
 
 
 class PesterWindow(MovingWindow):
