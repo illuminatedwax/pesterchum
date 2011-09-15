@@ -211,6 +211,29 @@ class PesterTabWindow(QtGui.QFrame):
 
     windowClosed = QtCore.pyqtSignal()
 
+class PesterMovie(QtGui.QMovie):
+    def __init__(self, parent):
+        QtGui.QMovie.__init__(self, parent)
+        self.textwindow = parent
+    @QtCore.pyqtSlot(int)
+    def animate(self, frame):
+        text = self.textwindow
+        if text.mainwindow.config.animations():
+            movie = self
+            url = text.urls[movie].toString()
+            html = unicode(text.toHtml())
+            if html.find(url) != -1:
+                if text.hasTabs:
+                    i = text.tabobject.tabIndices[text.parent().title()]
+                    if text.tabobject.tabs.currentIndex() == i:
+                        text.document().addResource(QtGui.QTextDocument.ImageResource,
+                                          text.urls[movie], movie.currentPixmap())
+                        text.setLineWrapColumnOrWidth(text.lineWrapColumnOrWidth())
+                else:
+                    text.document().addResource(QtGui.QTextDocument.ImageResource,
+                                       text.urls[movie], movie.currentPixmap())
+                    text.setLineWrapColumnOrWidth(text.lineWrapColumnOrWidth())
+
 class PesterText(QtGui.QTextEdit):
     def __init__(self, theme, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
@@ -218,6 +241,11 @@ class PesterText(QtGui.QTextEdit):
             self.mainwindow = self.parent().mainwindow
         else:
             self.mainwindow = self.parent()
+        if type(parent.parent()) is PesterTabWindow:
+            self.tabobject = parent.parent()
+            self.hasTabs = True
+        else:
+            self.hasTabs = False
         self.initTheme(theme)
         self.setReadOnly(True)
         self.setMouseTracking(True)
@@ -230,30 +258,14 @@ class PesterText(QtGui.QTextEdit):
         self.connect(self.mainwindow, QtCore.SIGNAL('animationSetting(bool)'),
                      self, QtCore.SLOT('animateChanged(bool)'))
     def addAnimation(self, url, fileName):
-        movie = QtGui.QMovie(self)
+        movie = PesterMovie(self)
         movie.setFileName(fileName)
+        movie.setCacheMode(QtGui.QMovie.CacheAll)
         if movie.frameCount() > 1:
             self.urls[movie] = url
-            self.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
-                         self, QtCore.SLOT('animate(int)'))
+            movie.connect(movie, QtCore.SIGNAL('frameChanged(int)'),
+                          movie, QtCore.SLOT('animate(int)'))
             #movie.start()
-    @QtCore.pyqtSlot(int)
-    def animate(self, frame):
-        if self.mainwindow.config.animations():
-            movie = self.sender()
-            url = self.urls[movie].toString()
-            html = unicode(self.toHtml())
-            if html.find(url) != -1:
-                if self.parent().parent():
-                    i = self.parent().parent().tabIndices[self.parent().title()]
-                    if self.parent().parent().tabs.currentIndex() == i:
-                        self.document().addResource(QtGui.QTextDocument.ImageResource,
-                                          self.urls[movie], movie.currentPixmap())
-                        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
-                else:
-                    self.document().addResource(QtGui.QTextDocument.ImageResource,
-                                       self.urls[movie], movie.currentPixmap())
-                    self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
     @QtCore.pyqtSlot(bool)
     def animateChanged(self, animate):
         if animate:
