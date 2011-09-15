@@ -3,6 +3,7 @@ from datetime import *
 import re
 import random
 
+from mood import Mood
 from generic import PesterIcon
 from parsetools import timeDifference, convertTags, lexMessage, parseRegexpFunctions
 from mispeller import mispeller
@@ -12,36 +13,6 @@ _upperre = re.compile(r"upper\(([\w<>\\]+)\)")
 _lowerre = re.compile(r"lower\(([\w<>\\]+)\)")
 _scramblere = re.compile(r"scramble\(([\w<>\\]+)\)")
 _reversere = re.compile(r"reverse\(([\w<>\\]+)\)")
-
-class Mood(object):
-    moods = ["chummy", "rancorous", "offline", "pleasant", "distraught",
-             "pranky", "smooth", "ecstatic", "relaxed", "discontent",
-             "devious", "sleek", "detestful", "mirthful", "manipulative",
-             "vigorous", "perky", "acceptant", "protective", "mystified",
-             "amazed", "insolent", "bemused" ]
-    moodcats = ["chums", "trolls", "other"]
-    revmoodcats = {'discontent': 'trolls', 'insolent': 'chums', 'rancorous': 'chums', 'sleek': 'trolls', 'bemused': 'chums', 'mystified': 'chums', 'pranky': 'chums', 'distraught': 'chums', 'offline': 'chums', 'chummy': 'chums', 'protective': 'other', 'vigorous': 'trolls', 'ecstatic': 'trolls', 'relaxed': 'trolls', 'pleasant': 'chums', 'manipulative': 'trolls', 'detestful': 'trolls', 'smooth': 'chums', 'mirthful': 'trolls', 'acceptant': 'trolls', 'perky': 'trolls', 'devious': 'trolls', 'amazed': 'chums'}
-
-    def __init__(self, mood):
-        if type(mood) is int:
-            self.mood = mood
-        else:
-            self.mood = self.moods.index(mood)
-    def value(self):
-        return self.mood
-    def name(self):
-        try:
-            name = self.moods[self.mood]
-        except IndexError:
-            name = "chummy"
-        return name
-    def icon(self, theme):
-        try:
-            f = theme["main/chums/moods"][self.name()]["icon"]
-        except KeyError:
-            return PesterIcon(theme["main/chums/moods/chummy/icon"])
-        return PesterIcon(f)
-
 
 class pesterQuirk(object):
     def __init__(self, quirk):

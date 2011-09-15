@@ -10,7 +10,8 @@ from time import strftime, time
 from PyQt4 import QtGui, QtCore
 
 import ostools
-from dataobjs import PesterProfile, Mood, pesterQuirk, pesterQuirks
+from mood import Mood
+from dataobjs import PesterProfile, pesterQuirk, pesterQuirks
 from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
 
 _datadir = ostools.getDataDir()

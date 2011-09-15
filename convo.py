@@ -7,7 +7,8 @@ from copy import copy
 from datetime import datetime, timedelta
 from PyQt4 import QtGui, QtCore
 
-from dataobjs import PesterProfile, Mood, PesterHistory
+from mood import Mood
+from dataobjs import PesterProfile, PesterHistory
 from generic import PesterIcon
 from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley, smiledict
 

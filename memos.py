@@ -4,7 +4,8 @@ from copy import copy
 from PyQt4 import QtGui, QtCore
 from datetime import time, timedelta, datetime
 
-from dataobjs import PesterProfile, Mood, PesterHistory
+from mood import Mood
+from dataobjs import PesterProfile, PesterHistory
 from generic import PesterIcon, RightClickList, mysteryTime
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, addTimeInitial, timeProtocol, \

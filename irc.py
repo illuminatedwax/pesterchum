@@ -7,7 +7,8 @@ import random
 import socket
 from time import time
 
-from dataobjs import Mood, PesterProfile
+from mood import Mood
+from dataobjs import PesterProfile
 from generic import PesterList
 from version import _pcVersion
 
