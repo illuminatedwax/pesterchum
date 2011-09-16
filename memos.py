@@ -9,9 +9,8 @@ from dataobjs import PesterProfile, PesterHistory
 from generic import PesterIcon, RightClickList, mysteryTime
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
 from parsetools import convertTags, addTimeInitial, timeProtocol, \
-    lexMessage, colorBegin, colorEnd, mecmd, smiledict
+    lexMessage, colorBegin, colorEnd, mecmd, smiledict, oocre
 from logviewer import PesterLogViewer
-
 
 def delta2txt(d, format="pc"):
     if type(d) is mysteryTime:
@@ -393,6 +392,10 @@ class PesterMemo(PesterConvo):
         # ban & op list added if we are op
 
         self.optionsMenu = QtGui.QMenu(self)
+        self.oocToggle = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/ooc"], self)
+        self.oocToggle.setCheckable(True)
+        self.connect(self.oocToggle, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('toggleOOC(bool)'))
         self.quirksOff = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/quirksoff"], self)
         self.quirksOff.setCheckable(True)
         self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
@@ -404,6 +407,7 @@ class PesterMemo(PesterConvo):
         self.connect(self.invitechum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('inviteChums()'))
         self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.oocToggle)
         self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.invitechum)
 
@@ -501,6 +505,7 @@ class PesterMemo(PesterConvo):
         self.newmessage = False
         self.history = PesterHistory()
         self.applyquirks = True
+        self.ooc = False
 
     @QtCore.pyqtSlot()
     def toggleUserlist(self):
@@ -802,6 +807,9 @@ class PesterMemo(PesterConvo):
         text = unicode(self.textInput.text())
         if text == "" or text[0:11] == "PESTERCHUM:":
             return
+        oocDetected = oocre.match(text.strip())
+        if self.ooc and not oocDetected:
+            text = "(( %s ))" % (text)
         self.history.add(text)
         if self.time.getTime() == None:
             self.sendtime()
@@ -809,7 +817,7 @@ class PesterMemo(PesterConvo):
         quirks = self.mainwindow.userprofile.quirks
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd:
-            if self.applyquirks:
+            if self.applyquirks and not (self.ooc or oocDetected):
                 lexmsg = quirks.apply(lexmsg)
             initials = self.mainwindow.profile().initials()
             colorcmd = self.mainwindow.profile().colorcmd()

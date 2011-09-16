@@ -17,6 +17,7 @@ _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
 _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
+oocre = re.compile(r"[\[(][\[(].*[\])][\])]")
 
 quirkloader = PythonQuirks()
 _functionre = re.compile(r"%s" % quirkloader.funcre())

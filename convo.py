@@ -10,7 +10,8 @@ from PyQt4 import QtGui, QtCore
 from mood import Mood
 from dataobjs import PesterProfile, PesterHistory
 from generic import PesterIcon
-from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, img2smiley, smiledict
+from parsetools import convertTags, lexMessage, splitMessage, mecmd, colorBegin, colorEnd, \
+    img2smiley, smiledict, oocre
 
 class PesterTabWindow(QtGui.QFrame):
     def __init__(self, mainwindow, parent=None, convo="convo"):
@@ -539,6 +540,10 @@ class PesterConvo(QtGui.QFrame):
         self.quirksOff.setCheckable(True)
         self.connect(self.quirksOff, QtCore.SIGNAL('toggled(bool)'),
                      self, QtCore.SLOT('toggleQuirks(bool)'))
+        self.oocToggle = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/ooc"], self)
+        self.oocToggle.setCheckable(True)
+        self.connect(self.oocToggle, QtCore.SIGNAL('toggled(bool)'),
+                     self, QtCore.SLOT('toggleOOC(bool)'))
         self.unblockchum = QtGui.QAction(self.mainwindow.theme["main/menus/rclickchumlist/unblockchum"], self)
         self.connect(self.unblockchum, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('unblockChumSlot()'))
@@ -550,6 +555,7 @@ class PesterConvo(QtGui.QFrame):
                      self, QtCore.SLOT('openChumLogs()'))
 
         self.optionsMenu.addAction(self.quirksOff)
+        self.optionsMenu.addAction(self.oocToggle)
         self.optionsMenu.addAction(self.logchum)
         self.optionsMenu.addAction(self.addChumAction)
         self.optionsMenu.addAction(self.blockAction)
@@ -557,6 +563,7 @@ class PesterConvo(QtGui.QFrame):
 
         self.chumopen = False
         self.applyquirks = True
+        self.ooc = False
 
         if parent:
             parent.addChat(self)
@@ -679,6 +686,9 @@ class PesterConvo(QtGui.QFrame):
             self.optionsMenu.popup(event.globalPos())
     def closeEvent(self, event):
         self.mainwindow.waitingMessages.messageAnswered(self.title())
+        for movie in self.textArea.urls:
+            movie.stop()
+            del movie
         self.windowClosed.emit(self.title())
 
     def setChumOpen(self, o):
@@ -714,10 +724,13 @@ class PesterConvo(QtGui.QFrame):
         text = unicode(self.textInput.text())
         if text == "" or text[0:11] == "PESTERCHUM:":
             return
+        oocDetected = oocre.match(text.strip())
+        if self.ooc and not oocDetected:
+            text = "(( %s ))" % (text)
         self.history.add(text)
         quirks = self.mainwindow.userprofile.quirks
         lexmsg = lexMessage(text)
-        if type(lexmsg[0]) is not mecmd and self.applyquirks:
+        if type(lexmsg[0]) is not mecmd and self.applyquirks and not (self.ooc or oocDetected):
             try:
                 lexmsg = quirks.apply(lexmsg)
             except:
@@ -754,6 +767,9 @@ class PesterConvo(QtGui.QFrame):
     @QtCore.pyqtSlot(bool)
     def toggleQuirks(self, toggled):
         self.applyquirks = not toggled
+    @QtCore.pyqtSlot(bool)
+    def toggleOOC(self, toggled):
+        self.ooc = toggled
     @QtCore.pyqtSlot()
     def openChumLogs(self):
         currentChum = self.chum.handle

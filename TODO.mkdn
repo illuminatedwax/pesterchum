@@ -3,7 +3,6 @@ Todo
 
 Features
 --------
-* OOC
 * Log viewer needs to have BBCode/HTML/Text copy modes
 * Copy quirks between profiles?
 * More complex quirks: by-sound
@@ -17,11 +16,12 @@ Features
 * When 'banned' make impossible to connect using timestamp banned under
 * Auto download/install updates via Windows installer
 * Turn memo notifications on/off from right-click menu on memos (Idea: lostGash)
-* Use MemoServ to send offline messages in email-like fashion (Idea: ghostDunk)
-* Use MemoServ to save profiles (Idea: ghostDunk)
+* Use web connection to send offline messages in email-like fashion (Idea: ghostDunk)
+* Use web connection to save profiles (Idea: ghostDunk)
 * Better NickServ registering
 * Unified data storage, OS-based user data location
-* Spectation notices (Idea: lexicalNuance)
+* Spectation notices (Idea: lexicalNuance) (probly WONTFIX)
+* "Pester" menu option to just pester a handle
 
 Bugs
 ----

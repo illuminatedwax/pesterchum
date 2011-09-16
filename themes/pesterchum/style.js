@@ -57,6 +57,7 @@
                                "voiceuser": "GIVE VOICE",
                                "quirkkill": "KILL QUIRK",
                                "quirksoff": "QUIRKS OFF",
+			       "ooc": "OOC",
                                "invitechum": "INVITE CHUM",
                                "memosetting": "MEMO SETTINGS",
                                "memonoquirk": "DISABLE QUIRKS",
