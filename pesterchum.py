@@ -2210,7 +2210,10 @@ class PesterWindow(MovingWindow):
             if opvmesssetting != curopvmess:
                 self.config.set('opvMessages', opvmesssetting)
             # animated smiles
-            animatesetting = self.optionmenu.animationscheck.isChecked()
+            if ostools.isOSXBundle():
+                animatesetting = False;
+            else:
+                animatesetting = self.optionmenu.animationscheck.isChecked()
             curanimate = self.config.animations()
             if animatesetting != curanimate:
                 self.config.set('animations', animatesetting)
