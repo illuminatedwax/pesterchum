@@ -35,15 +35,11 @@ OPTIONS = {
         'PyQt4.phonon'
     ],
 	'iconfile': 'trayicon32.icns'
-#    ,
-#    'plist': {
-#        'CFBundleDisplayName':        'Pesterchum v3',
-#        'NSHumanReadableCopyright':   'GPLv3',
-#        'CFBundleGetInfoString':      'o_O???',
-#        'CFBundleIdentifier':         'org.pythonmac.pesterchum',
-#        'CFBundleVersion':            LONG_VERSION,
-#        'CFBundleShortVersionString': SHORT_VERSION
-#    }
+    ,
+    'plist': {
+        'NSHumanReadableCopyright':   'GPL v3',
+        'CFBundleIdentifier':         'skaianet.Pesterchum',
+    }
 }
 setup(
     name='Pesterchum',
