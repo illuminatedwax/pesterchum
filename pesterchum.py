@@ -71,7 +71,11 @@ from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
 from randomer import RandomHandler
-from updatecheck import MSPAChecker
+
+# Rawr, fuck you OSX leopard
+if not ostools.isOSXLeopard():
+    from updatecheck import MSPAChecker
+
 from toast import PesterToastMachine, PesterToast
 from libs import pytwmn
 from profile import *
@@ -1107,7 +1111,9 @@ class PesterWindow(MovingWindow):
         if not self.config.defaultprofile():
             self.changeProfile()
 
-        QtCore.QTimer.singleShot(1000, self, QtCore.SLOT('mspacheck()'))
+        # Fuck you some more OSX leopard! >:(
+        if not ostools.isOSXLeopard():
+            QtCore.QTimer.singleShot(1000, self, QtCore.SLOT('mspacheck()'))
 
         self.connect(self, QtCore.SIGNAL('pcUpdate(QString, QString)'),
                      self, QtCore.SLOT('updateMsg(QString, QString)'))
@@ -1120,7 +1126,9 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def mspacheck(self):
-        checker = MSPAChecker(self)
+        # Fuck you EVEN more OSX leopard! >:((((
+        if not ostools.isOSXLeopard():
+            checker = MSPAChecker(self)
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def updateMsg(self, ver, url):
@@ -2224,7 +2232,10 @@ class PesterWindow(MovingWindow):
             if updatechecksetting != curupdatecheck:
                 self.config.set('checkUpdates', updatechecksetting)
             # mspa update check
-            mspachecksetting = self.optionmenu.mspaCheck.isChecked()
+            if ostools.isOSXLeopard():
+                mspachecksetting = false
+            else:
+                mspachecksetting = self.optionmenu.mspaCheck.isChecked()
             curmspacheck = self.config.checkMSPA()
             if mspachecksetting != curmspacheck:
                 self.config.set('mspa', mspachecksetting)

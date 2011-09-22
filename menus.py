@@ -1146,8 +1146,9 @@ class PesterOptions(QtGui.QDialog):
         layout_6.addWidget(QtGui.QLabel("Check for\nPesterchum Updates:"))
         layout_6.addWidget(self.updateBox)
 
-        self.mspaCheck = QtGui.QCheckBox("Check for MSPA Updates", self)
-        self.mspaCheck.setChecked(self.config.checkMSPA())
+        if not ostools.isOSXLeopard():
+            self.mspaCheck = QtGui.QCheckBox("Check for MSPA Updates", self)
+            self.mspaCheck.setChecked(self.config.checkMSPA())
 
         self.randomscheck = QtGui.QCheckBox("Receive Random Encounters")
         self.randomscheck.setChecked(parent.userprofile.randoms)
