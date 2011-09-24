@@ -1336,7 +1336,8 @@ class PesterOptions(QtGui.QDialog):
         layout_idle.setAlignment(QtCore.Qt.AlignTop)
         layout_idle.addLayout(layout_5)
         layout_idle.addLayout(layout_6)
-        layout_idle.addWidget(self.mspaCheck)
+        if not ostools.isOSXLeopard():
+            layout_idle.addWidget(self.mspaCheck)
         self.pages.addWidget(widget)
 
         # Theme
