@@ -1,7 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from oyoyo.client import IRCClient
 from oyoyo.cmdhandler import DefaultCommandHandler
-from oyoyo import helpers
+from oyoyo import helpers, services
 import logging
 import random
 import socket
@@ -25,6 +25,8 @@ class PesterIRC(QtCore.QThread):
         self.config = config
         self.registeredIRC = False
         self.stopIRC = None
+        self.NickServ = services.NickServ()
+        self.ChanServ = services.ChanServ()
     def IRCConnect(self):
         server = self.config.server()
         port = self.config.port()

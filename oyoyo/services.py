@@ -110,13 +110,13 @@ def _addServ(serv, funcs, prefix=""):
         setattr(serv, t, simplecmd(t.upper()))
 
 class NickServ(object):
-    def __init__(self, nick):
+    def __init__(self, nick="NickServ"):
         self.name = nick
         _addServ(self, _nickservfuncs)
         _addServ(self, _nickservsetfuncs, "set")
 
 class ChanServ(object):
-    def __init__(self, nick):
+    def __init__(self, nick="ChanServ"):
         self.name = nick
         _addServ(self, _chanservfuncs)
         _addServ(self, _chanservsetfuncs, "set")
