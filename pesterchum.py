@@ -1122,7 +1122,7 @@ class PesterWindow(MovingWindow):
         self.connect(self.pingtimer, QtCore.SIGNAL('timeout()'),
                 self, QtCore.SLOT('checkPing()'))
         self.lastping = int(time())
-        self.pingtimer.start(1000*10)
+        self.pingtimer.start(1000*90)
 
     @QtCore.pyqtSlot()
     def mspacheck(self):
