@@ -1737,3 +1737,45 @@ class UpdatePesterchum(QtGui.QDialog):
         layout_0.addLayout(layout_2)
 
         self.setLayout(layout_0)
+
+class AddChumDialog(QtGui.QDialog):
+    def __init__(self, avail_groups, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+
+        self.mainwindow = parent
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+        self.setWindowTitle("Enter Chum Handle")
+        self.setModal(True)
+
+        self.title = QtGui.QLabel("Enter Chum Handle")
+        self.chumBox = QtGui.QLineEdit(self)
+        self.groupBox = QtGui.QComboBox(self)
+        avail_groups.sort()
+        avail_groups.pop(avail_groups.index("Chums"))
+        avail_groups.insert(0, "Chums")
+        for g in avail_groups:
+            self.groupBox.addItem(g)
+        self.newgrouplabel = QtGui.QLabel("Or make a new group:")
+        self.newgroup = QtGui.QLineEdit(self)
+
+        layout_0 = QtGui.QVBoxLayout()
+        layout_0.addWidget(self.title)
+        layout_0.addWidget(self.chumBox)
+        layout_0.addWidget(self.groupBox)
+        layout_0.addWidget(self.newgrouplabel)
+        layout_0.addWidget(self.newgroup)
+
+        self.ok = QtGui.QPushButton("OK", self)
+        self.ok.setDefault(True)
+        self.connect(self.ok, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('accept()'))
+        self.cancel = QtGui.QPushButton("CANCEL", self)
+        self.connect(self.cancel, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('reject()'))
+        layout_2 = QtGui.QHBoxLayout()
+        layout_2.addWidget(self.cancel)
+        layout_2.addWidget(self.ok)
+
+        layout_0.addLayout(layout_2)
+
+        self.setLayout(layout_0)

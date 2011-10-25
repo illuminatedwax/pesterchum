@@ -14,6 +14,9 @@ Visit http://nova.xzibition.com/~illuminatedwax/help.html for tutorial.
 CHANGELOG
 ---------
 ### 3.41.2
+* Add group option when adding chum - ghostDunk
+* OOC Mode - ghostDunk
+* Improve animated gifs - ghostDunk
 * Set IRC away on idle - Kiooeht [evacipatedBox]
 * Remote quirk shutoff in memos - Kiooeht [evacipatedBox]
 * Compress exit dumps into one line - Kiooeht [evacipatedBox] (Idea: Lexi [lexicalNuance])
