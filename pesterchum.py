@@ -58,7 +58,7 @@ if not os.path.exists(_datadir+"logs"):
 
 from menus import PesterChooseQuirks, PesterChooseTheme, \
     PesterChooseProfile, PesterOptions, PesterUserlist, PesterMemoList, \
-    LoadingScreen, AboutPesterchum, UpdatePesterchum
+    LoadingScreen, AboutPesterchum, UpdatePesterchum, AddChumDialog
 from mood import Mood, PesterMoodAction, PesterMoodHandler, PesterMoodButton
 from dataobjs import PesterProfile, pesterQuirk, pesterQuirks
 from generic import PesterIcon, RightClickList, RightClickTree, \
@@ -282,6 +282,8 @@ class chumArea(RightClickTree):
         self.notify = True
 
     def getOptionsMenu(self):
+        if not self.currentItem():
+            return None
         text = str(self.currentItem().text(0))
         if text.rfind(" (") != -1:
             text = text[0:text.rfind(" (")]
@@ -886,6 +888,7 @@ class TrollSlumWindow(QtGui.QFrame):
                 errormsg.showMessage("THIS IS NOT A VALID CHUMTAG!")
                 self.addchumdialog = None
                 return
+
             self.blockChumSignal.emit(handle)
         self.addtrolldialog = None
 
@@ -1384,6 +1387,20 @@ class PesterWindow(MovingWindow):
         self.config.addChum(chum)
         self.moodRequest.emit(chum)
 
+    def addGroup(self, gname):
+        print gname
+        self.config.addGroup(gname)
+        gTemp = self.config.getGroups()
+        self.chumList.groups = [g[0] for g in gTemp]
+        self.chumList.openGroups = [g[1] for g in gTemp]
+        self.chumList.moveGroupMenu()
+        self.chumList.showAllGroups()
+        if not self.config.showEmptyGroups():
+            self.chumList.hideEmptyGroups()
+        if self.config.showOnlineNumbers():
+            self.chumList.showOnlineNumbers()
+
+
     def changeProfile(self, collision=None):
         if not hasattr(self, 'chooseprofile'):
             self.chooseprofile = None
@@ -1766,17 +1783,34 @@ class PesterWindow(MovingWindow):
         if not hasattr(self, 'addchumdialog'):
             self.addchumdialog = None
         if not self.addchumdialog:
-            self.addchumdialog = QtGui.QInputDialog(self)
-            (handle, ok) = self.addchumdialog.getText(self, "New Chum", "Enter Chum Handle:")
+            available_groups = [g[0] for g in self.config.getGroups()]
+            self.addchumdialog = AddChumDialog(available_groups, self)
+            ok = self.addchumdialog.exec_()
+            handle = str(self.addchumdialog.chumBox.text()).strip()
+            newgroup = str(self.addchumdialog.newgroup.text()).strip()
+            selectedGroup = self.addchumdialog.groupBox.currentText()
+            group = newgroup if newgroup else selectedGroup
             if ok:
                 handle = unicode(handle)
+                print self.chumList.chums
+                if handle in [h.handle for h in self.chumList.chums]:
+                    return
                 if not (PesterProfile.checkLength(handle) and
                         PesterProfile.checkValid(handle)[0]):
                     errormsg = QtGui.QErrorMessage(self)
                     errormsg.showMessage("THIS IS NOT A VALID CHUMTAG!")
                     self.addchumdialog = None
                     return
-                chum = PesterProfile(handle, chumdb=self.chumdb)
+                if re.search("[^A-Za-z0-9_\s]", group) is not None:
+                    errormsg = QtGui.QErrorMessage(self)
+                    errormsg.showMessage("THIS IS NOT A VALID CHUMTAG!")
+                    self.addchumdialog = None
+                    return
+                if newgroup:
+                    # make new group
+                    self.addGroup(group)
+                chum = PesterProfile(handle, chumdb=self.chumdb, group=group)
+                self.chumdb.setGroup(handle, group)
                 self.addChum(chum)
             self.addchumdialog = None
     @QtCore.pyqtSlot(QtCore.QString)
@@ -2028,17 +2062,7 @@ class PesterWindow(MovingWindow):
                     ret = msgbox.exec_()
                     self.addgroupdialog = None
                     return
-                self.config.addGroup(gname)
-                gTemp = self.config.getGroups()
-                self.chumList.groups = [g[0] for g in gTemp]
-                self.chumList.openGroups = [g[1] for g in gTemp]
-                self.chumList.moveGroupMenu()
-                self.chumList.showAllGroups()
-                if not self.config.showEmptyGroups():
-                    self.chumList.hideEmptyGroups()
-                if self.config.showOnlineNumbers():
-                    self.chumList.showOnlineNumbers()
-
+                self.addGroup(gname)
             self.addgroupdialog = None
 
     @QtCore.pyqtSlot()
