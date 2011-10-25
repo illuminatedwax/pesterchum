@@ -425,6 +425,7 @@ smiledict = {
     ":vigorous:": "vigorous.png",
     ":perky:": "perky.png",
     ":acceptant:": "acceptant.png",
+    ":olliesouty:": "olliesouty.gif",
     }
 
 if ostools.isOSXBundle():
