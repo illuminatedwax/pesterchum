@@ -213,7 +213,7 @@ from dataobjs import pesterQuirks, PesterHistory
 class QuirkTesterWindow(QtGui.QDialog):
     def __init__(self, parent):
         QtGui.QDialog.__init__(self, parent)
-        self.parent = parent
+        self.prnt = parent
         self.mainwindow = parent.mainwindow
         self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
         self.setWindowTitle("Quirk Tester")
@@ -235,6 +235,9 @@ class QuirkTesterWindow(QtGui.QDialog):
         layout_0.addWidget(self.textInput)
         self.setLayout(layout_0)
 
+    def parent(self):
+        return self.prnt
+
     def clearNewMessage(self):
         pass
     @QtCore.pyqtSlot()
@@ -243,7 +246,7 @@ class QuirkTesterWindow(QtGui.QDialog):
         if text == "" or text[0:11] == "PESTERCHUM:":
             return
         self.history.add(text)
-        quirks = pesterQuirks(self.parent.testquirks())
+        quirks = pesterQuirks(self.parent().testquirks())
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd:
             try:
@@ -274,7 +277,7 @@ class QuirkTesterWindow(QtGui.QDialog):
         self.textArea.addMessage(lexmsg, chum)
 
     def closeEvent(self, event):
-        self.parent.quirktester = None
+        self.parent().quirktester = None
 
 class PesterQuirkTypes(QtGui.QDialog):
     def __init__(self, parent, quirk=None):
@@ -1723,7 +1726,7 @@ class UpdatePesterchum(QtGui.QDialog):
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.title)
 
-        self.ok = QtGui.QPushButton("D0WNL04D 4ND 1N5T4LL N0W", self)
+        self.ok = QtGui.QPushButton("D0WNL04D 4ND 1NST4LL N0W", self)
         self.ok.setDefault(True)
         self.connect(self.ok, QtCore.SIGNAL('clicked()'),
                      self, QtCore.SLOT('accept()'))
