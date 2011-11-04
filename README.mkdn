@@ -779,3 +779,6 @@ Here's a list of smilies:
 * :vigorous:
 * :perky:
 * :acceptant:
+* :olliesouty:
+* :billiards:
+* :billiardslarge:

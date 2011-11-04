@@ -22,6 +22,7 @@ Features
 * Unified data storage, OS-based user data location
 * Spectation notices (Idea: lexicalNuance) (probly WONTFIX)
 * "Pester" menu option to just pester a handle
+* Auto-login Nickserv
 
 Bugs
 ----

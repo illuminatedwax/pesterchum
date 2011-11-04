@@ -426,6 +426,8 @@ smiledict = {
     ":perky:": "perky.png",
     ":acceptant:": "acceptant.png",
     ":olliesouty:": "olliesouty.gif",
+    ":billiards:": "poolballS.gif",
+    ":billiardslarge:": "poolballL.gif",
     }
 
 if ostools.isOSXBundle():
