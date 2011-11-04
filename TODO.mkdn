@@ -23,6 +23,7 @@ Features
 * Spectation notices (Idea: lexicalNuance) (probly WONTFIX)
 * "Pester" menu option to just pester a handle
 * Auto-login Nickserv
+* Make toast notifications only on certain chums
 
 Bugs
 ----

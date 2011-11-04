@@ -354,13 +354,13 @@
  {
    "width": 210,
    "height": 100,
-   "style": "background: white;",
+   "style": "background: rgb(255,38,18);",
    "icon": { "signin": "$path/../enamel/ecstatic2.gif",
              "signout": "$path/../enamel/discontent2.gif",
-             "style": "border: 2px solid black; border-width: 2px 0px 0px 2px;" },
+             "style": "border: 0px;" },
    "title": { "minimumheight": 50,
-              "style": "border: 2px solid black; border-width: 2px 2px 0px 0px; padding: 5px; font-weight:bold;"
+              "style": "border: 0px; padding: 5px; font-weight: bold; color: white;"
             },
-   "content": { "style": "background: black; color: white; padding: 5px;" }
+   "content": { "style": "background: rgb(190, 19, 4); color: black; padding: 5px;" }
  }
 }

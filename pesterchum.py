@@ -197,7 +197,7 @@ class chumArea(RightClickTree):
     def __init__(self, chums, parent=None):
         QtGui.QTreeWidget.__init__(self, parent)
         self.notify = False
-        QtCore.QTimer.singleShot(5000, self, QtCore.SLOT('beginNotify()'))
+        QtCore.QTimer.singleShot(30000, self, QtCore.SLOT('beginNotify()'))
         self.mainwindow = parent
         theme = self.mainwindow.theme
         self.chums = chums
