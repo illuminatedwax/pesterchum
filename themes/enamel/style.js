@@ -327,7 +327,7 @@
                       }
           },
   "systemMsgColor": "#646464",
-  "op": { "icon": "$path/smooth.png" },
+  "op": { "icon": "$path/smooth.gif" },
   "voice": { "icon": "$path/voice.png" }
  }
 }

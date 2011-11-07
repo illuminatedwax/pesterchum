@@ -283,7 +283,7 @@ class PesterProfile(object):
             (syscolor.name(), modeon, modeverb, opchum.colorhtml(), opinit)
     def memoquirkkillmsg(self, opchum, opgrammar, syscolor):
         opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
-        return "<c=%s><c=%s>%s</c> turned off you quirk.</c>" % \
+        return "<c=%s><c=%s>%s</c> turned off your quirk.</c>" % \
             (syscolor.name(), opchum.colorhtml(), opinit)
 
     @staticmethod
