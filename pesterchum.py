@@ -2331,9 +2331,16 @@ class PesterWindow(MovingWindow):
                           self, QtCore.SLOT('close()'));
 
     @QtCore.pyqtSlot()
-    def themeSelected(self):
-        themename = unicode(self.optionmenu.themeBox.currentText())
-        if themename != self.theme.name:
+    def themeSelectOverride(self):
+        self.themeSelected(self.theme.name)
+
+    @QtCore.pyqtSlot()
+    def themeSelected(self, override=False):
+        if not override:
+            themename = unicode(self.optionmenu.themeBox.currentText())
+        else:
+            themename = override
+        if override or themename != self.theme.name:
             try:
                 self.changeTheme(pesterTheme(themename))
             except ValueError, e:
