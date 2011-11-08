@@ -130,6 +130,10 @@ class userConfig(object):
             return None
     def tabs(self):
         return self.config.get("tabs", True)
+    def tabMemos(self):
+        if not self.config.has_key('tabmemos'):
+            self.set("tabmemos", self.tabs())
+        return self.config.get("tabmemos", True)
     def showTimeStamps(self):
         if not self.config.has_key('showTimeStamps'):
             self.set("showTimeStamps", True)

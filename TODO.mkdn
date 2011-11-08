@@ -24,7 +24,6 @@ Features
 * "Pester" menu option to just pester a handle
 * Auto-login Nickserv
 * Make toast notifications only on certain chums
-* Separate tabbed/untabbed memos and convos
 
 Bugs
 ----

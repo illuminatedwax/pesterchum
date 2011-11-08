@@ -1349,7 +1349,7 @@ class PesterWindow(MovingWindow):
             self.memos[channel].showChat()
             return
         # do slider dialog then set
-        if self.config.tabs():
+        if self.config.tabMemos():
             if not self.tabmemo:
                 self.createMemoTabWindow()
             memoWindow = PesterMemo(channel, timestr, self, self.tabmemo)
@@ -1388,7 +1388,6 @@ class PesterWindow(MovingWindow):
         self.moodRequest.emit(chum)
 
     def addGroup(self, gname):
-        print gname
         self.config.addGroup(gname)
         gTemp = self.config.getGroups()
         self.chumList.groups = [g[0] for g in gTemp]
@@ -1638,8 +1637,14 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def closeConvo(self, handle):
         h = unicode(handle)
-        chum = self.convos[h].chum
-        chumopen = self.convos[h].chumopen
+        try:
+            chum = self.convos[h].chum
+        except KeyError:
+            chum = self.convos[h.lower()].chum
+        try:
+            chumopen = self.convos[h].chumopen
+        except KeyError:
+            chumopen = self.convos[h.lower()].chumopen
         if chumopen:
             self.chatlog.log(chum.handle, self.profile().pestermsg(chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/ceasepester"]))
             self.convoClosed.emit(handle)
@@ -1650,7 +1655,10 @@ class PesterWindow(MovingWindow):
         c = unicode(channel)
         self.chatlog.finish(c)
         self.leftChannel.emit(channel)
-        del self.memos[c]
+        try:
+            del self.memos[c]
+        except KeyError:
+            del self.memos[c.lower()]
     @QtCore.pyqtSlot()
     def tabsClosed(self):
         del self.tabconvo
@@ -1792,7 +1800,6 @@ class PesterWindow(MovingWindow):
             group = newgroup if newgroup else selectedGroup
             if ok:
                 handle = unicode(handle)
-                print self.chumList.chums
                 if handle in [h.handle for h in self.chumList.chums]:
                     return
                 if not (PesterProfile.checkLength(handle) and
@@ -2093,8 +2100,6 @@ class PesterWindow(MovingWindow):
                 windows = []
                 if self.tabconvo:
                     windows = list(self.tabconvo.convos.values())
-                if self.tabmemo:
-                    windows += list(self.tabmemo.convos.values())
 
                 for w in windows:
                     w.setParent(None)
@@ -2102,8 +2107,6 @@ class PesterWindow(MovingWindow):
                     w.raiseChat()
                 if self.tabconvo:
                     self.tabconvo.closeSoft()
-                if self.tabmemo:
-                    self.tabmemo.closeSoft()
                 # save options
                 self.config.set("tabs", tabsetting)
             elif tabsetting and not curtab:
@@ -2116,6 +2119,28 @@ class PesterWindow(MovingWindow):
                     self.tabconvo.show()
                     newconvos[h] = c
                 self.convos = newconvos
+                # save options
+                self.config.set("tabs", tabsetting)
+
+            # tabs memos
+            curtabmemo = self.config.tabMemos()
+            tabmemosetting = self.optionmenu.tabmemocheck.isChecked()
+            if curtabmemo and not tabmemosetting:
+                # split tabs into windows
+                windows = []
+                if self.tabmemo:
+                    windows = list(self.tabmemo.convos.values())
+
+                for w in windows:
+                    w.setParent(None)
+                    w.show()
+                    w.raiseChat()
+                if self.tabmemo:
+                    self.tabmemo.closeSoft()
+                # save options
+                self.config.set("tabmemos", tabmemosetting)
+            elif tabmemosetting and not curtabmemo:
+                # combine
                 newmemos = {}
                 self.createMemoTabWindow()
                 for (h,m) in self.memos.iteritems():
@@ -2125,7 +2150,7 @@ class PesterWindow(MovingWindow):
                     newmemos[h] = m
                 self.memos = newmemos
                 # save options
-                self.config.set("tabs", tabsetting)
+                self.config.set("tabmemos", tabmemosetting)
             # hidden chums
             chumsetting = self.optionmenu.hideOffline.isChecked()
             curchum = self.config.hideOfflineChums()

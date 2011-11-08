@@ -1021,6 +1021,9 @@ class PesterOptions(QtGui.QDialog):
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
+        self.tabmemocheck = QtGui.QCheckBox("Tabbed Memos", self)
+        if self.config.tabMemos():
+            self.tabmemocheck.setChecked(True)
         self.hideOffline = QtGui.QCheckBox("Hide Offline Chums", self)
         if self.config.hideOfflineChums():
             self.hideOffline.setChecked(True)
@@ -1278,6 +1281,7 @@ class PesterOptions(QtGui.QDialog):
         layout_interface = QtGui.QVBoxLayout(widget)
         layout_interface.setAlignment(QtCore.Qt.AlignTop)
         layout_interface.addWidget(self.tabcheck)
+        layout_interface.addWidget(self.tabmemocheck)
         layout_interface.addLayout(layout_mini)
         layout_interface.addLayout(layout_close)
         layout_interface.addWidget(self.pesterBlink)
