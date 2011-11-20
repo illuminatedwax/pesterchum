@@ -1,8 +1,10 @@
 # pesterchum
+import os, sys, getopt
+if os.path.dirname(sys.argv[0]):
+    os.chdir(os.path.dirname(sys.argv[0]))
 import version
 version.pcVerCalc()
 import logging
-import os, sys, getopt
 from datetime import *
 import random
 import re
