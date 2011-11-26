@@ -1112,6 +1112,7 @@ class PesterOptions(QtGui.QDialog):
         self.sortBox = QtGui.QComboBox(self)
         self.sortBox.addItem("Alphabetically")
         self.sortBox.addItem("By Mood")
+        self.sortBox.addItem("Manually")
         method = self.config.sortMethod()
         if method >= 0 and method < self.sortBox.count():
             self.sortBox.setCurrentIndex(method)

@@ -24,6 +24,8 @@ Features
 * "Pester" menu option to just pester a handle
 * Auto-login Nickserv
 * Make toast notifications only on certain chums
+* Local alisas for chums
+* Italics/uderline - needed for canon
 
 Bugs
 ----

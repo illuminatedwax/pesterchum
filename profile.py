@@ -121,6 +121,16 @@ class userConfig(object):
         if not self.config.has_key('chums'):
             self.set("chums", [])
         return self.config.get('chums', [])
+    def setChums(self, newchums):
+        fp = open(self.filename) # what if we have two clients open??
+        newconfig = json.load(fp)
+        fp.close()
+        oldchums = newconfig['chums']
+        # Time to merge these two! :OOO
+        for c in list(set(oldchums) - set(newchums)):
+            newchums.append(c)
+
+        self.set("chums", newchums)
     def hideOfflineChums(self):
         return self.config.get('hideOfflineChums', False)
     def defaultprofile(self):

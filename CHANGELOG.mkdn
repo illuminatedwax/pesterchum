@@ -39,6 +39,7 @@ CHANGELOG
 * New smilies - Kiooeht [evacipatedBox]
 * Refresh theme in options - Kiooeht [evacipatedBox]
 * Separate tabbed/untabbed windows for conversaions and memos - Kiooeht [evacipatedBox]
+* Manually rearrange chumroll - Kiooeht [evacipatedBox] (Idea: [turntableAbbess (aka. TA or SGRILL)])
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]
@@ -46,6 +47,7 @@ CHANGELOG
     * Trollian 2.5 tray icon is now Trollian icon - Kiooeht [evacipatedBox]
     * Don't screw up <c> tags with the mispeller - Kiooeht [evacipatedBox]
     * Don't break if profile uses non-existant theme - Kiooeht [evacipatedBox]
+    * Properly rearrange groups when not displaying number of online chums - Kiooeht [evacipatedBox]
 * Mac Bug fixes
     * Create all datadir stuff - Lexi [lexicalNuance]
 

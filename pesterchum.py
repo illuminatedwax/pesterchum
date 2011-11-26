@@ -329,8 +329,9 @@ class chumArea(RightClickTree):
             event.ignore()
             return
         thisitem = str(event.source().currentItem().text(0))
-        if thisitem.rfind(" ") != -1:
-            thisitem = thisitem[0:thisitem.rfind(" ")]
+        if thisitem.rfind(" (") != -1:
+            thisitem = thisitem[0:thisitem.rfind(" (")]
+        # Drop item is a group
         if thisitem == "Chums" or thisitem in self.groups:
             droppos = self.itemAt(event.pos())
             if not droppos: return
@@ -352,24 +353,46 @@ class chumArea(RightClickTree):
                         text = text[0:text.rfind(" (")]
                     gTemp.append([unicode(text), self.topLevelItem(i).isExpanded()])
                 self.mainwindow.config.saveGroups(gTemp)
+        # Drop item is a chum
         else:
             item = self.itemAt(event.pos())
             if item:
                 text = str(item.text(0))
+                # Figure out which group to drop into
                 if text.rfind(" (") != -1:
                     text = text[0:text.rfind(" (")]
                 if text == "Chums" or text in self.groups:
                     group = text
+                    gitem = item
                 else:
                     ptext = str(item.parent().text(0))
                     if ptext.rfind(" ") != -1:
                         ptext = ptext[0:ptext.rfind(" ")]
                     group = ptext
+                    gitem = item.parent()
+
                 chumLabel = event.source().currentItem()
                 chumLabel.chum.group = group
                 self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, group)
                 self.takeItem(chumLabel)
-                self.addItem(chumLabel)
+                # Using manual chum reordering
+                if self.mainwindow.config.sortMethod() == 2:
+                    insertIndex = gitem.indexOfChild(item)
+                    if insertIndex == -1:
+                        insertIndex = 0
+                    gitem.insertChild(insertIndex, chumLabel)
+                    chums = self.mainwindow.config.chums()
+                    if item == gitem:
+                        item = gitem.child(0)
+                    inPos = chums.index(str(item.text(0)))
+                    if chums.index(thisitem) < inPos:
+                        inPos -= 1
+                    chums.remove(thisitem)
+                    chums.insert(inPos, unicode(thisitem))
+
+                    self.mainwindow.config.setChums(chums)
+                else:
+                    self.addItem(chumLabel)
                 if self.mainwindow.config.showOnlineNumbers():
                     self.showOnlineNumbers()
 
@@ -538,7 +561,33 @@ class chumArea(RightClickTree):
                         text = text[0:text.rfind(" (")]
                     if text == chumLabel.chum.group:
                         break
-                self.topLevelItem(i).addChild(chumLabel)
+                # Manual sorting
+                if self.mainwindow.config.sortMethod() == 2:
+                    chums = self.mainwindow.config.chums()
+                    fi = chums.index(chumLabel.chum.handle)
+                    c = 1
+
+                    # TODO: Rearrange chums list on drag-n-drop
+                    bestj = 0
+                    bestname = ""
+                    if fi > 0:
+                        while not bestj:
+                            for j in xrange(self.topLevelItem(i).childCount()):
+                                if chums[fi-c] == str(self.topLevelItem(i).child(j).text(0)):
+                                    bestj = j
+                                    bestname = chums[fi-c]
+                                    break
+                            c += 1
+                            if fi-c < 0:
+                                break
+                    if bestname:
+                        self.topLevelItem(i).insertChild(bestj+1, chumLabel)
+                    else:
+                        self.topLevelItem(i).insertChild(bestj, chumLabel)
+                    #sys.exit(0)
+                    self.topLevelItem(i).addChild(chumLabel)
+                else: # All other sorting
+                    self.topLevelItem(i).addChild(chumLabel)
                 self.sort()
                 if self.mainwindow.config.showOnlineNumbers():
                     self.showOnlineNumbers()
@@ -628,7 +677,9 @@ class chumArea(RightClickTree):
         return c
 
     def sort(self):
-        if self.mainwindow.config.sortMethod() == 1:
+        if self.mainwindow.config.sortMethod() == 2:
+            pass # Do nothing!!!!! :OOOOOOO It's manual, bitches
+        elif self.mainwindow.config.sortMethod() == 1:
             for i in range(self.topLevelItemCount()):
                 self.moodSort(i)
         else:
