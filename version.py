@@ -31,7 +31,7 @@ _pcStatus = "B" # A  = alpha
                 # B  = beta
                 # RC = release candidate
                 # None = public release
-_pcRevision = "6"
+_pcRevision = "7"
 _pcVersion = ""
 
 def pcVerCalc():
