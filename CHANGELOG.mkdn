@@ -39,7 +39,7 @@ CHANGELOG
 * New smilies - Kiooeht [evacipatedBox]
 * Refresh theme in options - Kiooeht [evacipatedBox]
 * Separate tabbed/untabbed windows for conversaions and memos - Kiooeht [evacipatedBox]
-* Manually rearrange chumroll - Kiooeht [evacipatedBox] (Idea: [turntableAbbess (aka. TA or SGRILL)])
+* Manually rearrange chumroll - Kiooeht [evacipatedBox] (Idea: [turntableAbbess (aka. TA of SGRILL)])
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]

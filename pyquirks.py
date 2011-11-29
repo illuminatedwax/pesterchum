@@ -18,7 +18,7 @@ class PythonQuirks(object):
         for fn in os.listdir(os.path.join(self.home, 'quirks')):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(self.home, 'quirks', fn))
-        if ostools.isOSX():
+        if self._datadir:
             if not os.path.exists(os.path.join(self._datadir, 'quirks')):
                 os.mkdir(os.path.join(self._datadir, 'quirks'))
             for fn in os.listdir(os.path.join(self._datadir, 'quirks')):

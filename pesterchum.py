@@ -1,5 +1,5 @@
 # pesterchum
-import os, sys, getopt
+import os, shutil, sys, getopt
 if os.path.dirname(sys.argv[0]):
     os.chdir(os.path.dirname(sys.argv[0]))
 import version
@@ -47,8 +47,21 @@ if not ((major > 4) or (major == 4 and minor >= 6)):
 _datadir = ostools.getDataDir()
 # See, what I've done here is that _datadir is '' if we're not on OSX, so the
 #  concatination is the same as if it wasn't there.
-if _datadir and not os.path.exists(_datadir):
-    os.mkdir(_datadir)
+# UPDATE 2011-11-28 <Kiooeht>:
+#   Now using data directory as defined by QDesktopServices on all platforms
+#   (on Linux, same as using xdg). To stay safe with older versions, copy any
+#   data (profiles, logs, etc) from old location to new data directory.
+
+if _datadir:
+    if not os.path.exists(_datadir):
+        os.makedirs(_datadir)
+    if not os.path.exists(_datadir+"profiles/") and os.path.exists("profiles/"):
+        shutil.move("profiles/", _datadir+"profiles/")
+    if not os.path.exists(_datadir+"pesterchum.js") and os.path.exists("pesterchum.js"):
+        shutil.move("pesterchum.js", _datadir+"pesterchum.js")
+    if not os.path.exists(_datadir+"logs/") and os.path.exists("logs/"):
+        shutil.move("logs/", _datadir+"logs/")
+
 if not os.path.exists(_datadir+"profiles"):
     os.mkdir(_datadir+"profiles")
 if not os.path.exists(_datadir+"pesterchum.js"):
