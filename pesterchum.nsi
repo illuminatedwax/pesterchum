@@ -1,9 +1,9 @@
 
 ; The name of the installer
-Name "PESTERCHUM3.418"
+Name "PESTERCHUM3.41"
 
 ; The file to write
-OutFile "pesterchum3.418.exe"
+OutFile "pesterchum3.41.exe"
 
 InstallDir C:\Pesterchum
 
@@ -41,15 +41,12 @@ Section "Pesterchum"
 
   CreateDirectory "$SMPROGRAMS\Pesterchum"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
-  CreateShortcut "$SMPROGRAMS\Pesterchum\PesterchumDebug.lnk" "$INSTDIR\pesterchum_debug.exe"
   CreateShortcut "$DESKTOP\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
-  CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.txt"
+  CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.mkdn"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Uninstall.lnk" "$INSTDIR\uninstall.exe"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Logs.lnk" "$INSTDIR\logs"
 
-
 SectionEnd
-
 
 Section "Uninstall"
   
