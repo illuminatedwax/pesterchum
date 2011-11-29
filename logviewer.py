@@ -125,10 +125,7 @@ class PesterLogUserSelect(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def openDir(self):
-        if ostools.isOSX():
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(_datadir, "logs"), QtCore.QUrl.TolerantMode))
-        else:
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(os.getcwd(), "logs"), QtCore.QUrl.TolerantMode))
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl("file:///" + os.path.join(_datadir, "logs"), QtCore.QUrl.TolerantMode))
 
 class PesterLogViewer(QtGui.QDialog):
     def __init__(self, chum, config, theme, parent):
