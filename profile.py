@@ -321,8 +321,8 @@ class userConfig(object):
         for dirname, dirnames, filenames in os.walk(_datadir+'themes'):
             for d in dirnames:
                 themes.append(d)
-        # For OSX, also load embedded themes.
-        if ostools.isOSX():
+        # Also load embedded themes.
+        if _datadir:
             for dirname, dirnames, filenames in os.walk('themes'):
                 for d in dirnames:
                     if d not in themes:
@@ -440,7 +440,7 @@ class userProfile(object):
         fp.close()
     @staticmethod
     def newUserProfile(chatprofile):
-        if os.path.exists("profiles/%s.js" % (chatprofile.handle)):
+        if os.path.exists("%s/%s.js" % (_datadir+"profiles", chatprofile.handle)):
             newprofile = userProfile(chatprofile.handle)
         else:
             newprofile = userProfile(chatprofile)
@@ -529,11 +529,15 @@ class PesterProfileDB(dict):
 
 class pesterTheme(dict):
     def __init__(self, name, default=False):
-        self.path = _datadir+"themes/%s" % (name)
-        if not os.path.exists(self.path):
-            self.path = "themes/%s" % (name)
-        if not os.path.exists(self.path):
-            self.path = "themes/pesterchum"
+        possiblepaths = (_datadir+"themes/%s" % (name),
+                         "themes/%s" % (name),
+                         _datadir+"themes/pesterchum",
+                         "themes/pesterchum")
+        self.path = "themes/pesterchum"
+        for p in possiblepaths:
+            if os.path.exists(p):
+                self.path = p
+                break
 
         self.name = name
         try:
