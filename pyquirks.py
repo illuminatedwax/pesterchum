@@ -66,7 +66,7 @@ class PythonQuirks(object):
 
     def funcre(self):
         if not self.quirks:
-            return r""
+            return r"\\[0-9]+"
         f = r"("
         for q in self.quirks:
             f = f + q[:-1]+r"\(|"
