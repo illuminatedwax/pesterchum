@@ -28,7 +28,9 @@ Section "Pesterchum"
   
   ; Put file there
   File /r *.*
-  
+  Rename $INSTDIR\README.mkdn $INSTDIR\readme.txt
+  Rename $INSTDIR\CHANGELOG.mkdn $INSTDIR\changelog.txt
+
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\Pesterchum "Install_Dir" "$INSTDIR"
   
@@ -42,7 +44,7 @@ Section "Pesterchum"
   CreateDirectory "$SMPROGRAMS\Pesterchum"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
   CreateShortcut "$DESKTOP\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
-  CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.mkdn"
+  CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Uninstall.lnk" "$INSTDIR\uninstall.exe"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Logs.lnk" "$INSTDIR\logs"
 
