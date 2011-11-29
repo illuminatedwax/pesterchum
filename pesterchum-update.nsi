@@ -1,9 +1,9 @@
 
 ; The name of the installer
-Name "PESTERCHUM3.418"
+Name "PESTERCHUM3.41"
 
 ; The file to write
-OutFile "pesterchum3.418.update.exe"
+OutFile "pesterchum3.41.update.exe"
 
 RequestExecutionLevel admin
 

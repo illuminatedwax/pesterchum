@@ -1,29 +1,19 @@
-Welcome to Pesterchum 3.14.1!
+Welcome to Pesterchum 3.41!
 =============================
 
 WHAT'S NEW?
 -----------
-* Quirks now have a lower(), scramble(), and reverse() function!
-* Timestamps - check your Config!
-* Logviewer - View logs right in Pesterchum!
-* Quirk ordering - order your quirks so they work right!
-* # of users in a memo - You can now see how many users are in a memo.
-* @links to users - typing @ before user's name creates a link
-  that will pester them!
-* Support for REPORT and ALT to calSprite built in -
-  If someone is bothering you, or a canon handle is idle, or
-  for whatever reason, right click their name and go to "Report"
-  to report them to a moderator.
-  If you want to talk to an alt canon handle, just right click
-  the username!
-  if you have an alt handle, register it with calSprite!
+* Check out the CHANGELOG file to see what's changed!
+
+What do I do now?
+-----------------
+
+Most questions can be answered by visiting the forums! Go to HELP->HELP
+and you'll be transported to the proper thread!
 
 Here's some tips to help you get started:
 -----------------------------------------
 
-- You can import your old Pesterchum contacts by going to
-CLIENT->IMPORT and opening your pesterchum.cfg file. This is usually
-in the 2.5 base directory or in Tinychum's data folder.
 - Some themes can be confusing if you haven't used the program
 already! Some hints:
     * Trollian: Moods are set by clicking the timelines, and you
@@ -44,8 +34,6 @@ online userlist, or the list of memo browsers.
 Cool features:
 --------------
 
-- Importing from old PC. It can already do your chumlist, soon it will
-import your quirks from 2.5 and TC as well!
 - Profile switching. Instantly switch profiles, loading your color and
 quirks with it.
 - Theme switching and creation. So far this comes with a few official
@@ -782,3 +770,4 @@ Here's a list of smilies:
 * :olliesouty:
 * :billiards:
 * :billiardslarge:
+* :whatdidyoudo:
