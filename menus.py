@@ -7,6 +7,8 @@ from dataobjs import pesterQuirk, PesterProfile
 from memos import TimeSlider, TimeInput
 from version import _pcVersion
 
+_datadir = ostools.getDataDir()
+
 class PesterQuirkItem(QtGui.QTreeWidgetItem):
     def __init__(self, quirk):
         parent = None
@@ -890,7 +892,7 @@ class PesterChooseProfile(QtGui.QDialog):
             ret = msgbox.exec_()
             if ret == QtGui.QMessageBox.Ok:
                 try:
-                    remove("profiles/%s.js" % (handle))
+                    remove(_datadir+"profiles/%s.js" % (handle))
                 except OSError:
                     problem = QtGui.QMessageBox()
                     problem.setStyleSheet(self.theme["main/defaultwindow/style"])
