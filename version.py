@@ -8,13 +8,13 @@ except:
 import zipfile
 import os, sys, shutil
 
-USER_TYPE = "edge"
+USER_TYPE = "user"
                   # user - for normal people
                   # beta - for the original beta testers
                   # dev  - used to be for git users, now it's anyone with the 3.41 beta
                   # edge - new git stuff. bleeding edge, do not try at home (kiooeht version)
 
-INSTALL_TYPE = "source"
+INSTALL_TYPE = "installer"
                   # installer - Windows/Mac installer     (exe/dmg)
                   # zip       - Windows zip               (zip)
                   # source    - Win/Linux/Mac source code (zip/tar)
@@ -26,12 +26,12 @@ elif OS_TYPE == "darwin":
     OS_TYPE = "mac"
 
 _pcMajor = "3.41"
-_pcMinor = "2"
-_pcStatus = "B" # A  = alpha
+_pcMinor = "3"
+_pcStatus = "RC" # A  = alpha
                 # B  = beta
                 # RC = release candidate
                 # None = public release
-_pcRevision = "6"
+_pcRevision = "1"
 _pcVersion = ""
 
 def pcVerCalc():
