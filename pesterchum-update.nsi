@@ -25,13 +25,19 @@ Section "Pesterchum"
   ; Put file there
   File /r themes
   File /r smilies
-  File library.zip
+  File /r quirks
+  File README.mkdn
+  File CHANGELOG.mkdn
+  File version.py
   File pesterchum.exe
+  File pesterchum.exe.manifest
+
+
+  Rename $INSTDIR\README.mkdn $INSTDIR\readme.txt
+  Rename $INSTDIR\CHANGELOG.mkdn $INSTDIR\changelog.txt
   
   Delete "$SMPROGRAMS\Pesterchum\Pesterchum.lnk"
-  Delete "$SMPROGRAMS\Pesterchum\PesterChumDebug.lnk"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
-  CreateShortcut "$SMPROGRAMS\Pesterchum\PesterchumDebug.lnk" "$INSTDIR\pesterchum_debug.exe"
    
   Goto done
   error:
