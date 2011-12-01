@@ -63,7 +63,7 @@ Section "Pesterchum"
   CreateShortcut "$DESKTOP\Pesterchum.lnk" "$INSTDIR\pesterchum.exe"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortcut "$SMPROGRAMS\Pesterchum\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-  CreateShortcut "$SMPROGRAMS\Pesterchum\Logs.lnk" "$INSTDIR\logs"
+  CreateShortcut "$SMPROGRAMS\Pesterchum\Logs.lnk" "$LOCALAPPDATA\pesterchum\logs"
 
   Goto done
 
