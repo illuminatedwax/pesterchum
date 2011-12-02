@@ -54,7 +54,14 @@ class PesterLog(object):
             for (format, t) in modes.iteritems():
                 if not os.path.exists("%s/%s/%s/%s" % (self.logpath, self.handle, handle, format)):
                     os.makedirs("%s/%s/%s/%s" % (self.logpath, self.handle, handle, format))
-                fp = codecs.open("%s/%s/%s/%s/%s.%s.txt" % (self.logpath, self.handle, handle, format, handle, time), encoding='utf-8', mode='a')
+                try:
+                    fp = codecs.open("%s/%s/%s/%s/%s.%s.txt" % (self.logpath, self.handle, handle, format, handle, time), encoding='utf-8', mode='a')
+                except IOError:
+                    errmsg = QtGui.QMessageBox(self)
+                    errmsg.setText("Warning: Pesterchum could not open the log file for %s!" % (handle))
+                    errmsg.setInformativeText("Your log for %s will not be saved because something went wrong. We suggest restarting Pesterchum. Sorry :(" % (handle))
+                    errmsg.show()
+                    continue
                 self.convos[handle][format] = fp
         for (format, t) in modes.iteritems():
             f = self.convos[handle][format]

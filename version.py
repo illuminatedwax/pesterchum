@@ -26,7 +26,7 @@ elif OS_TYPE == "darwin":
     OS_TYPE = "mac"
 
 _pcMajor = "3.41"
-_pcMinor = "2"
+_pcMinor = "3"
 _pcStatus = "RC" # A  = alpha
                 # B  = beta
                 # RC = release candidate
