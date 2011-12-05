@@ -13,7 +13,12 @@ Visit http://nova.xzibition.com/~illuminatedwax/help.html for tutorial.
 
 CHANGELOG
 ---------
-### 3.41.2
+## 3.41.4
+* Makefile for Linux installing - Kiooeht [evacipatedBox]
+* Bug fixes
+    * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
+
+### 3.41.3
 * Add group option when adding chum - ghostDunk
 * OOC Mode - ghostDunk
 * Improve animated gifs - ghostDunk
@@ -40,6 +45,8 @@ CHANGELOG
 * Refresh theme in options - Kiooeht [evacipatedBox]
 * Separate tabbed/untabbed windows for conversaions and memos - Kiooeht [evacipatedBox]
 * Manually rearrange chumroll - Kiooeht [evacipatedBox] (Idea: [turntableAbbess (aka. TA of SGRILL)])
+* Using user data directory for all OSs - Kiooeht [evacipatedBox]
+* Lots more user created themes - ghostDunk
 * Bug fixes
     * Don't delete random chum when blocking someone not on chumroll - Kiooeht [evacipatedBox]
     * Openning global userlist doesn't reset OP status of memo users - Kiooeht [evacipatedBox]

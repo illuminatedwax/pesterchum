@@ -8,26 +8,29 @@ import logging
 from datetime import *
 import random
 import re
-import ostools
 from time import time
 import threading, Queue
 
-missing = []
+reqmissing = []
+optmissing = []
 try:
     from PyQt4 import QtGui, QtCore
 except ImportError, e:
     module = str(e)
-    if module[:16] == "No module named ": missing.append(module[16:])
+    if module.startswith("No module named ") or \
+       module.startswith("cannot import name "):
+        reqmissing.append(module[module.rfind(" ")+1:])
     else: print e
 try:
     import pygame
 except ImportError, e:
+    pygame = None
     module = str(e)
-    if module[:16] == "No module named ": missing.append(module[16:])
+    if module[:16] == "No module named ": optmissing.append(module[16:])
     else: print e
-if missing:
+if reqmissing:
     print "ERROR: The following modules are required for Pesterchum to run and are missing on your system:"
-    for m in missing: print "* "+m
+    for m in reqmissing: print "* "+m
     exit()
 vnum = QtCore.qVersion()
 major = int(vnum[:vnum.find(".")])
@@ -40,6 +43,7 @@ if not ((major > 4) or (major == 4 and minor >= 6)):
     print "You currently have version " + vnum + ". Please ungrade Qt"
     exit()
 
+import ostools
 # Placed here before importing the rest of pesterchum, since bits of it need
 #  OSX's data directory and it doesn't hurt to have everything set up before
 #  plowing on. :o)
@@ -1588,7 +1592,7 @@ class PesterWindow(MovingWindow):
             self.mychumcolor.setText("")
 
         # sounds
-        if not pygame.mixer:
+        if not pygame or not pygame.mixer:
             self.alarm = NoneSound()
             self.memosound = NoneSound()
             self.namesound = NoneSound()
@@ -2641,7 +2645,7 @@ class MainProgram(QtCore.QObject):
 
         options = self.oppts(sys.argv[1:])
 
-        if pygame.mixer:
+        if pygame and pygame.mixer:
             # we could set the frequency higher but i love how cheesy it sounds
             try:
                 pygame.mixer.init()
