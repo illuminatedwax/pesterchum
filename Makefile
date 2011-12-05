@@ -31,7 +31,6 @@ install: make-install-dirs
 	cp smilies/* ${PESTERCHUMLIBDIR}/smilies
 	cp -r themes/* ${PESTERCHUMLIBDIR}/themes
 	@echo '#!/bin/sh' > ${PESTERCHUMBINDIR}/pesterchum
-	@echo 'cd ${PESTERCHUMCONFDIR}' >> ${PESTERCHUMBINDIR}/pesterchum
-	@echo 'python2 pesterchum.py' > ${PESTERCHUMBINDIR}/pesterchum
+	@echo 'cd ${PREFIX}$(LIBINSTALLDIR)/pesterchum' >> ${PESTERCHUMBINDIR}/pesterchum
+	@echo 'python2 pesterchum.py' >> ${PESTERCHUMBINDIR}/pesterchum
 	chmod +x ${PESTERCHUMBINDIR}/pesterchum
-	@echo "Done installing"
