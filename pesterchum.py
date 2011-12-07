@@ -1871,6 +1871,7 @@ class PesterWindow(MovingWindow):
             if ok:
                 handle = unicode(handle)
                 if handle in [h.handle for h in self.chumList.chums]:
+                    self.addchumdialog = None
                     return
                 if not (PesterProfile.checkLength(handle) and
                         PesterProfile.checkValid(handle)[0]):
