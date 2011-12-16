@@ -41,7 +41,7 @@ class PesterLog(object):
             if not self.parent.config.logPesters() & self.parent.config.LOG: return
             if not self.parent.config.logPesters() & self.parent.config.STAMP:
                 time = ""
-        if str(handle).upper() == "NICKSERV": return
+        if unicode(handle).upper() == "NICKSERV": return
         #watch out for illegal characters
         handle = re.sub(r'[<>:"/\\|?*]', "_", handle)
         bbcodemsg = time + convertTags(msg, "bbcode")

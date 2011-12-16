@@ -264,7 +264,7 @@ class PesterLogViewer(QtGui.QDialog):
         textCur = self.textArea.textCursor()
         textCur.movePosition(1)
         self.textArea.setTextCursor(textCur)
-        self.instructions.setText("Pesterlog with " +self.chum+ " on " + self.fileToTime(str(fname)))
+        self.instructions.setText("Pesterlog with " +self.chum+ " on " + self.fileToTime(unicode(fname)))
 
     def logSearch(self, search):
         self.hilight.searchTerm = search

@@ -234,7 +234,7 @@ class PesterToast(QtGui.QWidget, DefaultToast):
         self.msg.setStyleSheet(self.parent().theme["toasts/content/style"])
         self.layout().setSpacing(0)
 
-        self.msg.setText(PesterToast.wrapText(self.msg.font(), str(self.msg.text()), self.parent().theme["toasts/width"], self.parent().theme["toasts/content/style"]))
+        self.msg.setText(PesterToast.wrapText(self.msg.font(), unicode(self.msg.text()), self.parent().theme["toasts/width"], self.parent().theme["toasts/content/style"]))
 
         p = QtGui.QApplication.desktop().availableGeometry(self).bottomRight()
         o = QtGui.QApplication.desktop().screenGeometry(self).bottomRight()
@@ -253,8 +253,8 @@ class PesterToast(QtGui.QWidget, DefaultToast):
     def done(self):
         QtGui.QWidget.hide(self)
         t = self.machine.toasts[0]
-        if t.title == str(self.title.text()) and \
-           t.msg == str(self.content):
+        if t.title == unicode(self.title.text()) and \
+           t.msg == unicode(self.content):
             self.machine.toasts.pop(0)
             self.machine.displaying = False
         if self.machine.on:
