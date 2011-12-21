@@ -28,6 +28,8 @@ def osVer():
 
 def getDataDir():
     if isOSX():
-        return os.path.join(str(QDesktopServices.storageLocation(QDesktopServices.DataLocation)), "Pesterchum/")
+        return os.path.join(str(QDesktopServices.storageLocation(QDesktopServices.DataLocation).toLatin1()), "Pesterchum/")
+    elif isLinux():
+        return os.path.join(str(QDesktopServices.storageLocation(QDesktopServices.HomeLocation).toLatin1()), ".pesterchum/")
     else:
-        return ''
+        return os.path.join(str(QDesktopServices.storageLocation(QDesktopServices.DataLocation).toLatin1()), "pesterchum/")
