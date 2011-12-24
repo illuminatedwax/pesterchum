@@ -13,6 +13,7 @@ _gtag_begin = re.compile(r'(?i)<g[a-f]>')
 _ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
 _urlre = re.compile(r"(?i)https?://[^\s]+")
+_url2re = re.compile(r"(?i)www.[^\s]+")
 _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
 _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
@@ -152,7 +153,8 @@ def lexMessage(string):
     lexlist = [(mecmd, _mecmdre),
                (colorBegin, _ctag_begin), (colorBegin, _gtag_begin),
                (colorEnd, _ctag_end), (imagelink, _imgre),
-               (hyperlink, _urlre), (memolex, _memore),
+               (hyperlink, _urlre), (hyperlink, _url2re),
+               (memolex, _memore),
                (chumhandlelex, _handlere),
                (smiley, _smilere)]
 
@@ -428,7 +430,7 @@ smiledict = {
     ":olliesouty:": "olliesouty.gif",
     ":billiards:": "poolballS.gif",
     ":billiardslarge:": "poolballL.gif",
-    ":whatdidyoudo:": "whatdidyoudo.gif",    
+    ":whatdidyoudo:": "whatdidyoudo.gif",
     }
 
 if ostools.isOSXBundle():

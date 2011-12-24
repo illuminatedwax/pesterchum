@@ -405,6 +405,7 @@ class PesterText(QtGui.QTextEdit):
                     if event.modifiers() == QtCore.Qt.ControlModifier:
                         QtGui.QApplication.clipboard().setText(url)
                     else:
+                        if not unicode(url).startswith("http"): url = "http://" + url
                         QtGui.QDesktopServices.openUrl(QtCore.QUrl(url, QtCore.QUrl.TolerantMode))
         QtGui.QTextEdit.mousePressEvent(self, event)
     def mouseMoveEvent(self, event):
