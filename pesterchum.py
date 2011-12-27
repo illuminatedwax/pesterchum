@@ -525,7 +525,8 @@ class chumArea(RightClickTree):
               text = unicode(self.topLevelItem(i).text(0))
               if text.rfind(" (") != -1:
                   text = text[0:text.rfind(" (")]
-              self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
+              if text in online:
+                  self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
     def hideOnlineNumbers(self):
         for i in range(self.topLevelItemCount()):
             text = unicode(self.topLevelItem(i).text(0))
