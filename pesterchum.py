@@ -585,7 +585,10 @@ class chumArea(RightClickTree):
                 # Manual sorting
                 if self.mainwindow.config.sortMethod() == 2:
                     chums = self.mainwindow.config.chums()
-                    fi = chums.index(chumLabel.chum.handle)
+                    if chumLabel.chum.handle in chums:
+                        fi = chums.index(chumLabel.chum.handle)
+                    else:
+                        fi = 0
                     c = 1
 
                     # TODO: Rearrange chums list on drag-n-drop
