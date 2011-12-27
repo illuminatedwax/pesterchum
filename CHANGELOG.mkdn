@@ -15,9 +15,14 @@ CHANGELOG
 ---------
 ## 3.41.4
 * Makefile for Linux installing - Kiooeht [evacipatedBox]
+* Recognize www. as link - Kiooeht [evacipatedBox]
 * Bug fixes
     * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
-    * Allow add chum dialog to opne after adding an existing chum - Kiooeht [evacipatedBox]
+    * Allow add chum dialog to open after adding an existing chum - Kiooeht [evacipatedBox]
+    * Unicode everything - ghostDunk
+    * Delete groups when using online numbers - Kiooeht [evacipatedBox]
+    * Add chums when using manual sorting - Kiooeht [evacipatedBox]
+
 
 ### 3.41.3
 * Add group option when adding chum - ghostDunk
