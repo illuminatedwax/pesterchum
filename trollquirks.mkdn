@@ -24,12 +24,24 @@ REPLACED WITH: " ribbit ", " ", " ", " ", " ", " ", etc....
 Tavros
 ------
 <pre>
-REGEXP: "\b(\w)(\w*)"
-REPLACED WITH: "lower(\1)upper(\2)"
+REGEXP: "([a-z])"
+REPLACED WITH: "upper(\1)"
 </pre>
 <pre>
-REGEXP: "\.?"
+REGEXP: "(^[A-Za-z])"
+WITH: "lower(\1)"
+</pre>
+<pre>
+REGEXP: "([iI])\b"
+WITH: "lower(\1)"
+</pre>
+<pre>
+REGEXP: "([\.\?!]|$)"
 WITH: ","
+</pre>
+<pre>
+REGEXP: "(,\s?\w)"
+WITH: "lower(\1)"
 </pre>
 
 Sollux
