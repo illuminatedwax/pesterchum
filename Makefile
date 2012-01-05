@@ -24,11 +24,11 @@ uninstall:
 	rm -rf ${PESTERCHUMLIBDIR}
 
 install: make-install-dirs
-	cp *.py ${PESTERCHUMLIBDIR}
-	cp libs/*.py ${PESTERCHUMLIBDIR}/libs
-	cp oyoyo/*.py ${PESTERCHUMLIBDIR}/oyoyo
-	cp quirks/*.py ${PESTERCHUMLIBDIR}/quirks
-	cp smilies/* ${PESTERCHUMLIBDIR}/smilies
+	install -m 644 *.py ${PESTERCHUMLIBDIR}
+	install -m 644 libs/*.py ${PESTERCHUMLIBDIR}/libs
+	install -m 644 oyoyo/*.py ${PESTERCHUMLIBDIR}/oyoyo
+	install -m 644 quirks/*.py ${PESTERCHUMLIBDIR}/quirks
+	install -m 644 smilies/* ${PESTERCHUMLIBDIR}/smilies
 	cp -r themes/* ${PESTERCHUMLIBDIR}/themes
 	@echo '#!/bin/sh' > ${PESTERCHUMBINDIR}/pesterchum
 	@echo 'cd ${PREFIX}$(LIBINSTALLDIR)/pesterchum' >> ${PESTERCHUMBINDIR}/pesterchum
