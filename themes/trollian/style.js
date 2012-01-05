@@ -24,6 +24,7 @@
                        "randen": "Random Encounter",
                        "userlist": "Fresh Targets",
                        "addgroup": "Add Group",
+                       "talk": "Troll",
                        "import": "import U2;",
                        "reconnect": "Reconnect",
                        "idle": "Idle",

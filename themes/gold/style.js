@@ -25,6 +25,7 @@
                        "randen": "Random Encounter",
                        "userlist": "Userlist",
                        "addgroup": "Add Group",
+                       "talk": "Pester",
                        "import": "Import",
                        "reconnect": "Reconnect",
                        "idle": "Idle",

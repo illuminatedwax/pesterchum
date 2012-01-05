@@ -1025,6 +1025,10 @@ class PesterWindow(MovingWindow):
 
         self.move(100, 100)
 
+        talk = QtGui.QAction(self.theme["main/menus/client/talk"], self)
+        self.talk = talk
+        self.connect(talk, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('openChat()'))
         logv = QtGui.QAction(self.theme["main/menus/client/logviewer"], self)
         self.logv = logv
         self.connect(logv, QtCore.SIGNAL('triggered()'),
@@ -1075,6 +1079,7 @@ class PesterWindow(MovingWindow):
         if not self.randhandler.running:
             self.rand.setEnabled(False)
         filemenu.addAction(userlistaction)
+        filemenu.addAction(talk)
         filemenu.addAction(self.idleaction)
         filemenu.addAction(grps)
         filemenu.addAction(self.importaction)
@@ -1511,6 +1516,7 @@ class PesterWindow(MovingWindow):
         self.miniButton.move(*theme["main/minimize/loc"])
         # menus
         self.menu.move(*theme["main/menu/loc"])
+        self.talk.setText(theme["main/menus/client/talk"])
         self.logv.setText(theme["main/menus/client/logviewer"])
         self.grps.setText(theme["main/menus/client/addgroup"])
         self.rand.setText(self.theme["main/menus/client/randen"])
@@ -2114,6 +2120,19 @@ class PesterWindow(MovingWindow):
         if hasattr(self.quirkmenu, 'quirktester') and self.quirkmenu.quirktester:
             self.quirkmenu.quirktester.close()
         self.quirkmenu = None
+    @QtCore.pyqtSlot()
+    def openChat(self):
+        if not hasattr(self, "openchatdialog"):
+            self.openchatdialog = None
+        if not self.openchatdialog:
+            (chum, ok) = QtGui.QInputDialog.getText(self, "Pester Chum", "Enter a handle to pester:")
+            try:
+                if ok:
+                    self.newConversation(unicode(chum))
+            except:
+                pass
+            finally:
+                self.openchatdialog = None
     @QtCore.pyqtSlot()
     def openLogv(self):
         if not hasattr(self, 'logusermenu'):
