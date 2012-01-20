@@ -838,7 +838,7 @@ class PesterMemo(PesterConvo):
     @QtCore.pyqtSlot(QtCore.QString)
     def namesUpdated(self, channel):
         c = unicode(channel)
-        if c != self.channel: return
+        if c.lower() != self.channel.lower(): return
         # get namesdb
         namesdb = self.mainwindow.namesdb
         # reload names
@@ -848,13 +848,13 @@ class PesterMemo(PesterConvo):
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def modesUpdated(self, channel, modes):
         c = unicode(channel)
-        if c == self.channel:
+        if c.lower() == self.channel.lower():
             self.updateChanModes(modes, None)
 
     @QtCore.pyqtSlot(QtCore.QString)
     def closeInviteOnly(self, channel):
         c = unicode(channel)
-        if c == self.channel:
+        if c.lower() == self.channel.lower():
             self.disconnect(self.mainwindow, QtCore.SIGNAL('inviteOnlyChan(QString)'),
                      self, QtCore.SLOT('closeInviteOnly(QString)'))
             if self.parent():
@@ -950,7 +950,7 @@ class PesterMemo(PesterConvo):
         if (update in ["join","left", "kick", \
                        "+q", "-q", "+o", "-o", "+h", "-h", \
                        "+a", "-a", "+v", "-v"]) \
-                and channel != self.channel:
+                and c.lower() != self.channel.lower():
             return
         chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
@@ -1134,7 +1134,7 @@ class PesterMemo(PesterConvo):
                 c.admin = False
                 self.iconCrap(c)
             self.sortUsers()
-        elif c == self.channel and h == "" and update[0] in ["+","-"]:
+        elif c.lower() == self.channel.lower() and h == "" and update[0] in ["+","-"]:
             self.updateChanModes(update, op)
         elif update == "+v":
             if self.mainwindow.config.opvoiceMessages():
@@ -1156,7 +1156,7 @@ class PesterMemo(PesterConvo):
                 c.voice = False
                 self.iconCrap(c)
             self.sortUsers()
-        elif c == self.channel and h == "" and update[0] in ["+","-"]:
+        elif c.lower() == self.channel.lower() and h == "" and update[0] in ["+","-"]:
             self.updateChanModes(update, op)
 
     @QtCore.pyqtSlot()

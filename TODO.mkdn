@@ -36,7 +36,6 @@ Bugs
 * Closing a timeclone doesn't actually cease for everyone else
 * Kill Zalgo
 * Random invisible, tiny links to last link at end of every message
-* if you change the capitals on a memo name when entering. Userlist goes blank.
 * Clicking link to invite-only memo crashes
 
 Windows Bugs
