@@ -17,6 +17,7 @@ CHANGELOG
 * Makefile for Linux installing - Kiooeht [evacipatedBox]
 * Recognize www. as link - Kiooeht [evacipatedBox]
 * Pester menu option to just pester a handle - Kiooeht [evacipatedBox]
+* Update to randomEncounter interface - Kiooeht [evacipatedBox]
 * Bug fixes
     * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
     * Allow add chum dialog to open after adding an existing chum - Kiooeht [evacipatedBox]

@@ -1952,6 +1952,7 @@ class PesterWindow(MovingWindow):
     def toggleIdle(self, idle):
         if idle:
             self.setAway.emit(True)
+            self.randhandler.setIdle(True)
             sysColor = QtGui.QColor(self.theme["convo/systemMsgColor"])
             verb = self.theme["convo/text/idle"]
             for (h, convo) in self.convos.iteritems():
@@ -1962,6 +1963,7 @@ class PesterWindow(MovingWindow):
                     self.sendMessage.emit("PESTERCHUM:IDLE", h)
         else:
             self.setAway.emit(False)
+            self.randhandler.setIdle(False)
             self.idletime = 0
     @QtCore.pyqtSlot()
     def checkIdle(self):

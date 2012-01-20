@@ -23,6 +23,12 @@ class RandomHandler(QtCore.QObject):
             self.queue.append(code)
             self.mainwindow.sendNotice.emit(code, self.randNick)
 
+    def setIdle(self, i):
+        if i: code = "~"
+        else: code = "*"
+        self.queue.append(code)
+        self.mainwindow.sendNotice.emit(code, self.randNick)
+
     @QtCore.pyqtSlot()
     def getEncounter(self):
         self.queue.append("!")
@@ -45,6 +51,9 @@ class RandomHandler(QtCore.QObject):
                     self.mainwindow.userprofile.setRandom(True)
                 else:
                     self.mainwindow.userprofile.setRandom(False)
+        elif code in ["~","*"]:
+            if l[1][0] == "k":
+                pass
         elif code == "!":
             if l[1] == "x":
                 from PyQt4 import QtGui
