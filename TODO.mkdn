@@ -19,7 +19,6 @@ Features
 * Use web connection to send offline messages in email-like fashion (Idea: ghostDunk)
 * Use web connection to save profiles (Idea: ghostDunk)
 * Better NickServ registering
-* Unified data storage, OS-based user data location
 * Spectation notices (Idea: lexicalNuance) (probly WONTFIX)
 * Auto-login Nickserv
 * Make toast notifications only on certain chums

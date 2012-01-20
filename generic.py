@@ -26,7 +26,7 @@ class PesterList(list):
         self.extend(l)
 
 class PesterIcon(QtGui.QIcon):
-    def __init__(self, *x, **y):
+    def __init__(self, *x):
         QtGui.QIcon.__init__(self, x[0])
         if type(x[0]) in [str, unicode]:
             self.icon_pixmap = QtGui.QPixmap(x[0])
