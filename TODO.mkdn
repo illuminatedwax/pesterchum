@@ -37,6 +37,7 @@ Bugs
 * Kill Zalgo
 * Random invisible, tiny links to last link at end of every message
 * Clicking link to invite-only memo crashes
+* Deleting group doesn't move hidden chums to default group
 
 Windows Bugs
 ------------
