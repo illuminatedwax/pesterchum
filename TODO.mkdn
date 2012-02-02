@@ -38,6 +38,10 @@ Bugs
 * Random invisible, tiny links to last link at end of every message
 * Clicking link to invite-only memo crashes
 * Deleting group doesn't move hidden chums to default group
+* Close when banned from memo when main PC window minimized
+* Chums not appearing on chumroll when initals are the same? (bS)
+* Recognize IRC 471, 473, 474 and 475
+* memo links aren't case sensitive
 
 Windows Bugs
 ------------
