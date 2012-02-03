@@ -432,6 +432,7 @@ smiledict = {
     ":billiardslarge:": "poolballL.gif",
     ":whatdidyoudo:": "whatdidyoudo.gif",
     ":brocool:": "pcstrider.png",
+    ":trollbro:": "trollbro.png",
     }
 
 if ostools.isOSXBundle():
