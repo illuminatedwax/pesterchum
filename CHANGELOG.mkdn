@@ -25,6 +25,7 @@ CHANGELOG
     * Delete groups when using online numbers - Kiooeht [evacipatedBox]
     * Add chums when using manual sorting - Kiooeht [evacipatedBox]
     * Memo case insensitive for userlist and modes - Kiooeht [evacipatedBox]
+    * Move hidden chums when deleting group - Kiooeht [evacipatedBox]
 
 
 ### 3.41.3

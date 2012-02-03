@@ -823,13 +823,15 @@ class chumArea(RightClickTree):
         gTemp = self.mainwindow.config.getGroups()
         self.groups = [g[0] for g in gTemp]
         self.openGroups = [g[1] for g in gTemp]
+        for c in self.chums:
+            if c.group == text:
+                c.group = "Chums"
+                self.mainwindow.chumdb.setGroup(c.handle, "Chums")
         for i in range(self.topLevelItemCount()):
             if self.topLevelItem(i).text(0) == currentGroup.text(0):
                 break
         while self.topLevelItem(i) and self.topLevelItem(i).child(0):
             chumLabel = self.topLevelItem(i).child(0)
-            chumLabel.chum.group = "Chums"
-            self.mainwindow.chumdb.setGroup(chumLabel.chum.handle, "Chums")
             self.takeItem(chumLabel)
             self.addItem(chumLabel)
         self.takeTopLevelItem(i)
