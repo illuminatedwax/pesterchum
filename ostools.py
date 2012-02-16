@@ -27,9 +27,15 @@ def osVer():
         return " ".join(platform.linux_distribution())
 
 def getDataDir():
-    if isOSX():
-        return os.path.join(unicode(QDesktopServices.storageLocation(QDesktopServices.DataLocation)), "Pesterchum/")
-    elif isLinux():
-        return os.path.join(unicode(QDesktopServices.storageLocation(QDesktopServices.HomeLocation)), ".pesterchum/")
-    else:
-        return os.path.join(unicode(QDesktopServices.storageLocation(QDesktopServices.DataLocation)), "pesterchum/")
+    # Temporary fix for non-ascii usernames
+    # If username has non-ascii characters, just store userdata
+    # in the Pesterchum install directory (like before)
+    try:
+        if isOSX():
+            return os.path.join(unicode(QDesktopServices.storageLocation(QDesktopServices.DataLocation)), "Pesterchum/")
+        elif isLinux():
+            return os.path.join(unicode(QDesktopServices.storageLocation(QDesktopServices.HomeLocation)), ".pesterchum/")
+        else:
+            return os.path.join(unicode(QDesktopServices.storageLocation(QDesktopServices.DataLocation)), "pesterchum/")
+    except UnicodeDecodeError:
+        return ''
