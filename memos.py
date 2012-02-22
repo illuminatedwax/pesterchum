@@ -921,11 +921,12 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot()
     def dumpNetsplit(self):
-        chum = self.mainwindow.profile()
-        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
-        msg = chum.memonetsplitmsg(systemColor, self.netsplit)
-        self.textArea.append(convertTags(msg))
-        self.mainwindow.chatlog.log(self.channel, msg)
+        if (len(self.netsplit) > 0):
+            chum = self.mainwindow.profile()
+            systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+            msg = chum.memonetsplitmsg(systemColor, self.netsplit)
+            self.textArea.append(convertTags(msg))
+            self.mainwindow.chatlog.log(self.channel, msg)
         del self.netsplit
 
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
