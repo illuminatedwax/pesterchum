@@ -19,6 +19,8 @@ _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
 _imgre = re.compile(r"""(?i)<img src=['"](\S+)['"]\s*/>""")
 _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 oocre = re.compile(r"[\[(][\[(].*[\])][\])]")
+_format_begin = re.compile(r'(?i)<([ibu])>')
+_format_end = re.compile(r'(?i)</([ibu])>')
 
 quirkloader = PythonQuirks()
 _functionre = re.compile(r"%s" % quirkloader.funcre())
@@ -90,6 +92,32 @@ class colorEnd(object):
             return ""
         else:
             return self.string
+class formatBegin(object):
+    def __init__(self, string, ftype):
+        self.string = string
+        self.ftype = ftype
+    def convert(self, format):
+        if format == "html":
+            return "<%s>" % (self.ftype)
+        elif format == "bbcode":
+            return "[%s]" % (self.ftype)
+        elif format == "text":
+            return ""
+        else:
+            return self.string
+class formatEnd(object):
+    def __init__(self, string, ftype):
+        self.string = string
+        self.ftype = ftype
+    def convert(self, format):
+        if format == "html":
+            return "</%s>" % (self.ftype)
+        elif format == "bbcode":
+            return "[/%s]" % (self.ftype)
+        elif format == "text":
+            return ""
+        else:
+            return self.string
 class hyperlink(object):
     def __init__(self, string):
         self.string = string
@@ -152,7 +180,9 @@ class mecmd(object):
 def lexMessage(string):
     lexlist = [(mecmd, _mecmdre),
                (colorBegin, _ctag_begin), (colorBegin, _gtag_begin),
-               (colorEnd, _ctag_end), (imagelink, _imgre),
+               (colorEnd, _ctag_end),
+               (formatBegin, _format_begin), (formatEnd, _format_end),
+               (imagelink, _imgre),
                (hyperlink, _urlre), (hyperlink, _url2re),
                (memolex, _memore),
                (chumhandlelex, _handlere),
