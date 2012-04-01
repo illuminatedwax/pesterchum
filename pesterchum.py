@@ -790,6 +790,13 @@ class chumArea(RightClickTree):
             (gname, ok) = QtGui.QInputDialog.getText(self, "Rename Group", "Enter a new name for the group:")
             if ok:
                 gname = unicode(gname)
+                if re.search("[^A-Za-z0-9_\s]", gname) is not None:
+                    msgbox = QtGui.QMessageBox()
+                    msgbox.setInformativeText("THIS IS NOT A VALID GROUP NAME")
+                    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                    ret = msgbox.exec_()
+                    self.addgroupdialog = None
+                    return
                 currentGroup = self.currentItem()
                 if not currentGroup:
                     return
@@ -1896,7 +1903,7 @@ class PesterWindow(MovingWindow):
                     return
                 if re.search("[^A-Za-z0-9_\s]", group) is not None:
                     errormsg = QtGui.QErrorMessage(self)
-                    errormsg.showMessage("THIS IS NOT A VALID CHUMTAG!")
+                    errormsg.showMessage("THIS IS NOT A VALID GROUP NAME")
                     self.addchumdialog = None
                     return
                 if newgroup:

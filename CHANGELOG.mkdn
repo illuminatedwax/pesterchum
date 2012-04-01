@@ -27,6 +27,7 @@ CHANGELOG
     * Add chums when using manual sorting - Kiooeht [evacipatedBox]
     * Memo case insensitive for userlist and modes - Kiooeht [evacipatedBox]
     * Move hidden chums when deleting group - Kiooeht [evacipatedBox]
+    * Don't allow rename groups with parenthesis - Kiooeht [evacipatedBox]
 
 
 ### 3.41.3
