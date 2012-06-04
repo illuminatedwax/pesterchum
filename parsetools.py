@@ -12,7 +12,7 @@ _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _gtag_begin = re.compile(r'(?i)<g[a-f]>')
 _ctag_end = re.compile(r'(?i)</c>')
 _ctag_rgb = re.compile(r'\d+,\d+,\d+')
-_urlre = re.compile(r"(?i)https?://[^\s]+")
+_urlre = re.compile(r"(?i)(?:^|(?<=\s))(?:(?:https?|ftp)://|magnet:)[^\s]+")
 _url2re = re.compile(r"(?i)www\.[^\s]+")
 _memore = re.compile(r"(\s|^)(#[A-Za-z0-9_]+)")
 _handlere = re.compile(r"(\s|^)(@[A-Za-z0-9_]+)")
@@ -128,6 +128,9 @@ class hyperlink(object):
             return "[url]%s[/url]" % (self.string)
         else:
             return self.string
+class hyperlink_lazy(hyperlink):
+    def __init__(self, string):
+        self.string = "http://" + string
 class imagelink(object):
     def __init__(self, string, img):
         self.string = string
@@ -183,7 +186,7 @@ def lexMessage(string):
                (colorEnd, _ctag_end),
                (formatBegin, _format_begin), (formatEnd, _format_end),
                (imagelink, _imgre),
-               (hyperlink, _urlre), (hyperlink, _url2re),
+               (hyperlink, _urlre), (hyperlink_lazy, _url2re),
                (memolex, _memore),
                (chumhandlelex, _handlere),
                (smiley, _smilere)]
