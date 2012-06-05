@@ -1466,6 +1466,11 @@ class PesterUserlist(QtGui.QDialog):
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
         self.resize(200, 600)
 
+        self.searchbox = QtGui.QLineEdit(self)
+        #self.searchbox.setStyleSheet(theme["convo/input/style"]) # which style is better?
+        self.searchbox.setPlaceholderText("Search")
+        self.connect(self.searchbox, QtCore.SIGNAL("textChanged(QString)"), self, QtCore.SLOT("updateUsers()"))
+
         self.label = QtGui.QLabel("USERLIST")
         self.userarea = RightClickList(self)
         self.userarea.setStyleSheet(self.theme["main/chums/style"])
@@ -1487,6 +1492,7 @@ class PesterUserlist(QtGui.QDialog):
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.label)
+        layout_0.addWidget(self.searchbox)
         layout_0.addWidget(self.userarea)
         layout_0.addWidget(self.ok)
 
@@ -1505,9 +1511,10 @@ class PesterUserlist(QtGui.QDialog):
         names = self.mainwindow.namesdb["#pesterchum"]
         self.userarea.clear()
         for n in names:
-            item = QtGui.QListWidgetItem(n)
-            item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
-            self.userarea.addItem(item)
+            if str(self.searchbox.text()) == "" or n.lower().find(str(self.searchbox.text()).lower()) != -1:
+                item = QtGui.QListWidgetItem(n)
+                item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
+                self.userarea.addItem(item)
         self.userarea.sortItems()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
     def updateUserPresent(self, handle, channel, update):
@@ -1518,7 +1525,8 @@ class PesterUserlist(QtGui.QDialog):
         elif update == "left" and c == "#pesterchum":
             self.delUser(h)
         elif update == "join" and c == "#pesterchum":
-            self.addUser(h)
+            if str(self.searchbox.text()) == "" or n.lower().find(str(self.searchbox.text()).lower()) != -1:
+                self.addUser(h)
     def addUser(self, name):
         item = QtGui.QListWidgetItem(name)
         item.setTextColor(QtGui.QColor(self.theme["main/chums/userlistcolor"]))
