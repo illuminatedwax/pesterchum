@@ -2906,6 +2906,17 @@ Click this message to never see this again.")
 
     def showLoading(self, widget, msg="CONN3CT1NG"):
         self.widget.show()
+        if len(msg) > 60:
+            newmsg = []
+            while len(msg) > 60:
+                s = msg.rfind(" ", 0, 60)
+                if s == -1:
+                    break
+                newmsg.append(msg[:s])
+                newmsg.append("\n")
+                msg = msg[s+1:]
+            newmsg.append(msg)
+            msg = "".join(newmsg)
         if hasattr(self.widget, 'loadingscreen') and widget.loadingscreen:
             widget.loadingscreen.loadinglabel.setText(msg)
             if self.reconnectok:

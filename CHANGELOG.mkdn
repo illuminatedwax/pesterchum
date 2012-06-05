@@ -30,6 +30,7 @@ CHANGELOG
     * Memo case insensitive for userlist and modes - Kiooeht [evacipatedBox]
     * Move hidden chums when deleting group - Kiooeht [evacipatedBox]
     * Don't allow rename groups with parenthesis - Kiooeht [evacipatedBox]
+    * Wrap long error messages - Kiooeht [evacipatedBox]
 
 
 ### 3.41.3
