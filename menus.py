@@ -1709,6 +1709,7 @@ class AboutPesterchum(QtGui.QDialog):
   illuminatedwax (ghostDunk)\n\
   Kiooeht (evacipatedBox)\n\
   Lexi (lexicalNuance)\n\
+  oakwhiz\n\
   alGore\n\
 \n\
 Art by:\n\

@@ -19,6 +19,8 @@ CHANGELOG
 * Pester menu option to just pester a handle - Kiooeht [evacipatedBox]
 * Update to randomEncounter interface - Kiooeht [evacipatedBox]
 * Italics, bold, and underline - Kiooeht [evacipatedBox]
+* FTP and Magnet links - oakwhiz
+* Userlist search - oakwhiz
 * Bug fixes
     * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
     * Allow add chum dialog to open after adding an existing chum - Kiooeht [evacipatedBox]
