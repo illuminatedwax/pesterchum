@@ -1527,7 +1527,7 @@ class PesterUserlist(QtGui.QDialog):
         elif update == "left" and c == "#pesterchum":
             self.delUser(h)
         elif update == "join" and c == "#pesterchum":
-            if str(self.searchbox.text()) == "" or n.lower().find(str(self.searchbox.text()).lower()) != -1:
+            if str(self.searchbox.text()) == "" or h.lower().find(str(self.searchbox.text()).lower()) != -1:
                 self.addUser(h)
     def addUser(self, name):
         item = QtGui.QListWidgetItem(name)
