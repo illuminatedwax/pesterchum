@@ -1492,8 +1492,8 @@ class PesterUserlist(QtGui.QDialog):
 
         layout_0 = QtGui.QVBoxLayout()
         layout_0.addWidget(self.label)
-        layout_0.addWidget(self.searchbox)
         layout_0.addWidget(self.userarea)
+        layout_0.addWidget(self.searchbox)
         layout_0.addWidget(self.ok)
 
         self.setLayout(layout_0)
@@ -1506,6 +1506,8 @@ class PesterUserlist(QtGui.QDialog):
                      self,
                      QtCore.SLOT('updateUserPresent(QString, QString, QString)'))
         self.updateUsers()
+
+        self.searchbox.setFocus()
     @QtCore.pyqtSlot()
     def updateUsers(self):
         names = self.mainwindow.namesdb["#pesterchum"]
