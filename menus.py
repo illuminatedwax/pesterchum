@@ -1174,6 +1174,8 @@ class PesterOptions(QtGui.QDialog):
         self.refreshtheme = QtGui.QPushButton("Refresh current theme", self)
         self.connect(self.refreshtheme, QtCore.SIGNAL('clicked()'),
                      parent, QtCore.SLOT('themeSelectOverride()'))
+        self.ghostchum = QtGui.QCheckBox("Pesterdunk Ghostchum!!", self)
+        self.ghostchum.setChecked(self.config.ghostchum())
 
         self.buttonOptions = ["Minimize to Taskbar", "Minimize to Tray", "Quit"]
         self.miniBox = QtGui.QComboBox(self)
@@ -1360,6 +1362,7 @@ class PesterOptions(QtGui.QDialog):
         layout_theme.addWidget(QtGui.QLabel("Pick a Theme:"))
         layout_theme.addWidget(self.themeBox)
         layout_theme.addWidget(self.refreshtheme)
+        layout_theme.addWidget(self.ghostchum)
         self.pages.addWidget(widget)
 
         # Advanced

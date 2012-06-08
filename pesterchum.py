@@ -1673,6 +1673,10 @@ class PesterWindow(MovingWindow):
             self.trollslum.changeTheme(theme)
         if hasattr(self, 'allusers') and self.allusers:
             self.allusers.changeTheme(theme)
+        if self.config.ghostchum():
+            self.theme["main"]["icon"] = "themes/pesterchum/pesterdunk.png"
+            self.theme["main"]["newmsgicon"] = "themes/pesterchum/ghostchum.png"
+            self.setWindowIcon(PesterIcon(self.theme["main/icon"]))
         # system tray icon
         self.updateSystemTray()
 
@@ -2354,7 +2358,10 @@ class PesterWindow(MovingWindow):
                 self.config.set('idleTime', idlesetting)
                 self.idlethreshold = 60*idlesetting
             # theme
-            self.themeSelected()
+            ghostchumsetting = self.optionmenu.ghostchum.isChecked()
+            curghostchum = self.config.ghostchum()
+            self.config.set('ghostchum', ghostchumsetting)
+            self.themeSelected(ghostchumsetting != curghostchum)
             # randoms
             if self.randhandler.running:
                 self.randhandler.setRandomer(self.optionmenu.randomscheck.isChecked())
