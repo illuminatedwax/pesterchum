@@ -41,6 +41,7 @@
                       "about": "ABOUT",
                       "help": "HELP",
                       "calsprite": "CALSPRITE",
+                      "chanserv": "CHANSERV",
                       "nickserv": "NICKSERV" },
             "rclickchumlist": {"pester": "PESTER",
                                "removechum": "REMOVE CHUM",

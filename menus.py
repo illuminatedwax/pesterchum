@@ -1716,10 +1716,11 @@ class AboutPesterchum(QtGui.QDialog):
   Lexi (lexicalNuance)\n\
   oakwhiz\n\
   alGore\n\
+  Cerxi (binaryCabalist)\n\
 \n\
 Art by:\n\
   Grimlive (aquaMarinist)\n\
-  binaryCabalist\n\
+  Cerxi (binaryCabalist)\n\
 \n\
 Special Thanks:\n\
   ABT\n\

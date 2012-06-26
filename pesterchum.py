@@ -1130,6 +1130,9 @@ class PesterWindow(MovingWindow):
         self.nickServAction = QtGui.QAction(self.theme["main/menus/help/nickserv"], self)
         self.connect(self.nickServAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('loadNickServ()'))
+        self.chanServAction = QtGui.QAction(self.theme["main/menus/help/chanserv"], self)
+        self.connect(self.chanServAction, QtCore.SIGNAL('triggered()'),
+                     self, QtCore.SLOT('loadChanServ()'))
         self.aboutAction = QtGui.QAction(self.theme["main/menus/help/about"], self)
         self.connect(self.aboutAction, QtCore.SIGNAL('triggered()'),
                      self, QtCore.SLOT('aboutPesterchum()'))
@@ -1140,6 +1143,7 @@ class PesterWindow(MovingWindow):
         self.helpmenu = helpmenu
         self.helpmenu.addAction(self.helpAction)
         self.helpmenu.addAction(self.botAction)
+        self.helpmenu.addAction(self.chanServAction)
         self.helpmenu.addAction(self.nickServAction)
         self.helpmenu.addAction(self.aboutAction)
         self.helpmenu.addAction(self.reportBugAction)
@@ -1409,8 +1413,8 @@ class PesterWindow(MovingWindow):
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
-        if unicode(chum.handle).upper() == "NICKSERV" or \
-           unicode(chum.handle).upper() == "CHANSERV" or \
+        if unicode(chum.handle).upper() == "CHANSERV" or \
+           unicode(chum.handle).upper() == "NICKSERV" or \
            unicode(chum.handle).upper() == "MEMOSERV" or \
            unicode(chum.handle).upper() == "OPERSERV" or \
            unicode(chum.handle).upper() == "HELPSERV":
@@ -1545,6 +1549,7 @@ class PesterWindow(MovingWindow):
         self.aboutAction.setText(self.theme["main/menus/help/about"])
         self.helpAction.setText(self.theme["main/menus/help/help"])
         self.botAction.setText(self.theme["main/menus/help/calsprite"])
+        self.chanServAction.setText(self.theme["main/menus/help/chanserv"])
         self.nickServAction.setText(self.theme["main/menus/help/nickserv"])
         self.helpmenu.setTitle(self.theme["main/menus/help/_name"])
 
@@ -2582,6 +2587,9 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def loadCalsprite(self):
         self.newConversation("calSprite")
+    @QtCore.pyqtSlot()
+    def loadChanServ(self):
+        self.newConversation("chanServ")
     @QtCore.pyqtSlot()
     def loadNickServ(self):
         self.newConversation("nickServ")

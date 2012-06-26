@@ -39,10 +39,11 @@
                       "about": "About",
                       "help": "Help",
                       "calsprite": "CalSprite",
+                      "chanserv": "ChanServ",
                       "nickserv": "NickServ" },
             "rclickchumlist": {"pester": "Troll",
                                "removechum": "Trash",
-                               "report": "Remove",
+                               "report": "Tattle",
                                "blockchum": "Block",
                                "addchum": "Add Chump",
                                "viewlog": "View Pesterlog",
@@ -349,7 +350,8 @@
   "systemMsgColor": "#646464",
   "op": { "icon": "$path/op.png" },
   "halfop": { "icon": "$path/halfop.png" },
-  "voice": { "icon": "$path/voice.png" }
+  "voice": { "icon": "$path/voice.png" },
+  "founder": { "icon": "$path/founder.png" }
  },
  "toasts":
  {

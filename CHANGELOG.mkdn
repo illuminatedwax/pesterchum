@@ -21,6 +21,7 @@ CHANGELOG
 * Italics, bold, and underline - Kiooeht [evacipatedBox]
 * FTP and Magnet links - oakwhiz
 * Userlist search - oakwhiz
+* Chanserv in menus - Cerxi [binaryCabalist]
 * Bug fixes
     * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
     * Allow add chum dialog to open after adding an existing chum - Kiooeht [evacipatedBox]
