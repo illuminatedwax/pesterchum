@@ -21,6 +21,7 @@ _mecmdre = re.compile(r"^(/me|PESTERCHUM:ME)(\S*)")
 oocre = re.compile(r"[\[(][\[(].*[\])][\])]")
 _format_begin = re.compile(r'(?i)<([ibu])>')
 _format_end = re.compile(r'(?i)</([ibu])>')
+_honk = re.compile(r"(?i)\bhonk\b")
 
 quirkloader = PythonQuirks()
 _functionre = re.compile(r"%s" % quirkloader.funcre())
@@ -173,6 +174,14 @@ class smiley(object):
             return "<img src='smilies/%s' alt='%s' title='%s' />" % (smiledict[self.string], self.string, self.string)
         else:
             return self.string
+class honker(object):
+    def __init__(self, string):
+        self.string = string
+    def convert(self, format):
+        if format == "html":
+            return "<img src='smilies/honk.png' alt'honk' title='honk' />"
+        else:
+            return self.string
 class mecmd(object):
     def __init__(self, string, mecmd, suffix):
         self.string = string
@@ -189,7 +198,8 @@ def lexMessage(string):
                (hyperlink, _urlre), (hyperlink_lazy, _url2re),
                (memolex, _memore),
                (chumhandlelex, _handlere),
-               (smiley, _smilere)]
+               (smiley, _smilere),
+               (honker, _honk)]
 
     string = unicode(string)
     string = string.replace("\n", " ").replace("\r", " ")
