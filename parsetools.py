@@ -6,7 +6,9 @@ from datetime import timedelta
 from PyQt4 import QtGui
 
 from generic import mysteryTime
+from quirks import ScriptQuirks
 from pyquirks import PythonQuirks
+from luaquirks import LuaQuirks
 
 _ctag_begin = re.compile(r'(?i)<c=(.*?)>')
 _gtag_begin = re.compile(r'(?i)<g[a-f]>')
@@ -23,12 +25,16 @@ _format_begin = re.compile(r'(?i)<([ibu])>')
 _format_end = re.compile(r'(?i)</([ibu])>')
 _honk = re.compile(r"(?i)\bhonk\b")
 
-quirkloader = PythonQuirks()
+quirkloader = ScriptQuirks()
+quirkloader.add(PythonQuirks())
+quirkloader.add(LuaQuirks())
+quirkloader.loadAll()
+print quirkloader.funcre()
 _functionre = re.compile(r"%s" % quirkloader.funcre())
 _groupre = re.compile(r"\\([0-9]+)")
 
 def reloadQuirkFunctions():
-    quirkloader.load()
+    quirkloader.loadAll()
     global _functionre
     _functionre = re.compile(r"%s" % quirkloader.funcre())
 
@@ -395,8 +401,8 @@ def parseRegexpFunctions(to):
             backr = _groupre.search(mo.group())
             if backr is not None:
                 current.append(backreference(backr.group(1)))
-            elif mo.group() in functiondict.keys():
-                p = parseLeaf(functiondict[mo.group()], current)
+            elif mo.group()[:-1] in functiondict.keys():
+                p = parseLeaf(functiondict[mo.group()[:-1]], current)
                 current.append(p)
                 current = p
             elif mo.group() == ")":
