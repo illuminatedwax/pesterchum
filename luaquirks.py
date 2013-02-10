@@ -10,9 +10,20 @@ class LuaQuirks(ScriptQuirks):
     def loadModule(self, name, filename):
         if lua is None:
             return None
-        fullname = os.path.join('quirks', name)
-        lua.globals().package.loaded[fullname] = None
-        return lua.require(fullname)
+
+        lua.globals().package.loaded[name] = None
+        
+        CurrentDir = os.getcwd()
+        os.chdir('quirks')
+        try:
+            print("a")
+            return lua.require(name)
+        except Error as e:
+            print(e)
+            return None
+        finally:
+            print("back")
+            os.chdir(CurrentDir)
 
     def getExtension(self):
         return '.lua'
@@ -27,11 +38,19 @@ class LuaQuirks(ScriptQuirks):
                 self.name = name
 
             def __call__(self, text):
-                return self.module.commands[self.name](lua.globals().tostring(text))
+                CurrentDir = os.getcwd()
+                os.chdir('quirks')
+                try:
+                    return self.module.commands[self.name](lua.globals().tostring(text))
+                except:
+                    return None
+                finally:
+                    os.chdir(CurrentDir)
 
         for name in module.commands:
+            CommandWrapper = Wrapper(module,name)
             try:
-                if not isinstance(module.commands[name]("test"), basestring):
+                if not isinstance(CommandWrapper("test"), basestring):
                     raise Exception
             except:
                 print "Quirk malformed: %s" % (name)
@@ -40,5 +59,5 @@ class LuaQuirks(ScriptQuirks):
                 msgbox.setText("Quirk malformed: %s" % (name))
                 msgbox.exec_()
             else:
-                self.quirks[name] = Wrapper(module, name)
+                self.quirks[name] = CommandWrapper
 
