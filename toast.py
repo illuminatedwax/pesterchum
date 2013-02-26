@@ -74,7 +74,11 @@ class ToastMachine(object):
             t = None
             for (k,v) in self.machine.types.iteritems():
                 if self.machine.type == k:
-                    args = inspect.getargspec(v.__init__).args
+                    try:
+                        args = inspect.getargspec(v.__init__).args
+                    except:
+                        args = []
+
                     extras = {}
                     if 'parent' in args:
                         extras['parent'] = self.machine.parent
