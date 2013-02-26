@@ -12,17 +12,15 @@ class LuaQuirks(ScriptQuirks):
             return None
 
         lua.globals().package.loaded[name] = None
-        
+
         CurrentDir = os.getcwd()
         os.chdir('quirks')
         try:
-            print("a")
             return lua.require(name)
         except Error as e:
-            print(e)
+            print e
             return None
         finally:
-            print("back")
             os.chdir(CurrentDir)
 
     def getExtension(self):
