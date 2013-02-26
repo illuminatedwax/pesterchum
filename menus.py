@@ -1588,6 +1588,7 @@ class PesterMemoList(QtGui.QDialog):
 
         self.label = QtGui.QLabel("MEMOS")
         self.channelarea = RightClickTree(self)
+        self.channelarea.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.channelarea.setStyleSheet(self.theme["main/chums/style"])
         self.channelarea.optionsMenu = QtGui.QMenu(self)
         self.channelarea.setColumnCount(2)
@@ -1599,7 +1600,7 @@ class PesterMemoList(QtGui.QDialog):
         self.channelarea.sortByColumn(0, QtCore.Qt.AscendingOrder)
         self.connect(self.channelarea,
                      QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
-                     self, QtCore.SLOT('joinActivatedMemo()'))
+                     self, QtCore.SLOT('AcceptSelection()'))
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
@@ -1616,7 +1617,7 @@ class PesterMemoList(QtGui.QDialog):
         self.join = QtGui.QPushButton("JOIN", self)
         self.join.setDefault(True)
         self.connect(self.join, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('checkEmpty()'))
+                     self, QtCore.SLOT('AcceptIfSelectionMade()'))
         layout_ok = QtGui.QHBoxLayout()
         layout_ok.addWidget(self.cancel)
         layout_ok.addWidget(self.join)
@@ -1644,8 +1645,12 @@ class PesterMemoList(QtGui.QDialog):
 
     def newmemoname(self):
         return self.newmemo.text()
-    def selectedmemo(self):
-        return self.channelarea.currentItem()
+
+    def SelectedMemos(self):
+        return self.channelarea.selectedItems()
+        
+    def HasSelection(self):
+        return len(self.SelectedMemos()) > 0 or self.newmemoname()
 
     def updateChannels(self, channels):
         for c in channels:
@@ -1663,13 +1668,12 @@ class PesterMemoList(QtGui.QDialog):
             item.setIcon(QtGui.QIcon(theme["memos/memoicon"]))
 
     @QtCore.pyqtSlot()
-    def checkEmpty(self):
-        newmemo = self.newmemoname()
-        selectedmemo = self.selectedmemo()
-        if newmemo or selectedmemo:
-            self.accept()
+    def AcceptIfSelectionMade(self):
+        if self.HasSelection():
+            self.AcceptSelection()
+
     @QtCore.pyqtSlot()
-    def joinActivatedMemo(self):
+    def AcceptSelection(self):
         self.accept()
 
 

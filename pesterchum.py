@@ -40,7 +40,7 @@ else:
     minor = int(vnum[vnum.find(".")+1:])
 if not ((major > 4) or (major == 4 and minor >= 6)):
     print "ERROR: Pesterchum requires Qt version >= 4.6"
-    print "You currently have version " + vnum + ". Please ungrade Qt"
+    print "You currently have version " + vnum + ". Please upgrade Qt"
     exit()
 
 import ostools
@@ -2058,18 +2058,21 @@ class PesterWindow(MovingWindow):
         self.memochooser.show()
     @QtCore.pyqtSlot()
     def joinSelectedMemo(self):
-        newmemo = self.memochooser.newmemoname()
-        selectedmemo = self.memochooser.selectedmemo()
+        
         time = unicode(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
         invite = self.memochooser.inviteChannel.isChecked()
-        if newmemo:
+        
+        if self.memochooser.newmemoname():
+            newmemo = self.memochooser.newmemoname()
             channel = "#"+unicode(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
             self.newMemo(channel, time, secret=secret, invite=invite)
-        elif selectedmemo:
-            channel = "#"+unicode(selectedmemo.target)
+        
+        for SelectedMemo in self.memochooser.SelectedMemos():
+            channel = "#"+unicode(SelectedMemo.target)
             self.newMemo(channel, time)
+
         self.memochooser = None
     @QtCore.pyqtSlot()
     def memoChooserClose(self):
