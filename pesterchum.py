@@ -1355,19 +1355,25 @@ class PesterWindow(MovingWindow):
             systemColor = QtGui.QColor(self.theme["memos/systemMsgColor"])
             msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
         memo.addMessage(msg, handle)
+        mentioned = False
+        m = convertTags(msg, "text")
+        if m.find(":") <= 3:
+          m = m[m.find(":"):]
+        for search in self.userprofile.getMentions():
+            if re.search(search, m):
+                mentioned = True
+                break
+        if mentioned:
+            if self.config.notifyOptions() & self.config.INITIALS:
+                t = self.tm.Toast(chan, re.sub("</?c(=.*?)?>", "", msg))
+                t.show()
+
         if self.config.soundOn():
             if self.config.memoSound():
                 if self.config.nameSound():
-                    m = convertTags(msg, "text")
-                    if m.find(":") <= 3:
-                      m = m[m.find(":"):]
-                    for search in self.userprofile.getMentions():
-                        if re.search(search, m):
-                            if self.config.notifyOptions() & self.config.INITIALS:
-                                t = self.tm.Toast(chan, re.sub("</?c(=.*?)?>", "", msg))
-                                t.show()
-                            self.namesound.play()
-                            return
+                    if mentioned:
+                        self.namesound.play()
+                        return
                 if self.honk and re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
                     self.honksound.play()
                 elif self.config.memoPing():
@@ -2058,17 +2064,17 @@ class PesterWindow(MovingWindow):
         self.memochooser.show()
     @QtCore.pyqtSlot()
     def joinSelectedMemo(self):
-        
+
         time = unicode(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
         invite = self.memochooser.inviteChannel.isChecked()
-        
+
         if self.memochooser.newmemoname():
             newmemo = self.memochooser.newmemoname()
             channel = "#"+unicode(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
             self.newMemo(channel, time, secret=secret, invite=invite)
-        
+
         for SelectedMemo in self.memochooser.SelectedMemos():
             channel = "#"+unicode(SelectedMemo.target)
             self.newMemo(channel, time)
