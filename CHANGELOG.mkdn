@@ -22,6 +22,8 @@ CHANGELOG
 * FTP and Magnet links - oakwhiz
 * Userlist search - oakwhiz
 * Chanserv in menus - Cerxi [binaryCabalist]
+* Lua quirks
+* Multi-select memo chooser
 * Bug fixes
     * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
     * Allow add chum dialog to open after adding an existing chum - Kiooeht [evacipatedBox]
@@ -32,6 +34,9 @@ CHANGELOG
     * Move hidden chums when deleting group - Kiooeht [evacipatedBox]
     * Don't allow rename groups with parenthesis - Kiooeht [evacipatedBox]
     * Wrap long error messages - Kiooeht [evacipatedBox]
+    * chdir into quirks folder for Lua quirks - [alGore]
+    * Toast notifications don't require sound to be on - Kiooeht [evacipatedBox]
+    * Don't close Pesterchum if a window is closed while main window minimized - Kiooeht [evacipatedBox]
 
 
 ### 3.41.3
