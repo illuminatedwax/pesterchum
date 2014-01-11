@@ -982,10 +982,11 @@ class TrollSlumWindow(QtGui.QFrame):
     unblockChumSignal = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterWindow(MovingWindow):
-    def __init__(self, options, parent=None):
+    def __init__(self, options, parent=None, app=None):
         MovingWindow.__init__(self, parent,
                               (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
+        self.app = app
         self.convos = CaseInsensitiveDict()
         self.memos = CaseInsensitiveDict()
         self.tabconvo = None
@@ -1056,7 +1057,7 @@ class PesterWindow(MovingWindow):
         exitaction = QtGui.QAction(self.theme["main/menus/client/exit"], self)
         self.exitaction = exitaction
         self.connect(exitaction, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('close()'))
+                     self.app, QtCore.SLOT('quit()'))
         userlistaction = QtGui.QAction(self.theme["main/menus/client/userlist"], self)
         self.userlistaction = userlistaction
         self.connect(userlistaction, QtCore.SIGNAL('triggered()'),
@@ -2472,7 +2473,7 @@ class PesterWindow(MovingWindow):
                           self, QtCore.SLOT('closeToTray()'));
         elif old == 2: # quit
             self.disconnect(button, QtCore.SIGNAL('clicked()'),
-                          self, QtCore.SLOT('close()'));
+                          self.app, QtCore.SLOT('quit()'));
 
         if setting == 0: # minimize to taskbar
             self.connect(button, QtCore.SIGNAL('clicked()'),
@@ -2482,7 +2483,7 @@ class PesterWindow(MovingWindow):
                           self, QtCore.SLOT('closeToTray()'));
         elif setting == 2: # quit
             self.connect(button, QtCore.SIGNAL('clicked()'),
-                          self, QtCore.SLOT('close()'));
+                          self.app, QtCore.SLOT('quit()'));
 
     @QtCore.pyqtSlot()
     def themeSelectOverride(self):
@@ -2704,6 +2705,7 @@ class MainProgram(QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
         self.app.setApplicationName("Pesterchum 3.14")
+        self.app.setQuitOnLastWindowClosed(False)
 
         options = self.oppts(sys.argv[1:])
 
@@ -2716,7 +2718,7 @@ class MainProgram(QtCore.QObject):
                 print "Warning: No sound! %s" % (e)
         else:
             print "Warning: No sound!"
-        self.widget = PesterWindow(options)
+        self.widget = PesterWindow(options, app=self.app)
         self.widget.show()
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
@@ -2738,7 +2740,7 @@ class MainProgram(QtCore.QObject):
                               self.widget, QtCore.SLOT('showMinimized()'))
         exitAction = QtGui.QAction("EXIT", self)
         self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
-                              self.widget, QtCore.SLOT('close()'))
+                              self.app, QtCore.SLOT('quit()'))
         self.traymenu.addAction(miniAction)
         self.traymenu.addAction(exitAction)
 
@@ -2951,7 +2953,7 @@ Click this message to never see this again.")
             widget.loadingscreen = LoadingScreen(widget)
             widget.loadingscreen.loadinglabel.setText(msg)
             self.connect(widget.loadingscreen, QtCore.SIGNAL('rejected()'),
-                         widget, QtCore.SLOT('close()'))
+                         widget.app, QtCore.SLOT('quit()'))
             self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
                          self, QtCore.SLOT('tryAgain()'))
             if hasattr(self, 'irc') and self.irc.registeredIRC:

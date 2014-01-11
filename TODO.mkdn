@@ -35,8 +35,6 @@ Bugs
 * Closing a timeclone doesn't actually cease for everyone else
 * Kill Zalgo
 * Random invisible, tiny links to last link at end of every message
-* Clicking link to invite-only memo crashes
-* Close when banned from memo when main PC window minimized
 * Chums not appearing on chumroll when initals are the same? (bS)
 * Recognize IRC 471, 473, 474 and 475
 * memo links aren't case sensitive
