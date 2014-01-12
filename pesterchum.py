@@ -90,6 +90,7 @@ from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
 from randomer import RandomHandler, RANDNICK
+import nickservmsgs
 
 # Rawr, fuck you OSX leopard
 if not ostools.isOSXLeopard():
@@ -1709,11 +1710,18 @@ class PesterWindow(MovingWindow):
         else:
             self.waitingMessages.answerMessage()
 
+    def doAutoIdentify(self):
+        if self.userprofile.getAutoIdentify():
+            self.sendMessage.emit("identify " + self.userprofile.getNickServPass(), "NickServ")
+
     @QtCore.pyqtSlot()
     def connected(self):
         if self.loadingscreen:
             self.loadingscreen.done(QtGui.QDialog.Accepted)
         self.loadingscreen = None
+
+        self.doAutoIdentify()
+
     @QtCore.pyqtSlot()
     def blockSelectedChum(self):
         curChumListing = self.chumList.currentItem()
@@ -1806,6 +1814,11 @@ class PesterWindow(MovingWindow):
             self.randhandler.incoming(msg)
         elif self.convos.has_key(h):
             self.newMessage(h, m)
+        elif h.upper() == "NICKSERV" and "PESTERCHUM:" not in m:
+            m = nickservmsgs.translate(m)
+            if m:
+                t = self.tm.Toast("NickServ:", m)
+                t.show()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def deliverInvite(self, handle, channel):
         msgbox = QtGui.QMessageBox()
@@ -2449,6 +2462,11 @@ class PesterWindow(MovingWindow):
                     self.leftChannel.emit("#pesterchum")
                 else:
                     self.joinChannel.emit("#pesterchum")
+            # nickserv
+            autoidentify = self.optionmenu.autonickserv.isChecked()
+            nickservpass = self.optionmenu.nickservpass.text()
+            self.userprofile.setAutoIdentify(autoidentify)
+            self.userprofile.setNickServPass(str(nickservpass))
             # advanced
             ## user mode
             if self.advanced:
@@ -2624,6 +2642,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def myHandleChanged(self, handle):
         if self.profile().handle == handle:
+            self.doAutoIdentify()
             return
         else:
             self.nickCollision(self.profile().handle, handle)

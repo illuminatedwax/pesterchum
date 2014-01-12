@@ -1001,7 +1001,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Notifications", "Logging", "Idle/Updates", "Theme"]
+        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Notifications", "Logging", "Idle/Updates", "Theme", "Connection"]
         if parent.advanced: tabNames.append("Advanced")
         for t in tabNames:
             button = QtGui.QPushButton(t)
@@ -1019,6 +1019,15 @@ class PesterOptions(QtGui.QDialog):
         font = bandwidthLabel.font()
         font.setPointSize(8)
         bandwidthLabel.setFont(font)
+
+        self.autonickserv = QtGui.QCheckBox("Auto-Identify with NickServ", self)
+        self.autonickserv.setChecked(parent.userprofile.getAutoIdentify())
+        self.connect(self.autonickserv, QtCore.SIGNAL('stateChanged(int)'),
+                     self, QtCore.SLOT('autoNickServChange(int)'))
+        self.nickservpass = QtGui.QLineEdit(self)
+        self.nickservpass.setPlaceholderText("NickServ Password")
+        self.nickservpass.setEchoMode(QtGui.QLineEdit.PasswordEchoOnEdit)
+        self.nickservpass.setText(parent.userprofile.getNickServPass())
 
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
@@ -1259,8 +1268,6 @@ class PesterOptions(QtGui.QDialog):
         layout_chumlist.addWidget(self.showemptycheck)
         layout_chumlist.addWidget(self.showonlinenumbers)
         layout_chumlist.addLayout(layout_3)
-        layout_chumlist.addWidget(self.bandwidthcheck)
-        layout_chumlist.addWidget(bandwidthLabel)
         self.pages.addWidget(widget)
 
         # Conversations
@@ -1365,6 +1372,19 @@ class PesterOptions(QtGui.QDialog):
         layout_theme.addWidget(self.ghostchum)
         self.pages.addWidget(widget)
 
+        # Connection
+        widget = QtGui.QWidget()
+        layout_connect = QtGui.QVBoxLayout(widget)
+        layout_connect.setAlignment(QtCore.Qt.AlignTop)
+        layout_connect.addWidget(self.bandwidthcheck)
+        layout_connect.addWidget(bandwidthLabel)
+        layout_connect.addWidget(self.autonickserv)
+        layout_indent = QtGui.QVBoxLayout()
+        layout_indent.addWidget(self.nickservpass)
+        layout_indent.setContentsMargins(22,0,0,0)
+        layout_connect.addLayout(layout_indent)
+        self.pages.addWidget(widget)
+
         # Advanced
         if parent.advanced:
             widget = QtGui.QWidget()
@@ -1410,6 +1430,10 @@ class PesterOptions(QtGui.QDialog):
             self.notifyNewMsgCheck.setEnabled(True)
             self.notifyNewConvoCheck.setEnabled(True)
             self.notifyMentionsCheck.setEnabled(True)
+
+    @QtCore.pyqtSlot(int)
+    def autoNickServChange(self, state):
+        self.nickservpass.setEnabled(state != 0)
 
     @QtCore.pyqtSlot(int)
     def soundChange(self, state):
@@ -1648,7 +1672,7 @@ class PesterMemoList(QtGui.QDialog):
 
     def SelectedMemos(self):
         return self.channelarea.selectedItems()
-        
+
     def HasSelection(self):
         return len(self.SelectedMemos()) > 0 or self.newmemoname()
 

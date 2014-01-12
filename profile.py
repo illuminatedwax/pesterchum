@@ -395,6 +395,17 @@ class userProfile(object):
                     self.userprofile["mentions"] = []
             self.mentions = self.userprofile["mentions"]
 
+        with open(_datadir+"passwd.js") as fp:
+            try:
+                self.passwd = json.load(fp)
+            except ValueError, e:
+                self.passwd = {}
+        self.autoidentify = False
+        self.nickservpass = ""
+        if self.chat.handle in self.passwd:
+            self.autoidentify = self.passwd[self.chat.handle]["auto"]
+            self.nickservpass = self.passwd[self.chat.handle]["pw"]
+
     def setMood(self, mood):
         self.chat.mood = mood
     def setTheme(self, theme):
@@ -435,6 +446,18 @@ class userProfile(object):
         self.save()
     def getTheme(self):
         return self.theme
+    def getAutoIdentify(self):
+        return self.autoidentify
+    def setAutoIdentify(self, b):
+        self.autoidentify = b
+        self.passwd[self.chat.handle]["auto"] = b
+        self.saveNickServPass()
+    def getNickServPass(self):
+        return self.nickservpass
+    def setNickServPass(self, pw):
+        self.nickservpass = pw
+        self.passwd[self.chat.handle]["pw"] = pw
+        self.saveNickServPass()
     def save(self):
         handle = self.chat.handle
         if handle[0:12] == "pesterClient":
@@ -447,6 +470,13 @@ class userProfile(object):
         fp = open("%s/%s.js" % (self.profiledir, handle), 'w')
         fp.write(jsonoutput)
         fp.close()
+    def saveNickServPass(self):
+        try:
+            jsonoutput = json.dumps(self.passwd, indent=4)
+        except ValueError, e:
+            raise e
+        with open(_datadir+"passwd.js", 'w') as fp:
+            fp.write(jsonoutput)
     @staticmethod
     def newUserProfile(chatprofile):
         if os.path.exists("%s/%s.js" % (_datadir+"profiles", chatprofile.handle)):
