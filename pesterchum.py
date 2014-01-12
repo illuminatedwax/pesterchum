@@ -103,7 +103,9 @@ canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosTor
                  "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
                  "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
                  "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
-BOTNAMES = ["NICKSERV", "CHANSERV", "MEMOSERV", "OPERSERV", "HELPSERV", "CALSPRITE", RANDNICK.upper()]
+CUSTOMBOTS = ["CALSPRITE", RANDNICK.upper()]
+BOTNAMES = ["NICKSERV", "CHANSERV", "MEMOSERV", "OPERSERV", "HELPSERV"]
+BOTNAMES.extend(CUSTOMBOTS)
 
 
 class waitingMessageHolder(object):
@@ -1422,19 +1424,11 @@ class PesterWindow(MovingWindow):
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
-        if unicode(chum.handle).upper() == "CHANSERV" or \
-           unicode(chum.handle).upper() == "NICKSERV" or \
-           unicode(chum.handle).upper() == "MEMOSERV" or \
-           unicode(chum.handle).upper() == "OPERSERV" or \
-           unicode(chum.handle).upper() == "HELPSERV":
+        if unicode(chum.handle).upper() in BOTNAMES:
             convoWindow.toggleQuirks(True)
             convoWindow.quirksOff.setChecked(True)
-        else:
-            if unicode(chum.handle).upper() == "CALSPRITE" or \
-               unicode(chum.handle).upper() == "RANDOMENCOUNTER":
-                convoWindow.toggleQuirks(True)
-                convoWindow.quirksOff.setChecked(True)
-            self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
+            if unicode(chum.handle).upper() in CUSTOMBOTS:
+                self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
 
     def createTabWindow(self):
