@@ -89,7 +89,7 @@ from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
-from randomer import RandomHandler
+from randomer import RandomHandler, RANDNICK
 
 # Rawr, fuck you OSX leopard
 if not ostools.isOSXLeopard():
@@ -103,6 +103,7 @@ canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosTor
                  "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
                  "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
                  "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
+BOTNAMES = ["NICKSERV", "CHANSERV", "MEMOSERV", "OPERSERV", "HELPSERV", "CALSPRITE", RANDNICK.upper()]
 
 
 class waitingMessageHolder(object):
@@ -1306,8 +1307,9 @@ class PesterWindow(MovingWindow):
                 t.show()
             elif not self.config.notifyOptions() & self.config.NEWCONVO:
                 if msg[:11] != "PESTERCHUM:":
-                    t = self.tm.Toast("From: %s" % handle, re.sub("</?c(=.*?)?>", "", msg))
-                    t.show()
+                    if handle.upper() not in BOTNAMES:
+                        t = self.tm.Toast("From: %s" % handle, re.sub("</?c(=.*?)?>", "", msg))
+                        t.show()
                 else:
                     if msg == "PESTERCHUM:CEASE":
                         t = self.tm.Toast("Closed Conversation", handle)

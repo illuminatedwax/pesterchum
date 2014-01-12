@@ -1,9 +1,11 @@
 from PyQt4 import QtGui, QtCore
 
+RANDNICK = "randomEncounter"
+
 class RandomHandler(QtCore.QObject):
     def __init__(self, parent):
         QtCore.QObject.__init__(self, parent)
-        self.randNick = "randomEncounter"
+        self.randNick = RANDNICK
         self.mainwindow = parent
         self.queue = []
         self.running = False
