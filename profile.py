@@ -370,6 +370,7 @@ class userProfile(object):
                 self.mentions = [r"\b(%s)\b" % ("|".join(initials))]
             else:
                 self.mentions = []
+            self.autojoins = []
         else:
             fp = open("%s/%s.js" % (self.profiledir, user))
             self.userprofile = json.load(fp)
@@ -394,6 +395,9 @@ class userProfile(object):
                 else:
                     self.userprofile["mentions"] = []
             self.mentions = self.userprofile["mentions"]
+            if "autojoins" not in self.userprofile:
+                self.userprofile["autojoins"] = []
+            self.autojoins = self.userprofile["autojoins"]
 
         with open(_datadir+"passwd.js") as fp:
             try:
@@ -462,6 +466,12 @@ class userProfile(object):
             self.passwd[self.chat.handle] = {}
         self.passwd[self.chat.handle]["pw"] = pw
         self.saveNickServPass()
+    def getAutoJoins(self):
+        return self.autojoins
+    def setAutoJoins(self, autojoins):
+        self.autojoins = autojoins
+        self.userprofile["autojoins"] = self.autojoins
+        self.save()
     def save(self):
         handle = self.chat.handle
         if handle[0:12] == "pesterClient":

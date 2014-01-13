@@ -25,6 +25,7 @@ CHANGELOG
 * Lua quirks
 * Multi-select memo chooser - [alGore]
 * Auto-identify with NickServ - Kiooeht [evacipatedBox]
+* Auto-join memos - Kiooeht [evacipatedBox]
 * Bug fixes
     * Don't require pygame (it's kind of optional, you just don't get sound) - Kiooeht [evacipatedBox]
     * Allow add chum dialog to open after adding an existing chum - Kiooeht [evacipatedBox]

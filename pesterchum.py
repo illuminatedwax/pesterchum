@@ -990,6 +990,7 @@ class PesterWindow(MovingWindow):
         MovingWindow.__init__(self, parent,
                               (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
+        self.autoJoinDone = False
         self.app = app
         self.convos = CaseInsensitiveDict()
         self.memos = CaseInsensitiveDict()
@@ -1714,6 +1715,12 @@ class PesterWindow(MovingWindow):
         if self.userprofile.getAutoIdentify():
             self.sendMessage.emit("identify " + self.userprofile.getNickServPass(), "NickServ")
 
+    def doAutoJoins(self):
+        if not self.autoJoinDone:
+            self.autoJoinDone = True
+            for memo in self.userprofile.getAutoJoins():
+                self.newMemo(memo, "i")
+
     @QtCore.pyqtSlot()
     def connected(self):
         if self.loadingscreen:
@@ -1721,6 +1728,7 @@ class PesterWindow(MovingWindow):
         self.loadingscreen = None
 
         self.doAutoIdentify()
+        self.doAutoJoins()
 
     @QtCore.pyqtSlot()
     def blockSelectedChum(self):
@@ -2467,6 +2475,11 @@ class PesterWindow(MovingWindow):
             nickservpass = self.optionmenu.nickservpass.text()
             self.userprofile.setAutoIdentify(autoidentify)
             self.userprofile.setNickServPass(str(nickservpass))
+            # auto join memos
+            autojoins = []
+            for i in range(self.optionmenu.autojoinlist.count()):
+                autojoins.append(str(self.optionmenu.autojoinlist.item(i).text()))
+            self.userprofile.setAutoJoins(autojoins)
             # advanced
             ## user mode
             if self.advanced:
@@ -2643,6 +2656,7 @@ class PesterWindow(MovingWindow):
     def myHandleChanged(self, handle):
         if self.profile().handle == handle:
             self.doAutoIdentify()
+            self.doAutoJoins()
             return
         else:
             self.nickCollision(self.profile().handle, handle)

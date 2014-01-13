@@ -1029,6 +1029,15 @@ class PesterOptions(QtGui.QDialog):
         self.nickservpass.setEchoMode(QtGui.QLineEdit.PasswordEchoOnEdit)
         self.nickservpass.setText(parent.userprofile.getNickServPass())
 
+        self.autojoinlist = QtGui.QListWidget(self)
+        self.autojoinlist.addItems(parent.userprofile.getAutoJoins())
+        self.addAutoJoinBtn = QtGui.QPushButton("Add", self)
+        self.connect(self.addAutoJoinBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addAutoJoin()'))
+        self.delAutoJoinBtn = QtGui.QPushButton("Remove", self)
+        self.connect(self.delAutoJoinBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('delAutoJoin()'))
+
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
             self.tabcheck.setChecked(True)
@@ -1383,6 +1392,12 @@ class PesterOptions(QtGui.QDialog):
         layout_indent.addWidget(self.nickservpass)
         layout_indent.setContentsMargins(22,0,0,0)
         layout_connect.addLayout(layout_indent)
+        layout_connect.addWidget(QtGui.QLabel("Auto-Join Memos:"))
+        layout_connect.addWidget(self.autojoinlist)
+        layout_8 = QtGui.QHBoxLayout()
+        layout_8.addWidget(self.addAutoJoinBtn)
+        layout_8.addWidget(self.delAutoJoinBtn)
+        layout_connect.addLayout(layout_8)
         self.pages.addWidget(widget)
 
         # Advanced
@@ -1434,6 +1449,28 @@ class PesterOptions(QtGui.QDialog):
     @QtCore.pyqtSlot(int)
     def autoNickServChange(self, state):
         self.nickservpass.setEnabled(state != 0)
+
+    @QtCore.pyqtSlot()
+    def addAutoJoin(self, mitem=None):
+        d = {"label": "Memo:", "inputname": "value" }
+        if mitem is not None:
+            d["value"] = str(mitem.text())
+        pdict = MultiTextDialog("ENTER MEMO", self, d).getText()
+        if pdict is None:
+            return
+        pdict["value"] = "#" + pdict["value"]
+        if mitem is None:
+            items = self.autojoinlist.findItems(pdict["value"], QtCore.Qt.MatchFixedString)
+            if len(items) == 0:
+                self.autojoinlist.addItem(pdict["value"])
+        else:
+            mitem.setText(pdict["value"])
+
+    @QtCore.pyqtSlot()
+    def delAutoJoin(self):
+        i = self.autojoinlist.currentRow()
+        if i >= 0:
+            self.autojoinlist.takeItem(i)
 
     @QtCore.pyqtSlot(int)
     def soundChange(self, state):
