@@ -450,12 +450,16 @@ class userProfile(object):
         return self.autoidentify
     def setAutoIdentify(self, b):
         self.autoidentify = b
+        if self.chat.handle not in self.passwd:
+            self.passwd[self.chat.handle] = {}
         self.passwd[self.chat.handle]["auto"] = b
         self.saveNickServPass()
     def getNickServPass(self):
         return self.nickservpass
     def setNickServPass(self, pw):
         self.nickservpass = pw
+        if self.chat.handle not in self.passwd:
+            self.passwd[self.chat.handle] = {}
         self.passwd[self.chat.handle]["pw"] = pw
         self.saveNickServPass()
     def save(self):
@@ -471,6 +475,10 @@ class userProfile(object):
         fp.write(jsonoutput)
         fp.close()
     def saveNickServPass(self):
+        # remove profiles with no passwords
+        for h,t in self.passwd.items():
+            if "auto" not in t or "pw" not in t or t["pw"] == "":
+                del self.passwd[h]
         try:
             jsonoutput = json.dumps(self.passwd, indent=4)
         except ValueError, e:
