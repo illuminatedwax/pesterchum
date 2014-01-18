@@ -1431,6 +1431,8 @@ class PesterWindow(MovingWindow):
             convoWindow.quirksOff.setChecked(True)
             if unicode(chum.handle).upper() in CUSTOMBOTS:
                 self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
+        else:
+            self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
 
     def createTabWindow(self):
