@@ -399,11 +399,11 @@ class userProfile(object):
                 self.userprofile["autojoins"] = []
             self.autojoins = self.userprofile["autojoins"]
 
-        with open(_datadir+"passwd.js") as fp:
-            try:
+        try:
+            with open(_datadir+"passwd.js") as fp:
                 self.passwd = json.load(fp)
-            except ValueError, e:
-                self.passwd = {}
+        except Exception, e:
+            self.passwd = {}
         self.autoidentify = False
         self.nickservpass = ""
         if self.chat.handle in self.passwd:
