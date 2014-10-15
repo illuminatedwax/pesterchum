@@ -40,7 +40,7 @@ else:
     minor = int(vnum[vnum.find(".")+1:])
 if not ((major > 4) or (major == 4 and minor >= 6)):
     print "ERROR: Pesterchum requires Qt version >= 4.6"
-    print "You currently have version " + vnum + ". Please ungrade Qt"
+    print "You currently have version " + vnum + ". Please upgrade Qt"
     exit()
 
 import ostools
@@ -89,7 +89,8 @@ from memos import PesterMemo, MemoTabWindow, TimeTracker
 from irc import PesterIRC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
-from randomer import RandomHandler
+from randomer import RandomHandler, RANDNICK
+import nickservmsgs
 
 # Rawr, fuck you OSX leopard
 if not ostools.isOSXLeopard():
@@ -103,6 +104,9 @@ canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosTor
                  "caligulasAquarium", "cuttlefishCuller", "carcinoGeneticist", "centaursTesticle", \
                  "grimAuxiliatrix", "gallowsCalibrator", "gardenGnostic", "ectoBiologist", \
                  "twinArmageddons", "terminallyCapricious", "turntechGodhead", "tentacleTherapist"]
+CUSTOMBOTS = ["CALSPRITE", RANDNICK.upper()]
+BOTNAMES = ["NICKSERV", "CHANSERV", "MEMOSERV", "OPERSERV", "HELPSERV"]
+BOTNAMES.extend(CUSTOMBOTS)
 
 
 class waitingMessageHolder(object):
@@ -982,10 +986,12 @@ class TrollSlumWindow(QtGui.QFrame):
     unblockChumSignal = QtCore.pyqtSignal(QtCore.QString)
 
 class PesterWindow(MovingWindow):
-    def __init__(self, options, parent=None):
+    def __init__(self, options, parent=None, app=None):
         MovingWindow.__init__(self, parent,
                               (QtCore.Qt.CustomizeWindowHint |
                                QtCore.Qt.FramelessWindowHint))
+        self.autoJoinDone = False
+        self.app = app
         self.convos = CaseInsensitiveDict()
         self.memos = CaseInsensitiveDict()
         self.tabconvo = None
@@ -1056,7 +1062,7 @@ class PesterWindow(MovingWindow):
         exitaction = QtGui.QAction(self.theme["main/menus/client/exit"], self)
         self.exitaction = exitaction
         self.connect(exitaction, QtCore.SIGNAL('triggered()'),
-                     self, QtCore.SLOT('close()'))
+                     self.app, QtCore.SLOT('quit()'))
         userlistaction = QtGui.QAction(self.theme["main/menus/client/userlist"], self)
         self.userlistaction = userlistaction
         self.connect(userlistaction, QtCore.SIGNAL('triggered()'),
@@ -1305,8 +1311,9 @@ class PesterWindow(MovingWindow):
                 t.show()
             elif not self.config.notifyOptions() & self.config.NEWCONVO:
                 if msg[:11] != "PESTERCHUM:":
-                    t = self.tm.Toast("From: %s" % handle, re.sub("</?c(=.*?)?>", "", msg))
-                    t.show()
+                    if handle.upper() not in BOTNAMES:
+                        t = self.tm.Toast("From: %s" % handle, re.sub("</?c(=.*?)?>", "", msg))
+                        t.show()
                 else:
                     if msg == "PESTERCHUM:CEASE":
                         t = self.tm.Toast("Closed Conversation", handle)
@@ -1355,19 +1362,25 @@ class PesterWindow(MovingWindow):
             systemColor = QtGui.QColor(self.theme["memos/systemMsgColor"])
             msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
         memo.addMessage(msg, handle)
+        mentioned = False
+        m = convertTags(msg, "text")
+        if m.find(":") <= 3:
+          m = m[m.find(":"):]
+        for search in self.userprofile.getMentions():
+            if re.search(search, m):
+                mentioned = True
+                break
+        if mentioned:
+            if self.config.notifyOptions() & self.config.INITIALS:
+                t = self.tm.Toast(chan, re.sub("</?c(=.*?)?>", "", msg))
+                t.show()
+
         if self.config.soundOn():
             if self.config.memoSound():
                 if self.config.nameSound():
-                    m = convertTags(msg, "text")
-                    if m.find(":") <= 3:
-                      m = m[m.find(":"):]
-                    for search in self.userprofile.getMentions():
-                        if re.search(search, m):
-                            if self.config.notifyOptions() & self.config.INITIALS:
-                                t = self.tm.Toast(chan, re.sub("</?c(=.*?)?>", "", msg))
-                                t.show()
-                            self.namesound.play()
-                            return
+                    if mentioned:
+                        self.namesound.play()
+                        return
                 if self.honk and re.search(r"\bhonk\b", convertTags(msg, "text"), re.I):
                     self.honksound.play()
                 elif self.config.memoPing():
@@ -1413,18 +1426,12 @@ class PesterWindow(MovingWindow):
         self.connect(convoWindow, QtCore.SIGNAL('windowClosed(QString)'),
                      self, QtCore.SLOT('closeConvo(QString)'))
         self.convos[chum.handle] = convoWindow
-        if unicode(chum.handle).upper() == "CHANSERV" or \
-           unicode(chum.handle).upper() == "NICKSERV" or \
-           unicode(chum.handle).upper() == "MEMOSERV" or \
-           unicode(chum.handle).upper() == "OPERSERV" or \
-           unicode(chum.handle).upper() == "HELPSERV":
+        if unicode(chum.handle).upper() in BOTNAMES:
             convoWindow.toggleQuirks(True)
             convoWindow.quirksOff.setChecked(True)
+            if unicode(chum.handle).upper() in CUSTOMBOTS:
+                self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         else:
-            if unicode(chum.handle).upper() == "CALSPRITE" or \
-               unicode(chum.handle).upper() == "RANDOMENCOUNTER":
-                convoWindow.toggleQuirks(True)
-                convoWindow.quirksOff.setChecked(True)
             self.newConvoStarted.emit(QtCore.QString(chum.handle), initiated)
         convoWindow.show()
 
@@ -1706,11 +1713,25 @@ class PesterWindow(MovingWindow):
         else:
             self.waitingMessages.answerMessage()
 
+    def doAutoIdentify(self):
+        if self.userprofile.getAutoIdentify():
+            self.sendMessage.emit("identify " + self.userprofile.getNickServPass(), "NickServ")
+
+    def doAutoJoins(self):
+        if not self.autoJoinDone:
+            self.autoJoinDone = True
+            for memo in self.userprofile.getAutoJoins():
+                self.newMemo(memo, "i")
+
     @QtCore.pyqtSlot()
     def connected(self):
         if self.loadingscreen:
             self.loadingscreen.done(QtGui.QDialog.Accepted)
         self.loadingscreen = None
+
+        self.doAutoIdentify()
+        self.doAutoJoins()
+
     @QtCore.pyqtSlot()
     def blockSelectedChum(self):
         curChumListing = self.chumList.currentItem()
@@ -1803,6 +1824,11 @@ class PesterWindow(MovingWindow):
             self.randhandler.incoming(msg)
         elif self.convos.has_key(h):
             self.newMessage(h, m)
+        elif h.upper() == "NICKSERV" and "PESTERCHUM:" not in m:
+            m = nickservmsgs.translate(m)
+            if m:
+                t = self.tm.Toast("NickServ:", m)
+                t.show()
     @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
     def deliverInvite(self, handle, channel):
         msgbox = QtGui.QMessageBox()
@@ -2058,18 +2084,21 @@ class PesterWindow(MovingWindow):
         self.memochooser.show()
     @QtCore.pyqtSlot()
     def joinSelectedMemo(self):
-        newmemo = self.memochooser.newmemoname()
-        selectedmemo = self.memochooser.selectedmemo()
+
         time = unicode(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
         invite = self.memochooser.inviteChannel.isChecked()
-        if newmemo:
+
+        if self.memochooser.newmemoname():
+            newmemo = self.memochooser.newmemoname()
             channel = "#"+unicode(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
             self.newMemo(channel, time, secret=secret, invite=invite)
-        elif selectedmemo:
-            channel = "#"+unicode(selectedmemo.target)
+
+        for SelectedMemo in self.memochooser.SelectedMemos():
+            channel = "#"+unicode(SelectedMemo.target)
             self.newMemo(channel, time)
+
         self.memochooser = None
     @QtCore.pyqtSlot()
     def memoChooserClose(self):
@@ -2443,6 +2472,16 @@ class PesterWindow(MovingWindow):
                     self.leftChannel.emit("#pesterchum")
                 else:
                     self.joinChannel.emit("#pesterchum")
+            # nickserv
+            autoidentify = self.optionmenu.autonickserv.isChecked()
+            nickservpass = self.optionmenu.nickservpass.text()
+            self.userprofile.setAutoIdentify(autoidentify)
+            self.userprofile.setNickServPass(str(nickservpass))
+            # auto join memos
+            autojoins = []
+            for i in range(self.optionmenu.autojoinlist.count()):
+                autojoins.append(str(self.optionmenu.autojoinlist.item(i).text()))
+            self.userprofile.setAutoJoins(autojoins)
             # advanced
             ## user mode
             if self.advanced:
@@ -2463,7 +2502,7 @@ class PesterWindow(MovingWindow):
                           self, QtCore.SLOT('closeToTray()'));
         elif old == 2: # quit
             self.disconnect(button, QtCore.SIGNAL('clicked()'),
-                          self, QtCore.SLOT('close()'));
+                          self.app, QtCore.SLOT('quit()'));
 
         if setting == 0: # minimize to taskbar
             self.connect(button, QtCore.SIGNAL('clicked()'),
@@ -2473,7 +2512,7 @@ class PesterWindow(MovingWindow):
                           self, QtCore.SLOT('closeToTray()'));
         elif setting == 2: # quit
             self.connect(button, QtCore.SIGNAL('clicked()'),
-                          self, QtCore.SLOT('close()'));
+                          self.app, QtCore.SLOT('quit()'));
 
     @QtCore.pyqtSlot()
     def themeSelectOverride(self):
@@ -2618,6 +2657,8 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot(QtCore.QString)
     def myHandleChanged(self, handle):
         if self.profile().handle == handle:
+            self.doAutoIdentify()
+            self.doAutoJoins()
             return
         else:
             self.nickCollision(self.profile().handle, handle)
@@ -2695,6 +2736,7 @@ class MainProgram(QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.app = QtGui.QApplication(sys.argv)
         self.app.setApplicationName("Pesterchum 3.14")
+        self.app.setQuitOnLastWindowClosed(False)
 
         options = self.oppts(sys.argv[1:])
 
@@ -2707,7 +2749,7 @@ class MainProgram(QtCore.QObject):
                 print "Warning: No sound! %s" % (e)
         else:
             print "Warning: No sound!"
-        self.widget = PesterWindow(options)
+        self.widget = PesterWindow(options, app=self.app)
         self.widget.show()
 
         self.trayicon = PesterTray(PesterIcon(self.widget.theme["main/icon"]), self.widget, self.app)
@@ -2729,7 +2771,7 @@ class MainProgram(QtCore.QObject):
                               self.widget, QtCore.SLOT('showMinimized()'))
         exitAction = QtGui.QAction("EXIT", self)
         self.trayicon.connect(exitAction, QtCore.SIGNAL('triggered()'),
-                              self.widget, QtCore.SLOT('close()'))
+                              self.app, QtCore.SLOT('quit()'))
         self.traymenu.addAction(miniAction)
         self.traymenu.addAction(exitAction)
 
@@ -2942,7 +2984,7 @@ Click this message to never see this again.")
             widget.loadingscreen = LoadingScreen(widget)
             widget.loadingscreen.loadinglabel.setText(msg)
             self.connect(widget.loadingscreen, QtCore.SIGNAL('rejected()'),
-                         widget, QtCore.SLOT('close()'))
+                         widget.app, QtCore.SLOT('quit()'))
             self.connect(self.widget.loadingscreen, QtCore.SIGNAL('tryAgain()'),
                          self, QtCore.SLOT('tryAgain()'))
             if hasattr(self, 'irc') and self.irc.registeredIRC:

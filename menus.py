@@ -323,7 +323,7 @@ class PesterQuirkTypes(QtGui.QDialog):
         self.funclist2.setStyleSheet("color: #000000; background-color: #FFFFFF;")
 
         from parsetools import quirkloader
-        funcs = [q+")" for q in quirkloader.quirks.keys()]
+        funcs = [q+"()" for q in quirkloader.quirks.keys()]
         funcs.sort()
         self.funclist.addItems(funcs)
         self.funclist2.addItems(funcs)
@@ -561,7 +561,7 @@ class PesterQuirkTypes(QtGui.QDialog):
     def reloadQuirkFuncSlot(self):
         from parsetools import reloadQuirkFunctions, quirkloader
         reloadQuirkFunctions()
-        funcs = [q+")" for q in quirkloader.quirks.keys()]
+        funcs = [q+"()" for q in quirkloader.quirks.keys()]
         funcs.sort()
         self.funclist.clear()
         self.funclist.addItems(funcs)
@@ -1001,7 +1001,7 @@ class PesterOptions(QtGui.QDialog):
         self.tabs = QtGui.QButtonGroup(self)
         self.connect(self.tabs, QtCore.SIGNAL('buttonClicked(int)'),
                      self, QtCore.SLOT('changePage(int)'))
-        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Notifications", "Logging", "Idle/Updates", "Theme"]
+        tabNames = ["Chum List", "Conversations", "Interface", "Sound", "Notifications", "Logging", "Idle/Updates", "Theme", "Connection"]
         if parent.advanced: tabNames.append("Advanced")
         for t in tabNames:
             button = QtGui.QPushButton(t)
@@ -1019,6 +1019,24 @@ class PesterOptions(QtGui.QDialog):
         font = bandwidthLabel.font()
         font.setPointSize(8)
         bandwidthLabel.setFont(font)
+
+        self.autonickserv = QtGui.QCheckBox("Auto-Identify with NickServ", self)
+        self.autonickserv.setChecked(parent.userprofile.getAutoIdentify())
+        self.connect(self.autonickserv, QtCore.SIGNAL('stateChanged(int)'),
+                     self, QtCore.SLOT('autoNickServChange(int)'))
+        self.nickservpass = QtGui.QLineEdit(self)
+        self.nickservpass.setPlaceholderText("NickServ Password")
+        self.nickservpass.setEchoMode(QtGui.QLineEdit.PasswordEchoOnEdit)
+        self.nickservpass.setText(parent.userprofile.getNickServPass())
+
+        self.autojoinlist = QtGui.QListWidget(self)
+        self.autojoinlist.addItems(parent.userprofile.getAutoJoins())
+        self.addAutoJoinBtn = QtGui.QPushButton("Add", self)
+        self.connect(self.addAutoJoinBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('addAutoJoin()'))
+        self.delAutoJoinBtn = QtGui.QPushButton("Remove", self)
+        self.connect(self.delAutoJoinBtn, QtCore.SIGNAL('clicked()'),
+                     self, QtCore.SLOT('delAutoJoin()'))
 
         self.tabcheck = QtGui.QCheckBox("Tabbed Conversations", self)
         if self.config.tabs():
@@ -1259,8 +1277,6 @@ class PesterOptions(QtGui.QDialog):
         layout_chumlist.addWidget(self.showemptycheck)
         layout_chumlist.addWidget(self.showonlinenumbers)
         layout_chumlist.addLayout(layout_3)
-        layout_chumlist.addWidget(self.bandwidthcheck)
-        layout_chumlist.addWidget(bandwidthLabel)
         self.pages.addWidget(widget)
 
         # Conversations
@@ -1365,6 +1381,25 @@ class PesterOptions(QtGui.QDialog):
         layout_theme.addWidget(self.ghostchum)
         self.pages.addWidget(widget)
 
+        # Connection
+        widget = QtGui.QWidget()
+        layout_connect = QtGui.QVBoxLayout(widget)
+        layout_connect.setAlignment(QtCore.Qt.AlignTop)
+        layout_connect.addWidget(self.bandwidthcheck)
+        layout_connect.addWidget(bandwidthLabel)
+        layout_connect.addWidget(self.autonickserv)
+        layout_indent = QtGui.QVBoxLayout()
+        layout_indent.addWidget(self.nickservpass)
+        layout_indent.setContentsMargins(22,0,0,0)
+        layout_connect.addLayout(layout_indent)
+        layout_connect.addWidget(QtGui.QLabel("Auto-Join Memos:"))
+        layout_connect.addWidget(self.autojoinlist)
+        layout_8 = QtGui.QHBoxLayout()
+        layout_8.addWidget(self.addAutoJoinBtn)
+        layout_8.addWidget(self.delAutoJoinBtn)
+        layout_connect.addLayout(layout_8)
+        self.pages.addWidget(widget)
+
         # Advanced
         if parent.advanced:
             widget = QtGui.QWidget()
@@ -1410,6 +1445,32 @@ class PesterOptions(QtGui.QDialog):
             self.notifyNewMsgCheck.setEnabled(True)
             self.notifyNewConvoCheck.setEnabled(True)
             self.notifyMentionsCheck.setEnabled(True)
+
+    @QtCore.pyqtSlot(int)
+    def autoNickServChange(self, state):
+        self.nickservpass.setEnabled(state != 0)
+
+    @QtCore.pyqtSlot()
+    def addAutoJoin(self, mitem=None):
+        d = {"label": "Memo:", "inputname": "value" }
+        if mitem is not None:
+            d["value"] = str(mitem.text())
+        pdict = MultiTextDialog("ENTER MEMO", self, d).getText()
+        if pdict is None:
+            return
+        pdict["value"] = "#" + pdict["value"]
+        if mitem is None:
+            items = self.autojoinlist.findItems(pdict["value"], QtCore.Qt.MatchFixedString)
+            if len(items) == 0:
+                self.autojoinlist.addItem(pdict["value"])
+        else:
+            mitem.setText(pdict["value"])
+
+    @QtCore.pyqtSlot()
+    def delAutoJoin(self):
+        i = self.autojoinlist.currentRow()
+        if i >= 0:
+            self.autojoinlist.takeItem(i)
 
     @QtCore.pyqtSlot(int)
     def soundChange(self, state):
@@ -1588,6 +1649,7 @@ class PesterMemoList(QtGui.QDialog):
 
         self.label = QtGui.QLabel("MEMOS")
         self.channelarea = RightClickTree(self)
+        self.channelarea.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.channelarea.setStyleSheet(self.theme["main/chums/style"])
         self.channelarea.optionsMenu = QtGui.QMenu(self)
         self.channelarea.setColumnCount(2)
@@ -1599,7 +1661,7 @@ class PesterMemoList(QtGui.QDialog):
         self.channelarea.sortByColumn(0, QtCore.Qt.AscendingOrder)
         self.connect(self.channelarea,
                      QtCore.SIGNAL('itemDoubleClicked(QTreeWidgetItem *, int)'),
-                     self, QtCore.SLOT('joinActivatedMemo()'))
+                     self, QtCore.SLOT('AcceptSelection()'))
 
         self.orjoinlabel = QtGui.QLabel("OR MAKE A NEW MEMO:")
         self.newmemo = QtGui.QLineEdit(channel, self)
@@ -1616,7 +1678,7 @@ class PesterMemoList(QtGui.QDialog):
         self.join = QtGui.QPushButton("JOIN", self)
         self.join.setDefault(True)
         self.connect(self.join, QtCore.SIGNAL('clicked()'),
-                     self, QtCore.SLOT('checkEmpty()'))
+                     self, QtCore.SLOT('AcceptIfSelectionMade()'))
         layout_ok = QtGui.QHBoxLayout()
         layout_ok.addWidget(self.cancel)
         layout_ok.addWidget(self.join)
@@ -1644,8 +1706,12 @@ class PesterMemoList(QtGui.QDialog):
 
     def newmemoname(self):
         return self.newmemo.text()
-    def selectedmemo(self):
-        return self.channelarea.currentItem()
+
+    def SelectedMemos(self):
+        return self.channelarea.selectedItems()
+
+    def HasSelection(self):
+        return len(self.SelectedMemos()) > 0 or self.newmemoname()
 
     def updateChannels(self, channels):
         for c in channels:
@@ -1663,13 +1729,12 @@ class PesterMemoList(QtGui.QDialog):
             item.setIcon(QtGui.QIcon(theme["memos/memoicon"]))
 
     @QtCore.pyqtSlot()
-    def checkEmpty(self):
-        newmemo = self.newmemoname()
-        selectedmemo = self.selectedmemo()
-        if newmemo or selectedmemo:
-            self.accept()
+    def AcceptIfSelectionMade(self):
+        if self.HasSelection():
+            self.AcceptSelection()
+
     @QtCore.pyqtSlot()
-    def joinActivatedMemo(self):
+    def AcceptSelection(self):
         self.accept()
 
 

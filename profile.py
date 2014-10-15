@@ -370,6 +370,7 @@ class userProfile(object):
                 self.mentions = [r"\b(%s)\b" % ("|".join(initials))]
             else:
                 self.mentions = []
+            self.autojoins = []
         else:
             fp = open("%s/%s.js" % (self.profiledir, user))
             self.userprofile = json.load(fp)
@@ -394,6 +395,20 @@ class userProfile(object):
                 else:
                     self.userprofile["mentions"] = []
             self.mentions = self.userprofile["mentions"]
+            if "autojoins" not in self.userprofile:
+                self.userprofile["autojoins"] = []
+            self.autojoins = self.userprofile["autojoins"]
+
+        try:
+            with open(_datadir+"passwd.js") as fp:
+                self.passwd = json.load(fp)
+        except Exception, e:
+            self.passwd = {}
+        self.autoidentify = False
+        self.nickservpass = ""
+        if self.chat.handle in self.passwd:
+            self.autoidentify = self.passwd[self.chat.handle]["auto"]
+            self.nickservpass = self.passwd[self.chat.handle]["pw"]
 
     def setMood(self, mood):
         self.chat.mood = mood
@@ -435,6 +450,28 @@ class userProfile(object):
         self.save()
     def getTheme(self):
         return self.theme
+    def getAutoIdentify(self):
+        return self.autoidentify
+    def setAutoIdentify(self, b):
+        self.autoidentify = b
+        if self.chat.handle not in self.passwd:
+            self.passwd[self.chat.handle] = {}
+        self.passwd[self.chat.handle]["auto"] = b
+        self.saveNickServPass()
+    def getNickServPass(self):
+        return self.nickservpass
+    def setNickServPass(self, pw):
+        self.nickservpass = pw
+        if self.chat.handle not in self.passwd:
+            self.passwd[self.chat.handle] = {}
+        self.passwd[self.chat.handle]["pw"] = pw
+        self.saveNickServPass()
+    def getAutoJoins(self):
+        return self.autojoins
+    def setAutoJoins(self, autojoins):
+        self.autojoins = autojoins
+        self.userprofile["autojoins"] = self.autojoins
+        self.save()
     def save(self):
         handle = self.chat.handle
         if handle[0:12] == "pesterClient":
@@ -447,6 +484,17 @@ class userProfile(object):
         fp = open("%s/%s.js" % (self.profiledir, handle), 'w')
         fp.write(jsonoutput)
         fp.close()
+    def saveNickServPass(self):
+        # remove profiles with no passwords
+        for h,t in self.passwd.items():
+            if "auto" not in t or "pw" not in t or t["pw"] == "":
+                del self.passwd[h]
+        try:
+            jsonoutput = json.dumps(self.passwd, indent=4)
+        except ValueError, e:
+            raise e
+        with open(_datadir+"passwd.js", 'w') as fp:
+            fp.write(jsonoutput)
     @staticmethod
     def newUserProfile(chatprofile):
         if os.path.exists("%s/%s.js" % (_datadir+"profiles", chatprofile.handle)):
