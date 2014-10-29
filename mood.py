@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from generic import PesterIcon
 
@@ -49,10 +49,8 @@ class PesterMoodHandler(QtCore.QObject):
             self.buttons[b.mood.value()] = b
             if b.mood.value() == self.mainwindow.profile().mood.value():
                 b.setSelected(True)
-            self.connect(b, QtCore.SIGNAL('clicked()'),
-                         b, QtCore.SLOT('updateMood()'))
-            self.connect(b, QtCore.SIGNAL('moodUpdated(int)'),
-                         self, QtCore.SLOT('updateMood(int)'))
+            b.clicked.connect(b.updateMood)
+            b.moodUpdated.connect(self.updateMood)
     def removeButtons(self):
         for b in self.buttons.values():
             b.close()
@@ -85,10 +83,10 @@ class PesterMoodHandler(QtCore.QObject):
                 c.myUpdateMood(newmood)
         self.mainwindow.moodUpdated.emit()
 
-class PesterMoodButton(QtGui.QPushButton):
+class PesterMoodButton(QtWidgets.QPushButton):
     def __init__(self, parent, **options):
         icon = PesterIcon(options["icon"])
-        QtGui.QPushButton.__init__(self, icon, options["text"], parent)
+        QtWidgets.QPushButton.__init__(self, icon, options["text"], parent)
         self.setIconSize(icon.realsize())
         self.setFlat(True)
         self.resize(*options["size"])

@@ -1,6 +1,6 @@
 import os, sys, imp, re, ostools
 from quirks import ScriptQuirks
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 class PythonQuirks(ScriptQuirks):
     def loadModule(self, name, filename):
@@ -26,7 +26,7 @@ class PythonQuirks(ScriptQuirks):
                         raise Exception
                 except:
                     print "Quirk malformed: %s" % (obj.command)
-                    msgbox = QtGui.QMessageBox()
+                    msgbox = QtWidgets.QMessageBox()
                     msgbox.setWindowTitle("Error!")
                     msgbox.setText("Quirk malformed: %s" % (obj.command))
                     msgbox.exec_()

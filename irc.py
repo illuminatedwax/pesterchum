@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore
 from oyoyo.client import IRCClient
 from oyoyo.cmdhandler import DefaultCommandHandler
 from oyoyo import helpers, services
@@ -97,7 +97,7 @@ class PesterIRC(QtCore.QThread):
     @QtCore.pyqtSlot(PesterList)
     def getMoods(self, chums):
         self.cli.command_handler.getMood(*chums)
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    @QtCore.pyqtSlot('QString', 'QString')
     def sendNotice(self, text, handle):
         h = unicode(handle)
         t = unicode(text)
@@ -105,7 +105,7 @@ class PesterIRC(QtCore.QThread):
             helpers.notice(self.cli, h, t)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    @QtCore.pyqtSlot('QString', 'QString')
     def sendMessage(self, text, handle):
         h = unicode(handle)
         textl = [unicode(text)]
@@ -151,7 +151,7 @@ class PesterIRC(QtCore.QThread):
                 helpers.msg(self.cli, h, t)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString, bool)
+    @QtCore.pyqtSlot('QString', bool)
     def startConvo(self, handle, initiated):
         h = unicode(handle)
         try:
@@ -160,7 +160,7 @@ class PesterIRC(QtCore.QThread):
             helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def endConvo(self, handle):
         h = unicode(handle)
         try:
@@ -195,21 +195,21 @@ class PesterIRC(QtCore.QThread):
                 helpers.msg(self.cli, h, "COLOR >%s" % (self.mainwindow.profile().colorcmd()))
             except socket.error:
                 self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def blockedChum(self, handle):
         h = unicode(handle)
         try:
             helpers.msg(self.cli, h, "PESTERCHUM:BLOCK")
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def unblockedChum(self, handle):
         h = unicode(handle)
         try:
             helpers.msg(self.cli, h, "PESTERCHUM:UNBLOCK")
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def requestNames(self, channel):
         c = unicode(channel)
         try:
@@ -222,7 +222,7 @@ class PesterIRC(QtCore.QThread):
             helpers.channel_list(self.cli)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def joinChannel(self, channel):
         c = unicode(channel)
         try:
@@ -230,7 +230,7 @@ class PesterIRC(QtCore.QThread):
             helpers.mode(self.cli, c, "", None)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def leftChannel(self, channel):
         c = unicode(channel)
         try:
@@ -238,7 +238,7 @@ class PesterIRC(QtCore.QThread):
             self.cli.command_handler.joined = False
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    @QtCore.pyqtSlot('QString', 'QString')
     def kickUser(self, handle, channel):
         l = handle.split(":")
         c = unicode(channel)
@@ -254,7 +254,7 @@ class PesterIRC(QtCore.QThread):
             helpers.kick(self.cli, h, c, reason)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString, QtCore.QString)
+    @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def setChannelMode(self, channel, mode, command):
         c = unicode(channel)
         m = unicode(mode)
@@ -265,14 +265,14 @@ class PesterIRC(QtCore.QThread):
             helpers.mode(self.cli, c, m, cmd)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot('QString')
     def channelNames(self, channel):
         c = unicode(channel)
         try:
             helpers.names(self.cli, c)
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    @QtCore.pyqtSlot('QString', 'QString')
     def inviteChum(self, handle, channel):
         h = unicode(handle)
         c = unicode(channel)
@@ -298,7 +298,7 @@ class PesterIRC(QtCore.QThread):
         except socket.error:
             self.setConnectionBroken()
 
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QString)
+    @QtCore.pyqtSlot('QString', 'QString')
     def killSomeQuirks(self, channel, handle):
         c = unicode(channel)
         h = unicode(handle)
@@ -307,25 +307,25 @@ class PesterIRC(QtCore.QThread):
         except socket.error:
             self.setConnectionBroken()
 
-    moodUpdated = QtCore.pyqtSignal(QtCore.QString, Mood)
-    colorUpdated = QtCore.pyqtSignal(QtCore.QString, QtGui.QColor)
-    messageReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    memoReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
-    noticeReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    inviteReceived = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    timeCommand = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
-    namesReceived = QtCore.pyqtSignal(QtCore.QString, PesterList)
+    moodUpdated = QtCore.pyqtSignal('QString', Mood)
+    colorUpdated = QtCore.pyqtSignal('QString', QtGui.QColor)
+    messageReceived = QtCore.pyqtSignal('QString', 'QString')
+    memoReceived = QtCore.pyqtSignal('QString', 'QString', 'QString')
+    noticeReceived = QtCore.pyqtSignal('QString', 'QString')
+    inviteReceived = QtCore.pyqtSignal('QString', 'QString')
+    timeCommand = QtCore.pyqtSignal('QString', 'QString', 'QString')
+    namesReceived = QtCore.pyqtSignal('QString', PesterList)
     channelListReceived = QtCore.pyqtSignal(PesterList)
-    nickCollision = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    myHandleChanged = QtCore.pyqtSignal(QtCore.QString)
-    chanInviteOnly = QtCore.pyqtSignal(QtCore.QString)
-    modesUpdated = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    nickCollision = QtCore.pyqtSignal('QString', 'QString')
+    myHandleChanged = QtCore.pyqtSignal('QString')
+    chanInviteOnly = QtCore.pyqtSignal('QString')
+    modesUpdated = QtCore.pyqtSignal('QString', 'QString')
     connected = QtCore.pyqtSignal()
-    userPresentUpdate = QtCore.pyqtSignal(QtCore.QString, QtCore.QString,
-                                   QtCore.QString)
-    cannotSendToChan = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    userPresentUpdate = QtCore.pyqtSignal('QString', 'QString',
+                                   'QString')
+    cannotSendToChan = QtCore.pyqtSignal('QString', 'QString')
     tooManyPeeps = QtCore.pyqtSignal()
-    quirkDisable = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, QtCore.QString)
+    quirkDisable = QtCore.pyqtSignal('QString', 'QString', 'QString')
 
 class PesterHandler(DefaultCommandHandler):
     def notice(self, nick, chan, msg):
