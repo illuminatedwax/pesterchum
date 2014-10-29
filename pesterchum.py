@@ -9,28 +9,28 @@ from datetime import *
 import random
 import re
 from time import time
-import threading, Queue
+import threading, queue
 
 reqmissing = []
 optmissing = []
 try:
     from PyQt5 import QtGui, QtCore, QtWidgets
-except ImportError, e:
+except ImportError as e:
     module = str(e)
     if module.startswith("No module named ") or \
        module.startswith("cannot import name "):
         reqmissing.append(module[module.rfind(" ")+1:])
-    else: print e
+    else: print(e)
 try:
     import pygame
-except ImportError, e:
+except ImportError as e:
     pygame = None
     module = str(e)
     if module[:16] == "No module named ": optmissing.append(module[16:])
-    else: print e
+    else: print(e)
 if reqmissing:
-    print "ERROR: The following modules are required for Pesterchum to run and are missing on your system:"
-    for m in reqmissing: print "* "+m
+    print("ERROR: The following modules are required for Pesterchum to run and are missing on your system:")
+    for m in reqmissing: print("* "+m)
     exit()
 vnum = QtCore.qVersion()
 major = int(vnum[:vnum.find(".")])
@@ -39,8 +39,8 @@ if vnum.find(".", vnum.find(".")+1) != -1:
 else:
     minor = int(vnum[vnum.find(".")+1:])
 if not ((major > 4) or (major == 4 and minor >= 6)):
-    print "ERROR: Pesterchum requires Qt version >= 4.6"
-    print "You currently have version " + vnum + ". Please upgrade Qt"
+    print("ERROR: Pesterchum requires Qt version >= 4.6")
+    print("You currently have version " + vnum + ". Please upgrade Qt")
     exit()
 
 import ostools
@@ -113,7 +113,7 @@ class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
         self.mainwindow = mainwindow
         self.funcs = msgfuncs
-        self.queue = msgfuncs.keys()
+        self.queue = list(msgfuncs.keys())
         if len(self.queue) > 0:
             self.mainwindow.updateSystemTray()
     def waitingHandles(self):
@@ -129,7 +129,7 @@ class waitingMessageHolder(object):
         if len(self.queue) == 0:
             self.mainwindow.updateSystemTray()
     def addMessage(self, handle, func):
-        if not self.funcs.has_key(handle):
+        if handle not in self.funcs:
             self.queue.append(handle)
         self.funcs[handle] = func
         if len(self.queue) > 0:
@@ -282,13 +282,13 @@ class chumArea(RightClickTree):
 
     @QtCore.pyqtSlot()
     def beginNotify(self):
-        print "BEGIN NOTIFY"
+        print("BEGIN NOTIFY")
         self.notify = True
 
     def getOptionsMenu(self):
         if not self.currentItem():
             return None
-        text = unicode(self.currentItem().text(0))
+        text = str(self.currentItem().text(0))
         if text.rfind(" (") != -1:
             text = text[0:text.rfind(" (")]
         if text == "Chums":
@@ -334,13 +334,13 @@ class chumArea(RightClickTree):
         if thisitem.rfind(" (") != -1:
             thisitem = thisitem[0:thisitem.rfind(" (")]
         # Drop item is a group
-        thisitem = unicode(event.source().currentItem().text(0))
+        thisitem = str(event.source().currentItem().text(0))
         if thisitem.rfind(" (") != -1:
             thisitem = thisitem[0:thisitem.rfind(" (")]
         if thisitem == "Chums" or thisitem in self.groups:
             droppos = self.itemAt(event.pos())
             if not droppos: return
-            droppos = unicode(droppos.text(0))
+            droppos = str(droppos.text(0))
             if droppos.rfind(" ") != -1:
                 droppos = droppos[0:droppos.rfind(" ")]
             if droppos == "Chums" or droppos in self.groups:
@@ -353,16 +353,16 @@ class chumArea(RightClickTree):
 
                 gTemp = []
                 for i in range(self.topLevelItemCount()):
-                    text = unicode(self.topLevelItem(i).text(0))
+                    text = str(self.topLevelItem(i).text(0))
                     if text.rfind(" (") != -1:
                         text = text[0:text.rfind(" (")]
-                    gTemp.append([unicode(text), self.topLevelItem(i).isExpanded()])
+                    gTemp.append([str(text), self.topLevelItem(i).isExpanded()])
                 self.mainwindow.config.saveGroups(gTemp)
         # Drop item is a chum
         else:
             item = self.itemAt(event.pos())
             if item:
-                text = unicode(item.text(0))
+                text = str(item.text(0))
                 # Figure out which group to drop into
                 if text.rfind(" (") != -1:
                     text = text[0:text.rfind(" (")]
@@ -370,7 +370,7 @@ class chumArea(RightClickTree):
                     group = text
                     gitem = item
                 else:
-                    ptext = unicode(item.parent().text(0))
+                    ptext = str(item.parent().text(0))
                     if ptext.rfind(" ") != -1:
                         ptext = ptext[0:ptext.rfind(" ")]
                     group = ptext
@@ -393,7 +393,7 @@ class chumArea(RightClickTree):
                     if chums.index(thisitem) < inPos:
                         inPos -= 1
                     chums.remove(thisitem)
-                    chums.insert(inPos, unicode(thisitem))
+                    chums.insert(inPos, str(thisitem))
 
                     self.mainwindow.config.setChums(chums)
                 else:
@@ -405,9 +405,9 @@ class chumArea(RightClickTree):
         currentGroup = self.currentItem()
         if currentGroup:
             if currentGroup.parent():
-                text = unicode(currentGroup.parent().text(0))
+                text = str(currentGroup.parent().text(0))
             else:
-                text = unicode(currentGroup.text(0))
+                text = str(currentGroup.text(0))
             if text.rfind(" (") != -1:
                 text = text[0:text.rfind(" (")]
             currentGroup = text
@@ -465,7 +465,7 @@ class chumArea(RightClickTree):
             return
         curgroups = []
         for i in range(self.topLevelItemCount()):
-            text = unicode(self.topLevelItem(i).text(0))
+            text = str(self.topLevelItem(i).text(0))
             if text.rfind(" (") != -1:
                 text = text[0:text.rfind(" (")]
             curgroups.append(text)
@@ -489,31 +489,31 @@ class chumArea(RightClickTree):
           totals = {'Chums': 0}
           online = {'Chums': 0}
           for g in self.groups:
-              totals[unicode(g)] = 0
-              online[unicode(g)] = 0
+              totals[str(g)] = 0
+              online[str(g)] = 0
           for c in self.chums:
               yes = c.mood.name() != "offline"
               if c.group == "Chums":
-                  totals[unicode(c.group)] = totals[unicode(c.group)]+1
+                  totals[str(c.group)] = totals[str(c.group)]+1
                   if yes:
-                      online[unicode(c.group)] = online[unicode(c.group)]+1
+                      online[str(c.group)] = online[str(c.group)]+1
               elif c.group in totals:
-                  totals[unicode(c.group)] = totals[unicode(c.group)]+1
+                  totals[str(c.group)] = totals[str(c.group)]+1
                   if yes:
-                      online[unicode(c.group)] = online[unicode(c.group)]+1
+                      online[str(c.group)] = online[str(c.group)]+1
               else:
                   totals["Chums"] = totals["Chums"]+1
                   if yes:
                       online["Chums"] = online["Chums"]+1
           for i in range(self.topLevelItemCount()):
-              text = unicode(self.topLevelItem(i).text(0))
+              text = str(self.topLevelItem(i).text(0))
               if text.rfind(" (") != -1:
                   text = text[0:text.rfind(" (")]
               if text in online:
                   self.topLevelItem(i).setText(0, "%s (%i/%i)" % (text, online[text], totals[text]))
     def hideOnlineNumbers(self):
         for i in range(self.topLevelItemCount()):
-            text = unicode(self.topLevelItem(i).text(0))
+            text = str(self.topLevelItem(i).text(0))
             if text.rfind(" (") != -1:
                 text = text[0:text.rfind(" (")]
             self.topLevelItem(i).setText(0, "%s" % (text))
@@ -529,7 +529,7 @@ class chumArea(RightClickTree):
     @QtCore.pyqtSlot()
     def expandGroup(self):
         item = self.currentItem()
-        text = unicode(item.text(0))
+        text = str(item.text(0))
         if text.rfind(" (") != -1:
             text = text[0:text.rfind(" (")]
 
@@ -544,7 +544,7 @@ class chumArea(RightClickTree):
                 self.mainwindow.config.addGroup("Chums")
             curgroups = []
             for i in range(self.topLevelItemCount()):
-                text = unicode(self.topLevelItem(i).text(0))
+                text = str(self.topLevelItem(i).text(0))
                 if text.rfind(" (") != -1:
                     text = text[0:text.rfind(" (")]
                 curgroups.append(text)
@@ -561,7 +561,7 @@ class chumArea(RightClickTree):
                     if self.openGroups[self.groups.index("%s" % (chumLabel.chum.group))]:
                         child_1.setExpanded(True)
                 for i in range(self.topLevelItemCount()):
-                    text = unicode(self.topLevelItem(i).text(0))
+                    text = str(self.topLevelItem(i).text(0))
                     if text.rfind(" (") != -1:
                         text = text[0:text.rfind(" (")]
                     if text == chumLabel.chum.group:
@@ -580,7 +580,7 @@ class chumArea(RightClickTree):
                     bestname = ""
                     if fi > 0:
                         while not bestj:
-                            for j in xrange(self.topLevelItem(i).childCount()):
+                            for j in range(self.topLevelItem(i).childCount()):
                                 if chums[fi-c] == str(self.topLevelItem(i).child(j).text(0)):
                                     bestj = j
                                     bestname = chums[fi-c]
@@ -655,7 +655,7 @@ class chumArea(RightClickTree):
     def initTheme(self, theme):
         self.resize(*theme["main/chums/size"])
         self.move(*theme["main/chums/loc"])
-        if theme.has_key("main/chums/scrollbar"):
+        if "main/chums/scrollbar" in theme:
             self.setStyleSheet("QListWidget { %s } QScrollBar { %s } QScrollBar::handle { %s } QScrollBar::add-line { %s } QScrollBar::sub-line { %s } QScrollBar:up-arrow { %s } QScrollBar:down-arrow { %s }" % (theme["main/chums/style"], theme["main/chums/scrollbar/style"], theme["main/chums/scrollbar/handle"], theme["main/chums/scrollbar/downarrow"], theme["main/chums/scrollbar/uparrow"], theme["main/chums/scrollbar/uarrowstyle"], theme["main/chums/scrollbar/darrowstyle"] ))
         else:
             self.setStyleSheet(theme["main/chums/style"])
@@ -763,7 +763,7 @@ class chumArea(RightClickTree):
             return
         (notes, ok) = QtWidgets.QInputDialog.getText(self, "Notes", "Enter your notes...")
         if ok:
-            notes = unicode(notes)
+            notes = str(notes)
             self.mainwindow.chumdb.setNotes(currentChum.handle, notes)
             currentChum.setToolTip(0, "%s: %s" % (currentChum.handle, notes))
     @QtCore.pyqtSlot()
@@ -773,7 +773,7 @@ class chumArea(RightClickTree):
         if not self.renamegroupdialog:
             (gname, ok) = QtWidgets.QInputDialog.getText(self, "Rename Group", "Enter a new name for the group:")
             if ok:
-                gname = unicode(gname)
+                gname = str(gname)
                 if re.search("[^A-Za-z0-9_\s]", gname) is not None:
                     msgbox = QtWidgets.QMessageBox()
                     msgbox.setInformativeText("THIS IS NOT A VALID GROUP NAME")
@@ -787,7 +787,7 @@ class chumArea(RightClickTree):
                 index = self.indexOfTopLevelItem(currentGroup)
                 if index != -1:
                     expanded = currentGroup.isExpanded()
-                    text = unicode(currentGroup.text(0))
+                    text = str(currentGroup.text(0))
                     if text.rfind(" (") != -1:
                         text = text[0:text.rfind(" (")]
                     self.mainwindow.config.delGroup(text)
@@ -807,7 +807,7 @@ class chumArea(RightClickTree):
         currentGroup = self.currentItem()
         if not currentGroup:
             return
-        text = unicode(currentGroup.text(0))
+        text = str(currentGroup.text(0))
         if text.rfind(" (") != -1:
             text = text[0:text.rfind(" (")]
         self.mainwindow.config.delGroup(text)
@@ -830,7 +830,7 @@ class chumArea(RightClickTree):
     def moveToGroup(self, item):
         if not item:
             return
-        group = unicode(item.text())
+        group = str(item.text())
         chumLabel = self.currentItem()
         if not chumLabel:
             return
@@ -945,7 +945,7 @@ class TrollSlumWindow(QtWidgets.QFrame):
         self.addtrolldialog = QtWidgets.QInputDialog(self)
         (handle, ok) = self.addtrolldialog.getText(self, "Add Troll", "Enter Troll Handle:")
         if ok:
-            handle = unicode(handle)
+            handle = str(handle)
             if not (PesterProfile.checkLength(handle) and
                     PesterProfile.checkValid(handle)[0]):
                 errormsg = QtWidgets.QErrorMessage(self)
@@ -996,8 +996,9 @@ class PesterWindow(MovingWindow):
 
         try:
             themeChecker(self.theme)
-        except ThemeException, (inst):
-            print "Caught: "+inst.parameter
+        except ThemeException as xxx_todo_changeme:
+            (inst) = xxx_todo_changeme
+            print("Caught: "+inst.parameter)
             themeWarning = QtWidgets.QMessageBox(self)
             themeWarning.setText("Theme Error: %s" % (inst))
             themeWarning.exec_()
@@ -1157,7 +1158,7 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot()
     def updatePC(self):
-        version.updateDownload(unicode(self.updatemenu.url))
+        version.updateDownload(str(self.updatemenu.url))
         self.updatemenu = None
     @QtCore.pyqtSlot()
     def noUpdatePC(self):
@@ -1213,7 +1214,7 @@ class PesterWindow(MovingWindow):
             return
         # notify
         if self.config.notifyOptions() & self.config.NEWMSG:
-            if not self.convos.has_key(handle):
+            if handle not in self.convos:
                 t = self.tm.Toast("New Conversation", "From: %s" % handle)
                 t.show()
             elif not self.config.notifyOptions() & self.config.NEWCONVO:
@@ -1231,7 +1232,7 @@ class PesterWindow(MovingWindow):
                     elif msg == "PESTERCHUM:UNBLOCK":
                         t = self.tm.Toast("Unblocked", handle)
                         t.show()
-        if not self.convos.has_key(handle):
+        if handle not in self.convos:
             if msg == "PESTERCHUM:CEASE": # ignore cease after we hang up
                 return
             matchingChums = [c for c in self.chumList.chums if c.handle == handle]
@@ -1253,12 +1254,12 @@ class PesterWindow(MovingWindow):
                 else:
                     self.alarm.play()
     def newMemoMsg(self, chan, handle, msg):
-        if not self.memos.has_key(chan):
+        if chan not in self.memos:
             # silently ignore in case we forgot to /part
             return
         memo = self.memos[chan]
-        msg = unicode(msg)
-        if not memo.times.has_key(handle):
+        msg = str(msg)
+        if handle not in memo.times:
             # new chum! time current
             newtime = timedelta(0)
             time = TimeTracker(newtime)
@@ -1296,19 +1297,19 @@ class PesterWindow(MovingWindow):
     def changeColor(self, handle, color):
         # pesterconvo and chumlist
         self.chumList.updateColor(handle, color)
-        if self.convos.has_key(handle):
+        if handle in self.convos:
             self.convos[handle].updateColor(color)
         self.chumdb.setColor(handle, color)
 
     def updateMood(self, handle, mood):
         # updates OTHER chums' moods
         oldmood = self.chumList.updateMood(handle, mood)
-        if self.convos.has_key(handle):
+        if handle in self.convos:
             self.convos[handle].updateMood(mood, old=oldmood)
         if hasattr(self, 'trollslum') and self.trollslum:
             self.trollslum.updateMood(handle, mood)
     def newConversation(self, chum, initiated=True):
-        if type(chum) in [str, unicode]:
+        if type(chum) in [str, str]:
             matchingChums = [c for c in self.chumList.chums if c.handle == chum]
             if len(matchingChums) > 0:
                 mood = matchingChums[0].mood
@@ -1318,7 +1319,7 @@ class PesterWindow(MovingWindow):
             if len(matchingChums) == 0:
                 self.moodRequest.emit(chum)
 
-        if self.convos.has_key(chum.handle):
+        if chum.handle in self.convos:
             self.convos[chum.handle].showChat()
             return
         if self.config.tabs():
@@ -1331,10 +1332,10 @@ class PesterWindow(MovingWindow):
         convoWindow.messageSent.connect(self.sendMessage)
         convoWindow.windowClosed.connect(self.closeConvo)
         self.convos[chum.handle] = convoWindow
-        if unicode(chum.handle).upper() in BOTNAMES:
+        if str(chum.handle).upper() in BOTNAMES:
             convoWindow.toggleQuirks(True)
             convoWindow.quirksOff.setChecked(True)
-            if unicode(chum.handle).upper() in CUSTOMBOTS:
+            if str(chum.handle).upper() in CUSTOMBOTS:
                 self.newConvoStarted.emit(chum.handle, initiated)
         else:
             self.newConvoStarted.emit(chum.handle, initiated)
@@ -1350,7 +1351,7 @@ class PesterWindow(MovingWindow):
     def newMemo(self, channel, timestr, secret=False, invite=False):
         if channel == "#pesterchum":
             return
-        if self.memos.has_key(channel):
+        if channel in self.memos:
             self.memos[channel].showChat()
             return
         # do slider dialog then set
@@ -1465,19 +1466,19 @@ class PesterWindow(MovingWindow):
         if hasattr(self, 'moods'):
             self.moods.removeButtons()
         mood_list = theme["main/moods"]
-        mood_list = [dict([(str(k),v) for (k,v) in d.iteritems()])
+        mood_list = [dict([(str(k),v) for (k,v) in d.items()])
                      for d in mood_list]
         self.moods = PesterMoodHandler(self, *[PesterMoodButton(self, **d) for d in mood_list])
         self.moods.showButtons()
         # chum
         addChumStyle = "QPushButton { %s }" % (theme["main/addchum/style"])
-        if theme.has_key("main/addchum/pressed"):
+        if "main/addchum/pressed" in theme:
             addChumStyle += "QPushButton:pressed { %s }" % (theme["main/addchum/pressed"])
         pesterButtonStyle = "QPushButton { %s }" % (theme["main/pester/style"])
-        if theme.has_key("main/pester/pressed"):
+        if "main/pester/pressed" in theme:
             pesterButtonStyle += "QPushButton:pressed { %s }" % (theme["main/pester/pressed"])
         blockButtonStyle = "QPushButton { %s }" % (theme["main/block/style"])
-        if theme.has_key("main/block/pressed"):
+        if "main/block/pressed" in theme:
             pesterButtonStyle += "QPushButton:pressed { %s }" % (theme["main/block/pressed"])
         self.addChumButton.setText(theme["main/addchum/text"])
         self.addChumButton.resize(*theme["main/addchum/size"])
@@ -1502,7 +1503,7 @@ class PesterWindow(MovingWindow):
         self.mychumcolor.resize(*theme["main/mychumhandle/colorswatch/size"])
         self.mychumcolor.move(*theme["main/mychumhandle/colorswatch/loc"])
         self.mychumcolor.setStyleSheet("background: %s" % (self.profile().colorhtml()))
-        if self.theme.has_key("main/mychumhandle/currentMood"):
+        if "main/mychumhandle/currentMood" in self.theme:
             moodicon = self.profile().mood.icon(theme)
             if hasattr(self, 'currentMoodIcon') and self.currentMoodIcon:
                 self.currentMoodIcon.hide()
@@ -1536,7 +1537,7 @@ class PesterWindow(MovingWindow):
                 self.namesound = pygame.mixer.Sound("themes/namealarm.wav")
                 self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
                 self.honksound = pygame.mixer.Sound("themes/honk.wav")
-            except Exception, e:
+            except Exception as e:
                 self.alarm = NoneSound()
                 self.memosound = NoneSound()
                 self.namesound = NoneSound()
@@ -1556,7 +1557,8 @@ class PesterWindow(MovingWindow):
         # check theme
         try:
             themeChecker(theme)
-        except ThemeException, (inst):
+        except ThemeException as xxx_todo_changeme1:
+            (inst) = xxx_todo_changeme1
             themeWarning = QtWidgets.QMessageBox(self)
             themeWarning.setText("Theme Error: %s" % (inst))
             themeWarning.exec_()
@@ -1639,7 +1641,7 @@ class PesterWindow(MovingWindow):
     def pesterSelectedChum(self):
         curChum = self.chumList.currentItem()
         if curChum:
-            text = unicode(curChum.text(0))
+            text = str(curChum.text(0))
             if text.rfind(" (") != -1:
                 text = text[0:text.rfind(" (")]
             if text not in self.chumList.groups and \
@@ -1655,7 +1657,7 @@ class PesterWindow(MovingWindow):
         self.newConversation(chum)
     @QtCore.pyqtSlot('QString')
     def closeConvo(self, handle):
-        h = unicode(handle)
+        h = str(handle)
         try:
             chum = self.convos[h].chum
         except KeyError:
@@ -1671,7 +1673,7 @@ class PesterWindow(MovingWindow):
         del self.convos[h]
     @QtCore.pyqtSlot('QString')
     def closeMemo(self, channel):
-        c = unicode(channel)
+        c = str(channel)
         self.chatlog.finish(c)
         self.leftChannel.emit(channel)
         try:
@@ -1689,27 +1691,27 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot('QString', Mood)
     def updateMoodSlot(self, handle, mood):
-        h = unicode(handle)
+        h = str(handle)
         self.updateMood(h, mood)
 
     @QtCore.pyqtSlot('QString', QtGui.QColor)
     def updateColorSlot(self, handle, color):
-        h = unicode(handle)
+        h = str(handle)
         self.changeColor(h, color)
 
     @QtCore.pyqtSlot('QString', 'QString')
     def deliverMessage(self, handle, msg):
-        h = unicode(handle)
-        m = unicode(msg)
+        h = str(handle)
+        m = str(msg)
         self.newMessage(h, m)
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def deliverMemo(self, chan, handle, msg):
-        (c, h, m) = (unicode(chan), unicode(handle), unicode(msg))
+        (c, h, m) = (str(chan), str(handle), str(msg))
         self.newMemoMsg(c,h,m)
     @QtCore.pyqtSlot('QString', 'QString')
     def deliverNotice(self, handle, msg):
-        h = unicode(handle)
-        m = unicode(msg)
+        h = str(handle)
+        m = str(msg)
         if m.startswith("Your nickname is now being changed to"):
             changedto = m[39:-1]
             msgbox = QtWidgets.QMessageBox()
@@ -1719,7 +1721,7 @@ class PesterWindow(MovingWindow):
             ret = msgbox.exec_()
         elif h == self.randhandler.randNick:
             self.randhandler.incoming(msg)
-        elif self.convos.has_key(h):
+        elif h in self.convos:
             self.newMessage(h, m)
         elif h.upper() == "NICKSERV" and "PESTERCHUM:" not in m:
             m = nickservmsgs.translate(m)
@@ -1734,7 +1736,7 @@ class PesterWindow(MovingWindow):
         msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         ret = msgbox.exec_()
         if ret == QtWidgets.QMessageBox.Ok:
-            self.newMemo(unicode(channel), "+0:00")
+            self.newMemo(str(channel), "+0:00")
     @QtCore.pyqtSlot('QString')
     def chanInviteOnly(self, channel):
         self.inviteOnlyChan.emit(channel)
@@ -1746,35 +1748,35 @@ class PesterWindow(MovingWindow):
         self.modesUpdated.emit(channel, modes)
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def timeCommand(self, chan, handle, command):
-        (c, h, cmd) = (unicode(chan), unicode(handle), unicode(command))
+        (c, h, cmd) = (str(chan), str(handle), str(command))
         if self.memos[c]:
             self.memos[c].timeUpdate(h, cmd)
 
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def quirkDisable(self, channel, msg, op):
-        (c, msg, op) = (unicode(channel), unicode(msg), unicode(op))
-        if not self.memos.has_key(c):
+        (c, msg, op) = (str(channel), str(msg), str(op))
+        if c not in self.memos:
             return
         memo = self.memos[c]
         memo.quirkDisable(op, msg)
 
     @QtCore.pyqtSlot('QString', PesterList)
     def updateNames(self, channel, names):
-        c = unicode(channel)
+        c = str(channel)
         # update name DB
         self.namesdb[c] = names
         # warn interested party of names
         self.namesUpdated.emit(c)
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def userPresentUpdate(self, handle, channel, update):
-        c = unicode(channel)
-        n = unicode(handle)
+        c = str(channel)
+        n = str(handle)
         if update == "nick":
             l = n.split(":")
             oldnick = l[0]
             newnick = l[1]
         if update in ("quit", "netsplit"):
-            for c in self.namesdb.keys():
+            for c in list(self.namesdb.keys()):
                 try:
                     i = self.namesdb[c].index(n)
                     self.namesdb[c].pop(i)
@@ -1791,7 +1793,7 @@ class PesterWindow(MovingWindow):
             except KeyError:
                 self.namesdb[c] = []
         elif update == "nick":
-            for c in self.namesdb.keys():
+            for c in list(self.namesdb.keys()):
                 try:
                     i = self.namesdb[c].index(oldnick)
                     self.namesdb[c].pop(i)
@@ -1818,12 +1820,12 @@ class PesterWindow(MovingWindow):
             available_groups = [g[0] for g in self.config.getGroups()]
             self.addchumdialog = AddChumDialog(available_groups, self)
             ok = self.addchumdialog.exec_()
-            handle = unicode(self.addchumdialog.chumBox.text()).strip()
-            newgroup = unicode(self.addchumdialog.newgroup.text()).strip()
+            handle = str(self.addchumdialog.chumBox.text()).strip()
+            newgroup = str(self.addchumdialog.newgroup.text()).strip()
             selectedGroup = self.addchumdialog.groupBox.currentText()
             group = newgroup if newgroup else selectedGroup
             if ok:
-                handle = unicode(handle)
+                handle = str(handle)
                 if handle in [h.handle for h in self.chumList.chums]:
                     self.addchumdialog = None
                     return
@@ -1855,10 +1857,10 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot('QString')
     def blockChum(self, handle):
-        h = unicode(handle)
+        h = str(handle)
         self.config.addBlocklist(h)
         self.config.removeChum(h)
-        if self.convos.has_key(h):
+        if h in self.convos:
             convo = self.convos[h]
             msg = self.profile().pestermsg(convo.chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/blocked"])
             convo.textArea.append(convertTags(msg))
@@ -1873,9 +1875,9 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot('QString')
     def unblockChum(self, handle):
-        h = unicode(handle)
+        h = str(handle)
         self.config.delBlocklist(h)
-        if self.convos.has_key(h):
+        if h in self.convos:
             convo = self.convos[h]
             msg = self.profile().pestermsg(convo.chum, QtGui.QColor(self.theme["convo/systemMsgColor"]), self.theme["convo/text/unblocked"])
             convo.textArea.append(convertTags(msg))
@@ -1896,7 +1898,7 @@ class PesterWindow(MovingWindow):
             self.randhandler.setIdle(True)
             sysColor = QtGui.QColor(self.theme["convo/systemMsgColor"])
             verb = self.theme["convo/text/idle"]
-            for (h, convo) in self.convos.iteritems():
+            for (h, convo) in self.convos.items():
                 if convo.chumopen:
                     msg = self.profile().idlemsg(sysColor, verb)
                     convo.textArea.append(convertTags(msg))
@@ -1930,7 +1932,7 @@ class PesterWindow(MovingWindow):
             return
         fp = open(f, 'r')
         regexp_state = None
-        for l in fp.xreadlines():
+        for l in fp:
             # import chumlist
             l = l.rstrip()
             chum_mo = re.match("handle: ([A-Za-z0-9]+)", l)
@@ -1944,7 +1946,7 @@ class PesterWindow(MovingWindow):
                     replace = replace_mo.group(1)
                     try:
                         re.compile(regexp_state)
-                    except re.error, e:
+                    except re.error as e:
                         continue
                     newquirk = pesterQuirk({"type": "regexp",
                                             "from": regexp_state,
@@ -1980,18 +1982,18 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def joinSelectedMemo(self):
 
-        time = unicode(self.memochooser.timeinput.text())
+        time = str(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
         invite = self.memochooser.inviteChannel.isChecked()
 
         if self.memochooser.newmemoname():
             newmemo = self.memochooser.newmemoname()
-            channel = "#"+unicode(newmemo).replace(" ", "_")
+            channel = "#"+str(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
             self.newMemo(channel, time, secret=secret, invite=invite)
 
         for SelectedMemo in self.memochooser.SelectedMemos():
-            channel = "#"+unicode(SelectedMemo.target)
+            channel = "#"+str(SelectedMemo.target)
             self.newMemo(channel, time)
 
         self.memochooser = None
@@ -2018,12 +2020,12 @@ class PesterWindow(MovingWindow):
 
     @QtCore.pyqtSlot('QString')
     def userListAdd(self, handle):
-        h = unicode(handle)
+        h = str(handle)
         chum = PesterProfile(h, chumdb=self.chumdb)
         self.addChum(chum)
     @QtCore.pyqtSlot('QString')
     def userListPester(self, handle):
-        h = unicode(handle)
+        h = str(handle)
         self.newConversation(h)
     @QtCore.pyqtSlot()
     def userListClose(self):
@@ -2043,7 +2045,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def updateQuirks(self):
         for i in range(self.quirkmenu.quirkList.topLevelItemCount()):
-            curgroup = unicode(self.quirkmenu.quirkList.topLevelItem(i).text(0))
+            curgroup = str(self.quirkmenu.quirkList.topLevelItem(i).text(0))
             for j in range(self.quirkmenu.quirkList.topLevelItem(i).childCount()):
                 item = self.quirkmenu.quirkList.topLevelItem(i).child(j)
                 item.quirk.quirk["on"] = item.quirk.on = (item.checkState(0) == QtCore.Qt.Checked)
@@ -2066,7 +2068,7 @@ class PesterWindow(MovingWindow):
             (chum, ok) = QtWidgets.QInputDialog.getText(self, "Pester Chum", "Enter a handle to pester:")
             try:
                 if ok:
-                    self.newConversation(unicode(chum))
+                    self.newConversation(str(chum))
             except:
                 pass
             finally:
@@ -2094,7 +2096,7 @@ class PesterWindow(MovingWindow):
         if not self.addgroupdialog:
             (gname, ok) = QtWidgets.QInputDialog.getText(self, "Add Group", "Enter a name for the new group:")
             if ok:
-                gname = unicode(gname)
+                gname = str(gname)
                 if re.search("[^A-Za-z0-9_\s]", gname) is not None:
                     msgbox = QtWidgets.QMessageBox()
                     msgbox.setInformativeText("THIS IS NOT A VALID GROUP NAME")
@@ -2144,7 +2146,7 @@ class PesterWindow(MovingWindow):
                 # combine
                 self.createTabWindow()
                 newconvos = {}
-                for (h,c) in self.convos.iteritems():
+                for (h,c) in self.convos.items():
                     c.setParent(self.tabconvo)
                     self.tabconvo.addChat(c)
                     self.tabconvo.show()
@@ -2174,7 +2176,7 @@ class PesterWindow(MovingWindow):
                 # combine
                 newmemos = {}
                 self.createMemoTabWindow()
-                for (h,m) in self.memos.iteritems():
+                for (h,m) in self.memos.items():
                     m.setParent(self.tabmemo)
                     self.tabmemo.addChat(m)
                     self.tabmemo.show()
@@ -2223,7 +2225,7 @@ class PesterWindow(MovingWindow):
             # timestamps
             timestampsetting = self.optionmenu.timestampcheck.isChecked()
             self.config.set("showTimeStamps", timestampsetting)
-            timeformatsetting = unicode(self.optionmenu.timestampBox.currentText())
+            timeformatsetting = str(self.optionmenu.timestampBox.currentText())
             if timeformatsetting == "12 hour":
               self.config.set("time12Format", True)
             else:
@@ -2333,7 +2335,7 @@ class PesterWindow(MovingWindow):
               self.config.set('blink', blinksetting)
             # toast notifications
             self.tm.setEnabled(self.optionmenu.notifycheck.isChecked())
-            self.tm.setCurrentType(unicode(self.optionmenu.notifyOptions.currentText()))
+            self.tm.setCurrentType(str(self.optionmenu.notifyOptions.currentText()))
             notifysetting = 0
             if self.optionmenu.notifySigninCheck.isChecked():
                 notifysetting |= self.config.SIGNIN
@@ -2373,7 +2375,7 @@ class PesterWindow(MovingWindow):
                 newmodes = self.optionmenu.modechange.text()
                 if newmodes:
                     self.setChannelMode.emit(self.profile().handle, newmodes, "")
-        except Exception, e:
+        except Exception as e:
             logging.error(e)
         finally:
             self.optionmenu = None
@@ -2400,13 +2402,13 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def themeSelected(self, override=False):
         if not override:
-            themename = unicode(self.optionmenu.themeBox.currentText())
+            themename = str(self.optionmenu.themeBox.currentText())
         else:
             themename = override
         if override or themename != self.theme.name:
             try:
                 self.changeTheme(pesterTheme(themename))
-            except ValueError, e:
+            except ValueError as e:
                 themeWarning = QtWidgets.QMessageBox(self)
                 themeWarning.setText("Theme Error: %s" % (e))
                 themeWarning.exec_()
@@ -2422,14 +2424,14 @@ class PesterWindow(MovingWindow):
     def profileSelected(self):
         if self.chooseprofile.profileBox and \
                 self.chooseprofile.profileBox.currentIndex() > 0:
-            handle = unicode(self.chooseprofile.profileBox.currentText())
+            handle = str(self.chooseprofile.profileBox.currentText())
             if handle == self.profile().handle:
                 self.chooseprofile = None
                 return
             self.userprofile = userProfile(handle)
             self.changeTheme(self.userprofile.getTheme())
         else:
-            handle = unicode(self.chooseprofile.chumHandle.text())
+            handle = str(self.chooseprofile.chumHandle.text())
             if handle == self.profile().handle:
                 self.chooseprofile = None
                 return
@@ -2528,7 +2530,7 @@ class PesterWindow(MovingWindow):
         if not hasattr(self, 'chooseprofile'):
             self.chooseprofile = None
         if not self.chooseprofile:
-            h = unicode(handle)
+            h = str(handle)
             self.changeProfile(collision=h)
     @QtCore.pyqtSlot('QString')
     def myHandleChanged(self, handle):
@@ -2621,10 +2623,10 @@ class MainProgram(QtCore.QObject):
             try:
                 pygame.mixer.init()
                 pygame.mixer.init()
-            except pygame.error, e:
-                print "Warning: No sound! %s" % (e)
+            except pygame.error as e:
+                print("Warning: No sound! %s" % (e))
         else:
-            print "Warning: No sound!"
+            print("Warning: No sound!")
         self.widget = PesterWindow(options, app=self.app)
         self.widget.show()
 
@@ -2682,7 +2684,7 @@ class MainProgram(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def runUpdateSlot(self):
-        q = Queue.Queue(1)
+        q = queue.Queue(1)
         s = threading.Thread(target=version.updateCheck, args=(q,))
         w = threading.Thread(target=self.showUpdate, args=(q,))
         w.start()
@@ -2813,7 +2815,7 @@ Click this message to never see this again.")
                     for c in self.widget.tabmemo.convos:
                         self.irc.joinChannel(c)
                 else:
-                    for c in self.widget.memos.values():
+                    for c in list(self.widget.memos.values()):
                         self.irc.joinChannel(c.channel)
                 return True
 

@@ -179,6 +179,8 @@ numeric_events = {
     "502": "usersdontmatch",
 }
 
+numeric_events = {bytes(k, 'ascii'):v for k, v in numeric_events.items()}
+
 generated_events = [
     # Generated events
     "dcc_connect",
@@ -206,5 +208,5 @@ protocol_events = [
     "pong",
 ]
 
-all_events = generated_events + protocol_events + numeric_events.values()
+all_events = generated_events + protocol_events + list(numeric_events.values())
 

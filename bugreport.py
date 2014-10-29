@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import ostools
 import version
 
@@ -51,13 +51,13 @@ class BugReporter(QtWidgets.QDialog):
 
     @QtCore.pyqtSlot()
     def sendReport(self):
-        name = unicode(self.mainwindow.profile().handle)
-        bestname = unicode(self.name.text())
+        name = str(self.mainwindow.profile().handle)
+        bestname = str(self.name.text())
         os = ostools.osVer()
         full = ostools.platform.platform()
         python = ostools.platform.python_version()
         qt = QtCore.qVersion()
-        msg = unicode(self.textarea.toPlainText())
+        msg = str(self.textarea.toPlainText())
 
         if len(bestname) <= 0 or len(msg) <= 0:
             msgbox = QtWidgets.QMessageBox()
@@ -68,13 +68,13 @@ class BugReporter(QtWidgets.QDialog):
             return
 
         QtWidgets.QDialog.accept(self)
-        data = urllib.urlencode({"name":name, "version": version._pcVersion, "bestname":bestname, "os":os, "platform":full, "python":python, "qt":qt, "msg":msg})
-        print "Sending..."
-        f = urllib.urlopen("http://distantsphere.com/pc/reporter.php", data)
+        data = urllib.parse.urlencode({"name":name, "version": version._pcVersion, "bestname":bestname, "os":os, "platform":full, "python":python, "qt":qt, "msg":msg})
+        print("Sending...")
+        f = urllib.request.urlopen("http://distantsphere.com/pc/reporter.php", data)
         text = f.read()
-        print text
+        print(text)
         if text == "success!":
-            print "Sent!"
+            print("Sent!")
         else:
-            print "Problems ):"
+            print("Problems ):")
 

@@ -29,7 +29,7 @@ quirkloader = ScriptQuirks()
 quirkloader.add(PythonQuirks())
 quirkloader.add(LuaQuirks())
 quirkloader.loadAll()
-print quirkloader.funcre()
+print(quirkloader.funcre())
 _functionre = re.compile(r"%s" % quirkloader.funcre())
 _groupre = re.compile(r"\\([0-9]+)")
 
@@ -44,7 +44,7 @@ def lexer(string, objlist):
     for (oType, regexp) in objlist:
         newstringlist = []
         for (stri, s) in enumerate(stringlist):
-            if type(s) not in [str, unicode]:
+            if type(s) not in [str]:
                 newstringlist.append(s)
                 continue
             lasti = 0
@@ -207,9 +207,9 @@ def lexMessage(string):
                (smiley, _smilere),
                (honker, _honk)]
 
-    string = unicode(string)
+    string = str(string)
     string = string.replace("\n", " ").replace("\r", " ")
-    lexed = lexer(unicode(string), lexlist)
+    lexed = lexer(str(string), lexlist)
 
     balanced = []
     beginc = 0
@@ -231,7 +231,7 @@ def lexMessage(string):
             balanced.append(colorEnd("</c>"))
     if len(balanced) == 0:
         balanced.append("")
-    if type(balanced[len(balanced)-1]) not in [str, unicode]:
+    if type(balanced[len(balanced)-1]) not in [str]:
         balanced.append("")
     return balanced
 
@@ -239,12 +239,12 @@ def convertTags(lexed, format="html"):
     if format not in ["html", "bbcode", "ctag", "text"]:
         raise ValueError("Color format not recognized")
 
-    if type(lexed) in [str, unicode]:
+    if type(lexed) in [str]:
         lexed = lexMessage(lexed)
     escaped = ""
     firststr = True
     for (i, o) in enumerate(lexed):
-        if type(o) in [str, unicode]:
+        if type(o) in [str]:
             if format == "html":
                 escaped += o.replace("&", "&amp;").replace(">", "&gt;").replace("<","&lt;")
             else:
@@ -259,7 +259,7 @@ def splitMessage(msg, format="ctag"):
     # split long text lines
     buf = []
     for o in msg:
-        if type(o) in [str, unicode] and len(o) > 200:
+        if type(o) in [str] and len(o) > 200:
             for i in range(0, len(o), 200):
                 buf.append(o[i:i+200])
         else:
@@ -401,7 +401,7 @@ def parseRegexpFunctions(to):
             backr = _groupre.search(mo.group())
             if backr is not None:
                 current.append(backreference(backr.group(1)))
-            elif mo.group()[:-1] in functiondict.keys():
+            elif mo.group()[:-1] in list(functiondict.keys()):
                 p = parseLeaf(functiondict[mo.group()[:-1]], current)
                 current.append(p)
                 current = p
@@ -418,7 +418,7 @@ def parseRegexpFunctions(to):
 
 
 def img2smiley(string):
-    string = unicode(string)
+    string = str(string)
     def imagerep(mo):
         return reverse_smiley[mo.group(1)]
     string = re.sub(r'<img src="smilies/(\S+)" />', imagerep, string)
@@ -499,8 +499,8 @@ if ostools.isOSXBundle():
 
 
 
-reverse_smiley = dict((v,k) for k, v in smiledict.iteritems())
-_smilere = re.compile("|".join(smiledict.keys()))
+reverse_smiley = dict((v,k) for k, v in smiledict.items())
+_smilere = re.compile("|".join(list(smiledict.keys())))
 
 class ThemeException(Exception):
     def __init__(self, value):

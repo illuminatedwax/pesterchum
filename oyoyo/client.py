@@ -28,6 +28,7 @@ import traceback
 from oyoyo.parse import *
 from oyoyo import helpers
 from oyoyo.cmdhandler import CommandError
+import collections
 
 # Python < 3 compatibility
 if sys.version_info < (3,):
@@ -127,7 +128,7 @@ class IRCClient:
         logging.info('---> send "%s"' % msg)
         try:
             self.socket.send(msg + bytes("\r\n", "ascii"))
-        except socket.error, se:
+        except socket.error as se:
             try:  # a little dance of compatibility to get the errno
                 errno = se.errno
             except AttributeError:
@@ -160,12 +161,12 @@ class IRCClient:
             while not self._end:
                 try:
                     buffer += self.socket.recv(1024)
-                except socket.timeout, e:
+                except socket.timeout as e:
                     if self._end:
                         break
                     logging.debug("timeout in client.py")
                     raise e
-                except socket.error, e:
+                except socket.error as e:
                     if self._end:
                         break
                     logging.debug("error %s" % e)
@@ -195,16 +196,16 @@ class IRCClient:
                             pass 
 
                 yield True
-        except socket.timeout, se:
+        except socket.timeout as se:
             logging.debug("passing timeout")
             raise se
-        except socket.error, se:
+        except socket.error as se:
             logging.debug("problem: %s" % (se))
             if self.socket:
                 logging.info('error: closing socket')
                 self.socket.close()
             raise se
-        except Exception, e:
+        except Exception as e:
             logging.debug("other exception: %s" % e)
             raise e
         else:
@@ -253,7 +254,7 @@ class IRCApp:
         garuntee the callback will be called after seconds has passed.
         ( the only advantage to these timers is they dont use threads )
         """
-        assert callable(cb)
+        assert isinstance(cb, collections.Callable)
         logging.info('added timer to call %s in %ss' % (cb, seconds))
         self._timers.append((time.time() + seconds, cb))
 
@@ -264,13 +265,13 @@ class IRCApp:
         while self.running:
             found_one_alive = False
 
-            for client, clientdesc in self._clients.iteritems():
+            for client, clientdesc in self._clients.items():
                 if clientdesc.con is None:
                     clientdesc.con = client.connect()
                 
                 try:
-                    clientdesc.con.next()
-                except Exception, e:
+                    next(clientdesc.con)
+                except Exception as e:
                     logging.error('client error %s' % e)
                     logging.error(traceback.format_exc())
                     if clientdesc.autoreconnect:

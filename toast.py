@@ -4,27 +4,29 @@ import time, os
 import ostools
 from PyQt5 import QtGui, QtCore, QtWidgets
 
+import logging
+
 try:
     import pynotify
 except:
     pynotify = None
 
-class DefaultToast(object):
+class DefaultToast(QtWidgets.QWidget):
     def __init__(self, parent, **kwds):
-        super(DefaultToast, self).__init__(parent, **kwds)
+        super().__init__(parent)
         self.machine = kwds.get('machine')
         self.title   = kwds.get('title')
         self.msg     = kwds.get('msg')
         self.icon    = kwds.get('icon')
     def show(self):
-        print self.title, self.msg, self.icon
+        print(self.title, self.msg, self.icon)
         self.done()
     def done(self):
         t = self.machine.toasts[0]
         if t.title == self.title and t.msg == self.msg and t.icon == self.icon:
             self.machine.toasts.pop(0)
             self.machine.displaying = False
-            print "Done"
+            print("Done")
 
 class ToastMachine(object):
     class __Toast__(object):
@@ -73,7 +75,7 @@ class ToastMachine(object):
         def realShow(self):
             self.machine.displaying = True
             t = None
-            for (k,v) in self.machine.types.iteritems():
+            for (k,v) in self.machine.types.items():
                 if self.machine.type == k:
                     try:
                         args = inspect.getargspec(v.__init__).args
@@ -143,15 +145,15 @@ class ToastMachine(object):
         if type in self.types:
             if type == "libnotify":
                 if not pynotify or not pynotify.init("ToastMachine"):
-                    print "Problem initilizing pynotify"
+                    print("Problem initilizing pynotify")
                     return
                     #self.type = type = "default"
             elif type == "twmn":
                 from libs import pytwmn
                 try:
                     pytwmn.init()
-                except pytwmn.ERROR, e:
-                    print "Problem initilizing pytwmn: " + str(e)
+                except pytwmn.ERROR as e:
+                    print("Problem initilizing pytwmn: " + str(e))
                     return
                     #self.type = type = "default"
             self.type = type
@@ -177,9 +179,11 @@ class ToastMachine(object):
                 self.showNext()
 
 
-class PesterToast(QtWidgets.QWidget, DefaultToast):
+class PesterToast(DefaultToast):
     def __init__(self, machine, title, msg, icon, time=3000, parent=None):
-        super(PesterToast, self).__init__(self, parent, machine=machine, title=title, msg=msg, icon=icon)
+        logging.info(isinstance(parent, QtWidgets.QWidget))
+        kwds = dict(machine=machine, title=title, msg=msg, icon=icon)
+        super().__init__(parent, **kwds)
 
         self.machine = machine
         self.time = time
@@ -210,7 +214,6 @@ class PesterToast(QtWidgets.QWidget, DefaultToast):
             self.icon.pixmap().fill(QtGui.QColor(0,0,0,0))
 
         layout_0 = QtWidgets.QVBoxLayout()
-        layout_0.setMargin(0)
         layout_0.setContentsMargins(0, 0, 0, 0)
 
         if self.icon:
@@ -237,7 +240,7 @@ class PesterToast(QtWidgets.QWidget, DefaultToast):
         self.msg.setStyleSheet(self.parent().theme["toasts/content/style"])
         self.layout().setSpacing(0)
 
-        self.msg.setText(PesterToast.wrapText(self.msg.font(), unicode(self.msg.text()), self.parent().theme["toasts/width"], self.parent().theme["toasts/content/style"]))
+        self.msg.setText(PesterToast.wrapText(self.msg.font(), str(self.msg.text()), self.parent().theme["toasts/width"], self.parent().theme["toasts/content/style"]))
 
         p = QtWidgets.QApplication.desktop().availableGeometry(self).bottomRight()
         o = QtWidgets.QApplication.desktop().screenGeometry(self).bottomRight()
@@ -255,8 +258,8 @@ class PesterToast(QtWidgets.QWidget, DefaultToast):
     def done(self):
         QtWidgets.QWidget.hide(self)
         t = self.machine.toasts[0]
-        if t.title == unicode(self.title.text()) and \
-           t.msg == unicode(self.content):
+        if t.title == str(self.title.text()) and \
+           t.msg == str(self.content):
             self.machine.toasts.pop(0)
             self.machine.displaying = False
         if self.machine.on:
@@ -266,7 +269,7 @@ class PesterToast(QtWidgets.QWidget, DefaultToast):
     @QtCore.pyqtSlot()
     def reverseTrigger(self):
         if self.time >= 0:
-            QtCore.QTimer.singleShot(self.time, self, QtCore.SLOT('reverseStart()'))
+            QtCore.QTimer.singleShot(self.time, self.reverseStart)
 
     @QtCore.pyqtSlot()
     def reverseStart(self):
@@ -283,7 +286,7 @@ class PesterToast(QtWidgets.QWidget, DefaultToast):
     def updateBottomLeftAnimation(self, value):
         p = QtWidgets.QApplication.desktop().availableGeometry(self).bottomRight()
         val = float(self.height())/100
-        self.move(p.x()-self.width(), p.y() - (value.toInt()[0] * val) +1)
+        self.move(p.x()-self.width(), p.y() - (value * val) +1)
         self.layout().setSpacing(0)
         QtWidgets.QWidget.show(self)
 
@@ -349,7 +352,7 @@ class PesterToast(QtWidgets.QWidget, DefaultToast):
                     break
             if (metric.width(text[:lastspace]) > maxwidth) or \
                len(text[:lastspace]) < 1:
-                for i in xrange(len(text)):
+                for i in range(len(text)):
                     if metric.width(text[:i]) > maxwidth:
                         lastspace = i-1
                         break

@@ -63,6 +63,6 @@ class RandomHandler(QtCore.QObject):
                 msgbox.setInformativeText("Try again later :(")
                 msgbox.exec_()
                 return
-            name = unicode(l[1])
-            print name
+            name = str(l[1])
+            print(name)
             self.mainwindow.newConversation(name)

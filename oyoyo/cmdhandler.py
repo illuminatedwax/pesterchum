@@ -65,13 +65,17 @@ class CommandHandler(object):
         its possible to pass both "command.sub.func" and 
         ["command", "sub", "func"].
         """
-        if isinstance(in_command_parts, (str, bytes)):
+        if isinstance(in_command_parts, (bytes)):
             in_command_parts = in_command_parts.split(bytes('.', 'ascii'))
+        elif isinstance(in_command_parts, (str)):
+            in_command_parts = in_command_parts.split('.')
         command_parts = in_command_parts[:]
 
         p = self
         while command_parts:
-            cmd = command_parts.pop(0).decode('ascii')
+            cmd = command_parts.pop(0)
+            if type(cmd) is bytes:
+                cmd = cmd.decode('utf-8')
             if cmd.startswith('_'):
                 raise ProtectedCommandError(in_command_parts)
 
@@ -105,7 +109,7 @@ class CommandHandler(object):
 
         try:
             f(*args)
-        except Exception, e:
+        except Exception as e:
             logging.error('command raised %s' % e)
             logging.error(traceback.format_exc())
             raise CommandError(command)
@@ -151,7 +155,7 @@ class DefaultBotCommandHandler(CommandHandler):
         else:
             try:
                 f = self.get(arg)
-            except CommandError, e:
+            except CommandError as e:
                 helpers.msg(self.client, dest, str(e))
                 return
                 
@@ -198,7 +202,7 @@ class BotCommandHandler(DefaultCommandHandler):
 
         try:
             self.command_handler.run(command, prefix, dest, *arg)
-        except CommandError, e:
+        except CommandError as e:
             helpers.msg(self.client, dest, str(e))
         return True
  
