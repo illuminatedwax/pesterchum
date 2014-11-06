@@ -14,20 +14,14 @@ import threading, queue
 reqmissing = []
 optmissing = []
 try:
-    from PyQt5 import QtGui, QtCore, QtWidgets
+    from PyQt5 import QtGui, QtCore, QtWidgets, QtMultimedia
 except ImportError as e:
     module = str(e)
     if module.startswith("No module named ") or \
        module.startswith("cannot import name "):
         reqmissing.append(module[module.rfind(" ")+1:])
     else: print(e)
-try:
-    import pygame
-except ImportError as e:
-    pygame = None
-    module = str(e)
-    if module[:16] == "No module named ": optmissing.append(module[16:])
-    else: print(e)
+
 if reqmissing:
     print("ERROR: The following modules are required for Pesterchum to run and are missing on your system:")
     for m in reqmissing: print("* "+m)
@@ -1524,34 +1518,29 @@ class PesterWindow(MovingWindow):
             self.mychumcolor.setText("")
 
         # sounds
-        if not pygame or not pygame.mixer:
+        try:
+            self.alarm, self.memosound, self.namesound, self.ceasesound, self.honksound = \
+                [QtMultimedia.QSoundEffect() for i in range(5)]
+            self.alarm.setSource(QtCore.QUrl.fromLocalFile(theme["main/sounds/alertsound"]))
+            self.memosound.setSource(QtCore.QUrl.fromLocalFile(theme["main/sounds/memosound"]))
+            self.namesound.setSource(QtCore.QUrl.fromLocalFile("themes/namealarm.wav"))
+            self.ceasesound.setSource(QtCore.QUrl.fromLocalFile(theme["main/sounds/ceasesound"]))
+            self.honksound.setSource(QtCore.QUrl.fromLocalFile("themes/honk.wav"))
+        except Exception as e:
             self.alarm = NoneSound()
             self.memosound = NoneSound()
             self.namesound = NoneSound()
             self.ceasesound = NoneSound()
             self.honksound = NoneSound()
-        else:
-            try:
-                self.alarm = pygame.mixer.Sound(theme["main/sounds/alertsound"])
-                self.memosound = pygame.mixer.Sound(theme["main/sounds/memosound"])
-                self.namesound = pygame.mixer.Sound("themes/namealarm.wav")
-                self.ceasesound = pygame.mixer.Sound(theme["main/sounds/ceasesound"])
-                self.honksound = pygame.mixer.Sound("themes/honk.wav")
-            except Exception as e:
-                self.alarm = NoneSound()
-                self.memosound = NoneSound()
-                self.namesound = NoneSound()
-                self.ceasesound = NoneSound()
-                self.honksound = NoneSound()
         self.setVolume(self.config.volume())
 
     def setVolume(self, vol):
         vol = vol/100.0
-        self.alarm.set_volume(vol)
-        self.memosound.set_volume(vol)
-        self.namesound.set_volume(vol)
-        self.ceasesound.set_volume(vol)
-        self.honksound.set_volume(vol)
+        self.alarm.setVolume(vol)
+        self.memosound.setVolume(vol)
+        self.namesound.setVolume(vol)
+        self.ceasesound.setVolume(vol)
+        self.honksound.setVolume(vol)
 
     def changeTheme(self, theme):
         # check theme
@@ -2618,15 +2607,6 @@ class MainProgram(QtCore.QObject):
 
         options = self.oppts(sys.argv[1:])
 
-        if pygame and pygame.mixer:
-            # we could set the frequency higher but i love how cheesy it sounds
-            try:
-                pygame.mixer.init()
-                pygame.mixer.init()
-            except pygame.error as e:
-                print("Warning: No sound! %s" % (e))
-        else:
-            print("Warning: No sound!")
         self.widget = PesterWindow(options, app=self.app)
         self.widget.show()
 
