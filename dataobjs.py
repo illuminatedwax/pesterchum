@@ -145,8 +145,13 @@ class pesterQuirks(object):
         for q in self.quirklist:
             yield q
 
+class pesterBegin(object):
+    pass
+class pesterCease(object):
+    pass
+
 class PesterProfile(object):
-    def __init__(self, handle, color=None, mood=Mood("offline"), group=None, notes="", chumdb=None):
+    def __init__(self, handle, color=None, mood=Mood("offline"), group="Friends", notes="", chumdb=None):
         self.handle = handle
         if color is None:
             if chumdb:
@@ -155,11 +160,6 @@ class PesterProfile(object):
                 color = QtGui.QColor("black")
         self.color = color
         self.mood = mood
-        if group is None:
-            if chumdb:
-                group = chumdb.getGroup(handle, "Chums")
-            else:
-                group = "Chums"
         self.group = group
         self.notes = notes
     def initials(self, time=None):
@@ -185,9 +185,9 @@ class PesterProfile(object):
     def colorcmd(self):
         if self.color:
             (r, g, b, a) = self.color.getRgb()
-            return "%d,%d,%d" % (r,g,b)
+            return (int(r), int(g), int(b), int(a))
         else:
-            return "0,0,0"
+            return (0, 0, 0)
     def plaindict(self):
         return (self.handle, {"handle": self.handle,
                               "mood": self.mood.name(),
@@ -330,3 +330,4 @@ class PesterHistory(object):
         if len(self.history) == 0 or text != self.history[len(self.history)-1]:
             self.history.append(text)
         self.reset()
+

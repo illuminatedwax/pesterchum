@@ -1,5 +1,6 @@
 from string import Template
 import re
+import logging
 from copy import copy
 from PyQt5 import QtGui, QtCore, QtWidgets
 from datetime import time, timedelta, datetime
@@ -493,7 +494,7 @@ class PesterMemo(PesterConvo):
     def updateBlocked(self):
         pass
     def updateColor(self, handle, color):
-        chums = self.userlist.findItems(handle, QtCore.Qt.MatchFlags(0))
+        chums = self.userlist.findItems(handle, QtCore.Qt.MatchFlags(8))
         for c in chums:
             c.setForeground(QtGui.QBrush(color))
     def addMessage(self, text, handle):
@@ -585,31 +586,6 @@ class PesterMemo(PesterConvo):
         halfop =  False
         admin =   False
         voice =   False
-        if handle[0] == '@':
-            op = True
-            handle = handle[1:]
-            if handle == self.mainwindow.profile().handle:
-                self.userlist.optionsMenu.addAction(self.opAction)
-                self.userlist.optionsMenu.addAction(self.banuserAction)
-                self.optionsMenu.addMenu(self.chanModeMenu)
-                self.op = True
-        elif handle[0] == '%':
-            halfop = True
-            handle = handle[1:]
-            if handle == self.mainwindow.profile().handle:
-                self.userlist.optionsMenu.addAction(self.opAction)
-                self.userlist.optionsMenu.addAction(self.banuserAction)
-                self.optionsMenu.addMenu(self.chanModeMenu)
-                self.halfop = True
-        elif handle[0] == '+':
-            voice = True
-            handle = handle[1:]
-        elif handle[0] == '~':
-            founder = True
-            handle = handle[1:]
-        elif handle[0] == '&':
-            admin = True
-            handle = handle[1:]
         item = QtWidgets.QListWidgetItem(handle)
         if handle == self.mainwindow.profile().handle:
             color = self.mainwindow.profile().color
@@ -762,7 +738,7 @@ class PesterMemo(PesterConvo):
     @QtCore.pyqtSlot()
     def sentMessage(self):
         text = str(self.textInput.text())
-        if text == "" or text[0:11] == "PESTERCHUM:":
+        if text == "":
             return
         oocDetected = oocre.match(text.strip())
         if self.ooc and not oocDetected:
@@ -778,10 +754,10 @@ class PesterMemo(PesterConvo):
                 lexmsg = quirks.apply(lexmsg)
             initials = self.mainwindow.profile().initials()
             colorcmd = self.mainwindow.profile().colorcmd()
-            clientMsg = [colorBegin("<c=%s>" % (colorcmd), colorcmd),
+            clientMsg = [colorBegin("<c={0},{1},{2}>".format(*colorcmd[:3]), "{0},{1},{2}".format(*colorcmd[:3])),
                          "%s%s%s: " % (grammar.pcf, initials, grammar.number)] + lexmsg + [colorEnd("</c>")]
             # account for TC's parsing error
-            serverMsg = [colorBegin("<c=%s>" % (colorcmd), colorcmd),
+            serverMsg = [colorBegin("<c={0},{1},{2}>".format(*colorcmd[:3]), "{0},{1},{2}".format(*colorcmd[:3])),
                          "%s: " % (initials)] + lexmsg + [colorEnd("</c>"), " "]
         else:
             clientMsg = copy(lexmsg)
@@ -826,7 +802,7 @@ class PesterMemo(PesterConvo):
             ret = msgbox.exec_()
 
     def quirkDisable(self, op, msg):
-        chums = self.userlist.findItems(op, QtCore.Qt.MatchFlags(0))
+        chums = self.userlist.findItems(op, QtCore.Qt.MatchFlags(QtCore.Qt.MatchFixedString))
         for c in chums:
             if c.op:
                 if msg == self.mainwindow.profile().handle:
@@ -900,23 +876,12 @@ class PesterMemo(PesterConvo):
             oldnick = l[0]
             newnick = l[1]
             h = oldnick
-        if update[0:1] in ["+", "-"]:
-            l = update.split(":")
-            update = l[0]
-            op = l[1]
-        if (update in ["join","left", "kick", \
-                       "+q", "-q", "+o", "-o", "+h", "-h", \
-                       "+a", "-a", "+v", "-v"]) \
-                and c.lower() != self.channel.lower():
+        if update in ["join","left", "kick"] and c.lower() != self.channel.lower():
             return
-        chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(0))
+        chums = self.userlist.findItems(h, QtCore.Qt.MatchFlags(QtCore.Qt.MatchFixedString))
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         # print exit
         if update in ("quit", "left", "nick", "netsplit"):
-            if update == "netsplit":
-                if not hasattr(self, "netsplit"):
-                    self.netsplit = []
-                    QtCore.QTimer.singleShot(1500, self.dumpNetsplit)
             for c in chums:
                 chum = PesterProfile(h)
                 self.userlist.takeItem(self.userlist.row(c))
@@ -928,15 +893,12 @@ class PesterMemo(PesterConvo):
                     grammar = t.getGrammar()
                     allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
                     self.times[h].removeTime(t.getTime())
-                if update == "netsplit":
-                    self.netsplit.extend(allinitials)
-                else:
-                    msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
-                    self.textArea.append(convertTags(msg))
-                    self.mainwindow.chatlog.log(self.channel, msg)
+                msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
+                self.textArea.append(convertTags(msg))
+                self.mainwindow.chatlog.log(self.channel, msg)
                 if update == "nick":
                     self.addUser(newnick)
-                    newchums = self.userlist.findItems(newnick, QtCore.Qt.MatchFlags(0))
+                    newchums = self.userlist.findItems(newnick, QtCore.Qt.MatchFlags(QtCore.Qt.MatchFixedString))
                     for nc in newchums:
                         for c in chums:
                             nc.founder = c.founder
@@ -1005,19 +967,24 @@ class PesterMemo(PesterConvo):
             time = self.time.getTime()
             serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
             self.messageSent.emit(serverText, self.title())
-        elif update == "+q":
+    @QtCore.pyqtSlot('QString', 'QString', int, 'QString')
+    def userRankChange(self, handle, channel, rank, actingHandle):
+        logging.info("SETTING RANK: {} {} {} {}".format(handle, channel, rank, actingHandle))
+        logging.info("USERLIST IS: {}".format(self.userlist))
+        chums = self.userlist.findItems(handle, QtCore.Qt.MatchFlags(QtCore.Qt.MatchFixedString))
+        logging.info("CHUMS IS: {}".format(chums))
+        if rank == 4:
             for c in chums:
                 c.founder = True
                 self.iconCrap(c)
             self.sortUsers()
-        elif update == "-q":
+        else: 
             for c in chums:
                 c.founder = False
                 self.iconCrap(c)
-            self.sortUsers()
-        elif update == "+o":
-            if self.mainwindow.config.opvoiceMessages():
-                (chum, opchum, opgrammar) = self.chumOPstuff(h, op)
+        if rank >= 3:
+            if self.mainwindow.config.opvoiceMessages() and actingHandle:
+                (chum, opchum, opgrammar) = self.chumOPstuff(handle, actingHandle)
                 msg = chum.memoopmsg(opchum, opgrammar, systemColor)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
@@ -1029,28 +996,14 @@ class PesterMemo(PesterConvo):
                     self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
                     self.userlist.optionsMenu.addAction(self.quirkDisableAction)
-                    self.optionsMenu.addMenu(self.chanModeMenu)
             self.sortUsers()
-        elif update == "-o":
-            self.mainwindow.channelNames.emit(self.channel)
-            if self.mainwindow.config.opvoiceMessages():
-                (chum, opchum, opgrammar) = self.chumOPstuff(h, op)
-                msg = chum.memodeopmsg(opchum, opgrammar, systemColor)
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, msg)
+        else:
             for c in chums:
                 c.op = False
                 self.iconCrap(c)
-                if str(c.text()) == self.mainwindow.profile().handle:
-                    self.userlist.optionsMenu.removeAction(self.opAction)
-                    self.userlist.optionsMenu.removeAction(self.voiceAction)
-                    self.userlist.optionsMenu.removeAction(self.banuserAction)
-                    self.userlist.optionsMenu.removeAction(self.quirkDisableAction)
-                    self.optionsMenu.removeAction(self.chanModeMenu.menuAction())
-            self.sortUsers()
-        elif update == "+h":
-            if self.mainwindow.config.opvoiceMessages():
-                (chum, opchum, opgrammar) = self.chumOPstuff(h, op)
+        if rank == 2:
+            if self.mainwindow.config.opvoiceMessages() and actingHandle:
+                (chum, opchum, opgrammar) = self.chumOPstuff(handle, actingHandle)
                 msg = chum.memoopmsg(opchum, opgrammar, systemColor)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
@@ -1058,63 +1011,39 @@ class PesterMemo(PesterConvo):
                 c.halfop = True
                 self.iconCrap(c)
                 if str(c.text()) == self.mainwindow.profile().handle:
-                    self.userlist.optionsMenu.addAction(self.opAction)
-                    self.userlist.optionsMenu.addAction(self.voiceAction)
                     self.userlist.optionsMenu.addAction(self.banuserAction)
                     self.userlist.optionsMenu.addAction(self.quirkDisableAction)
-                    self.optionsMenu.addMenu(self.chanModeMenu)
-            self.sortUsers()
-        elif update == "-h":
-            self.mainwindow.channelNames.emit(self.channel)
-            if self.mainwindow.config.opvoiceMessages():
-                (chum, opchum, opgrammar) = self.chumOPstuff(h, op)
-                msg = chum.memodeopmsg(opchum, opgrammar, systemColor)
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, msg)
+                    self.userlist.optionsMenu.removeAction(self.opAction)
+                    self.userlist.optionsMenu.removeAction(self.voiceAction)
+        else:
             for c in chums:
                 c.halfop = False
                 self.iconCrap(c)
-                if str(c.text()) == self.mainwindow.profile().handle:
-                    self.userlist.optionsMenu.removeAction(self.opAction)
-                    self.userlist.optionsMenu.removeAction(self.voiceAction)
-                    self.userlist.optionsMenu.removeAction(self.banuserAction)
-                    self.userlist.optionsMenu.removeAction(self.quirkDisableAction)
-                    self.optionsMenu.removeAction(self.chanModeMenu.menuAction())
-            self.sortUsers()
-        elif update == "+a":
-            for c in chums:
-                c.admin = True
-                self.iconCrap(c)
-            self.sortUsers()
-        elif update == "-a":
-            for c in chums:
-                c.admin = False
-                self.iconCrap(c)
-            self.sortUsers()
-        elif c.lower() == self.channel.lower() and h == "" and update[0] in ["+","-"]:
-            self.updateChanModes(update, op)
-        elif update == "+v":
-            if self.mainwindow.config.opvoiceMessages():
-                (chum, opchum, opgrammar) = self.chumOPstuff(h, op)
+        if rank == 1:
+            if self.mainwindow.config.opvoiceMessages() and actingHandle:
+                (chum, opchum, opgrammar) = self.chumOPstuff(handle, actingHandle)
                 msg = chum.memovoicemsg(opchum, opgrammar, systemColor)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
             for c in chums:
                 c.voice = True
                 self.iconCrap(c)
-            self.sortUsers()
-        elif update == "-v":
-            if self.mainwindow.config.opvoiceMessages():
-                (chum, opchum, opgrammar) = self.chumOPstuff(h, op)
-                msg = chum.memodevoicemsg(opchum, opgrammar, systemColor)
-                self.textArea.append(convertTags(msg))
-                self.mainwindow.chatlog.log(self.channel, msg)
+                if str(c.text()) == self.mainwindow.profile().handle:
+                    self.userlist.optionsMenu.removeAction(self.banuserAction)
+                    self.userlist.optionsMenu.removeAction(self.quirkDisableAction)
+                    self.userlist.optionsMenu.removeAction(self.opAction)
+                    self.userlist.optionsMenu.removeAction(self.voiceAction)
+        else:
             for c in chums:
                 c.voice = False
                 self.iconCrap(c)
-            self.sortUsers()
-        elif c.lower() == self.channel.lower() and h == "" and update[0] in ["+","-"]:
-            self.updateChanModes(update, op)
+        if not rank:
+            if str(c.text()) == self.mainwindow.profile().handle:
+                self.userlist.optionsMenu.removeAction(self.banuserAction)
+                self.userlist.optionsMenu.removeAction(self.quirkDisableAction)
+                self.userlist.optionsMenu.removeAction(self.opAction)
+                self.userlist.optionsMenu.removeAction(self.voiceAction)
+        self.sortUsers()
 
     @QtCore.pyqtSlot()
     def addChumSlot(self):

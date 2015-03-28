@@ -12,20 +12,29 @@ class mysteryTime(timedelta):
         return 0
 
 class CaseInsensitiveDict(dict):
+    def __init__(self):
+        dict.__init__(self)
+        self.realKeys = {}
+    def rk(self, key):
+        return self.realKeys.get(key.lower(), key)
     def __setitem__(self, key, value):
-        super(CaseInsensitiveDict, self).__setitem__(key.lower(), value)
+        super(CaseInsensitiveDict, self).__setitem__(key, value)
+        self.realKeys[key.lower()] = key
     def __getitem__(self, key):
-        return super(CaseInsensitiveDict, self).__getitem__(key.lower())
+        return super(CaseInsensitiveDict, self).__getitem__(self.rk(key))
     def __contains__(self, key):
-        return super(CaseInsensitiveDict, self).__contains__(key.lower())
+        return super(CaseInsensitiveDict, self).__contains__(self.rk(key))
     def has_key(self, key):
-        return key.lower() in super(CaseInsensitiveDict, self)
+        return self.rk(key) in super(CaseInsensitiveDict, self)
     def __delitem__(self, key):
-        super(CaseInsensitiveDict, self).__delitem__(key.lower())
+        super(CaseInsensitiveDict, self).__delitem__(self.rk(key))
 
 class PesterList(list):
     def __init__(self, l):
         self.extend(l)
+
+class PesterDict(dict):
+    pass
 
 class PesterIcon(QtGui.QIcon):
     def __init__(self, *x):

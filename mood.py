@@ -74,7 +74,7 @@ class PesterMoodHandler(QtCore.QObject):
             pass
         newmood = Mood(m)
         self.mainwindow.userprofile.chat.mood = newmood
-        self.mainwindow.userprofile.setLastMood(newmood)
+        self.mainwindow.userprofile.lastmood = newmood
         if self.mainwindow.currentMoodIcon:
             moodicon = newmood.icon(self.mainwindow.theme)
             self.mainwindow.currentMoodIcon.setPixmap(moodicon.pixmap(moodicon.realsize()))

@@ -284,6 +284,15 @@ class PesterText(QtWidgets.QTextEdit):
             self.setStyleSheet("QTextEdit { %s } QScrollBar:vertical { %s } QScrollBar::handle:vertical { %s } QScrollBar::add-line:vertical { %s } QScrollBar::sub-line:vertical { %s } QScrollBar:up-arrow:vertical { %s } QScrollBar:down-arrow:vertical { %s }" % (theme["convo/textarea/style"], theme["convo/scrollbar/style"], theme["convo/scrollbar/handle"], theme["convo/scrollbar/downarrow"], theme["convo/scrollbar/uparrow"], theme["convo/scrollbar/uarrowstyle"], theme["convo/scrollbar/darrowstyle"] ))
         else:
             self.setStyleSheet("QTextEdit { %s }" % (theme["convo/textarea/style"]))
+    def beginConvo(self, chum):
+        parent = self.parent()
+        window = parent.mainwindow
+        systemColor = QtGui.QColor(window.theme["convo/systemMsgColor"])
+        parent.setChumOpen(True)
+        pmsg = chum.pestermsg(window.profile(), systemColor, window.theme["convo/text/beganpester"])
+        window.chatlog.log(chum.handle, pmsg)
+        self.append(convertTags(pmsg))
+            
     def addMessage(self, lexmsg, chum):
         if len(lexmsg) == 0:
             return
@@ -309,12 +318,7 @@ class PesterText(QtWidgets.QTextEdit):
                 time += "] "
         else:
             time = ""
-        if lexmsg[0] == "PESTERCHUM:BEGIN":
-            parent.setChumOpen(True)
-            pmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
-            window.chatlog.log(chum.handle, pmsg)
-            self.append(convertTags(pmsg))
-        elif lexmsg[0] == "PESTERCHUM:CEASE":
+        if lexmsg[0] == "PESTERCHUM:CEASE":
             parent.setChumOpen(False)
             pmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/ceasepester"])
             window.chatlog.log(chum.handle, pmsg)
@@ -344,13 +348,10 @@ class PesterText(QtWidgets.QTextEdit):
             self.append(time + convertTags(memsg))
         else:
             if not parent.chumopen and chum is not me:
-                beginmsg = chum.pestermsg(me, systemColor, window.theme["convo/text/beganpester"])
-                parent.setChumOpen(True)
-                window.chatlog.log(chum.handle, beginmsg)
-                self.append(convertTags(beginmsg))
+                self.beginConvo(chum)
 
-            lexmsg[0:0] = [colorBegin("<c=%s>" % (color), color),
-                           "%s: " % (initials)]
+            lexmsg[0:0] = [colorBegin("<c={0},{1},{2}>".format(*color[:3]), "{0},{1},{2}".format(*color[:3])),
+                           "{0}: ".format(initials)]
             lexmsg.append(colorEnd("</c>"))
             self.append("<span style=\"color:#000000\">" + time + convertTags(lexmsg) + "</span>")
             #self.append('<img src="/Users/lexi/pesterchum-lex/smilies/tab.gif" />'
@@ -595,6 +596,11 @@ class PesterConvo(QtWidgets.QFrame):
 
     def updateColor(self, color):
         self.chum.color = color
+
+    def beginConvo(self):
+        self.notifyNewMessage()
+        self.textArea.beginConvo(self.chum)
+
     def addMessage(self, msg, me=True):
         if type(msg) is str:
             lexmsg = lexMessage(msg)

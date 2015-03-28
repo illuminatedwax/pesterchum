@@ -857,7 +857,7 @@ class PesterMentions(QtWidgets.QDialog):
         self.setStyleSheet(self.theme["main/defaultwindow/style"])
 
         self.mentionlist = QtWidgets.QListWidget(self)
-        self.mentionlist.addItems(self.mainwindow.userprofile.getMentions())
+        self.mentionlist.addItems(self.mainwindow.userprofile.mentions)
 
         self.addBtn = QtWidgets.QPushButton("ADD MENTION", self, clicked=self.addMention)
         self.editBtn = QtWidgets.QPushButton("EDIT", self, clicked=self.editSelected)
@@ -945,25 +945,8 @@ class PesterOptions(QtWidgets.QDialog):
         self.tabs.button(-2).setChecked(True)
         self.pages = QtWidgets.QStackedWidget(self)
 
-        self.bandwidthcheck = QtWidgets.QCheckBox("Low Bandwidth", self)
-        if self.config.lowBandwidth():
-            self.bandwidthcheck.setChecked(True)
-        bandwidthLabel = QtWidgets.QLabel("(Stops you for receiving the flood of MOODS,\n"
-                                      " though stops chumlist from working properly)")
-        font = bandwidthLabel.font()
-        font.setPointSize(8)
-        bandwidthLabel.setFont(font)
-
-        self.autonickserv = QtWidgets.QCheckBox("Auto-Identify with NickServ", self)
-        self.autonickserv.setChecked(parent.userprofile.getAutoIdentify())
-        self.nickservpass = QtWidgets.QLineEdit(self)
-        self.nickservpass.setPlaceholderText("NickServ Password")
-        self.nickservpass.setEchoMode(QtWidgets.QLineEdit.PasswordEchoOnEdit)
-        self.nickservpass.setText(parent.userprofile.getNickServPass())
-        self.autonickserv.stateChanged.connect(self.autoNickServChange)
-
         self.autojoinlist = QtWidgets.QListWidget(self)
-        self.autojoinlist.addItems(parent.userprofile.getAutoJoins())
+        self.autojoinlist.addItems(parent.userprofile.autojoins)
         self.addAutoJoinBtn = QtWidgets.QPushButton("Add", self, clicked=self.addAutoJoin)
         self.delAutoJoinBtn = QtWidgets.QPushButton("Remove", self, clicked=self.delAutoJoin)
 
@@ -1427,7 +1410,7 @@ class PesterOptions(QtWidgets.QDialog):
         m = []
         for i in range(self.mentionmenu.mentionlist.count()):
             m.append(str(self.mentionmenu.mentionlist.item(i).text()))
-        self.parent().userprofile.setMentions(m)
+        self.parent().userprofile.mentions = m
         self.mentionmenu = None
 
 class PesterUserlist(QtWidgets.QDialog):
@@ -1465,14 +1448,14 @@ class PesterUserlist(QtWidgets.QDialog):
 
         self.setLayout(layout_0)
 
-        self.mainwindow.namesUpdated.connect(self.updateUsers)
+        self.mainwindow.onlineUsersUpdated.connect(self.updateUsers)
         self.mainwindow.userPresentSignal.connect(self.updateUserPresent)
         self.updateUsers()
 
         self.searchbox.setFocus()
     @QtCore.pyqtSlot()
     def updateUsers(self):
-        names = self.mainwindow.namesdb["#pesterchum"]
+        names = self.mainwindow.onlineUsers.keys()
         self.userarea.clear()
         for n in names:
             if str(self.searchbox.text()) == "" or n.lower().find(str(self.searchbox.text()).lower()) != -1:
@@ -1527,7 +1510,7 @@ class PesterUserlist(QtWidgets.QDialog):
 
 
 class MemoListItem(QtWidgets.QTreeWidgetItem):
-    def __init__(self, channel, usercount):
+    def __init__(self, channel, usercount, topic="", password=False):
         QtWidgets.QTreeWidgetItem.__init__(self, [channel, str(usercount)])
         self.target = channel
     def __lt__(self, other):
@@ -1607,7 +1590,7 @@ class PesterMemoList(QtWidgets.QDialog):
 
     def updateChannels(self, channels):
         for c in channels:
-            item = MemoListItem(c[0][1:],c[1])
+            item = MemoListItem(c['channel'], c['users'], c['topic'], c['password'])
             item.setForeground(0, QtGui.QBrush(QtGui.QColor(self.theme["main/chums/userlistcolor"])))
             item.setForeground(1, QtGui.QBrush(QtGui.QColor(self.theme["main/chums/userlistcolor"])))
             item.setIcon(0, QtGui.QIcon(self.theme["memos/memoicon"]))
@@ -1655,6 +1638,37 @@ class LoadingScreen(QtWidgets.QDialog):
         self.ok.show()
 
     tryAgain = QtCore.pyqtSignal()
+
+class LoginScreen(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent, (QtCore.Qt.CustomizeWindowHint |
+                                                  QtCore.Qt.FramelessWindowHint))
+        self.mainwindow = parent
+        self.setStyleSheet(self.mainwindow.theme["main/defaultwindow/style"])
+
+        self.username = QtWidgets.QLineEdit(self)
+        self.usernameLabel = QtWidgets.QLabel("Username")
+        self.password = QtWidgets.QLineEdit(self)
+        self.passwordLabel = QtWidgets.QLabel("Password")
+        self.password.setEchoMode(2) # password mask
+        self.anonymous = QtWidgets.QCheckBox(self)
+        self.anonymousLabel = QtWidgets.QLabel("Log in anonymously")
+        self.cancel = QtWidgets.QPushButton("QU1T", self, clicked=self.reject)
+        self.ok = QtWidgets.QPushButton("LOGIN", self, clicked=self.accept, default=True)
+
+        self.layout = QtWidgets.QGridLayout()
+        self.layout.addWidget(self.usernameLabel, 0, 0)
+        self.layout.addWidget(self.username, 0, 1)
+        self.layout.addWidget(self.passwordLabel, 1, 0)
+        self.layout.addWidget(self.password, 1, 1)
+        self.layout.addWidget(self.anonymousLabel, 2, 0)
+        self.layout.addWidget(self.anonymous, 2, 1)
+        layout_1 = QtWidgets.QHBoxLayout()
+        layout_1.addWidget(self.cancel)
+        layout_1.addWidget(self.ok)
+        self.layout.addLayout(layout_1, 3, 0, 1, -1)
+        self.setLayout(self.layout)
+        
 
 class AboutPesterchum(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -1727,8 +1741,8 @@ class AddChumDialog(QtWidgets.QDialog):
         self.chumBox = QtWidgets.QLineEdit(self)
         self.groupBox = QtWidgets.QComboBox(self)
         avail_groups.sort()
-        avail_groups.pop(avail_groups.index("Chums"))
-        avail_groups.insert(0, "Chums")
+        avail_groups.pop(avail_groups.index("Friends"))
+        avail_groups.insert(0, "Friends")
         for g in avail_groups:
             self.groupBox.addItem(g)
         self.newgrouplabel = QtWidgets.QLabel("Or make a new group:")

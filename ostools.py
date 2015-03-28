@@ -32,11 +32,12 @@ def getDataDir():
     # in the Pesterchum install directory (like before)
     # TODO: fix error if standardLocations is not what we expect
     try:
+        
         if isOSX():
-            return os.path.join(str(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0]), "Pesterchum/")
+            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0], "Pesterchum/")
         elif isLinux():
-            return os.path.join(str(QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]), ".pesterchum/")
+            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0], ".pesterchum/")
         else:
-            return os.path.join(str(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0]), "pesterchum/")
+            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0], "pesterchum/")
     except UnicodeDecodeError:
         return ''

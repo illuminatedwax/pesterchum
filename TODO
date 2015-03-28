@@ -1,0 +1,15 @@
+* Unknown error {'errorid': 'NOSUCHUSER', 'cmd': 'cease', 'recp': 'calSprite', 'error': {'recp': 'User is offline.'}, 'data': {'recp': 'calSprite'}}
+* Traceback (most recent call last):
+  File "pesterchum.py", line 1846, in addChumWindow
+    self.addchumdialog = AddChumDialog(available_groups, self)
+NameError: global name 'available_groups' is not defined
+* Unknown response {'sender': 'ghostDunk', 'cmd': 'begin'}
+
+
+
+3.41 beta problems
+
+- Initial notification should be caps only, better matching, full names
+- gif animations dont work on my computer
+- problems with {PC crashing removing groups and with cancelling memos
+- make flashing taskbar optional

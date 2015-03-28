@@ -19,7 +19,7 @@ class RandomHandler(QtCore.QObject):
         self.mainwindow.sendNotice.emit("?", self.randNick)
 
     def setRandomer(self, r):
-        if r != self.mainwindow.userprofile.getRandom():
+        if r != self.mainwindow.userprofile.random:
             if r: code = "+"
             else: code = "-"
             self.queue.append(code)
@@ -44,15 +44,15 @@ class RandomHandler(QtCore.QObject):
         self.queue.remove(code)
         if code == "?":
             if l[1][0] == "y":
-                self.mainwindow.userprofile.setRandom(True)
+                self.mainwindow.userprofile.random = True
             elif l[1][0] == "n":
-                self.mainwindow.userprofile.setRandom(False)
+                self.mainwindow.userprofile.random = False
         elif code in ["+","-"]:
             if l[1][0] == "k":
                 if code == "+":
-                    self.mainwindow.userprofile.setRandom(True)
+                    self.mainwindow.userprofile.random = True
                 else:
-                    self.mainwindow.userprofile.setRandom(False)
+                    self.mainwindow.userprofile.random = False
         elif code in ["~","*"]:
             if l[1][0] == "k":
                 pass

@@ -8,6 +8,8 @@ import platform
 from datetime import *
 from time import strftime, time
 from PyQt5 import QtGui, QtCore, QtWidgets
+import sqlite3
+import functools
 
 import ostools
 from mood import Mood
@@ -81,27 +83,47 @@ class PesterLog(object):
             for f in list(self.convos[h].values()):
                 f.close()
 
+configsql = """
+  CREATE TABLE IF NOT EXISTS config (
+    name text UNIQUE,
+    value text
+  ) 
+"""
+profilesql = """
+  CREATE TABLE IF NOT EXISTS profile (
+    name text UNIQUE,
+    value text
+  ) 
+"""
+chumdbsql = """
+  CREATE TABLE IF NOT EXISTS chumdb (
+    handle text UNIQUE,
+    value text
+  ) 
+"""
+
 class userConfig(object):
+    # Use for bit flag log setting
+    LOG = 1
+    STAMP = 2
+    # Use for bit flag blink
+    PBLINK = 1
+    MBLINK = 2
+    # Use for bit flag notfications
+    SIGNIN = 1
+    SIGNOUT = 2
+    NEWMSG = 4
+    NEWCONVO = 8
+    INITIALS = 16
+
     def __init__(self, parent):
         self.parent = parent
-        # Use for bit flag log setting
-        self.LOG = 1
-        self.STAMP = 2
-        # Use for bit flag blink
-        self.PBLINK = 1
-        self.MBLINK = 2
-        # Use for bit flag notfications
-        self.SIGNIN   = 1
-        self.SIGNOUT  = 2
-        self.NEWMSG   = 4
-        self.NEWCONVO = 8
-        self.INITIALS  = 16
-        self.filename = _datadir+"pesterchum.js"
-        fp = open(self.filename)
-        self.config = json.load(fp)
-        fp.close()
-        if "defaultprofile" in self.config:
-            self.userprofile = userProfile(self.config["defaultprofile"])
+        self.filename = os.path.join(_datadir, "pesterchum.db")
+        self.conn = sqlite3.connect(self.filename, isolation_level=None)
+        self.conn.execute(configsql) # bootstrap db
+        
+        if self.defaultprofile():
+            self.userprofile = userProfile(self.defaultprofile())
         else:
             self.userprofile = None
 
@@ -109,96 +131,82 @@ class userConfig(object):
 
         if not os.path.exists(self.logpath):
             os.makedirs(self.logpath)
-        try:
-            fp = open("%s/groups.js" % (self.logpath), 'r')
-            self.groups = json.load(fp)
-            fp.close()
-        except IOError:
-            self.groups = {}
-            fp = open("%s/groups.js" % (self.logpath), 'w')
-            json.dump(self.groups, fp)
-            fp.close()
-        except ValueError:
-            self.groups = {}
-            fp = open("%s/groups.js" % (self.logpath), 'w')
-            json.dump(self.groups, fp)
-            fp.close()
 
+    def get(self, configname, default=None):
+        try:
+            self.conn.execute("SELECT value FROM config WHERE name = ?", (configname,))
+            value, = self.conn.fetchone()
+            return json.loads(value)
+        except Exception:
+            return default
+    def set(self, name, value):
+        jval = json.dumps(value)
+        self.conn.execute("REPLACE INTO config (name, value) VALUES (?, ?)", (name, jval))
+
+    def username(self):
+        return self.get("username")
+    def password(self):
+        return self.get("password")
     def chums(self):
-        if 'chums' not in self.config:
-            self.set("chums", [])
-        return self.config.get('chums', [])
+        return self.get("chums", [])
     def setChums(self, newchums):
-        fp = open(self.filename) # what if we have two clients open??
-        newconfig = json.load(fp)
-        fp.close()
-        oldchums = newconfig['chums']
+        oldchums = self.chums()
         # Time to merge these two! :OOO
         for c in list(set(oldchums) - set(newchums)):
             newchums.append(c)
-
+        self.set("chums", newchums)
+    def addChum(self, chum):
+        if type(chum) is PesterProfile:
+            handle = chum.handle
+        else:
+            handle = chum
+        newchums = list(set(self.chums() + [handle]))
+        self.set("chums", newchums)
+    def removeChum(self, chum):
+        if type(chum) is PesterProfile:
+            handle = chum.handle
+        else:
+            handle = chum
+        newchums = list(set(self.chums()) - set([handle]))
         self.set("chums", newchums)
     def hideOfflineChums(self):
-        return self.config.get('hideOfflineChums', False)
+        return self.get("hideOfflineChums", False)
     def defaultprofile(self):
-        try:
-            return self.config['defaultprofile']
-        except KeyError:
-            return None
+        return self.get("defaultprofile")
     def tabs(self):
-        return self.config.get("tabs", True)
+        return self.get("tabs", True)
     def tabMemos(self):
-        if 'tabmemos' not in self.config:
-            self.set("tabmemos", self.tabs())
-        return self.config.get("tabmemos", True)
+        return self.get("tabmemos", self.tabs())
     def showTimeStamps(self):
-        if 'showTimeStamps' not in self.config:
-            self.set("showTimeStamps", True)
-        return self.config.get('showTimeStamps', True)
+        return self.get('showTimeStamps', True)
     def time12Format(self):
-        if 'time12Format' not in self.config:
-            self.set("time12Format", True)
-        return self.config.get('time12Format', True)
+        return self.get('time12Format', True)
     def showSeconds(self):
-        if 'showSeconds' not in self.config:
-            self.set("showSeconds", False)
-        return self.config.get('showSeconds', False)
+        return self.get('showSeconds', False)
     def sortMethod(self):
-        return self.config.get('sortMethod', 0)
-    def useGroups(self):
-        return self.config.get('useGroups', False)
-    def openDefaultGroup(self):
-        groups = self.getGroups()
-        for g in groups:
-            if g[0] == "Chums":
-                return g[1]
-        return True
+        return self.get('sortMethod', 0)
     def showEmptyGroups(self):
-        if 'emptyGroups' not in self.config:
-            self.set("emptyGroups", False)
-        return self.config.get('emptyGroups', False)
+        return self.get('emptyGroups', False)
     def showOnlineNumbers(self):
-        if 'onlineNumbers' not in self.config:
-            self.set("onlineNumbers", False)
-        return self.config.get('onlineNumbers', False)
+        return self.get('onlineNumbers', False)
     def logPesters(self):
-        return self.config.get('logPesters', self.LOG | self.STAMP)
+        return self.get('logPesters', self.LOG | self.STAMP)
     def logMemos(self):
-        return self.config.get('logMemos', self.LOG)
+        return self.get('logMemos', self.LOG)
     def disableUserLinks(self):
-        return not self.config.get('userLinks', True)
+        return not self.get('userLinks', True)
     def idleTime(self):
-        return self.config.get('idleTime', 10)
+        return self.get('idleTime', 10)
     def minimizeAction(self):
-        return self.config.get('miniAction', 0)
+        return self.get('miniAction', 0)
     def closeAction(self):
-        return self.config.get('closeAction', 1)
+        return self.get('closeAction', 1)
     def opvoiceMessages(self):
-        return self.config.get('opvMessages', True)
+        return self.get('opvMessages', True)
     def animations(self):
-        return self.config.get('animations', True)
+        return self.get('animations', True)
     def checkForUpdates(self):
-        u = self.config.get('checkUpdates', 0)
+        u = self.get('checkUpdates', 0)
         if type(u) == type(bool()):
             if u: u = 2
             else: u = 3
@@ -208,122 +216,63 @@ class userConfig(object):
         # Only on start
         # Never
     def lastUCheck(self):
-        return self.config.get('lastUCheck', 0)
+        return self.get('lastUCheck', 0)
     def checkMSPA(self):
-        return self.config.get('mspa', False)
+        return self.get('mspa', False)
     def blink(self):
-        return self.config.get('blink', self.PBLINK | self.MBLINK)
+        return self.get('blink', self.PBLINK | self.MBLINK)
     def notify(self):
-        return self.config.get('notify', True)
+        return self.get('notify', True)
     def notifyType(self):
-        return self.config.get('notifyType', "default")
+        return self.get('notifyType', "default")
     def notifyOptions(self):
-        return self.config.get('notifyOptions', self.SIGNIN | self.NEWMSG | self.NEWCONVO | self.INITIALS)
+        return self.get('notifyOptions', self.SIGNIN | self.NEWMSG | self.NEWCONVO | self.INITIALS)
     def lowBandwidth(self):
-        return self.config.get('lowBandwidth', False)
+        return self.get('lowBandwidth', False)
     def ghostchum(self):
-        return self.config.get('ghostchum', False)
-    def addChum(self, chum):
-        if chum.handle not in self.chums():
-            fp = open(self.filename) # what if we have two clients open??
-            newconfig = json.load(fp)
-            fp.close()
-            newchums = newconfig['chums'] + [chum.handle]
-            self.set("chums", newchums)
-    def removeChum(self, chum):
-        if type(chum) is PesterProfile:
-            handle = chum.handle
-        else:
-            handle = chum
-        newchums = [c for c in self.config['chums'] if c != handle]
-        self.set("chums", newchums)
+        return self.get('ghostchum', False)
     def getBlocklist(self):
-        if 'block' not in self.config:
-            self.set('block', [])
-        return self.config['block']
+        return self.get('block', [])
     def addBlocklist(self, handle):
-        l = self.getBlocklist()
-        if handle not in l:
-            l.append(handle)
-            self.set('block', l)
+        l = list(set(self.getBlocklist() + [handle]))
+        self.set("block", l)
     def delBlocklist(self, handle):
-        l = self.getBlocklist()
-        l.pop(l.index(handle))
-        self.set('block', l)
-    def getGroups(self):
-        if 'groups' not in self.groups:
-            self.saveGroups([["Chums", True]])
-        return self.groups.get('groups', [["Chums", True]])
-    def addGroup(self, group, open=True):
-        l = self.getGroups()
-        exists = False
-        for g in l:
-            if g[0] == group:
-                exists = True
-                break
-        if not exists:
-            l.append([group,open])
-            l.sort()
-            self.saveGroups(l)
-    def delGroup(self, group):
-        l = self.getGroups()
-        i = 0
-        for g in l:
-            if g[0] == group: break
-            i = i+1
-        l.pop(i)
-        l.sort()
-        self.saveGroups(l)
-    def expandGroup(self, group, open=True):
-        l = self.getGroups()
-        for g in l:
-            if g[0] == group:
-                g[1] = open
-                break
-        self.saveGroups(l)
-    def saveGroups(self, groups):
-        self.groups['groups'] = groups
-        try:
-            jsonoutput = json.dumps(self.groups)
-        except ValueError as e:
-            raise e
-        fp = open("%s/groups.js" % (self.logpath), 'w')
-        fp.write(jsonoutput)
-        fp.close()
+        l = list(set(self.getBlocklist()) - set([handle]))
+        self.set("block", l)
+    def getExpandGroup(self):
+        return self.get("expandGroup", [])
+    def expandGroup(self, group, openGroup=True):
+        s = set(self.getExpandGroup())
+        if openGroup:
+            s.add(group)
+        else:
+            s -= set([group])
+        self.set("expandGroup", list(s))        
 
     def server(self):
         if hasattr(self.parent, 'serverOverride'):
             return self.parent.serverOverride
-        return self.config.get('server', 'irc.mindfang.org')
+        # return self.get('server', 'irc.mindfang.org')
+        return self.get('server', 'irc1.mindfang.org')
     def port(self):
         if hasattr(self.parent, 'portOverride'):
             return self.parent.portOverride
-        return self.config.get('port', '6667')
+        #return self.get('port', '1413')
+        return self.get('port', '1420')
     def soundOn(self):
-        if 'soundon' not in self.config:
-            self.set('soundon', True)
-        return self.config['soundon']
+        return self.get('soundon', True)
     def chatSound(self):
-        return self.config.get('chatSound', True)
+        return self.get('chatSound', True)
     def memoSound(self):
-        return self.config.get('memoSound', True)
+        return self.get('memoSound', True)
     def memoPing(self):
-        return self.config.get('pingSound', True)
+        return self.get('pingSound', True)
     def nameSound(self):
-        return self.config.get('nameSound', True)
+        return self.get('nameSound', True)
     def volume(self):
-        return self.config.get('volume', 100)
+        return self.get('volume', 100)
     def trayMessage(self):
-        return self.config.get('traymsg', True)
-    def set(self, item, setting):
-        self.config[item] = setting
-        try:
-            jsonoutput = json.dumps(self.config)
-        except ValueError as e:
-            raise e
-        fp = open(self.filename, 'w')
-        fp.write(jsonoutput)
-        fp.close()
+        return self.get('traymsg', True)
     def availableThemes(self):
         themes = []
         # Load user themes.
@@ -344,245 +293,192 @@ class userConfig(object):
         for dirname, dirnames, filenames in os.walk(profileloc):
             for filename in filenames:
                 l = len(filename)
-                if filename[l-3:l] == ".js":
+                if filename[l-3:l] == ".db":
                     profs.append(filename[0:l-3])
         profs.sort()
         return [userProfile(p) for p in profs]
 
 class userProfile(object):
     def __init__(self, user):
-        self.profiledir = _datadir+"profiles"
-
-        if type(user) is PesterProfile:
+        if type(user) is PesterProfile: # new profile
+            self.handle = user.handle
             self.chat = user
-            self.userprofile = {"handle":user.handle,
-                                "color": str(user.color.name()),
-                                "quirks": [],
-                                "theme": "pesterchum"}
+            self.set("handle", user.handle)
+            self.set("color", str(user.color.name()))
             self.theme = pesterTheme("pesterchum")
-            self.chat.mood = Mood(self.theme["main/defaultmood"])
-            self.lastmood = self.chat.mood.value()
             self.quirks = pesterQuirks([])
-            self.randoms = False
-            initials = self.chat.initials()
-            if len(initials) >= 2:
-                initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
-                self.mentions = [r"\b(%s)\b" % ("|".join(initials))]
-            else:
-                self.mentions = []
-            self.autojoins = []
-        else:
-            fp = open("%s/%s.js" % (self.profiledir, user))
-            self.userprofile = json.load(fp)
-            fp.close()
-            try:
-                self.theme = pesterTheme(self.userprofile["theme"])
-            except ValueError as e:
-                self.theme = pesterTheme("pesterchum")
-            self.lastmood = self.userprofile.get('lastmood', self.theme["main/defaultmood"])
-            self.chat = PesterProfile(self.userprofile["handle"],
-                                      QtGui.QColor(self.userprofile["color"]),
-                                      Mood(self.lastmood))
-            self.quirks = pesterQuirks(self.userprofile["quirks"])
-            if "randoms" not in self.userprofile:
-                self.userprofile["randoms"] = False
-            self.randoms = self.userprofile["randoms"]
-            if "mentions" not in self.userprofile:
-                initials = self.chat.initials()
-                if len(initials) >= 2:
-                    initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
-                    self.userprofile["mentions"] = [r"\b(%s)\b" % ("|".join(initials))]
-                else:
-                    self.userprofile["mentions"] = []
-            self.mentions = self.userprofile["mentions"]
-            if "autojoins" not in self.userprofile:
-                self.userprofile["autojoins"] = []
-            self.autojoins = self.userprofile["autojoins"]
 
+            self.chat.mood = Mood(self.theme["main/defaultmood"])
+            self.lastmood = self.chat.mood
+        else: # existing profile
+            self.handle = user
+            self.lastmood = self.get("lastmood", Mood(self.theme["main/defaultmood"]))
+            self.set("handle", user)
+            self.chat = PesterProfile(user,
+                                      QtGui.QColor(self.get("color")),
+                                      self.lastmood)
+
+    def get(self, name, default=None):
+        handle = self.handle
+        if handle[0:12] == "pesterClient":
+            return
         try:
-            with open(_datadir+"passwd.js") as fp:
-                self.passwd = json.load(fp)
-        except Exception as e:
-            self.passwd = {}
-        self.autoidentify = False
-        self.nickservpass = ""
-        if self.chat.handle in self.passwd:
-            self.autoidentify = self.passwd[self.chat.handle]["auto"]
-            self.nickservpass = self.passwd[self.chat.handle]["pw"]
+            self.conn.execute("SELECT value FROM profile WHERE name = ?", (configname,))
+            value, = self.conn.fetchone()
+            return json.loads(value)
+        except Exception:
+            return default
+    def set(self, name, value):
+        handle = self.handle
+        if handle[0:12] == "pesterClient":
+            return
+        jval = json.dumps(value)
+        self.conn.execute("REPLACE INTO profile (name, value) VALUES (?, ?)", (name, jval))
+
+    @property
+    def conn(self):
+        handle = self.handle
+        if handle[0:12] == "pesterClient":
+            return
+        if not getattr(self, "_conn", None):
+            self._conn = sqlite3.connect(userProfile.profileDBFile(handle), isolation_level=None)
+            self._conn.execute(profilesql)
+        return self._conn
 
     def setMood(self, mood):
         self.chat.mood = mood
-    def setTheme(self, theme):
-        self.theme = theme
-        self.userprofile["theme"] = theme.name
-        self.save()
+
+    @property
+    def theme(self):
+        if not getattr(self, "_theme", None):
+            self._theme = pesterTheme(self.get("theme", "pesterchum"))
+        return self._theme
+    @theme.setter
+    def theme(self, theme):
+        self._theme = theme
+        self.set("theme", theme.name)
+
     def setColor(self, color):
         self.chat.color = color
-        self.userprofile["color"] = str(color.name())
-        self.save()
-    def setQuirks(self, quirks):
-        self.quirks = quirks
-        self.userprofile["quirks"] = self.quirks.plainList()
-        self.save()
-    def getRandom(self):
-        return self.randoms
-    def setRandom(self, random):
-        self.randoms = random
-        self.userprofile["randoms"] = random
-        self.save()
-    def getMentions(self):
-        return self.mentions
-    def setMentions(self, mentions):
+        self.set("color", color.name())
+
+    @property
+    def quirks(self):
+        if not getattr(self, "_quirks", None):
+            self._quirks = pesterQuirks(self.get("quirks", []))
+        return self._quirks
+    @quirks.setter
+    def quirks(self, quirks):
+        self._quirks = quirks
+        self.set("quirks", self._quirks.plainList())
+
+    @property
+    def random(self):
+        if not getattr(self, "_random", None):
+            self._random = self.get("random", False)
+        return self._random
+    @random.setter
+    def random(self, random):
+        self._random = random
+        self.set("random", random)
+
+    @property
+    def mentions(self):
+        if not getattr(self, "_mentions", None):
+            self._mentions = self.get("mentions", self.defaultMentions())
+        return self._mentions
+    @mentions.setter
+    def mentions(self, mentions):
         try:
             for (i,m) in enumerate(mentions):
                 re.compile(m)
         except re.error as e:
             logging.error("#%s Not a valid regular expression: %s" % (i, e))
         else:
-            self.mentions = mentions
-            self.userprofile["mentions"] = mentions
-            self.save()
-    def getLastMood(self):
-        return self.lastmood
-    def setLastMood(self, mood):
-        self.lastmood = mood.value()
-        self.userprofile["lastmood"] = self.lastmood
-        self.save()
-    def getTheme(self):
-        return self.theme
-    def getAutoIdentify(self):
-        return self.autoidentify
-    def setAutoIdentify(self, b):
-        self.autoidentify = b
-        if self.chat.handle not in self.passwd:
-            self.passwd[self.chat.handle] = {}
-        self.passwd[self.chat.handle]["auto"] = b
-        self.saveNickServPass()
-    def getNickServPass(self):
-        return self.nickservpass
-    def setNickServPass(self, pw):
-        self.nickservpass = pw
-        if self.chat.handle not in self.passwd:
-            self.passwd[self.chat.handle] = {}
-        self.passwd[self.chat.handle]["pw"] = pw
-        self.saveNickServPass()
-    def getAutoJoins(self):
-        return self.autojoins
-    def setAutoJoins(self, autojoins):
-        self.autojoins = autojoins
-        self.userprofile["autojoins"] = self.autojoins
-        self.save()
-    def save(self):
-        handle = self.chat.handle
-        if handle[0:12] == "pesterClient":
-            # dont save temp profiles
-            return
-        try:
-            jsonoutput = json.dumps(self.userprofile)
-        except ValueError as e:
-            raise e
-        fp = open("%s/%s.js" % (self.profiledir, handle), 'w')
-        fp.write(jsonoutput)
-        fp.close()
-    def saveNickServPass(self):
-        # remove profiles with no passwords
-        for h,t in list(self.passwd.items()):
-            if "auto" not in t or "pw" not in t or t["pw"] == "":
-                del self.passwd[h]
-        try:
-            jsonoutput = json.dumps(self.passwd, indent=4)
-        except ValueError as e:
-            raise e
-        with open(_datadir+"passwd.js", 'w') as fp:
-            fp.write(jsonoutput)
+            self._mentions = mentions
+            self.set("mentions", mentions)
+
+    def defaultMentions(self):
+        initials = self.chat.initials()
+        if len(initials) >= 2:
+            initials = (initials, "%s%s" % (initials[0].lower(), initials[1]), "%s%s" % (initials[0], initials[1].lower()))
+            return [r"\b(%s)\b" % ("|".join(initials))]
+        else:
+            return []
+        
+    @property
+    def lastmood(self):
+        if not getattr(self, "_lastmood", None):
+            self._lastmood = self.get("lastmood", 0)
+        return Mood(self._lastmood)
+    @lastmood.setter
+    def lastmood(self, mood):
+        self._lastmood = mood.value()
+        self.set("lastmood", self._lastmood)
+
+    @property
+    def autojoins(self):
+        if not getattr(self, "_autojoins", None):
+            self._autojoins = self.get("autojoins")
+        return self._autojoins
+    @autojoins.setter
+    def autojoins(self, autojoins):
+        self._autojoins = autojoins
+        self.set("autojoins", autojoins)
+
+    @staticmethod
+    def profileDBFile(handle):
+        return os.path.join(_datadir, "profiles", "%s.db" % (handle))
+
     @staticmethod
     def newUserProfile(chatprofile):
-        if os.path.exists("%s/%s.js" % (_datadir+"profiles", chatprofile.handle)):
+        if os.path.exists(userProfile.profileDBFile(chatprofile.handle)):
             newprofile = userProfile(chatprofile.handle)
         else:
             newprofile = userProfile(chatprofile)
-            newprofile.save()
         return newprofile
 
-class PesterProfileDB(dict):
+class PesterProfileDB(object):
     def __init__(self):
-        self.logpath = _datadir+"logs"
+        self.logpath = os.path.join(_datadir, "logs")
 
         if not os.path.exists(self.logpath):
             os.makedirs(self.logpath)
-        try:
-            fp = open("%s/chums.js" % (self.logpath), 'r')
-            chumdict = json.load(fp)
-            fp.close()
-        except IOError:
-            chumdict = {}
-            fp = open("%s/chums.js" % (self.logpath), 'w')
-            json.dump(chumdict, fp)
-            fp.close()
-        except ValueError:
-            chumdict = {}
-            fp = open("%s/chums.js" % (self.logpath), 'w')
-            json.dump(chumdict, fp)
-            fp.close()
 
-        u = []
-        for (handle, c) in chumdict.items():
-            options = dict()
-            if 'group' in c:
-                options['group'] = c['group']
-            if 'notes' in c:
-                options['notes'] = c['notes']
-            if 'color' not in c:
-                c['color'] = "#000000"
-            if 'mood' not in c:
-                c['mood'] = "offline"
-            u.append((handle, PesterProfile(handle, color=QtGui.QColor(c['color']), mood=Mood(c['mood']), **options)))
-        converted = dict(u)
-        self.update(converted)
+        self.chumdb = {}
+        self.conn = sqlite3.connect(os.path.join(self.logpath, "chums.db"), isolation_level=None)
+        self.conn.execute(chumdbsql)
 
-    def save(self):
-        try:
-            fp = open("%s/chums.js" % (self.logpath), 'w')
-            chumdict = dict([p.plaindict() for p in self.values()])
-            json.dump(chumdict, fp)
-            fp.close()
-        except Exception as e:
-            raise e
-    def getColor(self, handle, default=None):
-        if handle not in self:
-            return default
+    def getValue(self, name, handle, default=None):
+        if handle not in self.chumdb:
+            try:
+                self.conn.execute("SELECT value FROM chumdb WHERE handle = ?", (handle))
+                value, = self.conn.fetchone()
+                tmpdict = json.loads(value)
+                tmpdict["color"] = QtGui.QColor(tmpdict.get("color", "#000000"))
+                tmpdict["mood"] = Mood(tmpdict.get("mood", "offline"))
+                self.chumdb[handle] = PesterProfile(handle, **tmpdict)
+            except Exception:
+                return default
         else:
-            return self[handle].color
-    def setColor(self, handle, color):
-        if handle in self:
-            self[handle].color = color
+            return getattr(self.chumdb[handle], name, default)
+    def setValue(self, name, handle, value):
+        if handle in chumdb:
+            setattr(self.chumdb[handle], name, value)
         else:
-            self[handle] = PesterProfile(handle, color)
-    def getGroup(self, handle, default="Chums"):
-        if handle not in self:
-            return default
-        else:
-            return self[handle].group
-    def setGroup(self, handle, theGroup):
-        if handle in self:
-            self[handle].group = theGroup
-        else:
-            self[handle] = PesterProfile(handle, group=theGroup)
-        self.save()
-    def getNotes(self, handle, default=""):
-        if handle not in self:
-            return default
-        else:
-            return self[handle].notes
-    def setNotes(self, handle, notes):
-        if handle in self:
-            self[handle].notes = notes
-        else:
-            self[handle] = PesterProfile(handle, notes=notes)
-        self.save()
-    def __setitem__(self, key, val):
-        dict.__setitem__(self, key, val)
-        self.save()
+            d = {name: value}
+            self.chumdb[handle] = PesterProfile(handle, **d)
+        jval = json.dumps(self.chumdb[handle].plaindict())
+        self.conn.execute("REPLACE INTO chumdb (handle, value) VALUES (?, ?)", (handle, jval))
+
+    def getColor(self, *x, **y):
+        return self.getValue("color", *x, **y)
+    def setColor(self, *x, **y):
+        return self.setValue("color", *x, **y)
+    def getNotes(self, *x, **y):
+        return self.getValue("notes", *x, **y)
+    def setNotes(self, *x, **y):
+        return self.setValue("notes", *x, **y)
 
 class pesterTheme(dict):
     def __init__(self, name, default=False):

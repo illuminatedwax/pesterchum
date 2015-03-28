@@ -1,0 +1,40 @@
+* Initializes main program
+    * Initializes PesterWindow
+        * Get login information
+    * Show PesterWindow
+    * Set attempts = 0
+    * Initializes PesterOSFC
+        * madeConnection = False
+        * stopOSFC = None
+        * connectionid = False
+* Run MainProgram
+    * Show widget (is this redundant?)
+    * reconnectok = False
+    * Start OSFC Thread
+        * OSFCConnect
+            * create OSFC client
+            * OSFC.connect
+                * --> connect
+                * --> register
+            * Process 
+        * ...
+    * showLoading
+        * show widget
+        * init/reset loading label
+        * if reconnectok, show reconnect option
+        * if osfc.madeConnection, exit
+        * launch loading screen
+        * once done init channels
+
+# Signal chain once connecting
+
+register --> setConnected --> madeConnection=True --> connected --> self.loadingscreen.done()
+
+click RECONNECT --> tryAgain --> if reconnectok, accept loading screen --> reconnectOSFC; quit OR restartOSFC
+
+osfc finished --> restartOSFC 
+  --> if stopOFSC, reconnectok=True; 
+  --> else reconnectok = False; create new OSFC thread
+--> showLoading
+
+setConnectionBroken --> reconnectOSFC() --> close client
