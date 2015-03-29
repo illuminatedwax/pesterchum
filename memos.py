@@ -3,225 +3,14 @@ import re
 import logging
 from copy import copy
 from PyQt5 import QtGui, QtCore, QtWidgets
-from datetime import time, timedelta, datetime
 
 from mood import Mood
 from dataobjs import PesterProfile, PesterHistory
-from generic import PesterIcon, RightClickList, mysteryTime
+from generic import PesterIcon, RightClickList
 from convo import PesterConvo, PesterInput, PesterText, PesterTabWindow
-from parsetools import convertTags, addTimeInitial, timeProtocol, \
+from parsetools import convertTags, \
     lexMessage, colorBegin, colorEnd, mecmd, smiledict, oocre
 from logviewer import PesterLogViewer
-
-def delta2txt(d, format="pc"):
-    if type(d) is mysteryTime:
-        return "?"
-    if format == "pc":
-        sign = "+" if d >= timedelta(0) else "-"
-    else:
-        if d == timedelta(0):
-            return "i"
-        sign = "F" if d >= timedelta(0) else "P"
-    d = abs(d)
-    totalminutes = (d.days*86400 + d.seconds) // 60
-    hours = totalminutes // 60
-    leftovermins = totalminutes % 60
-    if hours < 100:
-        if format == "pc":
-            return "%s%d:%02d" % (sign, hours, leftovermins)
-        else:
-            return "%s%02d:%02d" % (sign, hours, leftovermins)
-    else:
-        if format == "pc":
-            return "%s%d" % (sign, hours)
-        else:
-            return "%s%02d:%02d" % (sign, hours, leftovermins)
-
-def txt2delta(txt):
-    sign = 1
-    if txt[0] == '?':
-        return mysteryTime()
-    if txt[0] == '+':
-        txt = txt[1:]
-    elif txt[0] == '-':
-        sign = -1
-        txt = txt[1:]
-    l = txt.split(":")
-    try:
-        h = int(l[0])
-        m = 0
-        if len(l) > 1:
-            m = int(l[1])
-        timed = timedelta(0, h*3600+m*60)
-    except ValueError:
-        timed = timedelta(0)
-    except OverflowError:
-        if sign < 0:
-            return timedelta(min)
-        else:
-            return timedelta(max)
-    return sign*timed
-
-def pcfGrammar(td):
-    if type(td) is mysteryTime:
-        when = "???"
-        temporal = "???"
-        pcf = "?"
-    elif td > timedelta(0):
-        when = "FROM NOW"
-        temporal = "FUTURE"
-        pcf = "F"
-    elif td < timedelta(0):
-        when = "AGO"
-        temporal = "PAST"
-        pcf = "P"
-    else:
-        when = "RIGHT NOW"
-        temporal = "CURRENT"
-        pcf = "C"
-    return (temporal, pcf, when)
-
-class TimeGrammar(object):
-    def __init__(self, temporal, pcf, when, number="0"):
-        self.temporal = temporal
-        self.pcf = pcf
-        self.when = when
-        if number == "0" or number == 0:
-            self.number = ""
-        else:
-            self.number = str(number)
-
-class TimeTracker(list):
-    def __init__(self, time=None):
-        self.timerecord = {"P": [], "F": []}
-        self.open = {}
-        if time is not None:
-            self.append(time)
-            self.current=0
-            self.addRecord(time)
-            self.open[time] = False
-        else:
-            self.current=-1
-    def addTime(self, timed):
-        try:
-            i = self.index(timed)
-            self.current = i
-            return True
-        except ValueError:
-            self.current = len(self)
-            self.append(timed)
-            self.open[timed] = False
-            self.addRecord(timed)
-            return False
-    def prevTime(self):
-        i = self.current
-        i = (i - 1) % len(self)
-        return self[i]
-    def nextTime(self):
-        i = self.current
-        i = (i + 1) % len(self)
-        return self[i]
-    def setCurrent(self, timed):
-        self.current = self.index(timed)
-    def addRecord(self, timed):
-        try:
-            (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
-        except TypeError:
-            (temporal, pcf, when) = pcfGrammar(mysteryTime())
-        if pcf == "C" or pcf == "?":
-            return
-        if timed in self.timerecord[pcf]:
-            return
-        self.timerecord[pcf].append(timed)
-    def getRecord(self, timed):
-        try:
-            (temporal, pcf, when) = pcfGrammar(timed - timedelta(0))
-        except TypeError:
-            (temporal, pcf, when) = pcfGrammar(mysteryTime())
-        if pcf == "C" or pcf == "?":
-            return 0
-        if len(self.timerecord[pcf]) > 1:
-            return self.timerecord[pcf].index(timed)+1
-        else:
-            return 0
-    def removeTime(self, timed):
-        try:
-            self.pop(self.index(timed))
-            self.current = len(self)-1
-            del self.open[timed]
-            return True
-        except ValueError:
-            return None
-    def openTime(self, time):
-        if time in self.open:
-            self.open[time] = True
-    def openCurrentTime(self):
-        timed = self.getTime()
-        self.openTime(timed)
-    def isFirstTime(self):
-        timed = self.getTime()
-        return not self.open[timed]
-    def getTime(self):
-        if self.current >= 0:
-            return self[self.current]
-        else:
-            return None
-    def getGrammar(self):
-        timed = self.getTime()
-        return self.getGrammarTime(timed)
-    def getGrammarTime(self, timed):
-        mytime = timedelta(0)
-        try:
-            (temporal, pcf, when) = pcfGrammar(timed - mytime)
-        except TypeError:
-            (temporal, pcf, when) = pcfGrammar(mysteryTime())
-        if timed == mytime:
-            return TimeGrammar(temporal, pcf, when, 0)
-        return TimeGrammar(temporal, pcf, when, self.getRecord(timed))
-
-class TimeInput(QtWidgets.QLineEdit):
-    def __init__(self, timeslider, parent):
-        QtWidgets.QLineEdit.__init__(self, parent)
-        self.timeslider = timeslider
-        self.setText("+0:00")
-        self.timeslider.valueChanged.connect(self.setTime)
-        self.editingFinished.connect(self.setSlider)
-    @QtCore.pyqtSlot(int)
-    def setTime(self, sliderval):
-        self.setText(self.timeslider.getTime())
-    @QtCore.pyqtSlot()
-    def setSlider(self):
-        value = str(self.text())
-        timed = txt2delta(value)
-        if type(timed) is mysteryTime:
-            self.timeslider.setValue(0)
-            self.setText("?")
-            return
-        sign = 1 if timed >= timedelta(0) else -1
-        abstimed = abs(txt2delta(value))
-        index = 50
-        for i, td in enumerate(timedlist):
-            if abstimed < td:
-                index = i-1
-                break
-        self.timeslider.setValue(sign*index)
-        text = delta2txt(timed)
-        self.setText(text)
-
-class TimeSlider(QtWidgets.QSlider):
-    def __init__(self, orientation, parent):
-        QtWidgets.QSlider.__init__(self, orientation, parent)
-        self.setTracking(True)
-        self.setMinimum(-50)
-        self.setMaximum(50)
-        self.setValue(0)
-        self.setPageStep(1)
-    def getTime(self):
-        time = timelist[abs(self.value())]
-        sign = "+" if self.value() >= 0 else "-"
-        return sign+time
-    def mouseDoubleClickEvent(self, event):
-        self.setValue(0)
 
 class MemoTabWindow(PesterTabWindow):
     def __init__(self, mainwindow, parent=None):
@@ -299,26 +88,6 @@ class MemoText(PesterText):
 
         chum.color = color
         systemColor = QtGui.QColor(window.theme["memos/systemMsgColor"])
-        if chum is not me:
-            if chum.handle in parent.times:
-                time = parent.times[chum.handle]
-                if time.getTime() is None:
-                    # MY WAY OR THE HIGHWAY
-                    time.addTime(timedelta(0))
-            else:
-                # new chum! time current
-                newtime = timedelta(0)
-                time = TimeTracker(newtime)
-                parent.times[handle] = time
-        else:
-            time = parent.time
-
-        if time.isFirstTime():
-            grammar = time.getGrammar()
-            joinmsg = chum.memojoinmsg(systemColor, time.getTime(), grammar, window.theme["convo/text/joinmemo"])
-            self.append(convertTags(joinmsg))
-            parent.mainwindow.chatlog.log(parent.channel, joinmsg)
-            time.openCurrentTime()
 
         def makeSafe(msg):
             if msg.count("<c") > msg.count("</c>"):
@@ -326,7 +95,7 @@ class MemoText(PesterText):
                     msg = msg + "</c>"
             return "<span style=\"color:#000000\">" + msg + "</span>"
         if type(lexmsg[0]) is mecmd:
-            memsg = chum.memsg(systemColor, lexmsg, time=time.getGrammar())
+            memsg = chum.memsg(systemColor, lexmsg)
             window.chatlog.log(parent.channel, memsg)
             self.append(convertTags(memsg))
         else:
@@ -346,13 +115,12 @@ class MemoInput(PesterInput):
         self.setStyleSheet(theme["memos/input/style"])
 
 class PesterMemo(PesterConvo):
-    def __init__(self, channel, timestr, mainwindow, parent=None):
+    def __init__(self, channel, mainwindow, parent=None):
         QtWidgets.QFrame.__init__(self, parent)
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, False)
         self.channel = channel
         self.setObjectName(self.channel)
         self.mainwindow = mainwindow
-        self.time = TimeTracker(txt2delta(timestr))
         self.setWindowTitle(channel)
         self.channelLabel = QtWidgets.QLabel(self)
         self.channelLabel.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding))
@@ -401,17 +169,6 @@ class PesterMemo(PesterConvo):
         self.chanModeMenu.addAction(self.chanInvite)
         self.chanModeMenu.addAction(self.chanMod)
 
-        self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
-        self.timeinput = TimeInput(self.timeslider, self)
-        self.timeinput.setText(timestr)
-        self.timeinput.setSlider()
-        self.timetravel = QtWidgets.QPushButton("GO", self, clicked=self.sendtime)
-        self.timeclose = QtWidgets.QPushButton("CLOSE", self, clicked=self.smashclock)
-        self.timeswitchl = QtWidgets.QPushButton(self, clicked=self.prevtime)
-        self.timeswitchr = QtWidgets.QPushButton(self, clicked=self.nexttime)
-
-        self.times = {}
-
         self.initTheme(self.mainwindow.theme)
 
         # connect
@@ -426,16 +183,6 @@ class PesterMemo(PesterConvo):
         layout_1.addWidget(self.miniUserlist)
         layout_1.addWidget(self.userlist)
 
-#        layout_1 = QtWidgets.QGridLayout()
-#        layout_1.addWidget(self.timeslider, 0, 1, QtCore.Qt.AlignHCenter)
-#        layout_1.addWidget(self.timeinput, 1, 0, 1, 3)
-        layout_2 = QtWidgets.QHBoxLayout()
-        layout_2.addWidget(self.timeslider)
-        layout_2.addWidget(self.timeinput)
-        layout_2.addWidget(self.timetravel)
-        layout_2.addWidget(self.timeclose)
-        layout_2.addWidget(self.timeswitchl)
-        layout_2.addWidget(self.timeswitchr)
         self.layout = QtWidgets.QVBoxLayout()
 
         self.layout.addWidget(self.channelLabel)
@@ -452,10 +199,8 @@ class PesterMemo(PesterConvo):
             parent.addChat(self)
 
         p = self.mainwindow.profile()
-        timeGrammar = self.time.getGrammar()
         systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
-        msg = p.memoopenmsg(systemColor, self.time.getTime(), timeGrammar, self.mainwindow.theme["convo/text/openmemo"], self.channel)
-        self.time.openCurrentTime()
+        msg = p.memoopenmsg(systemColor, self.mainwindow.theme["convo/text/openmemo"], self.channel)
         self.textArea.append(convertTags(msg))
         self.mainwindow.chatlog.log(self.channel, msg)
 
@@ -480,14 +225,6 @@ class PesterMemo(PesterConvo):
         return self.channel
     def icon(self):
         return PesterIcon(self.mainwindow.theme["memos/memoicon"])
-
-    def sendTimeInfo(self, newChum=False):
-        if newChum:
-            self.messageSent.emit("PESTERCHUM:TIME>%s" % (delta2txt(self.time.getTime(), "server")+"i"),
-                                  self.title())
-        else:
-            self.messageSent.emit("PESTERCHUM:TIME>%s" % (delta2txt(self.time.getTime(), "server")),
-                                  self.title())
 
     def updateMood(self):
         pass
@@ -550,24 +287,6 @@ class PesterMemo(PesterConvo):
         self.chanInvite.setText(theme["main/menus/rclickchumlist/memoinvite"])
         self.chanMod.setText(theme["main/menus/rclickchumlist/memomute"])
 
-        self.timeinput.setFixedWidth(theme["memos/time/text/width"])
-        self.timeinput.setStyleSheet(theme["memos/time/text/style"])
-        slidercss = "QSlider { %s } QSlider::groove { %s } QSlider::handle { %s }" % (theme["memos/time/slider/style"], theme["memos/time/slider/groove"], theme["memos/time/slider/handle"])
-        self.timeslider.setStyleSheet(slidercss)
-
-        larrow = PesterIcon(self.mainwindow.theme["memos/time/arrows/left"])
-        self.timeswitchl.setIcon(larrow)
-        self.timeswitchl.setIconSize(larrow.realsize())
-        self.timeswitchl.setStyleSheet(self.mainwindow.theme["memos/time/arrows/style"])
-        self.timetravel.setStyleSheet(self.mainwindow.theme["memos/time/buttons/style"])
-        self.timeclose.setStyleSheet(self.mainwindow.theme["memos/time/buttons/style"])
-
-        rarrow = PesterIcon(self.mainwindow.theme["memos/time/arrows/right"])
-        self.timeswitchr.setIcon(rarrow)
-        self.timeswitchr.setIconSize(rarrow.realsize())
-        self.timeswitchr.setStyleSheet(self.mainwindow.theme["memos/time/arrows/style"])
-
-
     def changeTheme(self, theme):
         self.initTheme(theme)
         self.textArea.changeTheme(theme)
@@ -622,12 +341,6 @@ class PesterMemo(PesterConvo):
             systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
             chum = self.mainwindow.profile()
             opchum = PesterProfile(op)
-            if op in self.times:
-                opgrammar = self.times[op].getGrammar()
-            elif op == self.mainwindow.profile().handle:
-                opgrammar = self.time.getGrammar()
-            else:
-                opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
         if modes[0] == "+":
             for m in modes[1:]:
                 if m not in chanmodes:
@@ -638,25 +351,25 @@ class PesterMemo(PesterConvo):
                 self.quirksOff.setChecked(True)
                 self.applyquirks = False
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "A No-Quirk zone", True)
+                    msg = chum.memomodemsg(opchum, systemColor, "A No-Quirk zone", True)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("s") >= 0:
                 self.chanHide.setChecked(True)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Secret", True)
+                    msg = chum.memomodemsg(opchum, systemColor, "Secret", True)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("i") >= 0:
                 self.chanInvite.setChecked(True)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Invite-Only", True)
+                    msg = chum.memomodemsg(opchum, systemColor, "Invite-Only", True)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("m") >= 0:
                 self.chanMod.setChecked(True)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Muted", True)
+                    msg = chum.memomodemsg(opchum, systemColor, "Muted", True)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
         elif modes[0] == "-":
@@ -668,25 +381,25 @@ class PesterMemo(PesterConvo):
             if modes.find("c") >= 0:
                 self.chanNoquirks.setChecked(False)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "A No-Quirk zone", False)
+                    msg = chum.memomodemsg(opchum, systemColor, "A No-Quirk zone", False)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("s") >= 0:
                 self.chanHide.setChecked(False)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Secret", False)
+                    msg = chum.memomodemsg(opchum, systemColor, "Secret", False)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("i") >= 0:
                 self.chanInvite.setChecked(False)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Invite-Only", False)
+                    msg = chum.memomodemsg(opchum, systemColor, "Invite-Only", False)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
             if modes.find("m") >= 0:
                 self.chanMod.setChecked(False)
                 if op:
-                    msg = chum.memomodemsg(opchum, opgrammar, systemColor, "Muted", False)
+                    msg = chum.memomodemsg(opchum, systemColor, "Muted", False)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
         chanmodes.sort()
@@ -694,46 +407,6 @@ class PesterMemo(PesterConvo):
         if self.mainwindow.advanced:
             t = Template(self.mainwindow.theme["memos/label/text"])
             self.channelLabel.setText(t.safe_substitute(channel=self.channel) + "(%s)" % (self.modes))
-
-    def timeUpdate(self, handle, cmd):
-        window = self.mainwindow
-        chum = PesterProfile(handle)
-        systemColor = QtGui.QColor(window.theme["memos/systemMsgColor"])
-        close = None
-        # old TC command?
-        try:
-            secs = int(cmd)
-            time = datetime.fromtimestamp(secs)
-            timed = time - datetime.now()
-            s = (timed.seconds // 60)*60
-            timed = timedelta(timed.days, s)
-        except ValueError:
-            if cmd == "i":
-                timed = timedelta(0)
-            else:
-                if cmd[len(cmd)-1] == 'c':
-                    close = timeProtocol(cmd)
-                    timed = None
-                else:
-                    timed = timeProtocol(cmd)
-
-        if handle in self.times:
-            if close is not None:
-                if close in self.times[handle]:
-                    self.times[handle].setCurrent(close)
-                    grammar = self.times[handle].getGrammar()
-                    self.times[handle].removeTime(close)
-                    msg = chum.memoclosemsg(systemColor, grammar, window.theme["convo/text/closememo"])
-                    self.textArea.append(convertTags(msg))
-                    self.mainwindow.chatlog.log(self.channel, msg)
-            elif timed not in self.times[handle]:
-                self.times[handle].addTime(timed)
-            else:
-                self.times[handle].setCurrent(timed)
-        else:
-            if timed is not None:
-                ttracker = TimeTracker(timed)
-                self.times[handle] = ttracker
 
     @QtCore.pyqtSlot()
     def sentMessage(self):
@@ -744,9 +417,6 @@ class PesterMemo(PesterConvo):
         if self.ooc and not oocDetected:
             text = "(( %s ))" % (text)
         self.history.add(text)
-        if self.time.getTime() == None:
-            self.sendtime()
-        grammar = self.time.getGrammar()
         quirks = self.mainwindow.userprofile.quirks
         lexmsg = lexMessage(text)
         if type(lexmsg[0]) is not mecmd:
@@ -755,7 +425,7 @@ class PesterMemo(PesterConvo):
             initials = self.mainwindow.profile().initials()
             colorcmd = self.mainwindow.profile().colorcmd()
             clientMsg = [colorBegin("<c={0},{1},{2}>".format(*colorcmd[:3]), "{0},{1},{2}".format(*colorcmd[:3])),
-                         "%s%s%s: " % (grammar.pcf, initials, grammar.number)] + lexmsg + [colorEnd("</c>")]
+                         "%s: " % (initials)] + lexmsg + [colorEnd("</c>")]
             # account for TC's parsing error
             serverMsg = [colorBegin("<c={0},{1},{2}>".format(*colorcmd[:3]), "{0},{1},{2}".format(*colorcmd[:3])),
                          "%s: " % (initials)] + lexmsg + [colorEnd("</c>"), " "]
@@ -811,13 +481,7 @@ class PesterMemo(PesterConvo):
                     systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
                     chum = self.mainwindow.profile()
                     opchum = PesterProfile(op)
-                    if op in self.times:
-                        opgrammar = self.times[op].getGrammar()
-                    elif op == self.mainwindow.profile().handle:
-                        opgrammar = self.time.getGrammar()
-                    else:
-                        opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
-                    msg = chum.memoquirkkillmsg(opchum, opgrammar, systemColor)
+                    msg = chum.memoquirkkillmsg(opchum, systemColor)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
 
@@ -825,20 +489,8 @@ class PesterMemo(PesterConvo):
         chum = PesterProfile(h)
         if h == self.mainwindow.profile().handle:
             chum = self.mainwindow.profile()
-            ttracker = self.time
-            curtime = self.time.getTime()
-        elif h in self.times:
-            ttracker = self.times[h]
-        else:
-            ttracker = TimeTracker(timedelta(0))
         opchum = PesterProfile(op)
-        if op in self.times:
-            opgrammar = self.times[op].getGrammar()
-        elif op == self.mainwindow.profile().handle:
-            opgrammar = self.time.getGrammar()
-        else:
-            opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
-        return (chum, opchum, opgrammar)
+        return (chum, opchum)
     def iconCrap(self, c, down=True):
         for m in (self.umodes if down else reversed(self.umodes)):
             if eval("c."+m):
@@ -885,14 +537,7 @@ class PesterMemo(PesterConvo):
             for c in chums:
                 chum = PesterProfile(h)
                 self.userlist.takeItem(self.userlist.row(c))
-                if h not in self.times:
-                    self.times[h] = TimeTracker(timedelta(0))
                 allinitials = []
-                while self.times[h].getTime() is not None:
-                    t = self.times[h]
-                    grammar = t.getGrammar()
-                    allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
-                    self.times[h].removeTime(t.getTime())
                 msg = chum.memoclosemsg(systemColor, allinitials, self.mainwindow.theme["convo/text/closememo"])
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
@@ -914,25 +559,9 @@ class PesterMemo(PesterConvo):
             chum = PesterProfile(h)
             if h == self.mainwindow.profile().handle:
                 chum = self.mainwindow.profile()
-                ttracker = self.time
-                curtime = self.time.getTime()
-            elif h in self.times:
-                ttracker = self.times[h]
-            else:
-                ttracker = TimeTracker(timedelta(0))
             allinitials = []
             opchum = PesterProfile(op)
-            if op in self.times:
-                opgrammar = self.times[op].getGrammar()
-            elif op == self.mainwindow.profile().handle:
-                opgrammar = self.time.getGrammar()
-            else:
-                opgrammar = TimeGrammar("CURRENT", "C", "RIGHT NOW")
-            while ttracker.getTime() is not None:
-                grammar = ttracker.getGrammar()
-                allinitials.append("%s%s%s" % (grammar.pcf, chum.initials(), grammar.number))
-                ttracker.removeTime(ttracker.getTime())
-            msg = chum.memobanmsg(opchum, opgrammar, systemColor, allinitials, reason)
+            msg = chum.memobanmsg(opchum, systemColor, allinitials, reason)
             self.textArea.append(convertTags(msg))
             self.mainwindow.chatlog.log(self.channel, msg)
 
@@ -945,12 +574,9 @@ class PesterMemo(PesterConvo):
                 ret = msgbox.exec_()
                 if ret == QtWidgets.QMessageBox.Ok:
                     self.userlist.clear()
-                    self.time = TimeTracker(curtime)
-                    self.resetSlider(curtime)
                     self.mainwindow.joinChannel.emit(self.channel)
                     me = self.mainwindow.profile()
-                    self.time.openCurrentTime()
-                    msg = me.memoopenmsg(systemColor, self.time.getTime(), self.time.getGrammar(), self.mainwindow.theme["convo/text/openmemo"], self.channel)
+                    msg = me.memoopenmsg(systemColor, self.mainwindow.theme["convo/text/openmemo"], self.channel)
                     self.textArea.append(convertTags(msg))
                     self.mainwindow.chatlog.log(self.channel, msg)
                 elif ret == QtWidgets.QMessageBox.Cancel:
@@ -964,9 +590,6 @@ class PesterMemo(PesterConvo):
                 self.userlist.takeItem(self.userlist.row(c))
         elif update == "join":
             self.addUser(h)
-            time = self.time.getTime()
-            serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
-            self.messageSent.emit(serverText, self.title())
     @QtCore.pyqtSlot('QString', 'QString', int, 'QString')
     def userRankChange(self, handle, channel, rank, actingHandle):
         logging.info("SETTING RANK: {} {} {} {}".format(handle, channel, rank, actingHandle))
@@ -984,8 +607,8 @@ class PesterMemo(PesterConvo):
                 self.iconCrap(c)
         if rank >= 3:
             if self.mainwindow.config.opvoiceMessages() and actingHandle:
-                (chum, opchum, opgrammar) = self.chumOPstuff(handle, actingHandle)
-                msg = chum.memoopmsg(opchum, opgrammar, systemColor)
+                (chum, opchum) = self.chumOPstuff(handle, actingHandle)
+                msg = chum.memoopmsg(opchum, systemColor)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
             for c in chums:
@@ -1003,8 +626,8 @@ class PesterMemo(PesterConvo):
                 self.iconCrap(c)
         if rank == 2:
             if self.mainwindow.config.opvoiceMessages() and actingHandle:
-                (chum, opchum, opgrammar) = self.chumOPstuff(handle, actingHandle)
-                msg = chum.memoopmsg(opchum, opgrammar, systemColor)
+                (chum, opchum) = self.chumOPstuff(handle, actingHandle)
+                msg = chum.memoopmsg(opchum, systemColor)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
             for c in chums:
@@ -1021,8 +644,8 @@ class PesterMemo(PesterConvo):
                 self.iconCrap(c)
         if rank == 1:
             if self.mainwindow.config.opvoiceMessages() and actingHandle:
-                (chum, opchum, opgrammar) = self.chumOPstuff(handle, actingHandle)
-                msg = chum.memovoicemsg(opchum, opgrammar, systemColor)
+                (chum, opchum) = self.chumOPstuff(handle, actingHandle)
+                msg = chum.memovoicemsg(opchum, systemColor)
                 self.textArea.append(convertTags(msg))
                 self.mainwindow.chatlog.log(self.channel, msg)
             for c in chums:
@@ -1078,12 +701,6 @@ class PesterMemo(PesterConvo):
         currentHandle = str(self.userlist.currentItem().text())
         self.mainwindow.killSomeQuirks.emit(self.channel, currentHandle)
 
-    def resetSlider(self, time, send=True):
-        self.timeinput.setText(delta2txt(time))
-        self.timeinput.setSlider()
-        if send:
-            self.sendtime()
-
     @QtCore.pyqtSlot()
     def openChumLogs(self):
         currentChum = self.channel
@@ -1121,45 +738,6 @@ class PesterMemo(PesterConvo):
         x = ["-","+"][on]
         self.mainwindow.setChannelMode.emit(self.channel, x+"m", "")
 
-    @QtCore.pyqtSlot()
-    def sendtime(self):
-        me = self.mainwindow.profile()
-        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
-        time = txt2delta(self.timeinput.text())
-        present = self.time.addTime(time)
-
-        serverText = "PESTERCHUM:TIME>"+delta2txt(time, "server")
-        self.messageSent.emit(serverText, self.title())
-    @QtCore.pyqtSlot()
-    def smashclock(self):
-        me = self.mainwindow.profile()
-        time = txt2delta(self.timeinput.text())
-        removed = self.time.removeTime(time)
-        if removed:
-            grammar = self.time.getGrammarTime(time)
-            systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
-            msg = me.memoclosemsg(systemColor, grammar, self.mainwindow.theme["convo/text/closememo"])
-            self.textArea.append(convertTags(msg))
-            self.mainwindow.chatlog.log(self.channel, msg)
-
-        newtime = self.time.getTime()
-        if newtime is None:
-            newtime = timedelta(0)
-            self.resetSlider(newtime, send=False)
-        else:
-            self.resetSlider(newtime)
-    @QtCore.pyqtSlot()
-    def prevtime(self):
-        time = self.time.prevTime()
-        self.time.setCurrent(time)
-        self.resetSlider(time)
-        self.textInput.setFocus()
-    @QtCore.pyqtSlot()
-    def nexttime(self):
-        time = self.time.nextTime()
-        self.time.setCurrent(time)
-        self.resetSlider(time)
-        self.textInput.setFocus()
     def closeEvent(self, event):
         self.mainwindow.waitingMessages.messageAnswered(self.channel)
         self.windowClosed.emit(self.title())
@@ -1167,7 +745,8 @@ class PesterMemo(PesterConvo):
     windowClosed = QtCore.pyqtSignal('QString')
 
 
+# for old times sake
 timelist = ["0:00", "0:01", "0:02", "0:04", "0:06", "0:10", "0:14", "0:22", "0:30", "0:41", "1:00", "1:34", "2:16", "3:14", "4:13", "4:20", "5:25", "6:12", "7:30", "8:44", "10:25", "11:34", "14:13", "16:12", "17:44", "22:22", "25:10", "33:33", "42:00", "43:14", "50:00", "62:12", "75:00", "88:44", "100", "133", "143", "188", "200", "222", "250", "314", "333", "413", "420", "500", "600", "612", "888", "1000", "1025"]
 
-timedlist = [timedelta(0), timedelta(0, 60), timedelta(0, 120), timedelta(0, 240), timedelta(0, 360), timedelta(0, 600), timedelta(0, 840), timedelta(0, 1320), timedelta(0, 1800), timedelta(0, 2460), timedelta(0, 3600), timedelta(0, 5640), timedelta(0, 8160), timedelta(0, 11640), timedelta(0, 15180), timedelta(0, 15600), timedelta(0, 19500), timedelta(0, 22320), timedelta(0, 27000), timedelta(0, 31440), timedelta(0, 37500), timedelta(0, 41640), timedelta(0, 51180), timedelta(0, 58320), timedelta(0, 63840), timedelta(0, 80520), timedelta(1, 4200), timedelta(1, 34380), timedelta(1, 64800), timedelta(1, 69240), timedelta(2, 7200), timedelta(2, 51120), timedelta(3, 10800), timedelta(3, 60240), timedelta(4, 14400), timedelta(5, 46800), timedelta(5, 82800), timedelta(7, 72000), timedelta(8, 28800), timedelta(9, 21600), timedelta(10, 36000), timedelta(13, 7200), timedelta(13, 75600), timedelta(17, 18000), timedelta(17, 43200), timedelta(20, 72000), timedelta(25), timedelta(25, 43200), timedelta(37), timedelta(41, 57600), timedelta(42, 61200)]
+# timedlist = [timedelta(0), timedelta(0, 60), timedelta(0, 120), timedelta(0, 240), timedelta(0, 360), timedelta(0, 600), timedelta(0, 840), timedelta(0, 1320), timedelta(0, 1800), timedelta(0, 2460), timedelta(0, 3600), timedelta(0, 5640), timedelta(0, 8160), timedelta(0, 11640), timedelta(0, 15180), timedelta(0, 15600), timedelta(0, 19500), timedelta(0, 22320), timedelta(0, 27000), timedelta(0, 31440), timedelta(0, 37500), timedelta(0, 41640), timedelta(0, 51180), timedelta(0, 58320), timedelta(0, 63840), timedelta(0, 80520), timedelta(1, 4200), timedelta(1, 34380), timedelta(1, 64800), timedelta(1, 69240), timedelta(2, 7200), timedelta(2, 51120), timedelta(3, 10800), timedelta(3, 60240), timedelta(4, 14400), timedelta(5, 46800), timedelta(5, 82800), timedelta(7, 72000), timedelta(8, 28800), timedelta(9, 21600), timedelta(10, 36000), timedelta(13, 7200), timedelta(13, 75600), timedelta(17, 18000), timedelta(17, 43200), timedelta(20, 72000), timedelta(25), timedelta(25, 43200), timedelta(37), timedelta(41, 57600), timedelta(42, 61200)]
 

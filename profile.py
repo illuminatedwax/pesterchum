@@ -14,7 +14,7 @@ import functools
 import ostools
 from mood import Mood
 from dataobjs import PesterProfile, pesterQuirk, pesterQuirks
-from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
+from parsetools import convertTags, themeChecker, ThemeException
 
 _datadir = ostools.getDataDir()
 
@@ -118,7 +118,7 @@ class userConfig(object):
 
     def __init__(self, parent):
         self.parent = parent
-        self.filename = os.path.join(_datadir, "pesterchum.db")
+        self.filename = os.path.join(_datadir, "osfc.db")
         self.conn = sqlite3.connect(self.filename, isolation_level=None)
         self.conn.execute(configsql) # bootstrap db
         
@@ -321,7 +321,7 @@ class userProfile(object):
     def get(self, name, default=None):
         handle = self.handle
         if handle[0:12] == "pesterClient":
-            return
+            return default
         try:
             self.conn.execute("SELECT value FROM profile WHERE name = ?", (configname,))
             value, = self.conn.fetchone()
@@ -419,7 +419,7 @@ class userProfile(object):
     @property
     def autojoins(self):
         if not getattr(self, "_autojoins", None):
-            self._autojoins = self.get("autojoins")
+            self._autojoins = self.get("autojoins", [])
         return self._autojoins
     @autojoins.setter
     def autojoins(self, autojoins):
@@ -463,7 +463,7 @@ class PesterProfileDB(object):
         else:
             return getattr(self.chumdb[handle], name, default)
     def setValue(self, name, handle, value):
-        if handle in chumdb:
+        if handle in self.chumdb:
             setattr(self.chumdb[handle], name, value)
         else:
             d = {name: value}

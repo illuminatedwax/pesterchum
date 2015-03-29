@@ -5,7 +5,7 @@ import random
 
 from mood import Mood
 from generic import PesterIcon
-from parsetools import timeDifference, convertTags, lexMessage, parseRegexpFunctions
+from parsetools import convertTags, lexMessage, parseRegexpFunctions
 from mispeller import mispeller
 
 _groupre = re.compile(r"\\([0-9]+)")
@@ -162,21 +162,13 @@ class PesterProfile(object):
         self.mood = mood
         self.group = group
         self.notes = notes
-    def initials(self, time=None):
+    def initials(self):
         handle = self.handle
         caps = [l for l in handle if l.isupper()]
         if not caps:
             caps = [""]
         initials = (handle[0]+caps[0]).upper()
-        if hasattr(self, 'time') and time:
-            if self.time > time:
-                return "F"+initials
-            elif self.time < time:
-                return "P"+initials
-            else:
-                return "C"+initials
-        else:
-            return (handle[0]+caps[0]).upper()
+        return (handle[0]+caps[0]).upper()
     def colorhtml(self):
         if self.color:
             return self.color.name()
@@ -197,16 +189,12 @@ class PesterProfile(object):
     def blocked(self, config):
         return self.handle in config.getBlocklist()
 
-    def memsg(self, syscolor, lexmsg, time=None):
+    def memsg(self, syscolor, lexmsg):
         suffix = lexmsg[0].suffix
         msg = convertTags(lexmsg[1:], "text")
         uppersuffix = suffix.upper()
-        if time is not None:
-            handle = "%s %s" % (time.temporal, self.handle)
-            initials = time.pcf+self.initials()+time.number+uppersuffix
-        else:
-            handle = self.handle
-            initials = self.initials()+uppersuffix
+        handle = self.handle
+        initials = self.initials()+uppersuffix
         return "<c=%s>-- %s%s <c=%s>[%s]</c> %s --</c>" % (syscolor.name(), handle, suffix, self.colorhtml(), initials, msg)
     def pestermsg(self, otherchum, syscolor, verb):
         return "<c=%s>-- %s <c=%s>[%s]</c> %s %s <c=%s>[%s]</c> at %s --</c>" % (syscolor.name(), self.handle, self.colorhtml(), self.initials(), verb, otherchum.handle, otherchum.colorhtml(), otherchum.initials(), datetime.now().strftime("%H:%M"))
@@ -224,14 +212,12 @@ class PesterProfile(object):
             return "<c=%s>Netsplit quits: <c=black>None</c></c>" % (syscolor.name())
         else:
             return "<c=%s>Netsplit quits: <c=black>%s</c></c>" % (syscolor.name(), ", ".join(initials))
-    def memoopenmsg(self, syscolor, td, timeGrammar, verb, channel):
-        (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
-        timetext = timeDifference(td)
-        initials = pcf+self.initials()
-        return "<c=%s><c=%s>%s</c> %s %s %s.</c>" % \
-            (syscolor.name(), self.colorhtml(), initials, timetext, verb, channel[1:].upper().replace("_", " "))
-    def memobanmsg(self, opchum, opgrammar, syscolor, initials, reason):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memoopenmsg(self, syscolor, verb, channel):
+        initials = self.initials()
+        return "<c=%s><c=%s>%s</c> %s %s.</c>" % \
+            (syscolor.name(), self.colorhtml(), initials, verb, channel[1:].upper().replace("_", " "))
+    def memobanmsg(self, opchum, syscolor, initials, reason):
+        opinit = opchum.initials()
         if type(initials) == type(list()):
             if opchum.handle == reason:
                 return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo." % \
@@ -240,49 +226,47 @@ class PesterProfile(object):
                 return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo: <c=black>[%s]</c>." % \
                     (opchum.colorhtml(), opinit, self.colorhtml(), ", ".join(initials), str(reason))
         else:
-            initials = timeGrammar.pcf+self.initials()+timeGrammar.number
+            initials = self.initials()
             if opchum.handle == reason:
                 return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo." % \
                     (opchum.colorhtml(), opinit, self.colorhtml(), initials)
             else:
                 return "<c=%s>%s</c> banned <c=%s>%s</c> from responding to memo: <c=black>[%s]</c>." % \
                     (opchum.colorhtml(), opinit, self.colorhtml(), initials, str(reason))
-    def memopermabanmsg(self, opchum, opgrammar, syscolor, timeGrammar):
-        initials = timeGrammar.pcf+self.initials()+timeGrammar.number
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memopermabanmsg(self, opchum, syscolor):
+        initials = self.initials()
+        opinit = opchum.initials()
         return "<c=%s>%s</c> permabanned <c=%s>%s</c> from the memo." % \
             (opchum.colorhtml(), opinit, self.colorhtml(), initials)
-    def memojoinmsg(self, syscolor, td, timeGrammar, verb):
-        (temporal, pcf, when) = (timeGrammar.temporal, timeGrammar.pcf, timeGrammar.when)
-        timetext = timeDifference(td)
-        initials = pcf+self.initials()+timeGrammar.number
-        return "<c=%s><c=%s>%s %s [%s]</c> %s %s.</c>" % \
-            (syscolor.name(), self.colorhtml(), temporal, self.handle,
-             initials, timetext, verb)
-    def memoopmsg(self, opchum, opgrammar, syscolor):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memojoinmsg(self, syscolor, verb):
+        initials = self.initials()
+        return "<c=%s><c=%s> %s [%s]</c> %s.</c>" % \
+            (syscolor.name(), self.colorhtml(), self.handle,
+             initials, verb)
+    def memoopmsg(self, opchum, syscolor):
+        opinit = opchum.initials()
         return "<c=%s>%s</c> made <c=%s>%s</c> an OP." % \
             (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
-    def memodeopmsg(self, opchum, opgrammar, syscolor):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memodeopmsg(self, opchum, syscolor):
+        opinit = opchum.initials()
         return "<c=%s>%s</c> took away <c=%s>%s</c>'s OP powers." % \
             (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
-    def memovoicemsg(self, opchum, opgrammar, syscolor):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memovoicemsg(self, opchum, syscolor):
+        opinit = opchum.initials()
         return "<c=%s>%s</c> gave <c=%s>%s</c> voice." % \
             (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
-    def memodevoicemsg(self, opchum, opgrammar, syscolor):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memodevoicemsg(self, opchum, syscolor):
+        opinit = opchum.initials()
         return "<c=%s>%s</c> took away <c=%s>%s</c>'s voice." % \
             (opchum.colorhtml(), opinit, self.colorhtml(), self.initials())
-    def memomodemsg(self, opchum, opgrammar, syscolor, modeverb, modeon):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memomodemsg(self, opchum, syscolor, modeverb, modeon):
+        opinit = opchum.initials()
         if modeon: modeon = "now"
         else:      modeon = "no longer"
         return "<c=%s>Memo is %s <c=black>%s</c> by <c=%s>%s</c></c>" % \
             (syscolor.name(), modeon, modeverb, opchum.colorhtml(), opinit)
-    def memoquirkkillmsg(self, opchum, opgrammar, syscolor):
-        opinit = opgrammar.pcf+opchum.initials()+opgrammar.number
+    def memoquirkkillmsg(self, opchum, syscolor):
+        opinit = opchum.initials()
         return "<c=%s><c=%s>%s</c> turned off your quirk.</c>" % \
             (syscolor.name(), opchum.colorhtml(), opinit)
 

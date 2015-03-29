@@ -2,10 +2,8 @@ import re
 import random
 import ostools
 from copy import copy
-from datetime import timedelta
 from PyQt5 import QtGui
 
-from generic import mysteryTime
 from quirks import ScriptQuirks
 from pyquirks import PythonQuirks
 from luaquirks import LuaQuirks
@@ -309,57 +307,6 @@ def splitMessage(msg, format="ctag"):
     return output
 
 
-
-def addTimeInitial(string, grammar):
-    endofi = string.find(":")
-    endoftag = string.find(">")
-    # support Doc Scratch mode
-    if (endoftag < 0 or endoftag > 16) or (endofi < 0 or endofi > 17):
-        return string
-    return string[0:endoftag+1]+grammar.pcf+string[endoftag+1:endofi]+grammar.number+string[endofi:]
-
-def timeProtocol(cmd):
-    dir = cmd[0]
-    if dir == "?":
-        return mysteryTime(0)
-    cmd = cmd[1:]
-    cmd = re.sub("[^0-9:]", "", cmd)
-    try:
-        l = [int(x) for x in cmd.split(":")]
-    except ValueError:
-        l = [0,0]
-    timed = timedelta(0, l[0]*3600+l[1]*60)
-    if dir == "P":
-        timed = timed*-1
-    return timed
-
-def timeDifference(td):
-    if type(td) is mysteryTime:
-        return "??:?? FROM ????"
-    if td < timedelta(0):
-        when = "AGO"
-    else:
-        when = "FROM NOW"
-    atd = abs(td)
-    minutes = (atd.days*86400 + atd.seconds) // 60
-    hours = minutes // 60
-    leftoverminutes = minutes % 60
-    if atd == timedelta(0):
-        timetext = "RIGHT NOW"
-    elif atd < timedelta(0,3600):
-        if minutes == 1:
-            timetext = "%d MINUTE %s" % (minutes, when)
-        else:
-            timetext = "%d MINUTES %s" % (minutes, when)
-    elif atd < timedelta(0,3600*100):
-        if hours == 1 and leftoverminutes == 0:
-            timetext = "%d:%02d HOUR %s" % (hours, leftoverminutes, when)
-        else:
-            timetext = "%d:%02d HOURS %s" % (hours, leftoverminutes, when)
-    else:
-        timetext = "%d HOURS %s" % (hours, when)
-    return timetext
-
 def nonerep(text):
     return text
 
@@ -557,10 +504,7 @@ def themeChecker(theme):
     "memos/margins", "convo/text/openmemo", "memos/size", "memos/style", \
     "memos/label/text", "memos/label/style", "memos/label/align/h", \
     "memos/label/align/v", "memos/label/maxheight", "memos/label/minheight", \
-    "memos/userlist/style", "memos/userlist/width", "memos/time/text/width", \
-    "memos/time/text/style", "memos/time/arrows/left", \
-    "memos/time/arrows/style", "memos/time/buttons/style", \
-    "memos/time/arrows/right", "memos/op/icon", "memos/voice/icon", \
+    "memos/userlist/style", "memos/userlist/width", "memos/op/icon", "memos/voice/icon", \
     "convo/text/closememo", "convo/text/kickedmemo", \
     "main/chums/userlistcolor", "main/defaultwindow/style", \
     "main/chums/moods", "main/chums/moods/chummy/icon", "main/menus/help/help", \

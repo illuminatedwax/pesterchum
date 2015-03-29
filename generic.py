@@ -1,15 +1,4 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
-from datetime import timedelta
-
-class mysteryTime(timedelta):
-    def __sub__(self, other):
-        return self
-    def __eq__(self, other):
-        return (type(other) is mysteryTime)
-    def __neq__(self, other):
-        return (type(other) is not mysteryTime)
-    def __hash__(self):
-        return 0
 
 class CaseInsensitiveDict(dict):
     def __init__(self):

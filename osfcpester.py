@@ -536,16 +536,7 @@ class PesterHandler(object):
             # silently ignore messages to yourself.
             if handle == self.parent.mainwindow.profile().handle:
                 return
-            if msg[0:7] == "COLOR >":
-                colors = msg[7:].split(",")
-                try:
-                    colors = [int(d) for d in colors]
-                except ValueError:
-                    colors = [0,0,0]
-                color = QtGui.QColor(*colors)
-                self.parent.colorUpdated.emit(handle, color)
-            else:
-                self.parent.messageReceived.emit(handle, msg)
+            self.parent.messageReceived.emit(handle, msg)
 
 
     def nicknameinuse(self, server, cmd, nick, msg):

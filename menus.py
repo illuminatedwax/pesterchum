@@ -4,7 +4,6 @@ import re, ostools
 from os import remove
 from generic import RightClickList, RightClickTree, MultiTextDialog
 from dataobjs import pesterQuirk, PesterProfile
-from memos import TimeSlider, TimeInput
 from version import _pcVersion
 
 _datadir = ostools.getDataDir()
@@ -963,12 +962,12 @@ class PesterOptions(QtWidgets.QDialog):
         self.soundcheck = QtWidgets.QCheckBox("Sounds On", self, stateChanged=self.soundChange)
         self.chatsoundcheck = QtWidgets.QCheckBox("Pester Sounds", self)
         self.chatsoundcheck.setChecked(self.config.chatSound())
-        self.memosoundcheck = QtWidgets.QCheckBox("Memo Sounds", self, stateChanged=self.memoSoundChange)
-        self.memosoundcheck.setChecked(self.config.memoSound())
         self.memopingcheck = QtWidgets.QCheckBox("Memo Ping", self)
         self.memopingcheck.setChecked(self.config.memoPing())
         self.namesoundcheck = QtWidgets.QCheckBox("Memo Mention (initials)", self)
         self.namesoundcheck.setChecked(self.config.nameSound())
+        self.memosoundcheck = QtWidgets.QCheckBox("Memo Sounds", self, stateChanged=self.memoSoundChange)
+        self.memosoundcheck.setChecked(self.config.memoSound())
         if self.config.soundOn():
             self.soundcheck.setChecked(True)
             if not self.memosoundcheck.isChecked():
@@ -1080,7 +1079,7 @@ class PesterOptions(QtWidgets.QDialog):
             self.mspaCheck.setChecked(self.config.checkMSPA())
 
         self.randomscheck = QtWidgets.QCheckBox("Receive Random Encounters")
-        self.randomscheck.setChecked(parent.userprofile.randoms)
+        self.randomscheck.setChecked(parent.userprofile.random)
         if not parent.randhandler.running:
             self.randomscheck.setEnabled(False)
 
@@ -1280,13 +1279,6 @@ class PesterOptions(QtWidgets.QDialog):
         widget = QtWidgets.QWidget()
         layout_connect = QtWidgets.QVBoxLayout(widget)
         layout_connect.setAlignment(QtCore.Qt.AlignTop)
-        layout_connect.addWidget(self.bandwidthcheck)
-        layout_connect.addWidget(bandwidthLabel)
-        layout_connect.addWidget(self.autonickserv)
-        layout_indent = QtWidgets.QVBoxLayout()
-        layout_indent.addWidget(self.nickservpass)
-        layout_indent.setContentsMargins(22,0,0,0)
-        layout_connect.addLayout(layout_indent)
         layout_connect.addWidget(QtWidgets.QLabel("Auto-Join Memos:"))
         layout_connect.addWidget(self.autojoinlist)
         layout_8 = QtWidgets.QHBoxLayout()
@@ -1340,10 +1332,6 @@ class PesterOptions(QtWidgets.QDialog):
             self.notifyNewMsgCheck.setEnabled(True)
             self.notifyNewConvoCheck.setEnabled(True)
             self.notifyMentionsCheck.setEnabled(True)
-
-    @QtCore.pyqtSlot(int)
-    def autoNickServChange(self, state):
-        self.nickservpass.setEnabled(state != 0)
 
     @QtCore.pyqtSlot()
     def addAutoJoin(self, mitem=None):
@@ -1547,10 +1535,6 @@ class PesterMemoList(QtWidgets.QDialog):
         self.secretChannel = QtWidgets.QCheckBox("HIDDEN CHANNEL?", self)
         self.inviteChannel = QtWidgets.QCheckBox("INVITATION ONLY?", self)
 
-        self.timelabel = QtWidgets.QLabel("TIMEFRAME:")
-        self.timeslider = TimeSlider(QtCore.Qt.Horizontal, self)
-        self.timeinput = TimeInput(self.timeslider, self)
-
         self.cancel = QtWidgets.QPushButton("CANCEL", self, clicked=self.reject)
         self.join = QtWidgets.QPushButton("JOIN", self, clicked=self.AcceptIfSelectionMade)
         self.join.setDefault(True)
@@ -1569,9 +1553,6 @@ class PesterMemoList(QtWidgets.QDialog):
         layout_right.addWidget(self.newmemo)
         layout_right.addWidget(self.secretChannel)
         layout_right.addWidget(self.inviteChannel)
-        layout_right.addWidget(self.timelabel)
-        layout_right.addWidget(self.timeslider)
-        layout_right.addWidget(self.timeinput)
         layout_1.addLayout(layout_left)
         layout_1.addLayout(layout_right)
         layout_0.addLayout(layout_1)

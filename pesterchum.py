@@ -80,8 +80,8 @@ from generic import PesterIcon, RightClickList, RightClickTree, \
     MultiTextDialog, PesterList, CaseInsensitiveDict, MovingWindow, \
     NoneSound, WMButton, PesterDict
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
-from parsetools import convertTags, addTimeInitial, themeChecker, ThemeException
-from memos import PesterMemo, MemoTabWindow, TimeTracker
+from parsetools import convertTags, themeChecker, ThemeException
+from memos import PesterMemo, MemoTabWindow,
 from osfcpester import PesterOSFC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
@@ -300,13 +300,14 @@ class chumArea(RightClickTree):
                 return self.optionsMenu
 
     def startDrag(self, dropAction):
+        # youd better WORK
         # create mime data object
         mime = QtCore.QMimeData()
         mime.setData('application/x-item', '???')
         # start drag
         drag = QtGui.QDrag(self)
         drag.setMimeData(mime)
-        drag.start(QtCore.Qt.MoveAction)
+        drag.exec()
 
     def dragMoveEvent(self, event):
         if event.mimeData().hasFormat("application/x-item"):
@@ -341,7 +342,7 @@ class chumArea(RightClickTree):
                     ptext = item.parent().data(0, QtCore.Qt.ToolTipRole)
                     group = ptext
                     gitem = item.parent()
-                self.moveChumToGroup()
+                self.moveChumToGroup(thisitem, group)
 
     def moveGroupMenu(self):
         currentGroup = self.currentItem()
@@ -461,7 +462,7 @@ class chumArea(RightClickTree):
         return oldmood
     def updateColor(self, handle, color):
         if handle in self.chums:
-            self.chums[handle].chum.setColor(color)
+            self.chums[handle].setColor(color)
     def initTheme(self, theme):
         self.resize(*theme["main/chums/size"])
         self.move(*theme["main/chums/loc"])
@@ -628,7 +629,7 @@ class chumArea(RightClickTree):
             return
         chumLabel = self.chums[handle]
         chumLabel.chum.group = group
-        self.regroupChumSignal.emit(chumLabel.chum.handle, group)
+        self.mainwindow.friendRequest.emit(chumLabel.chum)
         self.refreshList()
 
     @QtCore.pyqtSlot(QtWidgets.QAction)
@@ -643,7 +644,6 @@ class chumArea(RightClickTree):
 
     removeChumSignal = QtCore.pyqtSignal('QString')
     blockChumSignal = QtCore.pyqtSignal('QString')
-    regroupChumSignal = QtCore.pyqtSignal(str, str)
 
 class PesterWindow(MovingWindow):
     def __init__(self, options, parent=None, app=None):
@@ -947,17 +947,10 @@ class PesterWindow(MovingWindow):
         self.newMessage(handle, pesterBegin())
     def newMemoMsg(self, chan, handle, msg):
         if chan not in self.memos:
-            # silently ignore in case we forgot to /part
+            # silently ignore in case we forgot to part
             return
         memo = self.memos[chan]
         msg = str(msg)
-        if handle not in memo.times:
-            # new chum! time current
-            newtime = timedelta(0)
-            time = TimeTracker(newtime)
-            memo.times[handle] = time
-        if msg[0:3] != "/me" and msg[0:13] != "PESTERCHUM:ME":
-            msg = addTimeInitial(msg, memo.times[handle].getGrammar())
         if handle == "ChanServ":
             systemColor = QtGui.QColor(self.theme["memos/systemMsgColor"])
             msg = "<c=%s>%s</c>" % (systemColor.name(), msg)
@@ -1038,9 +1031,7 @@ class PesterWindow(MovingWindow):
         self.tabmemo = MemoTabWindow(self)
         self.tabmemo.windowClosed.connect(self.memoTabsClosed)
 
-    def newMemo(self, channel, timestr, secret=False, invite=False):
-        if channel == "#pesterchum":
-            return
+    def newMemo(self, channel, secret=False, invite=False):
         if channel in self.memos:
             self.memos[channel].showChat()
             return
@@ -1048,10 +1039,10 @@ class PesterWindow(MovingWindow):
         if self.config.tabMemos():
             if not self.tabmemo:
                 self.createMemoTabWindow()
-            memoWindow = PesterMemo(channel, timestr, self, self.tabmemo)
+            memoWindow = PesterMemo(channel, self, self.tabmemo)
             self.tabmemo.show()
         else:
-            memoWindow = PesterMemo(channel, timestr, self, None)
+            memoWindow = PesterMemo(channel, self, None)
         # connect signals
         self.inviteOnlyChan.connect(memoWindow.closeInviteOnly)
         self.namesUpdated.connect(memoWindow.namesUpdated)
@@ -1428,7 +1419,7 @@ class PesterWindow(MovingWindow):
         msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         ret = msgbox.exec_()
         if ret == QtWidgets.QMessageBox.Ok:
-            self.newMemo(str(channel), "+0:00")
+            self.newMemo(str(channel))
     @QtCore.pyqtSlot('QString')
     def chanInviteOnly(self, channel):
         self.inviteOnlyChan.emit(channel)
@@ -1438,11 +1429,6 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot('QString', 'QString')
     def modesUpdated(self, channel, modes):
         self.modesUpdated.emit(channel, modes)
-    @QtCore.pyqtSlot('QString', 'QString', 'QString')
-    def timeCommand(self, chan, handle, command):
-        (c, h, cmd) = (str(chan), str(handle), str(command))
-        if self.memos[c]:
-            self.memos[c].timeUpdate(h, cmd)
 
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def quirkDisable(self, channel, msg, op):
@@ -1543,6 +1529,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot('QString')
     def removeChum(self, chumlisting):
         self.config.removeChum(chumlisting)
+
     def reportChum(self, handle):
         (reason, ok) = QtWidgets.QInputDialog.getText(self, "Report User", "Enter the reason you are reporting this user (optional):")
         if ok:
@@ -1674,7 +1661,7 @@ class PesterWindow(MovingWindow):
     @QtCore.pyqtSlot()
     def joinSelectedMemo(self):
 
-        time = str(self.memochooser.timeinput.text())
+        # time = str(self.memochooser.timeinput.text())
         secret = self.memochooser.secretChannel.isChecked()
         invite = self.memochooser.inviteChannel.isChecked()
 
@@ -1682,11 +1669,11 @@ class PesterWindow(MovingWindow):
             newmemo = self.memochooser.newmemoname()
             channel = str(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
-            self.newMemo(channel, time, secret=secret, invite=invite)
+            self.newMemo(channel, secret=secret, invite=invite)
 
         for SelectedMemo in self.memochooser.SelectedMemos():
             channel = str(SelectedMemo.target)
-            self.newMemo(channel, time)
+            self.newMemo(channel)
 
         self.memochooser = None
     @QtCore.pyqtSlot()
@@ -2398,6 +2385,7 @@ Click this message to never see this again.")
                 (osfc.connected, widget.connected),
                 (osfc.loginFailed, widget.loginFailed),
                 (osfc.moodUpdated, widget.updateMoodSlot),
+                (osfc.colorUpdated, widget.updateColorSlot),
                 (osfc.messageReceived, widget.deliverMessage),
                 (osfc.beginReceived, widget.deliverBegin),
                 (osfc.memoReceived, widget.deliverMemo),
@@ -2411,7 +2399,6 @@ Click this message to never see this again.")
                 (osfc.userRankUpdate, widget.userRankUpdate),
                 (osfc.channelListReceived, widget.updateChannelList),
                 (osfc.friendListReceived, widget.updateFriendList),
-                (osfc.timeCommand, widget.timeCommand),
                 (osfc.chanInviteOnly, widget.chanInviteOnly),
                 (osfc.modesUpdated, widget.modesUpdated),
                 (osfc.cannotSendToChan, widget.cannotSendToChan),

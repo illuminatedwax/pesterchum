@@ -34,10 +34,10 @@ def getDataDir():
     try:
         
         if isOSX():
-            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0], "Pesterchum/")
+            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0], "OSFC/")
         elif isLinux():
-            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0], ".pesterchum/")
+            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0], ".osfc/")
         else:
-            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0], "pesterchum/")
+            return os.path.join(QStandardPaths.standardLocations(QStandardPaths.DataLocation)[0], "osfc/")
     except UnicodeDecodeError:
         return ''
