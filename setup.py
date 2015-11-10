@@ -31,12 +31,12 @@ shutil.copytree("themes", "build/pesterchum/themes")
 #shutil.copytree("imageformats", "build/pesterchum/imageformats")
 shutil.copytree("smilies", "build/pesterchum/smilies")
 #shutil.copy("pesterchum.js", "build/pesterchum/")
-if sys.platform == "win32":
-    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/msvcm90.dll", "build/pesterchum")
-    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/msvcp90.dll", "build/pesterchum")
-    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/msvcr90.dll", "build/pesterchum")
-    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375.manifest",
-                "build/pesterchum")
+#if sys.platform == "win32":
+#    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/msvcm90.dll", "build/pesterchum")
+#    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/msvcp90.dll", "build/pesterchum")
+#    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/msvcr90.dll", "build/pesterchum")
+#    shutil.copy("C:/Dev/Py26MSdlls-9.0.21022.8/msvc/x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375.manifest",
+#                "build/pesterchum")
     
 shutil.copy("pesterchum.nsi", "build/pesterchum/")
 shutil.copy("pesterchum-update.nsi", "build/pesterchum/")
