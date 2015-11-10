@@ -78,3 +78,15 @@ def part(channel, tmphandle=None):
     if tmphandle:
         d['tmphandle'] = tmphandle
     return d
+
+def promote(handle, channel, rank=0):
+    return {"cmd": "promote",
+            "channel": channel,
+            "handle": handle,
+            "rank": rank }
+
+def kick(handle, channel, reason=""):
+    return {"cmd": "kick",
+            "channel": channel,
+            "handle": handle,
+            "reason": reason }

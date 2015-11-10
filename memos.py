@@ -187,7 +187,6 @@ class PesterMemo(PesterConvo):
 
         self.layout.addWidget(self.channelLabel)
         self.layout.addLayout(layout_1)
-        self.layout.addLayout(layout_2)
         self.layout.setSpacing(0)
         margins = self.mainwindow.theme["memos/margins"]
         self.layout.setContentsMargins(margins["left"], margins["top"],
@@ -337,8 +336,8 @@ class PesterMemo(PesterConvo):
         chanmodes = list(str(self.modes))
         if chanmodes and chanmodes[0] == "+": chanmodes = chanmodes[1:]
         modes = str(modes)
+        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
         if op:
-            systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
             chum = self.mainwindow.profile()
             opchum = PesterProfile(op)
         if modes[0] == "+":
@@ -515,6 +514,7 @@ class PesterMemo(PesterConvo):
 
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
     def userPresentChange(self, handle, channel, update):
+        # TODO: clean this the fuck up
         h = str(handle)
         c = str(channel)
         update = str(update)
@@ -605,6 +605,9 @@ class PesterMemo(PesterConvo):
             for c in chums:
                 c.founder = False
                 self.iconCrap(c)
+
+        systemColor = QtGui.QColor(self.mainwindow.theme["memos/systemMsgColor"])
+
         if rank >= 3:
             if self.mainwindow.config.opvoiceMessages() and actingHandle:
                 (chum, opchum) = self.chumOPstuff(handle, actingHandle)
@@ -635,7 +638,7 @@ class PesterMemo(PesterConvo):
                 self.iconCrap(c)
                 if str(c.text()) == self.mainwindow.profile().handle:
                     self.userlist.optionsMenu.addAction(self.banuserAction)
-                    self.userlist.optionsMenu.addAction(self.quirkDisableAction)
+                    self.userlist.optionsMenu.removeAction(self.quirkDisableAction)
                     self.userlist.optionsMenu.removeAction(self.opAction)
                     self.userlist.optionsMenu.removeAction(self.voiceAction)
         else:
@@ -681,19 +684,19 @@ class PesterMemo(PesterConvo):
         currentHandle = str(self.userlist.currentItem().text())
         (reason, ok) = QtWidgets.QInputDialog.getText(self, "Ban User", "Enter the reason you are banning this user (optional):")
         if ok:
-            self.mainwindow.kickUser.emit("%s:%s" % (currentHandle, reason), self.channel)
+            self.mainwindow.kickUser.emit(currentHandle, self.channel, reason)
     @QtCore.pyqtSlot()
     def opSelectedUser(self):
         if not self.userlist.currentItem():
             return
         currentHandle = str(self.userlist.currentItem().text())
-        self.mainwindow.setChannelMode.emit(self.channel, "+o", currentHandle)
+        self.mainwindow.promoteUser.emit(currentHandle, self.channel, "op")
     @QtCore.pyqtSlot()
     def voiceSelectedUser(self):
         if not self.userlist.currentItem():
             return
         currentHandle = str(self.userlist.currentItem().text())
-        self.mainwindow.setChannelMode.emit(self.channel, "+v", currentHandle)
+        self.mainwindow.promoteUser.emit(currentHandle, self.channel, "voice")
     @QtCore.pyqtSlot()
     def killQuirkUser(self):
         if not self.userlist.currentItem():

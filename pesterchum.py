@@ -81,7 +81,7 @@ from generic import PesterIcon, RightClickList, RightClickTree, \
     NoneSound, WMButton, PesterDict
 from convo import PesterTabWindow, PesterText, PesterInput, PesterConvo
 from parsetools import convertTags, themeChecker, ThemeException
-from memos import PesterMemo, MemoTabWindow,
+from memos import PesterMemo, MemoTabWindow
 from osfcpester import PesterOSFC
 from logviewer import PesterLogUserSelect, PesterLogViewer
 from bugreport import BugReporter
@@ -103,7 +103,6 @@ canon_handles = ["apocalypseArisen", "arsenicCatnip", "arachnidsGrip", "adiosTor
 CUSTOMBOTS = ["CALSPRITE", RANDNICK.upper()]
 BOTNAMES = ["NICKSERV", "CHANSERV", "MEMOSERV", "OPERSERV", "HELPSERV"]
 BOTNAMES.extend(CUSTOMBOTS)
-
 
 class waitingMessageHolder(object):
     def __init__(self, mainwindow, **msgfuncs):
@@ -1035,7 +1034,6 @@ class PesterWindow(MovingWindow):
         if channel in self.memos:
             self.memos[channel].showChat()
             return
-        # do slider dialog then set
         if self.config.tabMemos():
             if not self.tabmemo:
                 self.createMemoTabWindow()
@@ -1669,6 +1667,7 @@ class PesterWindow(MovingWindow):
             newmemo = self.memochooser.newmemoname()
             channel = str(newmemo).replace(" ", "_")
             channel = re.sub(r"[^A-Za-z0-9#_]", "", channel)
+            channel = "#{0}".format(channel)
             self.newMemo(channel, secret=secret, invite=invite)
 
         for SelectedMemo in self.memochooser.SelectedMemos():
@@ -2225,9 +2224,10 @@ class PesterWindow(MovingWindow):
     trayIconSignal = QtCore.pyqtSignal(int)
     blockedChum = QtCore.pyqtSignal('QString')
     unblockedChum = QtCore.pyqtSignal('QString')
-    kickUser = QtCore.pyqtSignal('QString', 'QString')
-    joinChannel = QtCore.pyqtSignal('QString')
+    kickUser = QtCore.pyqtSignal(str, str, str)
+    joinChannel = QtCore.pyqtSignal(str)
     leftChannel = QtCore.pyqtSignal('QString')
+    promoteUser = QtCore.pyqtSignal(str, str, str)
     setChannelMode = QtCore.pyqtSignal('QString', 'QString', 'QString')
     channelNames = QtCore.pyqtSignal('QString')
     inviteChum = QtCore.pyqtSignal('QString', 'QString')
@@ -2373,6 +2373,7 @@ Click this message to never see this again.")
                 (widget.joinChannel, osfc.joinChannel),
                 (widget.leftChannel, osfc.leftChannel),
                 (widget.kickUser, osfc.kickUser),
+                (widget.promoteUser, osfc.promoteUser),
                 (widget.setChannelMode, osfc.setChannelMode),
                 (widget.channelNames, osfc.channelNames),
                 (widget.inviteChum, osfc.inviteChum),

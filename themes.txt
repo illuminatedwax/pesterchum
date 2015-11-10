@@ -428,20 +428,6 @@ with a few additions.
   "userlist": Category. The list of users currently in the memo.
     "width": Width.
     "style": Style of the userlist.
-  "time": Category. The time slider area.
-    "text": Category.
-      "width": Width of time text.
-      "style": Style of time text.
-    "slider": Category. Time slider.
-      "style": Style of slider.
-      "groove": Style of the groove of the slider.
-      "handle": Style of the handle of the slider.
-    "buttons": Category. Controls the time buttons.
-      "style": Style of the buttons.
-    "arrows": Category. Controls the time arrows.
-      "left": Path to image of left arrow.
-      "right" Path to image of right arrow.
-      "style": Style of arrow boxes.
 
   "systemMsgColor": Color of system messges.
   "op": Category. 

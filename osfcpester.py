@@ -211,34 +211,29 @@ class PesterOSFC(QtCore.QThread):
             self.cli.send(protocol.list())
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot('QString')
+    @QtCore.pyqtSlot(str)
     def joinChannel(self, channel):
-        c = str(channel)
         try:
-            self.cli.send(protocol.join(c)) # TODO: tmp channels, passwords
+            self.cli.send(protocol.join(channel)) # TODO: passwords
         except socket.error:
             self.setConnectionBroken()
+    # TODO: tmp channels
     @QtCore.pyqtSlot('QString')
     def leftChannel(self, channel):
-        c = str(channel)
         try:
-            self.cli.send(protocol.part(c))
+            self.cli.send(protocol.part(channel))
         except socket.error:
             self.setConnectionBroken()
-    @QtCore.pyqtSlot('QString', 'QString')
-    def kickUser(self, handle, channel):
-        l = handle.split(":")
-        c = str(channel)
-        h = str(l[0])
-        if len(l) > 1:
-            reason = str(l[1])
-            if len(l) > 2:
-              for x in l[2:]:
-                reason += str(":") + str(x)
-        else:
-            reason = ""
+    @QtCore.pyqtSlot(str, str, str)
+    def kickUser(self, handle, channel, reason):
         try:
-            helpers.kick(self.cli, h, c, reason)
+            self.cli.send(protocol.kick(handle, channel, reason))
+        except socket.error:
+            self.setConnectionBroken()
+    @QtCore.pyqtSlot(str, str, str)
+    def promoteUser(self, handle, channel, rank):
+        try:
+            self.cli.send(protocol.promote(handle, channel, rank))
         except socket.error:
             self.setConnectionBroken()
     @QtCore.pyqtSlot('QString', 'QString', 'QString')
@@ -321,6 +316,7 @@ class PesterOSFC(QtCore.QThread):
 
 
 def _handler(fnc):
+    """Marks the function as a proper handler"""
     fnc.handler = True
     def error(errfnc):
         fnc.errorHandler = errfnc.__name__
@@ -473,7 +469,7 @@ class PesterHandler(object):
         channel = cmd['channel']
         handle = cmd['handle']
         rank = cmd['rank']
-        actingHandle = cmd['handle']
+        actingHandle = cmd['actingHandle']
         self.parent.userRankUpdate.emit(handle, channel, rank, actingHandle)
         # TODO: ranks
 

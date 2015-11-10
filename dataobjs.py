@@ -215,7 +215,7 @@ class PesterProfile(object):
     def memoopenmsg(self, syscolor, verb, channel):
         initials = self.initials()
         return "<c=%s><c=%s>%s</c> %s %s.</c>" % \
-            (syscolor.name(), self.colorhtml(), initials, verb, channel[1:].upper().replace("_", " "))
+            (syscolor.name(), self.colorhtml(), initials, verb, channel.upper().replace("_", " "))
     def memobanmsg(self, opchum, syscolor, initials, reason):
         opinit = opchum.initials()
         if type(initials) == type(list()):

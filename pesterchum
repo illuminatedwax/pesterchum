@@ -1,4 +1,4 @@
-#!/bin/sh
+'#!/bin/sh
 
 cd `dirname $0`
-python2 pesterchum.py $@
+python3.3 pesterchum.py $@
